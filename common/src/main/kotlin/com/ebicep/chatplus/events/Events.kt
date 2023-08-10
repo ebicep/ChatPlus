@@ -27,9 +27,9 @@ object Events {
         }
         ClientGuiEvent.SET_SCREEN.register {
             if (isEnabled() && it is ChatScreen) {
-                CompoundEventResult.interruptTrue(ChatPlusScreen(latestDefaultText))
+                return@register CompoundEventResult.interruptTrue(ChatPlusScreen(latestDefaultText))
             }
-            CompoundEventResult.pass()
+            return@register CompoundEventResult.pass()
         }
     }
 

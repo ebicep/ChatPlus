@@ -15,6 +15,10 @@ object ChatManager {
     val chatTabs: MutableList<ChatTab> = ArrayList()
     var selectedTab: ChatTab = ChatTab("All", "(?s).*")
 
+    init {
+        chatTabs.add(selectedTab)
+    }
+
     fun getMinWidthScaled(): Int {
         return (minWidth / getScale()).roundToInt()
     }

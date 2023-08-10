@@ -16,6 +16,7 @@ import com.ebicep.chatplus.hud.ChatManager
 import com.ebicep.chatplus.hud.ChatTab
 import com.ebicep.warlordsplusplus.config.ConfigDirectory
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import kotlinx.serialization.UseSerializers
 import kotlinx.serialization.json.Json
 import java.io.File
@@ -73,7 +74,7 @@ data class ConfigVariables(
     var textOpacity: MutableInt = MutableInt(100),
     var backgroundOpacity: MutableInt = MutableInt(50),
     var lineSpacing: MutableInt = MutableInt(0),
-    var chatTimestampMode: TimestampMode = TimestampMode.NONE,
+    var chatTimestampMode: TimestampMode = TimestampMode.HR_12_SECOND,
     var chatTabs: List<ChatTab> = listOf(ChatTab("All", "(?s).*"))
 ) {
     @Transient

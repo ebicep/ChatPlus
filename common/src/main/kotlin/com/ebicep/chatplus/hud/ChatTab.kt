@@ -3,6 +3,7 @@ package com.ebicep.chatplus.hud
 import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.config.TimestampMode
 import com.ebicep.chatplus.events.Events
+import com.ebicep.chatplus.mixin.MixinStyle
 import com.google.common.collect.Lists
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -120,7 +121,8 @@ class ChatTab {
                 }
             }
         } else {
-            pChatComponent.style.hoverEvent = HoverEvent(HoverEvent.Action.SHOW_TEXT, getTimestamp(false))
+            val mixinStyle = pChatComponent.style as MixinStyle
+            mixinStyle.setHoverEvent(HoverEvent(HoverEvent.Action.SHOW_TEXT, getTimestamp(false)))
             // only add if parent does not have a hover event
             pChatComponent.siblings.forEach {
                 addTimestampToComponent(it)

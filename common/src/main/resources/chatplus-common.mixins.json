@@ -9,6 +9,7 @@
     "MixinMinecraft"
   ],
   "mixins": [
+    "MixinStyle"
   ],
   "injectors": {
     "defaultRequire": 1
