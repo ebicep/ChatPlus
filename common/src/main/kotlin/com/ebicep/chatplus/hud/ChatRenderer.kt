@@ -63,8 +63,8 @@ object ChatRenderer {
         val backgroundWidthEndX = x + width
 
         val textOpacity: Double = ChatManager.getTextOpacity() * 0.9 + 0.1
-        val backGroundOpacity: Double = ChatManager.getBackgroundOpacity()
-        val lineSpacing: Double = ChatManager.getLineSpacing()
+        val backGroundOpacity: Float = ChatManager.getBackgroundOpacity()
+        val lineSpacing: Float = ChatManager.getLineSpacing()
         val l1 = (-8.0 * (lineSpacing + 1.0) + 4.0 * lineSpacing).roundToInt()
 
         // tabs

@@ -246,12 +246,12 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
             Config.values.chatHeight = height
         }
         if (movingChatBox) {
-            Config.values.x.value = Mth.clamp(
+            Config.values.x = Mth.clamp(
                 (pMouseX - xDisplacement).roundToInt(),
                 0,
                 Minecraft.getInstance().window.guiScaledWidth - ChatManager.getWidth() - 1
             )
-            Config.values.y.value = Mth.clamp(
+            Config.values.y = Mth.clamp(
                 (pMouseY - yDisplacement).roundToInt(),
                 ChatManager.getHeight() + 1,
                 Minecraft.getInstance().window.guiScaledHeight - ChatManager.baseYOffset

@@ -67,7 +67,7 @@ object ChatManager {
     }
 
     fun getScale(): Float {
-        return Config.values.scale.value / 100f
+        return Config.values.scale
     }
 
     /**
@@ -121,27 +121,27 @@ object ChatManager {
     }
 
     fun getX(): Int {
-        var x = Config.values.x.value
+        var x = Config.values.x
         if (x < 0) {
             x = 0
-            Config.values.x.value = x
+            Config.values.x = x
         }
         if (x >= Minecraft.getInstance().window.guiScaledWidth) {
             x = Minecraft.getInstance().window.guiScaledWidth - 1
-            Config.values.x.value = x
+            Config.values.x = x
         }
         return x
     }
 
     fun getY(): Int {
-        var y = Config.values.y.value
+        var y = Config.values.y
         if (y < 0) {
             y += Minecraft.getInstance().window.guiScaledHeight
-            Config.values.y.value = y
+            Config.values.y = y
         }
         if (y >= Minecraft.getInstance().window.guiScaledHeight) {
             y = Minecraft.getInstance().window.guiScaledHeight - baseYOffset
-            Config.values.y.value = y
+            Config.values.y = y
         }
         return y
     }
@@ -170,16 +170,16 @@ object ChatManager {
         return (9.0 * (getLineSpacing() + 1.0)).toInt()
     }
 
-    fun getTextOpacity(): Double {
-        return Config.values.textOpacity.value / 100.0
+    fun getTextOpacity(): Float {
+        return Config.values.textOpacity
     }
 
-    fun getBackgroundOpacity(): Double {
-        return Config.values.backgroundOpacity.value / 100.0
+    fun getBackgroundOpacity(): Float {
+        return Config.values.backgroundOpacity
     }
 
-    fun getLineSpacing(): Double {
-        return Config.values.lineSpacing.value / 100.0
+    fun getLineSpacing(): Float {
+        return Config.values.lineSpacing
     }
 
 }

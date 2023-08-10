@@ -97,12 +97,12 @@ class ChatTab {
                 )
             )
         }
-        while (this.displayedMessages.size > Config.values.maxMessages.value) {
+        while (this.displayedMessages.size > Config.values.maxMessages) {
             this.displayedMessages.removeAt(0)
         }
         if (!pOnlyTrim) {
             this.messages.add(GuiMessage(pAddedTime, pChatComponent, pHeaderSignature, pTag))
-            while (this.messages.size > Config.values.maxMessages.value) {
+            while (this.messages.size > Config.values.maxMessages) {
                 this.messages.removeAt(0)
             }
         }
