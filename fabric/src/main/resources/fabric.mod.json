@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "id": "${mod_id}",
+  "version": "${version}",
+  "name": "ChatPlus",
+  "description": "YO",
+  "authors": [
+    "ebicep"
+  ],
+  "contact": {
+    "homepage": "https://fabricmc.net/",
+    "sources": "TEST"
+  },
+  "license": "",
+  "icon": "assets/chatplus/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      {
+        "adapter": "kotlin",
+        "value": "com.ebicep.chatplus.fabric.ChatPlusFabric"
+      }
+    ]
+  },
+  "mixins": [
+    "chatplus.mixins.json",
+    "chatplus-common.mixins.json"
+  ],
+  "depends": {
+    "fabric": "*",
+    "minecraft": ">=${minecraft_version}",
+    "architectury": ">=${architectury_version}",
+    "fabric-language-kotlin": ">=${fabric_kotlin_version}"
+  }
+}
