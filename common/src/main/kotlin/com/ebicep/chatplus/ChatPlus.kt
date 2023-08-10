@@ -10,10 +10,9 @@ object ChatPlus {
     val LOGGER: Logger = LogManager.getLogger(MOD_ID)
 
     fun init() {
-
     }
 
-//    fun isEnabled(): Boolean {
-//        return Config.values.enabled.value
-//    }
+    fun isEnabled(): Boolean {
+        return true
+    }
 }
