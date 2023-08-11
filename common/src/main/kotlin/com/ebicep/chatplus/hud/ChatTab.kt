@@ -3,7 +3,6 @@ package com.ebicep.chatplus.hud
 import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.config.TimestampMode
 import com.ebicep.chatplus.events.Events
-import com.ebicep.chatplus.mixin.MixinStyle
 import com.google.common.collect.Lists
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -77,7 +76,7 @@ class ChatTab {
 //                i -= pTag.icon()!!.width + 4 + 2
 //            }
         if (Config.values.chatTimestampMode != TimestampMode.NONE && !pOnlyTrim) {
-            addTimestampToComponent(pChatComponent)
+            addTimestampToComponent(pChatComponent, 0)
         }
         val list = wrapComponents(pChatComponent, i, Minecraft.getInstance().font)
         val flag = ChatManager.isChatFocused()
@@ -111,7 +110,7 @@ class ChatTab {
     /**
      * Adds timestamp to bottom of chat message, works for most chat formats
      */
-    private fun addTimestampToComponent(pChatComponent: Component) {
+    private fun addTimestampToComponent(pChatComponent: Component, depth: Int) {
         val previousHover = pChatComponent.style.hoverEvent
         if (previousHover != null) {
             when (previousHover.action) {
@@ -120,13 +119,13 @@ class ChatTab {
                     component.siblings.add(getTimestamp(true))
                 }
             }
-        } else {
-            val mixinStyle = pChatComponent.style as MixinStyle
-            mixinStyle.setHoverEvent(HoverEvent(HoverEvent.Action.SHOW_TEXT, getTimestamp(false)))
-            // only add if parent does not have a hover event
-            pChatComponent.siblings.forEach {
-                addTimestampToComponent(it)
-            }
+        } else if (depth < 3) {
+//            val mixinStyle = pChatComponent.style as MixinStyle
+//            mixinStyle.setHoverEvent(HoverEvent(HoverEvent.Action.SHOW_TEXT, getTimestamp(false)))
+//            // only add if parent does not have a hover event
+//            pChatComponent.siblings.forEach {
+//                addTimestampToComponent(it, depth + 1)
+//            }
 
 //            if (pChatComponent.contents is TranslatableContents) {
 //                pChatComponent.contents.visit(FormattedText.StyledContentConsumer<MutableComponent> { style : Style, contents: String ->

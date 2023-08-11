@@ -1,7 +1,7 @@
 package com.ebicep.chatplus.mixin;
 
 import com.ebicep.chatplus.ChatPlus;
-import com.ebicep.chatplus.hud.ChatManager;
+import com.ebicep.chatplus.config.Config;
 import com.ebicep.chatplus.hud.ChatRenderer;
 import com.ebicep.chatplus.hud.ChatTab;
 import net.minecraft.client.GuiMessageTag;
@@ -31,7 +31,7 @@ public class MixinChatComponent {
         if (!ChatPlus.INSTANCE.isEnabled()) {
             return;
         }
-        for (ChatTab chatTab : ChatManager.INSTANCE.getChatTabs()) {
+        for (ChatTab chatTab : Config.INSTANCE.getValues().getChatTabs()) {
             chatTab.addMessage(pChatComponent, pHeaderSignature, pAddedTime, pTag, pOnlyTrim);
         }
     }

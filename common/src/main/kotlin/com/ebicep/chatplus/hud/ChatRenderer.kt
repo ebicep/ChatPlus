@@ -1,6 +1,6 @@
 package com.ebicep.chatplus.hud
 
-import com.ebicep.chatplus.config.ChatPlusKeyBindings
+import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.events.Events
 import com.ebicep.chatplus.hud.ChatManager.selectedTab
 import com.mojang.blaze3d.platform.InputConstants
@@ -11,11 +11,12 @@ import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.util.Mth
 import kotlin.math.roundToInt
 
+const val tabYOffset = 1 // offset from text box
+const val tabXBetween = 1 // space between categories
+const val renderingMovingSize = 3 // width/length of box when rendering moving chat
+
 object ChatRenderer {
 
-    val tabYOffset = 1 // offset from text box
-    val tabXBetween = 1 // space between categories
-    val renderingMovingSize = 3 // width/length of box when rendering moving chat
 
     private var previousScreenWidth = -1
     private var previousScreenHeight = -1
@@ -25,29 +26,33 @@ object ChatRenderer {
         val screenHeight = Minecraft.getInstance().window.guiScaledHeight
 
         // updating chat box to previous relative position
-//        if (screenWidth != previousScreenWidth && previousScreenWidth != -1) {
-//            Config.values.x = (screenWidth * Config.values.x / previousScreenWidth.toDouble()).roundToInt()
-//        }
-//        if (screenHeight != previousScreenHeight && previousScreenHeight != -1) {
-//            val oldY = Config.values.y
-//            if (oldY >= previousScreenHeight - baseYOffset) {
-//                Config.values.y = screenHeight - baseYOffset
-//            } else {
-//                val oldRatio = oldY / previousScreenHeight.toDouble()
-//                var newY = (screenHeight * oldRatio).roundToInt()
-//                if (newY > screenHeight - baseYOffset) {
-//                    newY = -baseYOffset
-//                }
-//                Config.values.y = newY
-//            }
-//            val oldHeight = Config.values.chatHeight
-//            if (oldHeight >= oldY - 1) {
-//                Config.values.chatHeight = Config.values.y - 1
-//            } else {
-//                Config.values.chatHeight =
-//                    (screenHeight * Config.values.chatHeight / previousScreenHeight.toDouble()).roundToInt()
-//            }
-//        }
+        if (screenWidth != previousScreenWidth && previousScreenWidth != -1) {
+            Config.values.x = (screenWidth * Config.values.x / previousScreenWidth.toDouble()).roundToInt()
+            Config.values.chatWidth =
+                (screenWidth * Config.values.chatWidth / previousScreenWidth.toDouble()).roundToInt()
+        }
+        if (screenHeight != previousScreenHeight && previousScreenHeight != -1) {
+            val oldY = Config.values.y
+            if (oldY <= 0) {
+                Config.values.y = -baseYOffset
+            } else {
+                val oldRatio = oldY / previousScreenHeight.toDouble()
+                var newY = (screenHeight * oldRatio).roundToInt()
+                if (newY > screenHeight - baseYOffset) {
+                    newY = -baseYOffset
+                }
+                Config.values.y = newY
+            }
+            val oldHeight = Config.values.chatHeight
+            if ((oldY > 0 && oldHeight >= oldY - 1) ||
+                (oldY == -baseYOffset && oldHeight >= previousScreenHeight - baseYOffset - 1)
+            ) {
+                Config.values.chatHeight = screenHeight - baseYOffset - 1
+            } else {
+                Config.values.chatHeight =
+                    (screenHeight * Config.values.chatHeight / previousScreenHeight.toDouble()).roundToInt()
+            }
+        }
         previousScreenWidth = screenWidth
         previousScreenHeight = screenHeight
 
@@ -72,7 +77,7 @@ object ChatRenderer {
             renderTabs(poseStack, guiGraphics, x, y)
         }
 
-        val moving = ChatManager.isChatFocused() && InputConstants.isKeyDown(mc.window.window, ChatPlusKeyBindings.MOVE_CHAT.key.value)
+        val moving = ChatManager.isChatFocused() && InputConstants.isKeyDown(mc.window.window, Config.values.keyMoveChat.value)
         val messagesToDisplay = selectedTab.displayedMessages.size
         if (messagesToDisplay <= 0) {
             // render full chat box
@@ -197,7 +202,7 @@ object ChatRenderer {
     ) {
         poseStack.pushPose()
         poseStack.translate(x.toFloat(), y.toFloat() + tabYOffset, 0f)
-        ChatManager.chatTabs.forEach {
+        Config.values.chatTabs.forEach {
             it.render(guiGraphics)
             poseStack.translate(
                 Minecraft.getInstance().font.width(it.name).toFloat() + ChatTab.PADDING + ChatTab.PADDING + tabXBetween,

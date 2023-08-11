@@ -1,4 +1,4 @@
-package com.ebicep.warlordsplusplus.config
+package com.ebicep.chatplus.config
 
 import dev.architectury.injectables.annotations.ExpectPlatform
 import java.nio.file.Path

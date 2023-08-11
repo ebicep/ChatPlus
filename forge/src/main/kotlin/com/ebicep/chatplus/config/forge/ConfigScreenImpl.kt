@@ -1,4 +1,4 @@
-package com.ebicep.chatplus.config.fabric
+package com.ebicep.chatplus.config.forge
 
 import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.config.TimestampMode

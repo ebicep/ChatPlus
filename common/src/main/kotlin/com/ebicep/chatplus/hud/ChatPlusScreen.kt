@@ -1,7 +1,7 @@
 package com.ebicep.chatplus.hud
 
-import com.ebicep.chatplus.config.ChatPlusKeyBindings
 import com.ebicep.chatplus.config.Config
+import com.ebicep.chatplus.config.queueUpdateConfig
 import com.ebicep.chatplus.events.Events
 import com.mojang.blaze3d.platform.InputConstants
 import net.minecraft.client.GuiMessage
@@ -81,18 +81,18 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
 
     override fun keyPressed(pKeyCode: Int, pScanCode: Int, pModifiers: Int): Boolean {
         val window = Minecraft.getInstance().window.window
-        val copyMessage = ChatPlusKeyBindings.COPY_MESSAGE
-        val copyMessageModifier = ChatPlusKeyBindings.COPY_MESSAGE_MODIFIER
+        val copyMessage = Config.values.keyCopyMessage
+        val copyMessageModifier = Config.values.keyCopyMessageModifier
         return if (commandSuggestions!!.keyPressed(pKeyCode, pScanCode, pModifiers)) {
             true
         } else if (
             copiedMessageCooldown < Events.currentTick &&
-            InputConstants.isKeyDown(window, copyMessage.key.value) &&
-            InputConstants.isKeyDown(window, copyMessageModifier.key.value)
+            InputConstants.isKeyDown(window, copyMessage.value) &&
+            InputConstants.isKeyDown(window, copyMessageModifier.value)
         ) {
             copiedMessageCooldown = Events.currentTick + 20
             ChatManager.selectedTab.getMessageAt(lastMouseX.toDouble(), lastMouseY.toDouble())?.let {
-                copyToClipboard(it.content.toString())
+                copyToClipboard(it.content)
                 lastCopiedMessage = Pair(it.line, Events.currentTick + 60)
             }
             true
@@ -149,12 +149,12 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
             // shift = fine scroll
             // alt = triple scroll
             val window = Minecraft.getInstance().window.window
-            if (InputConstants.isKeyDown(window, ChatPlusKeyBindings.NO_SCOLL.key.value)) {
+            if (InputConstants.isKeyDown(window, Config.values.keyNoScroll.value)) {
                 return true
             }
-            if (InputConstants.isKeyDown(window, ChatPlusKeyBindings.LARGE_SCROLL.key.value)) {
+            if (InputConstants.isKeyDown(window, Config.values.keyLargeScroll.value)) {
                 delta *= 21.0
-            } else if (!InputConstants.isKeyDown(window, ChatPlusKeyBindings.FINE_SCROLL.key.value)) {
+            } else if (!InputConstants.isKeyDown(window, Config.values.keyFineScroll.value)) {
                 delta *= 7.0
             }
             ChatManager.selectedTab.scrollChat(delta.toInt())
@@ -168,9 +168,9 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
         } else {
             if (pButton == 0) {
                 val side = ChatManager.getX() + ChatManager.getWidth()
-                val sideInner = ChatManager.getX() + ChatManager.getWidth() - ChatRenderer.renderingMovingSize
+                val sideInner = ChatManager.getX() + ChatManager.getWidth() - renderingMovingSize
                 val roof = ChatManager.getY() - ChatManager.getHeight()
-                val roofInner = ChatManager.getY() - ChatManager.getHeight() + ChatRenderer.renderingMovingSize
+                val roofInner = ChatManager.getY() - ChatManager.getHeight() + renderingMovingSize
                 if (pMouseX > sideInner && pMouseX < side && pMouseY > roof && pMouseY < ChatManager.getY()) {
                     movingChatX = true
                 }
@@ -215,7 +215,7 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
 
     override fun mouseDragged(pMouseX: Double, pMouseY: Double, pButton: Int, pDragX: Double, pDragY: Double): Boolean {
         val window = Minecraft.getInstance().window.window
-        val moving = InputConstants.isKeyDown(window, ChatPlusKeyBindings.MOVE_CHAT.key.value)
+        val moving = InputConstants.isKeyDown(window, Config.values.keyMoveChat.value)
         if (!ChatManager.isChatFocused() || !moving || pButton != 0) {
             movingChat = false
             return super.mouseDragged(pMouseX, pMouseY, pButton, pDragX, pDragY)
@@ -251,11 +251,15 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
                 0,
                 Minecraft.getInstance().window.guiScaledWidth - ChatManager.getWidth() - 1
             )
-            Config.values.y = Mth.clamp(
+            var newY = Mth.clamp(
                 (pMouseY - yDisplacement).roundToInt(),
                 ChatManager.getHeight() + 1,
-                Minecraft.getInstance().window.guiScaledHeight - ChatManager.baseYOffset
+                Minecraft.getInstance().window.guiScaledHeight - baseYOffset
             )
+            if (newY == Minecraft.getInstance().window.guiScaledHeight - baseYOffset) {
+                newY = -baseYOffset
+            }
+            Config.values.y = newY
         }
 
         return true
@@ -388,6 +392,7 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
         var movingChat: Boolean
             get() = movingChatX || movingChatY || movingChatBox
             set(value) {
+                queueUpdateConfig = true
                 movingChatX = value
                 movingChatY = value
                 movingChatBox = value

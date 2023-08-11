@@ -1,13 +1,19 @@
-package com.ebicep.chatplus.config
+@file:UseSerializers(
+    KeySerializer::class
+)
 
+package com.ebicep.chatplus.config
 
 import com.ebicep.chatplus.ChatPlus
 import com.ebicep.chatplus.MOD_ID
+import com.ebicep.chatplus.config.serializers.KeySerializer
 import com.ebicep.chatplus.hud.ChatManager
 import com.ebicep.chatplus.hud.ChatTab
-import com.ebicep.warlordsplusplus.config.ConfigDirectory
+import com.ebicep.chatplus.hud.baseYOffset
+import com.mojang.blaze3d.platform.InputConstants
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
+import kotlinx.serialization.UseSerializers
 import kotlinx.serialization.json.Json
 import java.io.File
 
@@ -17,8 +23,9 @@ private val json = Json {
     prettyPrint = true
 }
 
-object Config {
+var queueUpdateConfig = false
 
+object Config {
     var values = ConfigVariables()
 
     fun save() {
@@ -44,7 +51,30 @@ object Config {
                 encodeDefaults = true
             }
             values = json.decodeFromString(ConfigVariables.serializer(), configFile.readText())
+            correctValues()
+            loadValues()
         }
+    }
+
+    private fun loadValues() {
+        values.chatTabs.forEach {
+            it.regex = Regex(it.pattern)
+        }
+    }
+
+    private fun correctValues() {
+        if (values.maxMessages < minMaxMessages) {
+            values.maxMessages = minMaxMessages
+        } else if (values.maxMessages > maxMaxMessages) {
+            values.maxMessages = maxMaxMessages
+        }
+        if (values.chatTabs.isEmpty()) {
+            values.chatTabs.add(ChatTab("All", "(?s).*"))
+        }
+        if (values.selectedTab >= values.chatTabs.size) {
+            values.selectedTab = 0
+        }
+        save()
     }
 
 }
@@ -56,7 +86,7 @@ val maxMaxMessages = 10_000_000
 data class ConfigVariables(
     var enabled: Boolean = true,
     var x: Int = 0,
-    var y: Int = -ChatManager.baseYOffset,
+    var y: Int = -baseYOffset,
     var height: Int = 180,
     var width: Int = 320,
     var scale: Float = 1f,
@@ -65,19 +95,43 @@ data class ConfigVariables(
     var backgroundOpacity: Float = .5f,
     var lineSpacing: Float = 0f,
     var chatTimestampMode: TimestampMode = TimestampMode.HR_12_SECOND,
-    var chatTabs: List<ChatTab> = listOf(ChatTab("All", "(?s).*"))
-) {
+    var chatTabs: MutableList<ChatTab> = mutableListOf(ChatTab("All", "(?s).*")),
+    var selectedTab: Int = 0,
+
+    //keys
+    var keyNoScroll: InputConstants.Key = InputConstants.getKey("key.keyboard.left.control"),
+    var keyFineScroll: InputConstants.Key = InputConstants.getKey("key.keyboard.left.shift"),
+    var keyLargeScroll: InputConstants.Key = InputConstants.getKey("key.keyboard.left.alt"),
+    var keyMoveChat: InputConstants.Key = InputConstants.getKey("key.keyboard.right.control"),
+    var keyCopyMessage: InputConstants.Key = InputConstants.getKey("key.keyboard.c"),
+    var keyCopyMessageModifier: InputConstants.Key = InputConstants.getKey("key.keyboard.right.control"),
+
+    ) {
+
     @Transient
     var chatWidth: Int = width
-        set(width) {
-            field = width
+        set(newWidth) {
+            field = newWidth
+            width = newWidth
+            queueUpdateConfig = true
             ChatManager.selectedTab.rescaleChat()
         }
 
     @Transient
     var chatHeight: Int = height
-        set(height) {
-            field = height
+        set(newHeight) {
+            field = newHeight
+            height = newHeight
+            queueUpdateConfig = true
             ChatManager.selectedTab.rescaleChat()
         }
+
+//    fun getKeyCopyMessageModifier(): InputConstants.Key? {
+//        when(keyCopyMessageModifier) {
+//            1 -> return InputConstants.getKey("key.keyboard.left.shift")
+//            1 -> return InputConstants.getKey("key.keyboard.left.shift")
+//            1 -> return InputConstants.getKey("key.keyboard.left.shift")
+//            else -> return null
+//        }
+//    }
 }

@@ -4,20 +4,22 @@ import com.ebicep.chatplus.config.Config
 import net.minecraft.client.Minecraft
 import kotlin.math.roundToInt
 
+const val baseYOffset = 29
+const val minHeight = 80
+const val minWidth = 160
+
 object ChatManager {
 
-    val baseYOffset = 29
-    val minHeight = 80
-    val minWidth = 160
-
     val sentMessages: MutableList<String> = ArrayList()
-
-    val chatTabs: MutableList<ChatTab> = ArrayList()
-    var selectedTab: ChatTab = ChatTab("All", "(?s).*")
-
-    init {
-        chatTabs.add(selectedTab)
-    }
+    val selectedTab: ChatTab
+        get() {
+            if (Config.values.chatTabs.isEmpty()) {
+                Config.values.chatTabs.add(ChatTab("All", "(?s).*"))
+                Config.values.selectedTab = 0
+                Config.save()
+            }
+            return Config.values.chatTabs[Config.values.selectedTab]
+        }
 
     fun getMinWidthScaled(): Int {
         return (minWidth / getScale()).roundToInt()
@@ -48,17 +50,18 @@ object ChatManager {
         var xOff = 0.0
         val font = Minecraft.getInstance().font
         //ChatPlus.LOGGER.debug("x: $x, translatedY: $translatedY")
-        if (translatedY > ChatRenderer.tabYOffset || translatedY < -(9 + ChatTab.PADDING + ChatTab.PADDING)) {
+        if (translatedY > tabYOffset || translatedY < -(9 + ChatTab.PADDING + ChatTab.PADDING)) {
             return
         }
-        chatTabs.forEach {
+        Config.values.chatTabs.forEachIndexed { index, it ->
             val categoryLength = font.width(it.name) + ChatTab.PADDING + ChatTab.PADDING
             if (x > xOff && x < xOff + categoryLength && it != selectedTab) {
-                selectedTab = it
+                Config.values.selectedTab = index
+                Config.save()
                 selectedTab.refreshDisplayedMessage()
                 return
             }
-            xOff += categoryLength + ChatRenderer.tabXBetween
+            xOff += categoryLength + tabXBetween
         }
     }
 
@@ -114,9 +117,9 @@ object ChatManager {
             Config.values.chatHeight = getY() - 1
         }
         return if (isChatFocused()) {
-            return Config.values.chatHeight
+            Config.values.chatHeight
         } else {
-            return (Config.values.chatHeight * .5).roundToInt()
+            (Config.values.chatHeight * .5).roundToInt()
         }
     }
 
@@ -137,11 +140,10 @@ object ChatManager {
         var y = Config.values.y
         if (y < 0) {
             y += Minecraft.getInstance().window.guiScaledHeight
-            Config.values.y = y
         }
         if (y >= Minecraft.getInstance().window.guiScaledHeight) {
             y = Minecraft.getInstance().window.guiScaledHeight - baseYOffset
-            Config.values.y = y
+            Config.values.y = -baseYOffset
         }
         return y
     }
