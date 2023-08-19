@@ -5,9 +5,7 @@ import com.ebicep.chatplus.config.TimestampMode
 import com.ebicep.chatplus.config.queueUpdateConfig
 import com.ebicep.chatplus.hud.ChatTab
 import com.mojang.blaze3d.platform.InputConstants
-import me.shedaniel.clothconfig2.api.AbstractConfigListEntry
-import me.shedaniel.clothconfig2.api.ConfigBuilder
-import me.shedaniel.clothconfig2.api.ConfigEntryBuilder
+import me.shedaniel.clothconfig2.api.*
 import me.shedaniel.clothconfig2.gui.entries.*
 import net.minecraft.client.gui.screens.Screen
 import net.minecraft.network.chat.Component
@@ -111,14 +109,27 @@ object ConfigScreenImpl {
             entryBuilder.keyCodeOption("key.moveChat", Config.values.keyMoveChat) { Config.values.keyMoveChat = it }
         )
         keyBinds.addEntry(
-            entryBuilder.keyCodeOption("key.copyMessage", Config.values.keyCopyMessage) { Config.values.keyCopyMessage = it }
+            entryBuilder.startModifierKeyCodeField(
+                Component.translatable("test"),
+                ModifierKeyCode.of(
+                    Config.values.keyCopyMessageWithModifier.key,
+                    Modifier.of(Config.values.keyCopyMessageWithModifier.modifier)
+                )
+            )
+                .setDefaultValue(
+                    ModifierKeyCode.of(
+                        Config.values.keyCopyMessageWithModifier.key,
+                        Modifier.of(Config.values.keyCopyMessageWithModifier.modifier)
+                    )
+                )
+                .setKeySaveConsumer {
+                    Config.values.keyCopyMessageWithModifier.key = it
+                }
+                .setModifierSaveConsumer {
+                    Config.values.keyCopyMessageWithModifier.modifier = it.modifier.value
+                }
+                .build()
         )
-//        keyBinds.addEntry(
-//            entryBuilder.startModifierKeyCodeField(
-//                Component.translatable("test"),
-//                ModifierKeyCode.of(Config.values.keyCopyMessage, Modifier.of(false, true, false))
-//            ).build()
-//        )
     }
 
     private fun ConfigEntryBuilder.booleanToggle(

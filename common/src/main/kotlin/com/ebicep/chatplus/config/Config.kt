@@ -7,6 +7,7 @@ package com.ebicep.chatplus.config
 import com.ebicep.chatplus.ChatPlus
 import com.ebicep.chatplus.MOD_ID
 import com.ebicep.chatplus.config.serializers.KeySerializer
+import com.ebicep.chatplus.config.serializers.KeyWithModifier
 import com.ebicep.chatplus.hud.ChatManager
 import com.ebicep.chatplus.hud.ChatTab
 import com.ebicep.chatplus.hud.baseYOffset
@@ -103,8 +104,7 @@ data class ConfigVariables(
     var keyFineScroll: InputConstants.Key = InputConstants.getKey("key.keyboard.left.shift"),
     var keyLargeScroll: InputConstants.Key = InputConstants.getKey("key.keyboard.left.alt"),
     var keyMoveChat: InputConstants.Key = InputConstants.getKey("key.keyboard.right.control"),
-    var keyCopyMessage: InputConstants.Key = InputConstants.getKey("key.keyboard.c"),
-    var keyCopyMessageModifier: InputConstants.Key = InputConstants.getKey("key.keyboard.right.control"),
+    var keyCopyMessageWithModifier: KeyWithModifier = KeyWithModifier(InputConstants.getKey("key.keyboard.c"), 2),
 
     ) {
 

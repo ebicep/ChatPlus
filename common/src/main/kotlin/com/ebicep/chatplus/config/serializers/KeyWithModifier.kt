@@ -1,5 +1,11 @@
 package com.ebicep.chatplus.config.serializers
 
 import com.mojang.blaze3d.platform.InputConstants
+import kotlinx.serialization.Serializable
 
-data class KeyWithModifier(val key: InputConstants.Key, val modifier: Int)
+@Serializable
+data class KeyWithModifier(
+    @Serializable(with = KeySerializer::class)
+    var key: InputConstants.Key,
+    var modifier: Short
+)
