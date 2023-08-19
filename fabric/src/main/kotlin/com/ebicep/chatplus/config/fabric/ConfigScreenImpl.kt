@@ -4,6 +4,7 @@ import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.config.TimestampMode
 import com.ebicep.chatplus.config.queueUpdateConfig
 import com.ebicep.chatplus.hud.ChatTab
+import com.ebicep.chatplus.translator.RegexMatch
 import com.mojang.blaze3d.platform.InputConstants
 import me.shedaniel.clothconfig2.api.*
 import me.shedaniel.clothconfig2.gui.entries.*
@@ -18,13 +19,14 @@ object ConfigScreenImpl {
     fun getConfigScreen(previousScreen: Screen? = null): Screen {
         val builder: ConfigBuilder = ConfigBuilder.create()
             .setParentScreen(previousScreen)
-            .setTitle(Component.translatable("chatplus.title"))
+            .setTitle(Component.translatable("chatPlus.title"))
             .setSavingRunnable(Config::save)
             .transparentBackground()
         val entryBuilder: ConfigEntryBuilder = builder.entryBuilder()
         addGeneralOptions(builder, entryBuilder)
         addChatTabsOption(builder, entryBuilder)
         addKeyBindOptions(builder, entryBuilder)
+        addTranslatorRegexOptions(builder, entryBuilder)
         return builder.build()
     }
 
@@ -110,7 +112,7 @@ object ConfigScreenImpl {
         )
         keyBinds.addEntry(
             entryBuilder.startModifierKeyCodeField(
-                Component.translatable("test"),
+                Component.translatable("key.copyMessage"),
                 ModifierKeyCode.of(
                     Config.values.keyCopyMessageWithModifier.key,
                     Modifier.of(Config.values.keyCopyMessageWithModifier.modifier)
@@ -131,6 +133,38 @@ object ConfigScreenImpl {
                 .build()
         )
     }
+
+    private fun addTranslatorRegexOptions(builder: ConfigBuilder, entryBuilder: ConfigEntryBuilder) {
+        val chatTabs = builder.getOrCreateCategory(Component.translatable("chatPlus.translator.title"))
+        chatTabs.addEntry(
+            getCustomListOption(
+                "chatPlus.translator.regexes",
+                Config.values.translatorRegexes,
+                { Config.values.translatorRegexes = it },
+                true,
+                { RegexMatch("", 0) },
+                { value ->
+                    listOf(
+                        entryBuilder.startStrField(Component.translatable("chatPlus.translator.match"), value.match)
+                            .setTooltip(Component.translatable("chatPlus.translator.match.tooltip"))
+                            .setDefaultValue("")
+                            .setSaveConsumer { value.match = it }
+                            .build(),
+                        entryBuilder.startIntField(
+                            Component.translatable("chatPlus.translator.senderNameGroupIndex"),
+                            value.senderNameGroupIndex
+                        )
+                            .setTooltip(Component.translatable("chatPlus.translator.senderNameGroupIndex.tooltip"))
+                            .setDefaultValue(0)
+                            .setSaveConsumer { value.senderNameGroupIndex = it }
+                            .build(),
+                    )
+                }
+
+            )
+        )
+    }
+
 
     private fun ConfigEntryBuilder.booleanToggle(
         translatable: String,

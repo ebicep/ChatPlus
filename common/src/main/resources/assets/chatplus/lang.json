@@ -1,0 +1,662 @@
+[
+  {
+    "name": "Auto detect",
+    "googleCode": "auto",
+    "baiduCode": "auto",
+    "nameUnicode": "Auto detect"
+  },
+  {
+    "name": "Azerbaijan",
+    "googleCode": "az",
+    "baiduCode": "aze",
+    "nameUnicode": "Azərbaycan"
+  },
+  {
+    "name": "Albanian",
+    "googleCode": "sq",
+    "baiduCode": "alb",
+    "nameUnicode": "Shqiptare"
+  },
+  {
+    "name": "English",
+    "googleCode": "en",
+    "baiduCode": "en",
+    "nameUnicode": null
+  },
+  {
+    "name": "Arabic",
+    "googleCode": "ar",
+    "baiduCode": "ara",
+    "nameUnicode": "العربية"
+  },
+  {
+    "name": "Armenian",
+    "googleCode": "hy",
+    "baiduCode": "arm",
+    "nameUnicode": "Հայերեն"
+  },
+  {
+    "name": "Afrikaans",
+    "googleCode": "af",
+    "baiduCode": "afr",
+    "nameUnicode": null
+  },
+  {
+    "name": "Basque",
+    "googleCode": "eu",
+    "baiduCode": "baq",
+    "nameUnicode": "Euskal"
+  },
+  {
+    "name": "Belarusian",
+    "googleCode": "be",
+    "baiduCode": "bel",
+    "nameUnicode": "Беларуская"
+  },
+  {
+    "name": "Bengali",
+    "googleCode": "bn",
+    "baiduCode": "ben",
+    "nameUnicode": "বাংলা"
+  },
+  {
+    "name": "Bulgarian",
+    "googleCode": "bg",
+    "baiduCode": "bul",
+    "nameUnicode": "Български"
+  },
+  {
+    "name": "Bosnian",
+    "googleCode": "bs",
+    "baiduCode": "bos",
+    "nameUnicode": "Bosanskih"
+  },
+  {
+    "name": "Welsh",
+    "googleCode": "cy",
+    "baiduCode": "wel",
+    "nameUnicode": "Cymru"
+  },
+  {
+    "name": "Hungarian",
+    "googleCode": "hu",
+    "baiduCode": "hu",
+    "nameUnicode": "Magyar"
+  },
+  {
+    "name": "Vietnamese",
+    "googleCode": "vi",
+    "baiduCode": "vie",
+    "nameUnicode": "Việt nam"
+  },
+  {
+    "name": "Haitian Creole",
+    "googleCode": "ht",
+    "baiduCode": "ht",
+    "nameUnicode": "Kreyòl Ayisyen"
+  },
+  {
+    "name": "Galician",
+    "googleCode": "gl",
+    "baiduCode": "glg",
+    "nameUnicode": "Galego"
+  },
+  {
+    "name": "Dutch",
+    "googleCode": "nl",
+    "baiduCode": "nl",
+    "nameUnicode": "Nederlandse"
+  },
+  {
+    "name": "Greek",
+    "googleCode": "el",
+    "baiduCode": "el",
+    "nameUnicode": "Ελληνική"
+  },
+  {
+    "name": "Georgian",
+    "googleCode": "ka",
+    "baiduCode": "geo",
+    "nameUnicode": "ქართული"
+  },
+  {
+    "name": "Gujarati",
+    "googleCode": "gu",
+    "baiduCode": "guj",
+    "nameUnicode": "ગુજરાતી"
+  },
+  {
+    "name": "Danish",
+    "googleCode": "da",
+    "baiduCode": "dan",
+    "nameUnicode": "Dansk"
+  },
+  {
+    "name": "Hebrew",
+    "googleCode": "he",
+    "baiduCode": "heb",
+    "nameUnicode": "עברית"
+  },
+  {
+    "name": "Yiddish",
+    "googleCode": "yi",
+    "baiduCode": "yid",
+    "nameUnicode": "ייִדיש"
+  },
+  {
+    "name": "Indonesian",
+    "googleCode": "id",
+    "baiduCode": "id",
+    "nameUnicode": "Indonesia"
+  },
+  {
+    "name": "Irish",
+    "googleCode": "ga",
+    "baiduCode": "gle",
+    "nameUnicode": "Gaeilge"
+  },
+  {
+    "name": "Italian",
+    "googleCode": "it",
+    "baiduCode": "it",
+    "nameUnicode": "Italiano"
+  },
+  {
+    "name": "Icelandic",
+    "googleCode": "is",
+    "baiduCode": "ice",
+    "nameUnicode": "Íslensk"
+  },
+  {
+    "name": "Spanish",
+    "googleCode": "es",
+    "baiduCode": "spa",
+    "nameUnicode": "Español"
+  },
+  {
+    "name": "Kazakh",
+    "googleCode": "kk",
+    "baiduCode": "kaz",
+    "nameUnicode": "Қазақ"
+  },
+  {
+    "name": "Kannada",
+    "googleCode": "kn",
+    "baiduCode": "kan",
+    "nameUnicode": "ಕನ್ನಡ"
+  },
+  {
+    "name": "Catalan",
+    "googleCode": "ca",
+    "baiduCode": "cat",
+    "nameUnicode": "Català"
+  },
+  {
+    "name": "Kyrgyz",
+    "googleCode": "ky",
+    "baiduCode": "kir",
+    "nameUnicode": "Кыргыз"
+  },
+  {
+    "name": "Traditional Chinese",
+    "googleCode": "zh-TW",
+    "baiduCode": "cht",
+    "nameUnicode": "繁體中文"
+  },
+  {
+    "name": "Simplified Chinese",
+    "googleCode": "zh-CN",
+    "baiduCode": "zh",
+    "nameUnicode": "简体中文"
+  },
+  {
+    "name": "Korean",
+    "googleCode": "ko",
+    "baiduCode": "kor",
+    "nameUnicode": "한국어"
+  },
+  {
+    "name": "Latin",
+    "googleCode": "la",
+    "baiduCode": "lat",
+    "nameUnicode": "Latinae"
+  },
+  {
+    "name": "Latvian",
+    "googleCode": "lv",
+    "baiduCode": "lav",
+    "nameUnicode": "Latviešu"
+  },
+  {
+    "name": "Lithuanian",
+    "googleCode": "lt",
+    "baiduCode": "lit",
+    "nameUnicode": "Lietuvių"
+  },
+  {
+    "name": "Malagasy",
+    "googleCode": "mg",
+    "baiduCode": "mg",
+    "nameUnicode": null
+  },
+  {
+    "name": "Malay",
+    "googleCode": "ms",
+    "baiduCode": "may",
+    "nameUnicode": "Melayu"
+  },
+  {
+    "name": "Malayalam",
+    "googleCode": "ml",
+    "baiduCode": "mal",
+    "nameUnicode": "മലയാളം"
+  },
+  {
+    "name": "Maltese",
+    "googleCode": "mt",
+    "baiduCode": "mlt",
+    "nameUnicode": "Malti"
+  },
+  {
+    "name": "Macedonian",
+    "googleCode": "mk",
+    "baiduCode": "mac",
+    "nameUnicode": "Македонски"
+  },
+  {
+    "name": "Maori",
+    "googleCode": "mi",
+    "baiduCode": "mao",
+    "nameUnicode": "Māori"
+  },
+  {
+    "name": "Marathi",
+    "googleCode": "mr",
+    "baiduCode": "mr",
+    "nameUnicode": "मराठी"
+  },
+  {
+    "name": "Mongolian",
+    "googleCode": "mn",
+    "baiduCode": "mon",
+    "nameUnicode": "Монгол улсын"
+  },
+  {
+    "name": "German",
+    "googleCode": "de",
+    "baiduCode": "de",
+    "nameUnicode": "Deutsch"
+  },
+  {
+    "name": "Nepali",
+    "googleCode": "ne",
+    "baiduCode": "nep",
+    "nameUnicode": "नेपाली"
+  },
+  {
+    "name": "Norwegian",
+    "googleCode": "no",
+    "baiduCode": "nor",
+    "nameUnicode": "Norsk"
+  },
+  {
+    "name": "Punjabi",
+    "googleCode": "pa",
+    "baiduCode": "pan",
+    "nameUnicode": "ਪੰਜਾਬੀ"
+  },
+  {
+    "name": "Persian",
+    "googleCode": "fa",
+    "baiduCode": "per",
+    "nameUnicode": "فارسی"
+  },
+  {
+    "name": "Polish",
+    "googleCode": "pl",
+    "baiduCode": "pl",
+    "nameUnicode": "Polski"
+  },
+  {
+    "name": "Portuguese",
+    "googleCode": "pt",
+    "baiduCode": "pt",
+    "nameUnicode": "Portuguesa"
+  },
+  {
+    "name": "Romanian",
+    "googleCode": "ro",
+    "baiduCode": "rom",
+    "nameUnicode": "Română"
+  },
+  {
+    "name": "Russian",
+    "googleCode": "ru",
+    "baiduCode": "ru",
+    "nameUnicode": "Русский"
+  },
+  {
+    "name": "Cebuano",
+    "googleCode": "ceb",
+    "baiduCode": "ceb",
+    "nameUnicode": null
+  },
+  {
+    "name": "Serbian",
+    "googleCode": "sr",
+    "baiduCode": "srp",
+    "nameUnicode": "Руски"
+  },
+  {
+    "name": "Sinhala",
+    "googleCode": "si",
+    "baiduCode": "sin",
+    "nameUnicode": "සිංහල"
+  },
+  {
+    "name": "Slovakian",
+    "googleCode": "sk",
+    "baiduCode": "sk",
+    "nameUnicode": "Slovenský"
+  },
+  {
+    "name": "Slovenian",
+    "googleCode": "sl",
+    "baiduCode": "slo",
+    "nameUnicode": "Slovenski"
+  },
+  {
+    "name": "Swahili",
+    "googleCode": "sw",
+    "baiduCode": "swa",
+    "nameUnicode": "Kiswahili"
+  },
+  {
+    "name": "Sundanese",
+    "googleCode": "su",
+    "baiduCode": "sun",
+    "nameUnicode": "Basa sunda"
+  },
+  {
+    "name": "Tajik",
+    "googleCode": "tg",
+    "baiduCode": "tgk",
+    "nameUnicode": "Тоҷик"
+  },
+  {
+    "name": "Thai",
+    "googleCode": "th",
+    "baiduCode": "th",
+    "nameUnicode": "ไทย"
+  },
+  {
+    "name": "Tagalog",
+    "googleCode": "tl",
+    "baiduCode": "tgl",
+    "nameUnicode": null
+  },
+  {
+    "name": "Tamil",
+    "googleCode": "ta",
+    "baiduCode": "tam",
+    "nameUnicode": "தமிழ்"
+  },
+  {
+    "name": "Tatar",
+    "googleCode": "tt",
+    "baiduCode": "tt",
+    "nameUnicode": "Татар"
+  },
+  {
+    "name": "Telugu",
+    "googleCode": "te",
+    "baiduCode": "tel",
+    "nameUnicode": "తెలుగు"
+  },
+  {
+    "name": "Turkish",
+    "googleCode": "tr",
+    "baiduCode": "tr",
+    "nameUnicode": "Türk"
+  },
+  {
+    "name": "Uzbek",
+    "googleCode": "uz",
+    "baiduCode": "uzb",
+    "nameUnicode": "O'zbek"
+  },
+  {
+    "name": "Ukrainian",
+    "googleCode": "uk",
+    "baiduCode": "ukr",
+    "nameUnicode": "Український"
+  },
+  {
+    "name": "Urdu",
+    "googleCode": "ur",
+    "baiduCode": "urd",
+    "nameUnicode": "اردو"
+  },
+  {
+    "name": "Finnish",
+    "googleCode": "fi",
+    "baiduCode": "fin",
+    "nameUnicode": "Suomen"
+  },
+  {
+    "name": "French",
+    "googleCode": "fr",
+    "baiduCode": "fra",
+    "nameUnicode": "Français"
+  },
+  {
+    "name": "Hindi",
+    "googleCode": "hi",
+    "baiduCode": "hi",
+    "nameUnicode": "हिंदी"
+  },
+  {
+    "name": "Croatian",
+    "googleCode": "hr",
+    "baiduCode": "hrv",
+    "nameUnicode": "Hrvatski"
+  },
+  {
+    "name": "Czech",
+    "googleCode": "cs",
+    "baiduCode": "cs",
+    "nameUnicode": "České"
+  },
+  {
+    "name": "Swedish",
+    "googleCode": "sv",
+    "baiduCode": "swe",
+    "nameUnicode": "Svenska"
+  },
+  {
+    "name": "Scots Gaelic",
+    "googleCode": "gd",
+    "baiduCode": "sco",
+    "nameUnicode": "Na h-alba"
+  },
+  {
+    "name": "Estonian",
+    "googleCode": "et",
+    "baiduCode": "est",
+    "nameUnicode": "Eesti"
+  },
+  {
+    "name": "Esperanto",
+    "googleCode": "eo",
+    "baiduCode": "epo",
+    "nameUnicode": null
+  },
+  {
+    "name": "Javanese",
+    "googleCode": "jv",
+    "baiduCode": "jav",
+    "nameUnicode": "Jawa"
+  },
+  {
+    "name": "Japanese",
+    "googleCode": "ja",
+    "baiduCode": "jp",
+    "nameUnicode": "日本語"
+  },
+  {
+    "name": "Amharic",
+    "googleCode": "am",
+    "baiduCode": "amh",
+    "nameUnicode": "\u12a0\u121b\u122d\u129b"
+  },
+  {
+    "name": "Corsican",
+    "googleCode": "co",
+    "baiduCode": "cos",
+    "nameUnicode": "Corsu"
+  },
+  {
+    "name": "Frisian",
+    "googleCode": "fy",
+    "baiduCode": "fry",
+    "nameUnicode": "Frysk"
+  },
+  {
+    "name": "Hausa",
+    "googleCode": "ha",
+    "baiduCode": "hau",
+    "nameUnicode": null
+  },
+  {
+    "name": "Hawaiian",
+    "googleCode": "haw",
+    "baiduCode": "haw",
+    "nameUnicode": "\u014clelo Hawai\u02bbi"
+  },
+  {
+    "name": "Hmong",
+    "googleCode": "hmn",
+    "baiduCode": null,
+    "nameUnicode": null
+  },
+  {
+    "name": "Igbo",
+    "googleCode": "ig",
+    "baiduCode": "ibo",
+    "nameUnicode": null
+  },
+  {
+    "name": "Khmer",
+    "googleCode": "km",
+    "baiduCode": null,
+    "nameUnicode": "\u1781\u17d2\u1798\u17c2\u179a"
+  },
+  {
+    "name": "Kinyarwanda",
+    "googleCode": "rw",
+    "baiduCode": "kin",
+    "nameUnicode": null
+  },
+  {
+    "name": "Kurdish",
+    "googleCode": "ku",
+    "baiduCode": "kur",
+    "nameUnicode": "Kurd\u00ee"
+  },
+  {
+    "name": "Lao",
+    "googleCode": "lo",
+    "baiduCode": "lao",
+    "nameUnicode": "\u0ea5\u0eb2\u0ea7"
+  },
+  {
+    "name": "Luxembourgish",
+    "googleCode": "lb",
+    "baiduCode": "ltz",
+    "nameUnicode": "L\u00ebtzebuergesch"
+  },
+  {
+    "name": "Myanmar (Burmese)",
+    "googleCode": "my",
+    "baiduCode": "bur",
+    "nameUnicode": "\u1019\u103c\u1014\u103a\u1019\u102c (\u1019\u103c\u1014\u103a\u1019\u102c)"
+  },
+  {
+    "name": "Nyanja (Chichewa)",
+    "googleCode": "ny",
+    "baiduCode": "nya",
+    "nameUnicode": null
+  },
+  {
+    "name": "Odia (Oriya)",
+    "googleCode": "or",
+    "baiduCode": "ori",
+    "nameUnicode": "\u0b13\u0b21\u0b3f\u0b06 (\u0b13\u0b21\u0b3f\u0b06)"
+  },
+  {
+    "name": "Pashto",
+    "googleCode": "ps",
+    "baiduCode": "pus",
+    "nameUnicode": "\u067e\u069a\u062a\u0648"
+  },
+  {
+    "name": "Samoan",
+    "googleCode": "sm",
+    "baiduCode": "sm",
+    "nameUnicode": "Faasamoa"
+  },
+  {
+    "name": "Sesotho",
+    "googleCode": "st",
+    "baiduCode": null,
+    "nameUnicode": null
+  },
+  {
+    "name": "Shona",
+    "googleCode": "sn",
+    "baiduCode": "sna",
+    "nameUnicode": null
+  },
+  {
+    "name": "Sindhi",
+    "googleCode": "sd",
+    "baiduCode": "snd",
+    "nameUnicode": "\u0633\u0646\u068c\u064a"
+  },
+  {
+    "name": "Somali",
+    "googleCode": "so",
+    "baiduCode": "som",
+    "nameUnicode": "Soomaali"
+  },
+  {
+    "name": "Turkmen",
+    "googleCode": "tk",
+    "baiduCode": "tuk",
+    "nameUnicode": "T\u00fcrkmenler"
+  },
+  {
+    "name": "Uyghur",
+    "googleCode": "ug",
+    "baiduCode": null,
+    "nameUnicode": "\u0626\u06c7\u064a\u063a\u06c7\u0631"
+  },
+  {
+    "name": "Xhosa",
+    "googleCode": "xh",
+    "baiduCode": "xho",
+    "nameUnicode": "isiXhosa"
+  },
+  {
+    "name": "Yoruba",
+    "googleCode": "yo",
+    "baiduCode": "yor",
+    "nameUnicode": null
+  },
+  {
+    "name": "Zulu",
+    "googleCode": "zu",
+    "baiduCode": "zul",
+    "nameUnicode": null
+  }
+]

@@ -1,15 +1,21 @@
 package com.ebicep.chatplus.events
 
+import com.ebicep.chatplus.ChatPlus
 import com.ebicep.chatplus.ChatPlus.isEnabled
 import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.config.ConfigScreen
 import com.ebicep.chatplus.config.queueUpdateConfig
 import com.ebicep.chatplus.hud.ChatPlusScreen
+import com.ebicep.chatplus.translator.LanguageManager
+import com.ebicep.chatplus.translator.Translator
 import dev.architectury.event.CompoundEventResult
+import dev.architectury.event.events.client.ClientChatEvent
 import dev.architectury.event.events.client.ClientGuiEvent
 import dev.architectury.event.events.client.ClientLifecycleEvent
 import dev.architectury.event.events.client.ClientTickEvent
 import net.minecraft.client.gui.screens.ChatScreen
+import net.minecraft.network.chat.ChatType
+import net.minecraft.network.chat.Component
 
 
 object Events {
@@ -43,6 +49,16 @@ object Events {
                 return@register CompoundEventResult.interruptTrue(ChatPlusScreen(latestDefaultText))
             }
             return@register CompoundEventResult.pass()
+        }
+
+        ClientChatEvent.RECEIVED.register { type: ChatType.Bound, component: Component ->
+            ChatPlus.LOGGER.info("type: $type")
+            val unformattedText = component.string
+            LanguageManager.findLanguageFromName("English")?.let {
+                val translator = Translator(unformattedText, null, it)
+                translator.start()
+            }
+            CompoundEventResult.pass()
         }
     }
 

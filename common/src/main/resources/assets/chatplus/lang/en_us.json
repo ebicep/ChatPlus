@@ -34,5 +34,11 @@
   "chatPlus.chatTabs.name": "Name",
   "chatPlus.chatTabs.name.tooltip": "Name of the tab.",
   "chatPlus.chatTabs.pattern": "Pattern",
-  "chatPlus.chatTabs.pattern.tooltip": "Regex Pattern (Based on Raw Text, No style/formatting)"
+  "chatPlus.chatTabs.pattern.tooltip": "Regex Pattern (Based on Raw Text, No style/formatting)",
+  "chatPlus.translator.title": "Translator",
+  "chatPlus.translator.regexes": "Regex Patterns",
+  "chatPlus.translator.match": "Pattern",
+  "chatPlus.translator.match.tooltip": "Regex Pattern that matches chat messages to translate.",
+  "chatPlus.translator.senderNameGroupIndex": "Group Index",
+  "chatPlus.translator.senderNameGroupIndex.tooltip": "Group index of the sender's name in the regex pattern."
 }

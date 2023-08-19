@@ -11,6 +11,7 @@ import com.ebicep.chatplus.config.serializers.KeyWithModifier
 import com.ebicep.chatplus.hud.ChatManager
 import com.ebicep.chatplus.hud.ChatTab
 import com.ebicep.chatplus.hud.baseYOffset
+import com.ebicep.chatplus.translator.RegexMatch
 import com.mojang.blaze3d.platform.InputConstants
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -106,7 +107,9 @@ data class ConfigVariables(
     var keyMoveChat: InputConstants.Key = InputConstants.getKey("key.keyboard.right.control"),
     var keyCopyMessageWithModifier: KeyWithModifier = KeyWithModifier(InputConstants.getKey("key.keyboard.c"), 2),
 
-    ) {
+    var translatorRegexes: MutableList<RegexMatch> = mutableListOf()
+
+) {
 
     @Transient
     var chatWidth: Int = width
