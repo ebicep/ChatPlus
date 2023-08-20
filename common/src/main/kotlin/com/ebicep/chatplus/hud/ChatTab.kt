@@ -75,10 +75,11 @@ class ChatTab {
 //            if (pTag?.icon() != null) {
 //                i -= pTag.icon()!!.width + 4 + 2
 //            }
+        val componentWithTimeStamp: MutableComponent = pChatComponent.copy()
         if (Config.values.chatTimestampMode != TimestampMode.NONE && !pOnlyTrim) {
-            addTimestampToComponent(pChatComponent, 0)
+            addTimestampToComponent(componentWithTimeStamp, 0)
         }
-        val list = wrapComponents(pChatComponent, i, Minecraft.getInstance().font)
+        val list = wrapComponents(componentWithTimeStamp, i, Minecraft.getInstance().font)
         val flag = ChatManager.isChatFocused()
         for (j in list.indices) {
             val chatPlusLine = list[j]
@@ -100,7 +101,7 @@ class ChatTab {
             this.displayedMessages.removeAt(0)
         }
         if (!pOnlyTrim) {
-            this.messages.add(GuiMessage(pAddedTime, pChatComponent, pHeaderSignature, pTag))
+            this.messages.add(GuiMessage(pAddedTime, componentWithTimeStamp, pHeaderSignature, pTag))
             while (this.messages.size > Config.values.maxMessages) {
                 this.messages.removeAt(0)
             }
@@ -110,7 +111,7 @@ class ChatTab {
     /**
      * Adds timestamp to bottom of chat message, works for most chat formats
      */
-    private fun addTimestampToComponent(pChatComponent: Component, depth: Int) {
+    private fun addTimestampToComponent(pChatComponent: MutableComponent, depth: Int) {
         val previousHover = pChatComponent.style.hoverEvent
         if (previousHover != null) {
             when (previousHover.action) {
@@ -120,19 +121,14 @@ class ChatTab {
                 }
             }
         } else if (depth < 3) {
-//            val mixinStyle = pChatComponent.style as MixinStyle
-//            mixinStyle.setHoverEvent(HoverEvent(HoverEvent.Action.SHOW_TEXT, getTimestamp(false)))
-//            // only add if parent does not have a hover event
-//            pChatComponent.siblings.forEach {
-//                addTimestampToComponent(it, depth + 1)
-//            }
-
-//            if (pChatComponent.contents is TranslatableContents) {
-//                pChatComponent.contents.visit(FormattedText.StyledContentConsumer<MutableComponent> { style : Style, contents: String ->
-//                    style.hoverEvent = HoverEvent(HoverEvent.Action.SHOW_TEXT, getTimestamp(false))
-//                    Optional.empty()
-//                }, Style.EMPTY)
-//            }
+            pChatComponent.withStyle {
+                it.withHoverEvent(HoverEvent(HoverEvent.Action.SHOW_TEXT, getTimestamp(false)))
+            }
+            pChatComponent.siblings.forEach {
+                if (it is MutableComponent) {
+                    addTimestampToComponent(it, depth + 1)
+                }
+            }
         }
     }
 
