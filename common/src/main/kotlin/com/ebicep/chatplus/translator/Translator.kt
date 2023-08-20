@@ -15,7 +15,7 @@ class Translator(val message: String, val from: Language?, val to: Language) : T
     override fun run() {
         var matchedRegex: String? = null
         var senderName: String? = null
-        val text = message
+        var text = message
 
         for (regexMatch in Config.values.translatorRegexes) {
             var regexFixed: String = regexMatch.match
@@ -41,8 +41,9 @@ class Translator(val message: String, val from: Language?, val to: Language) : T
         if (senderName == null) {
             return
         }
-        val translatedMessage: TranslateResult = translate(text.replace(matchedRegex, "")) ?: return
-        if (translatedMessage.translatedText == message) {
+        text = text.replace(matchedRegex, "").trim()
+        val translatedMessage: TranslateResult = translate(text) ?: return
+        if (translatedMessage.translatedText.trim().equals(text, ignoreCase = true)) {
             return
         }
         var fromStr: String? = null
