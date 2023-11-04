@@ -84,21 +84,22 @@ object ChatManager {
      * Width of chat window, raw value not scaled
      */
     fun getWidth(): Int {
+        var width = Config.values.chatWidth
         val guiWidth = Minecraft.getInstance().window.guiScaledWidth
         val minWidthScaled = getMinWidthScaled()
-        val lowerThanMin = Config.values.chatWidth < minWidthScaled
+        val lowerThanMin = width < minWidthScaled
         val hasSpace = guiWidth - getX() - 1 >= minWidthScaled
         if (lowerThanMin && hasSpace) {
-            Config.values.chatWidth = minWidthScaled
+            width = minWidthScaled
             selectedTab.rescaleChat()
         }
-        if (Config.values.chatWidth <= 0) {
-            Config.values.chatWidth = 200.coerceAtMost(guiWidth - getX() - 1)
+        if (width <= 0) {
+            width = 200.coerceAtMost(guiWidth - getX() - 1)
         }
-        if (getX() + Config.values.chatWidth >= guiWidth) {
-            Config.values.chatWidth = guiWidth - getX() - 1
+        if (getX() + width >= guiWidth) {
+            width = guiWidth - getX() - 1
         }
-        return Config.values.chatWidth
+        return width
     }
 
     fun getBackgroundWidth(): Float {
@@ -110,23 +111,24 @@ object ChatManager {
      * Height of chat window, raw value not scaled
      */
     fun getHeight(): Int {
+        var height = Config.values.chatHeight
         val minHeightScaled = getMinHeightScaled()
         val lowerThanMin = Config.values.chatHeight < minHeightScaled
         val hasSpace = getY() - 1 >= minHeightScaled
         if (lowerThanMin && hasSpace) {
-            Config.values.chatHeight = minHeightScaled
+            height = minHeightScaled
             selectedTab.rescaleChat()
         }
         if (getY() - Config.values.chatHeight <= 0) {
-            Config.values.chatHeight = getY() - 1
+            height = getY() - 1
         }
-        if (Config.values.chatHeight >= getY()) {
-            Config.values.chatHeight = getY() - 1
+        if (height >= getY()) {
+            height = getY() - 1
         }
         return if (isChatFocused()) {
-            Config.values.chatHeight
+            height
         } else {
-            (Config.values.chatHeight * .5).roundToInt()
+            (height * .5).roundToInt()
         }
     }
 

@@ -28,8 +28,6 @@ object ChatRenderer {
         // updating chat box to previous relative position
         if (screenWidth != previousScreenWidth && previousScreenWidth != -1) {
             Config.values.x = (screenWidth * Config.values.x / previousScreenWidth.toDouble()).roundToInt()
-            Config.values.chatWidth =
-                (screenWidth * Config.values.chatWidth / previousScreenWidth.toDouble()).roundToInt()
         }
         if (screenHeight != previousScreenHeight && previousScreenHeight != -1) {
             val oldY = Config.values.y
@@ -48,9 +46,6 @@ object ChatRenderer {
                 (oldY == -baseYOffset && oldHeight >= previousScreenHeight - baseYOffset - 1)
             ) {
                 Config.values.chatHeight = screenHeight - baseYOffset - 1
-            } else {
-                Config.values.chatHeight =
-                    (screenHeight * Config.values.chatHeight / previousScreenHeight.toDouble()).roundToInt()
             }
         }
         previousScreenWidth = screenWidth
