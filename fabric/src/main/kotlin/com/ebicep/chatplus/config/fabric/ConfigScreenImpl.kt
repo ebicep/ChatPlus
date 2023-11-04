@@ -40,6 +40,13 @@ object ConfigScreenImpl {
                 1000,
                 10_000_000
             ) { Config.values.maxMessages = it })
+        general.addEntry(
+            entryBuilder.intSlider(
+                "chatPlus.chatSettings.maxCommandSuggestions",
+                Config.values.maxCommandSuggestions,
+                10,
+                30
+            ) { Config.values.maxCommandSuggestions = it })
         general.addEntry(entryBuilder.percentSlider("chatPlus.chatSettings.chatTextSize", Config.values.scale) { Config.values.scale = it })
         general.addEntry(
             entryBuilder.percentSlider(

@@ -14,6 +14,8 @@
   "chatPlus.chatSettings.chatTextSize.tooltip": "Changes the chat text size. This does not effect width/height.",
   "chatPlus.chatSettings.maxMessages": "Max Messages",
   "chatPlus.chatSettings.maxMessages.tooltip": "The maximum number of messages to store. Minecraft's default is 100. Increasing this will increase memory usage.",
+  "chatPlus.chatSettings.maxCommandSuggestions": "Max Command Suggestions",
+  "chatPlus.chatSettings.maxCommandSuggestions.tooltip": "The maximum number of commands to suggest. Minecraft's default is 10. The suggestions might go past your screen height.",
   "chatPlus.chatSettings.textOpacity": "Text Opacity",
   "chatPlus.chatSettings.textOpacity.tooltip": "Changes the opacity of the chat text.",
   "chatPlus.chatSettings.backgroundOpacity": "Background Opacity",

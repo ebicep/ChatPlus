@@ -54,7 +54,8 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
         editBox.setResponder { str: String -> onEdited(str) }
         editBox.setCanLoseFocus(false)
         addWidget(editBox)
-        commandSuggestions = CommandSuggestions(minecraft!!, this, editBox, font, false, false, 1, 10, true, -805306368)
+        commandSuggestions =
+            CommandSuggestions(minecraft!!, this, editBox, font, false, false, 1, Config.values.maxCommandSuggestions, true, -805306368)
         commandSuggestions!!.updateCommandInfo()
         setInitialFocus(editBox)
     }

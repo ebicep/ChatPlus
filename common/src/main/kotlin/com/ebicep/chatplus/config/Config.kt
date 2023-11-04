@@ -70,6 +70,11 @@ object Config {
         } else if (values.maxMessages > maxMaxMessages) {
             values.maxMessages = maxMaxMessages
         }
+        if (values.maxCommandSuggestions < minMaxCommandSuggestions) {
+            values.maxCommandSuggestions = minMaxCommandSuggestions
+        } else if (values.maxCommandSuggestions > maxMaxCommandSuggestions) {
+            values.maxCommandSuggestions = maxMaxCommandSuggestions
+        }
         if (values.chatTabs.isEmpty()) {
             values.chatTabs.add(ChatTab("All", "(?s).*"))
         }
@@ -81,8 +86,10 @@ object Config {
 
 }
 
-val minMaxMessages = 1000
-val maxMaxMessages = 10_000_000
+const val minMaxMessages = 1000
+const val maxMaxMessages = 10_000_000
+const val minMaxCommandSuggestions = 10
+const val maxMaxCommandSuggestions = 30
 
 @Serializable
 data class ConfigVariables(
@@ -93,6 +100,7 @@ data class ConfigVariables(
     var width: Int = 320,
     var scale: Float = 1f,
     var maxMessages: Int = 1000,
+    var maxCommandSuggestions: Int = 15,
     var textOpacity: Float = 1f,
     var backgroundOpacity: Float = .5f,
     var lineSpacing: Float = 0f,
