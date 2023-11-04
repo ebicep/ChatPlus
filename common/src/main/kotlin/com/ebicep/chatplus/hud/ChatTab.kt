@@ -56,7 +56,7 @@ class ChatTab {
     var chatScrollbarPos: Int = 0
 
     @Transient
-    var updateChat = false
+    var newMessageSinceScroll = false
 
     @Transient
     var resetDisplayMessageAtTick = -1L
@@ -86,7 +86,7 @@ class ChatTab {
             val formattedCharSequence = chatPlusLine.first
             val content = chatPlusLine.second
             if (flag && chatScrollbarPos > 0) {
-                updateChat = true
+                newMessageSinceScroll = true
                 scrollChat(1)
             }
             val lastComponent = j == list.size - 1
@@ -266,7 +266,7 @@ class ChatTab {
 
     fun resetChatScroll() {
         chatScrollbarPos = 0
-        this.updateChat = false
+        this.newMessageSinceScroll = false
     }
 
     fun scrollChat(pPosInc: Int) {
@@ -278,7 +278,7 @@ class ChatTab {
         }
         if (chatScrollbarPos <= 0) {
             chatScrollbarPos = 0
-            this.updateChat = false
+            this.newMessageSinceScroll = false
         }
     }
 

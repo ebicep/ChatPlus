@@ -32,7 +32,7 @@ dependencies {
     modApi("net.fabricmc.fabric-api:fabric-api:${rootProject.property("fabric_api_version")}")
     // Remove the next line if you don't want to depend on the API
     modApi("dev.architectury:architectury-fabric:${rootProject.property("architectury_version")}")
-    modApi("me.shedaniel.cloth:cloth-config-fabric:11.1.106") {
+    modApi("me.shedaniel.cloth:cloth-config-fabric:12.0.109") {
         exclude(group = "net.fabricmc.fabric-api")
     }
 

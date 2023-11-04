@@ -39,6 +39,7 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
     private var initial: String = pInitial
     var commandSuggestions: CommandSuggestions? = null
 
+
     override fun init() {
         historyPos = ChatManager.sentMessages.size
         input = object : EditBox(minecraft!!.fontFilterFishy, 4, height - 12, width - 4, 12, Component.translatable("chatPlus.editBox")) {
@@ -48,7 +49,7 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
         }
         val editBox = input as EditBox
         editBox.setMaxLength(256 * 5) // default 256
-        editBox.setBordered(false)
+        editBox.isBordered = false
         editBox.value = initial
         editBox.setResponder { str: String -> onEdited(str) }
         editBox.setCanLoseFocus(false)
@@ -67,10 +68,6 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
 
     override fun removed() {
         ChatManager.selectedTab.resetChatScroll()
-    }
-
-    override fun tick() {
-        input!!.tick()
     }
 
     private fun onEdited(str: String) {
@@ -144,7 +141,7 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
         Minecraft.getInstance().keyboardHandler.clipboard = str
     }
 
-    override fun mouseScrolled(pMouseX: Double, pMouseY: Double, pDelta: Double): Boolean {
+    override fun mouseScrolled(pMouseX: Double, pMouseY: Double, f: Double, pDelta: Double): Boolean {
         var delta = Mth.clamp(pDelta, -1.0, 1.0)
         return if (commandSuggestions!!.mouseScrolled(delta)) {
             true
@@ -325,6 +322,9 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
                 guiGraphics.renderComponentHoverEffect(font, style, pMouseX, pMouseY)
             }
         }
+    }
+
+    override fun renderBackground(guiGraphics: GuiGraphics, i: Int, j: Int, f: Float) {
     }
 
     override fun isPauseScreen(): Boolean {

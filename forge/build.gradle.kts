@@ -41,7 +41,7 @@ dependencies {
     forge("net.minecraftforge:forge:${rootProject.property("forge_version")}")
     // Remove the next line if you don't want to depend on the API
     modApi("dev.architectury:architectury-forge:${rootProject.property("architectury_version")}")
-    modApi("me.shedaniel.cloth:cloth-config-forge:11.1.106")
+    modApi("me.shedaniel.cloth:cloth-config-forge:12.0.109")
 
     common(project(":common", "namedElements")) { isTransitive = false }
     shadowCommon(project(":common", "transformProductionForge")) { isTransitive = false }
