@@ -1,6 +1,5 @@
 package com.ebicep.chatplus.events
 
-import com.ebicep.chatplus.ChatPlus
 import com.ebicep.chatplus.ChatPlus.isEnabled
 import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.config.ConfigScreen
@@ -9,17 +8,13 @@ import com.ebicep.chatplus.hud.ChatPlusScreen
 import com.ebicep.chatplus.translator.LanguageManager
 import com.ebicep.chatplus.translator.Translator
 import dev.architectury.event.CompoundEventResult
-import dev.architectury.event.events.client.ClientChatEvent
-import dev.architectury.event.events.client.ClientGuiEvent
-import dev.architectury.event.events.client.ClientLifecycleEvent
-import dev.architectury.event.events.client.ClientTickEvent
+import dev.architectury.event.events.client.*
 import net.minecraft.client.gui.screens.ChatScreen
 import net.minecraft.network.chat.ChatType
 import net.minecraft.network.chat.Component
 
 
 object Events {
-
 
     var latestDefaultText = ""
     var currentTick = 0L
@@ -52,13 +47,20 @@ object Events {
         }
 
         ClientChatEvent.RECEIVED.register { type: ChatType.Bound, component: Component ->
-            ChatPlus.LOGGER.info("type: $type")
-            val unformattedText = component.string
-            LanguageManager.findLanguageFromName("English")?.let {
-                val translator = Translator(unformattedText, null, it)
-                translator.start()
-            }
+            handleTranslate(component)
             CompoundEventResult.pass()
+        }
+        ClientSystemMessageEvent.RECEIVED.register { component: Component ->
+            handleTranslate(component)
+            CompoundEventResult.pass()
+        }
+    }
+
+    private fun handleTranslate(component: Component) {
+        val unformattedText = component.string
+        LanguageManager.findLanguageFromName("English")?.let {
+            val translator = Translator(unformattedText, null, it)
+            translator.start()
         }
     }
 
