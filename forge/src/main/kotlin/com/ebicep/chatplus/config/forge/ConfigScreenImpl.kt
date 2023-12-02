@@ -4,10 +4,13 @@ import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.config.TimestampMode
 import com.ebicep.chatplus.config.queueUpdateConfig
 import com.ebicep.chatplus.hud.ChatTab
+import com.ebicep.chatplus.translator.LanguageManager
 import com.ebicep.chatplus.translator.RegexMatch
+import com.ebicep.chatplus.translator.languages
 import com.mojang.blaze3d.platform.InputConstants
 import me.shedaniel.clothconfig2.api.*
 import me.shedaniel.clothconfig2.gui.entries.*
+import me.shedaniel.clothconfig2.impl.builders.DropdownMenuBuilder
 import net.minecraft.client.gui.screens.Screen
 import net.minecraft.network.chat.Component
 import java.util.*
@@ -143,6 +146,30 @@ object ConfigScreenImpl {
 
     private fun addTranslatorRegexOptions(builder: ConfigBuilder, entryBuilder: ConfigEntryBuilder) {
         val chatTabs = builder.getOrCreateCategory(Component.translatable("chatPlus.translator.title"))
+        val languageNames = languages.map {
+            it.name
+        }
+        chatTabs.addEntry(entryBuilder.startDropdownMenu(
+            Component.literal("Translate To"),
+            DropdownMenuBuilder.TopCellElementBuilder.of(Config.values.translateTo) { str -> str },
+            DropdownMenuBuilder.CellCreatorBuilder.of()
+        )
+            .setDefaultValue(Config.values.translateTo)
+            .setSelections(languageNames)
+            .setErrorSupplier { str: String ->
+                if (languageNames.contains(str)) {
+                    Optional.empty()
+                } else {
+                    Optional.of(Component.literal("Invalid Language"))
+                }
+            }
+            .setSaveConsumer { str: String ->
+                Config.values.translateTo = str
+                LanguageManager.updateTranslateLanguages()
+                queueUpdateConfig = true
+            }
+            .build()
+        )
         chatTabs.addEntry(
             getCustomListOption(
                 "chatPlus.translator.regexes",

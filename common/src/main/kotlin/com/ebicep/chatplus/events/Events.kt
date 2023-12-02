@@ -5,8 +5,8 @@ import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.config.ConfigScreen
 import com.ebicep.chatplus.config.queueUpdateConfig
 import com.ebicep.chatplus.hud.ChatPlusScreen
-import com.ebicep.chatplus.translator.LanguageManager
 import com.ebicep.chatplus.translator.Translator
+import com.ebicep.chatplus.translator.languageTo
 import dev.architectury.event.CompoundEventResult
 import dev.architectury.event.events.client.*
 import net.minecraft.client.gui.screens.ChatScreen
@@ -58,10 +58,7 @@ object Events {
 
     private fun handleTranslate(component: Component) {
         val unformattedText = component.string
-        LanguageManager.findLanguageFromName("English")?.let {
-            val translator = Translator(unformattedText, null, it)
-            translator.start()
-        }
+        languageTo?.let { Translator(unformattedText, null, it).start() }
     }
 
 }

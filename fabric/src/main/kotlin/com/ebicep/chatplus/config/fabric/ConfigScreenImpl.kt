@@ -4,10 +4,13 @@ import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.config.TimestampMode
 import com.ebicep.chatplus.config.queueUpdateConfig
 import com.ebicep.chatplus.hud.ChatTab
+import com.ebicep.chatplus.translator.LanguageManager
 import com.ebicep.chatplus.translator.RegexMatch
+import com.ebicep.chatplus.translator.languages
 import com.mojang.blaze3d.platform.InputConstants
 import me.shedaniel.clothconfig2.api.*
 import me.shedaniel.clothconfig2.gui.entries.*
+import me.shedaniel.clothconfig2.impl.builders.DropdownMenuBuilder
 import net.minecraft.client.gui.screens.Screen
 import net.minecraft.network.chat.Component
 import java.util.*
@@ -17,6 +20,7 @@ object ConfigScreenImpl {
 
     @JvmStatic
     fun getConfigScreen(previousScreen: Screen? = null): Screen {
+//        return ClothConfigDemo.getConfigBuilderWithDemo().build()
         val builder: ConfigBuilder = ConfigBuilder.create()
             .setParentScreen(previousScreen)
             .setTitle(Component.translatable("chatPlus.title"))
@@ -143,6 +147,54 @@ object ConfigScreenImpl {
 
     private fun addTranslatorRegexOptions(builder: ConfigBuilder, entryBuilder: ConfigEntryBuilder) {
         val chatTabs = builder.getOrCreateCategory(Component.translatable("chatPlus.translator.title"))
+        val languageNames = languages.map {
+            it.name
+        }
+        chatTabs.addEntry(entryBuilder.startDropdownMenu(
+            Component.translatable("chatPlus.translator.translateTo"),
+            DropdownMenuBuilder.TopCellElementBuilder.of(Config.values.translateTo) { str -> str },
+            DropdownMenuBuilder.CellCreatorBuilder.of()
+        )
+            .setTooltip(Component.translatable("chatPlus.translator.translateTo.tooltip"))
+            .setDefaultValue(Config.values.translateTo)
+            .setSelections(languageNames)
+            .setErrorSupplier { str: String ->
+                if (languageNames.contains(str)) {
+                    Optional.empty()
+                } else {
+                    Optional.of(Component.translatable("chatPlus.translator.translateInvalid"))
+                }
+            }
+            .setSaveConsumer { str: String ->
+                Config.values.translateTo = str
+                LanguageManager.updateTranslateLanguages()
+                queueUpdateConfig = true
+            }
+            .build()
+        )
+        chatTabs.addEntry(entryBuilder.startDropdownMenu(
+            Component.translatable("chatPlus.translator.translateSelf"),
+            DropdownMenuBuilder.TopCellElementBuilder.of(Config.values.translateSelf) { str -> str },
+            DropdownMenuBuilder.CellCreatorBuilder.of()
+        )
+            .setTooltip(Component.translatable("chatPlus.translator.translateSelf.tooltip"))
+            .setDefaultValue(Config.values.translateSelf)
+            .setSelections(languageNames)
+            .setErrorSupplier { str: String ->
+                if (languageNames.contains(str)) {
+                    Optional.empty()
+                } else {
+                    Optional.of(Component.translatable("chatPlus.translator.translateInvalid"))
+                }
+            }
+            .setSaveConsumer { str: String ->
+                Config.values.translateSelf = str
+                LanguageManager.updateTranslateLanguages()
+                queueUpdateConfig = true
+            }
+            .build()
+        )
+
         chatTabs.addEntry(
             getCustomListOption(
                 "chatPlus.translator.regexes",
