@@ -28,6 +28,7 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
 
     private val USAGE_TEXT: Component = Component.translatable("chat_plus_screen.usage")
     private var historyBuffer = ""
+
     /**
      * keeps position of which chat message you will select when you press up, (does not increase for duplicated messages
      * sent immediately after each other)
@@ -37,6 +38,7 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
     /** Chat entry field  */
     private var inputTranslatePrefix: EditBox? = null
     private var input: EditBox? = null
+
     /** is the text that appears when you press the chat key and the input box appears pre-filled  */
     private var initial: String = pInitial
     private var editBoxWidth: Int = 0
@@ -369,13 +371,23 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
         // translate speak input prefix box
         guiGraphics.fill(
             translateSpeakStartX + 1,
-            height - EDIT_BOX_HEIGHT * 2 - 2,
-            width - 2,
+            height - EDIT_BOX_HEIGHT * 2 - 3,
+            width,
             height - EDIT_BOX_HEIGHT - 2,
             minecraft!!.options.getBackgroundColor(Int.MIN_VALUE)
         )
         inputTranslatePrefix!!.render(guiGraphics, pMouseX, pMouseY, pPartialTick)
-
+        if (
+            pMouseX in (translateSpeakStartX + 1) until width &&
+            pMouseY in (height - EDIT_BOX_HEIGHT * 2 - 3) until (height - EDIT_BOX_HEIGHT - 2)
+        ) {
+            guiGraphics.renderTooltip(font, Component.translatable("chatPlus.translator.translateSpeakPrefix.tooltip"), pMouseX, pMouseY)
+        } else if (
+            pMouseX in (editBoxWidth + TRANSLATE_SPEAK_X_OFFSET) until width &&
+            pMouseY in (height - EDIT_BOX_HEIGHT) until height
+        ) {
+            guiGraphics.renderTooltip(font, Component.translatable("chatPlus.translator.translateSpeak.chat.tooltip"), pMouseX, pMouseY)
+        }
 
         super.render(guiGraphics, pMouseX, pMouseY, pPartialTick)
 
