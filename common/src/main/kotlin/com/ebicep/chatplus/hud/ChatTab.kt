@@ -336,7 +336,7 @@ class ChatTab {
 
 
     companion object {
-        val PADDING = 2
+        const val PADDING = 2
 
         private val INDENT = FormattedCharSequence.codepoint(32, Style.EMPTY)
 

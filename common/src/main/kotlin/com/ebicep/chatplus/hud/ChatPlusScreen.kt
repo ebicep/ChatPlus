@@ -65,11 +65,9 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
             }
         }
         var editBox = input as EditBox
-        editBox.setMaxLength(256 * 5) // default 256
-        editBox.isBordered = false
+        initializeBaseEditBox(editBox)
         editBox.value = initial
         editBox.setResponder { str: String -> onEdited(str) }
-        editBox.setCanLoseFocus(true)
         addWidget(editBox)
         setInitialFocus(editBox)
         commandSuggestions =
@@ -77,23 +75,23 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
         commandSuggestions!!.setAllowHiding(false)
         commandSuggestions!!.updateCommandInfo()
 
-        inputTranslatePrefix = object : EditBox(
+        inputTranslatePrefix = EditBox(
             minecraft!!.fontFilterFishy,
             translateSpeakStartX + 3,
             height - EDIT_BOX_HEIGHT * 2 + 1,
             width - translateSpeakStartX - 2,
             EDIT_BOX_HEIGHT,
             Component.translatable("chatPlus.editBox")
-        ) {
-            override fun createNarrationMessage(): MutableComponent {
-                return super.createNarrationMessage().append(commandSuggestions!!.narrationMessage)
-            }
-        }
+        )
         editBox = inputTranslatePrefix as EditBox
+        initializeBaseEditBox(editBox)
+        addWidget(editBox)
+    }
+
+    private fun initializeBaseEditBox(editBox: EditBox) {
         editBox.setMaxLength(256 * 5) // default 256
         editBox.isBordered = false
         editBox.setCanLoseFocus(true)
-        addWidget(editBox)
     }
 
     override fun resize(pMinecraft: Minecraft, pWidth: Int, pHeight: Int) {
@@ -121,31 +119,38 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
                 (copyMessageModifier == 1.toShort() && hasAltDown()) ||
                 (copyMessageModifier == 2.toShort() && hasControlDown()) ||
                 (copyMessageModifier == 4.toShort() && hasShiftDown())
-        return if (commandSuggestions!!.keyPressed(pKeyCode, pScanCode, pModifiers)) {
-            true
-        } else if (
+        return when {
+            commandSuggestions!!.keyPressed(pKeyCode, pScanCode, pModifiers) -> {
+                true
+            }
+
             copiedMessageCooldown < Events.currentTick &&
-            InputConstants.isKeyDown(window, copyMessage.key.value) &&
-            copyMessageModifierDown
-        ) {
-            copiedMessageCooldown = Events.currentTick + 20
-            ChatManager.selectedTab.getMessageAt(lastMouseX.toDouble(), lastMouseY.toDouble())?.let {
-                copyToClipboard(it.content)
-                lastCopiedMessage = Pair(it.line, Events.currentTick + 60)
+                    InputConstants.isKeyDown(window, copyMessage.key.value) &&
+                    copyMessageModifierDown -> {
+                copiedMessageCooldown = Events.currentTick + 20
+                ChatManager.selectedTab.getMessageAt(lastMouseX.toDouble(), lastMouseY.toDouble())?.let {
+                    copyToClipboard(it.content)
+                    lastCopiedMessage = Pair(it.line, Events.currentTick + 60)
+                }
+                true
             }
-            true
-        } else if (super.keyPressed(pKeyCode, pScanCode, pModifiers)) {
-            true
-        } else if (pKeyCode == 256) { // escape
-            minecraft!!.setScreen(null as Screen?)
-            true
-        } else if (pKeyCode == 257 || pKeyCode == 335) { // enter
-            if (handleChatInput(input!!.value, true)) {
-                minecraft!!.setScreen(null as Screen?)
+
+            super.keyPressed(pKeyCode, pScanCode, pModifiers) -> {
+                true
             }
-            true
-        } else {
-            when (pKeyCode) {
+
+            else -> when (pKeyCode) {
+                256 -> { // escape
+                    minecraft!!.setScreen(null as Screen?)
+                    true
+                }
+
+                257, 335 -> { // enter
+                    if (handleChatInput(input!!.value, true)) {
+                        minecraft!!.setScreen(null as Screen?)
+                    }
+                    true
+                }
                 // cycle through own sent messages
                 265 -> { // up arrow
                     moveInHistory(-1)
@@ -343,10 +348,56 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
     override fun render(guiGraphics: GuiGraphics, pMouseX: Int, pMouseY: Int, pPartialTick: Float) {
         lastMouseX = pMouseX
         lastMouseY = pMouseY
-        // input box
-        guiGraphics.fill(0, height - EDIT_BOX_HEIGHT, editBoxWidth + 5, height, minecraft!!.options.getBackgroundColor(Int.MIN_VALUE))
-        input!!.render(guiGraphics, pMouseX, pMouseY, pPartialTick)
-        // translate speak
+
+        renderInputBox(guiGraphics, pMouseX, pMouseY, pPartialTick)
+        renderTranslateSpeakToggle(guiGraphics)
+        renderTranslateSpeakPrefixInputBox(guiGraphics, pMouseX, pMouseY, pPartialTick)
+
+        super.render(guiGraphics, pMouseX, pMouseY, pPartialTick)
+
+        // brigadier
+        commandSuggestions!!.render(guiGraphics, pMouseX, pMouseY)
+
+        // hoverables
+        val guiMessageTag = ChatManager.selectedTab.getMessageTagAt(pMouseX.toDouble(), pMouseY.toDouble())
+        if (guiMessageTag?.text() != null) {
+            //guiGraphics.renderTooltip(font, font.split(guiMessageTag.text()!!, 210), pMouseX, pMouseY)
+        } else {
+            val style = getComponentStyleAt(pMouseX.toDouble(), pMouseY.toDouble())
+            if (style?.hoverEvent != null) {
+                guiGraphics.renderComponentHoverEffect(font, style, pMouseX, pMouseY)
+            }
+        }
+    }
+
+    private fun renderTranslateSpeakPrefixInputBox(
+        guiGraphics: GuiGraphics,
+        pMouseX: Int,
+        pMouseY: Int,
+        pPartialTick: Float
+    ) {
+        guiGraphics.fill(
+            translateSpeakStartX + 1,
+            height - EDIT_BOX_HEIGHT * 2 - 3,
+            width,
+            height - EDIT_BOX_HEIGHT - 2,
+            minecraft!!.options.getBackgroundColor(Int.MIN_VALUE)
+        )
+        inputTranslatePrefix!!.render(guiGraphics, pMouseX, pMouseY, pPartialTick)
+        if (
+            pMouseX in (translateSpeakStartX + 1) until width &&
+            pMouseY in (height - EDIT_BOX_HEIGHT * 2 - 3) until (height - EDIT_BOX_HEIGHT - 2)
+        ) {
+            guiGraphics.renderTooltip(font, Component.translatable("chatPlus.translator.translateSpeakPrefix.tooltip"), pMouseX, pMouseY)
+        } else if (
+            pMouseX in (editBoxWidth + TRANSLATE_SPEAK_X_OFFSET) until width &&
+            pMouseY in (height - EDIT_BOX_HEIGHT) until height
+        ) {
+            guiGraphics.renderTooltip(font, Component.translatable("chatPlus.translator.translateSpeak.chat.tooltip"), pMouseX, pMouseY)
+        }
+    }
+
+    private fun renderTranslateSpeakToggle(guiGraphics: GuiGraphics) {
         guiGraphics.fill(
             translateSpeakStartX,
             height - EDIT_BOX_HEIGHT,
@@ -369,42 +420,16 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
                 EDIT_BOX_HEIGHT - 1,
                 (0xFF55FF55).toInt()
             )
-        // translate speak input prefix box
-        guiGraphics.fill(
-            translateSpeakStartX + 1,
-            height - EDIT_BOX_HEIGHT * 2 - 3,
-            width,
-            height - EDIT_BOX_HEIGHT - 2,
-            minecraft!!.options.getBackgroundColor(Int.MIN_VALUE)
-        )
-        inputTranslatePrefix!!.render(guiGraphics, pMouseX, pMouseY, pPartialTick)
-        if (
-            pMouseX in (translateSpeakStartX + 1) until width &&
-            pMouseY in (height - EDIT_BOX_HEIGHT * 2 - 3) until (height - EDIT_BOX_HEIGHT - 2)
-        ) {
-            guiGraphics.renderTooltip(font, Component.translatable("chatPlus.translator.translateSpeakPrefix.tooltip"), pMouseX, pMouseY)
-        } else if (
-            pMouseX in (editBoxWidth + TRANSLATE_SPEAK_X_OFFSET) until width &&
-            pMouseY in (height - EDIT_BOX_HEIGHT) until height
-        ) {
-            guiGraphics.renderTooltip(font, Component.translatable("chatPlus.translator.translateSpeak.chat.tooltip"), pMouseX, pMouseY)
-        }
+    }
 
-        super.render(guiGraphics, pMouseX, pMouseY, pPartialTick)
-
-        // brigadier
-        commandSuggestions!!.render(guiGraphics, pMouseX, pMouseY)
-
-        // hoverables
-        val guiMessageTag = ChatManager.selectedTab.getMessageTagAt(pMouseX.toDouble(), pMouseY.toDouble())
-        if (guiMessageTag?.text() != null) {
-            //guiGraphics.renderTooltip(font, font.split(guiMessageTag.text()!!, 210), pMouseX, pMouseY)
-        } else {
-            val style = getComponentStyleAt(pMouseX.toDouble(), pMouseY.toDouble())
-            if (style?.hoverEvent != null) {
-                guiGraphics.renderComponentHoverEffect(font, style, pMouseX, pMouseY)
-            }
-        }
+    private fun renderInputBox(
+        guiGraphics: GuiGraphics,
+        pMouseX: Int,
+        pMouseY: Int,
+        pPartialTick: Float
+    ) {
+        guiGraphics.fill(0, height - EDIT_BOX_HEIGHT, editBoxWidth + 5, height, minecraft!!.options.getBackgroundColor(Int.MIN_VALUE))
+        input!!.render(guiGraphics, pMouseX, pMouseY, pPartialTick)
     }
 
     override fun renderBackground(guiGraphics: GuiGraphics, i: Int, j: Int, f: Float) {
@@ -498,7 +523,6 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
                 }
                 list
             }
-            //return StringUtil.trimChatMessage(normalizeSpace)
         }
     }
 

@@ -148,12 +148,4 @@ data class ConfigVariables(
             ChatManager.selectedTab.rescaleChat()
         }
 
-//    fun getKeyCopyMessageModifier(): InputConstants.Key? {
-//        when(keyCopyMessageModifier) {
-//            1 -> return InputConstants.getKey("key.keyboard.left.shift")
-//            1 -> return InputConstants.getKey("key.keyboard.left.shift")
-//            1 -> return InputConstants.getKey("key.keyboard.left.shift")
-//            else -> return null
-//        }
-//    }
 }

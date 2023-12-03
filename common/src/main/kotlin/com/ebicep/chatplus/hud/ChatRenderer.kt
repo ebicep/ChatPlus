@@ -22,34 +22,7 @@ object ChatRenderer {
     private var previousScreenHeight = -1
 
     fun render(guiGraphics: GuiGraphics, guiTicks: Int, mouseX: Int, mouseY: Int) {
-        val screenWidth = Minecraft.getInstance().window.guiScaledWidth
-        val screenHeight = Minecraft.getInstance().window.guiScaledHeight
-
-        // updating chat box to previous relative position
-        if (screenWidth != previousScreenWidth && previousScreenWidth != -1) {
-            Config.values.x = (screenWidth * Config.values.x / previousScreenWidth.toDouble()).roundToInt()
-        }
-        if (screenHeight != previousScreenHeight && previousScreenHeight != -1) {
-            val oldY = Config.values.y
-            if (oldY <= 0) {
-                Config.values.y = -baseYOffset
-            } else {
-                val oldRatio = oldY / previousScreenHeight.toDouble()
-                var newY = (screenHeight * oldRatio).roundToInt()
-                if (newY > screenHeight - baseYOffset) {
-                    newY = -baseYOffset
-                }
-                Config.values.y = newY
-            }
-            val oldHeight = Config.values.chatHeight
-            if ((oldY > 0 && oldHeight >= oldY - 1) ||
-                (oldY == -baseYOffset && oldHeight >= previousScreenHeight - baseYOffset - 1)
-            ) {
-                Config.values.chatHeight = screenHeight - baseYOffset - 1
-            }
-        }
-        previousScreenWidth = screenWidth
-        previousScreenHeight = screenHeight
+        handleScreenResize()
 
         val mc = Minecraft.getInstance()
         val poseStack = guiGraphics.pose()
@@ -187,6 +160,36 @@ object ChatRenderer {
             )
         }
         poseStack.popPose()
+    }
+
+    private fun handleScreenResize() {
+        val screenWidth = Minecraft.getInstance().window.guiScaledWidth
+        val screenHeight = Minecraft.getInstance().window.guiScaledHeight
+
+        if (screenWidth != previousScreenWidth && previousScreenWidth != -1) {
+            Config.values.x = (screenWidth * Config.values.x / previousScreenWidth.toDouble()).roundToInt()
+        }
+        if (screenHeight != previousScreenHeight && previousScreenHeight != -1) {
+            val oldY = Config.values.y
+            if (oldY <= 0) {
+                Config.values.y = -baseYOffset
+            } else {
+                val oldRatio = oldY / previousScreenHeight.toDouble()
+                var newY = (screenHeight * oldRatio).roundToInt()
+                if (newY > screenHeight - baseYOffset) {
+                    newY = -baseYOffset
+                }
+                Config.values.y = newY
+            }
+            val oldHeight = Config.values.chatHeight
+            if ((oldY > 0 && oldHeight >= oldY - 1) ||
+                (oldY == -baseYOffset && oldHeight >= previousScreenHeight - baseYOffset - 1)
+            ) {
+                Config.values.chatHeight = screenHeight - baseYOffset - 1
+            }
+        }
+        previousScreenWidth = screenWidth
+        previousScreenHeight = screenHeight
     }
 
     private fun renderTabs(
