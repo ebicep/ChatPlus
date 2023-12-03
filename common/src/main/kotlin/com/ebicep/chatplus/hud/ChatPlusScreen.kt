@@ -336,6 +336,7 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
                 commandSuggestions!!.setAllowSuggestions(false)
                 historyPos = i
             }
+            setInitialFocus(input!!)
         }
     }
 
