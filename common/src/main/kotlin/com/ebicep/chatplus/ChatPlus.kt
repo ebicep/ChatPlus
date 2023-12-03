@@ -15,6 +15,7 @@ object ChatPlus {
     fun init() {
         LanguageManager
         Config.load()
+        LanguageManager.updateTranslateLanguages()
 
         Events
     }

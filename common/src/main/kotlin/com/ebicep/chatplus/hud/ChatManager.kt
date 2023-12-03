@@ -52,7 +52,7 @@ object ChatManager {
         }
     }
 
-    fun handleClickedCategory(x: Double, y: Double) {
+    fun handleClickedTab(x: Double, y: Double) {
         val translatedY = getY() - y
         var xOff = 0.0
         val font = Minecraft.getInstance().font

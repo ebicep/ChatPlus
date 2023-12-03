@@ -3,6 +3,8 @@ package com.ebicep.chatplus.hud
 import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.config.queueUpdateConfig
 import com.ebicep.chatplus.events.Events
+import com.ebicep.chatplus.translator.SelfTranslator
+import com.ebicep.chatplus.translator.languageSpeakEnabled
 import com.mojang.blaze3d.platform.InputConstants
 import net.minecraft.client.GuiMessage
 import net.minecraft.client.Minecraft
@@ -18,6 +20,9 @@ import net.minecraft.network.chat.Style
 import net.minecraft.util.Mth
 import org.apache.commons.lang3.StringUtils
 import kotlin.math.roundToInt
+
+private const val EDIT_BOX_HEIGHT = 14
+private const val TRANSLATE_SPEAK_X_OFFSET = 6
 
 class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plus_screen.title")) {
 
@@ -47,7 +52,7 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
         input = object : EditBox(
             minecraft!!.fontFilterFishy,
             4,
-            height - 12,
+            height - EDIT_BOX_HEIGHT + 2,
             editBoxWidth - 2,
             12,
             Component.translatable("chatPlus.editBox")
@@ -113,12 +118,12 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
         } else if (pKeyCode == 256) { // escape
             minecraft!!.setScreen(null as Screen?)
             true
-        } else if (pKeyCode == 257 || pKeyCode == 335) {
+        } else if (pKeyCode == 257 || pKeyCode == 335) { // enter
             if (handleChatInput(input!!.value, true)) {
                 minecraft!!.setScreen(null as Screen?)
             }
             true
-        } else { // enter
+        } else {
             when (pKeyCode) {
                 // cycle through own sent messages
                 265 -> { // up arrow
@@ -199,7 +204,10 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
                         yDisplacement = pMouseY - ChatManager.getY()
                     }
                 }
-                ChatManager.handleClickedCategory(pMouseX, pMouseY)
+                ChatManager.handleClickedTab(pMouseX, pMouseY)
+                if (editBoxWidth + TRANSLATE_SPEAK_X_OFFSET < pMouseX && pMouseX < width && height - EDIT_BOX_HEIGHT < pMouseY && pMouseY < height) {
+                    languageSpeakEnabled = !languageSpeakEnabled
+                }
                 if (ChatManager.selectedTab.handleChatQueueClicked(pMouseX, pMouseY)) {
                     return true
                 }
@@ -312,22 +320,35 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
         lastMouseX = pMouseX
         lastMouseY = pMouseY
         // input box
-        guiGraphics.fill(0, height - 14, editBoxWidth + 5, height, minecraft!!.options.getBackgroundColor(Int.MIN_VALUE))
+        guiGraphics.fill(0, height - EDIT_BOX_HEIGHT, editBoxWidth + 5, height, minecraft!!.options.getBackgroundColor(Int.MIN_VALUE))
         guiGraphics.pose().pushPose()
         guiGraphics.pose().translate(-2.0, 2.0, 0.0)
         input!!.render(guiGraphics, pMouseX, pMouseY, pPartialTick)
         guiGraphics.pose().popPose()
         // translate speak
-        val translateSpeakXOffset = 6
-        val translateSpeakStartX = editBoxWidth + translateSpeakXOffset
-        guiGraphics.fill(translateSpeakStartX, height - 14, width, height, minecraft!!.options.getBackgroundColor(Int.MIN_VALUE))
+        val translateSpeakStartX = editBoxWidth + TRANSLATE_SPEAK_X_OFFSET
+        guiGraphics.fill(
+            translateSpeakStartX,
+            height - EDIT_BOX_HEIGHT,
+            width,
+            height,
+            minecraft!!.options.getBackgroundColor(Int.MIN_VALUE)
+        )
         guiGraphics.drawCenteredString(
             Minecraft.getInstance().font,
             Config.values.translateSpeak,
-            translateSpeakStartX + (width - editBoxWidth) / 2 - (translateSpeakXOffset / 2),
-            height - 10,
-            0xFFFFFF
+            translateSpeakStartX + (width - editBoxWidth) / 2 - (TRANSLATE_SPEAK_X_OFFSET / 2),
+            height - 11,
+            if (languageSpeakEnabled) 0x55FF55 else 0xFFFFFF // green if enabled
         )
+        if (languageSpeakEnabled)
+            guiGraphics.renderOutline(
+                translateSpeakStartX,
+                height - EDIT_BOX_HEIGHT,
+                width - translateSpeakStartX - 1,
+                EDIT_BOX_HEIGHT - 1,
+                (0xFF55FF55).toInt()
+            )
 
         super.render(guiGraphics, pMouseX, pMouseY, pPartialTick)
 
@@ -371,47 +392,34 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
     }
 
     fun handleChatInput(pInput: String, pAddToRecentChat: Boolean): Boolean {
-        val input = normalizeChatMessage(pInput)
-        return if (input.isEmpty()) {
+        val normalizeChatMessage = normalizeChatMessage(pInput)
+        return if (normalizeChatMessage.isEmpty()) {
             true
         } else {
-            if (input[0].startsWith("/")) {
-                val command = input[0]
+            if (normalizeChatMessage.startsWith("/")) {
+                val command = splitChatMessage(normalizeChatMessage)[0]
                 if (pAddToRecentChat) {
                     ChatManager.addSentMessage(command)
                 }
                 minecraft!!.player!!.connection.sendCommand(command.substring(1))
             } else {
-                input.forEach {
-                    if (pAddToRecentChat) {
-                        ChatManager.addSentMessage(it)
+                if (languageSpeakEnabled) {
+                    SelfTranslator(normalizeChatMessage, "").start()
+                } else {
+                    splitChatMessage(normalizeChatMessage).forEach {
+                        if (pAddToRecentChat) {
+                            ChatManager.addSentMessage(it)
+                        }
+                        minecraft!!.player!!.connection.sendChat(it)
                     }
-                    minecraft!!.player!!.connection.sendChat(it)
                 }
             }
             minecraft!!.screen === this // FORGE: Prevent closing the screen if another screen has been opened.
         }
     }
 
-    fun normalizeChatMessage(pMessage: String): List<String> {
-        val normalizeSpace = StringUtils.normalizeSpace(pMessage.trim { it <= ' ' })
-
-        return if (normalizeSpace.length <= 256) {
-            listOf(normalizeSpace)
-        } else {
-            val list = ArrayList<String>()
-            var i = 0
-            while (i < normalizeSpace.length) {
-                var j = i + 256
-                if (j >= normalizeSpace.length) {
-                    j = normalizeSpace.length
-                }
-                list.add(normalizeSpace.substring(i, j))
-                i = j
-            }
-            list
-        }
-        //return StringUtil.trimChatMessage(normalizeSpace)
+    fun normalizeChatMessage(message: String): String {
+        return StringUtils.normalizeSpace(message.trim { it <= ' ' })
     }
 
     companion object {
@@ -434,6 +442,24 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
 
         var lastCopiedMessage: Pair<GuiMessage.Line, Long>? = null
         var copiedMessageCooldown = -1L
+        fun splitChatMessage(message: String): List<String> {
+            return if (message.length <= 256) {
+                listOf(message)
+            } else {
+                val list = ArrayList<String>()
+                var i = 0
+                while (i < message.length) {
+                    var j = i + 256
+                    if (j >= message.length) {
+                        j = message.length
+                    }
+                    list.add(message.substring(i, j))
+                    i = j
+                }
+                list
+            }
+            //return StringUtil.trimChatMessage(normalizeSpace)
+        }
     }
 
 

@@ -12,6 +12,7 @@ var languages: List<Language> = ArrayList()
 var languageTo: Language? = null
 var languageSelf: Language? = null
 var languageSpeak: Language? = null
+var languageSpeakEnabled = false
 
 object LanguageManager {
 
@@ -25,14 +26,16 @@ object LanguageManager {
         val langArray: Array<Language> = gson.fromJson(reader, Array<Language>::class.java)
         languages = listOf(*langArray)
         autoLang = findLanguageFromGoogle("auto")!! //TODO
-        updateTranslateLanguages()
         ChatPlus.LOGGER.info("Loaded ${languages.size} languages")
     }
 
     fun updateTranslateLanguages() {
         languageTo = findLanguageFromName(Config.values.translateTo)
+        ChatPlus.LOGGER.info("LanguageTo: $languageTo")
         languageSelf = findLanguageFromName(Config.values.translateSelf)
+        ChatPlus.LOGGER.info("LanguageSelf: $languageSelf")
         languageSpeak = findLanguageFromName(Config.values.translateSpeak)
+        ChatPlus.LOGGER.info("LanguageSpeak: $languageSpeak")
     }
 
     fun findLanguageFromName(name: String): Language? {

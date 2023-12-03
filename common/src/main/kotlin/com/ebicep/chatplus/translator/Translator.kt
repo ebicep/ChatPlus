@@ -59,7 +59,7 @@ class Translator(val message: String, val from: Language?, val to: Language) : T
         )
     }
 
-    private fun translate(text: String): TranslateResult? {
+    fun translate(text: String): TranslateResult? {
         if (from == to) {
             return null
         }
