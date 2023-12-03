@@ -11,6 +11,7 @@ import java.util.*
 var languages: List<Language> = ArrayList()
 var languageTo: Language? = null
 var languageSelf: Language? = null
+var languageSpeak: Language? = null
 
 object LanguageManager {
 
@@ -31,6 +32,7 @@ object LanguageManager {
     fun updateTranslateLanguages() {
         languageTo = findLanguageFromName(Config.values.translateTo)
         languageSelf = findLanguageFromName(Config.values.translateSelf)
+        languageSpeak = findLanguageFromName(Config.values.translateSpeak)
     }
 
     fun findLanguageFromName(name: String): Language? {

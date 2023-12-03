@@ -49,5 +49,7 @@
   "chatPlus.translator.translateTo": "Translate To",
   "chatPlus.translator.translateTo.tooltip": "Language to translate to.",
   "chatPlus.translator.translateSelf": "Self Language",
-  "chatPlus.translator.translateSelf.tooltip": "Language to use when translating your own messages."
+  "chatPlus.translator.translateSelf.tooltip": "Language to use when translating your own messages.",
+  "chatPlus.translator.translateSpeak": "Speaking Language",
+  "chatPlus.translator.translateSpeak.tooltip": "Language your messages are translated to."
 }

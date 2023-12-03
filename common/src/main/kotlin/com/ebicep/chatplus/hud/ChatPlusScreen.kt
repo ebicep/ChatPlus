@@ -21,9 +21,7 @@ import kotlin.math.roundToInt
 
 class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plus_screen.title")) {
 
-    val MOUSE_SCROLL_SPEED = 7.0
     private val USAGE_TEXT: Component = Component.translatable("chat_plus_screen.usage")
-    private val TOOLTIP_MAX_WIDTH = 210
     private var historyBuffer = ""
 
     /**
@@ -37,12 +35,23 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
 
     /** is the text that appears when you press the chat key and the input box appears pre-filled  */
     private var initial: String = pInitial
+    private var editBoxWidth: Int = 0
     var commandSuggestions: CommandSuggestions? = null
-
 
     override fun init() {
         historyPos = ChatManager.sentMessages.size
-        input = object : EditBox(minecraft!!.fontFilterFishy, 4, height - 12, width - 4, 12, Component.translatable("chatPlus.editBox")) {
+        editBoxWidth = width - 4
+        if (Config.values.translatorEnabled) {
+            editBoxWidth -= Minecraft.getInstance().font.width(Config.values.translateSpeak) + 12
+        }
+        input = object : EditBox(
+            minecraft!!.fontFilterFishy,
+            4,
+            height - 12,
+            editBoxWidth - 2,
+            12,
+            Component.translatable("chatPlus.editBox")
+        ) {
             override fun createNarrationMessage(): MutableComponent {
                 return super.createNarrationMessage().append(commandSuggestions!!.narrationMessage)
             }
@@ -303,11 +312,22 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
         lastMouseX = pMouseX
         lastMouseY = pMouseY
         // input box
-        guiGraphics.fill(0, height - 14, width, height, minecraft!!.options.getBackgroundColor(Int.MIN_VALUE))
+        guiGraphics.fill(0, height - 14, editBoxWidth + 5, height, minecraft!!.options.getBackgroundColor(Int.MIN_VALUE))
         guiGraphics.pose().pushPose()
         guiGraphics.pose().translate(-2.0, 2.0, 0.0)
         input!!.render(guiGraphics, pMouseX, pMouseY, pPartialTick)
         guiGraphics.pose().popPose()
+        // translate speak
+        val translateSpeakXOffset = 6
+        val translateSpeakStartX = editBoxWidth + translateSpeakXOffset
+        guiGraphics.fill(translateSpeakStartX, height - 14, width, height, minecraft!!.options.getBackgroundColor(Int.MIN_VALUE))
+        guiGraphics.drawCenteredString(
+            Minecraft.getInstance().font,
+            Config.values.translateSpeak,
+            translateSpeakStartX + (width - editBoxWidth) / 2 - (translateSpeakXOffset / 2),
+            height - 10,
+            0xFFFFFF
+        )
 
         super.render(guiGraphics, pMouseX, pMouseY, pPartialTick)
 
