@@ -57,8 +57,13 @@ object Events {
     }
 
     private fun handleTranslate(component: Component) {
+        if (!Config.values.translatorEnabled) {
+            return
+        }
         val unformattedText = component.string
-        languageTo?.let { Translator(unformattedText, null, it).start() }
+        languageTo?.let {
+            Translator(unformattedText, null, it).start()
+        }
     }
 
 }

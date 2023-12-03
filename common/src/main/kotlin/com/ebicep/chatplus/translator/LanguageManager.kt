@@ -24,6 +24,7 @@ object LanguageManager {
         val langArray: Array<Language> = gson.fromJson(reader, Array<Language>::class.java)
         languages = listOf(*langArray)
         autoLang = findLanguageFromGoogle("auto")!! //TODO
+        updateTranslateLanguages()
         ChatPlus.LOGGER.info("Loaded ${languages.size} languages")
     }
 

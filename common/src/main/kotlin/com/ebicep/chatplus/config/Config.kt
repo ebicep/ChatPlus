@@ -122,6 +122,7 @@ data class ConfigVariables(
     var keyMoveChat: InputConstants.Key = InputConstants.getKey("key.keyboard.right.control"),
     var keyCopyMessageWithModifier: KeyWithModifier = KeyWithModifier(InputConstants.getKey("key.keyboard.c"), 2),
     // translator
+    var translatorEnabled: Boolean = true,
     var translatorRegexes: MutableList<RegexMatch> = mutableListOf(),
     var translateTo: String = "Auto Detect",
     var translateSelf: String = "Auto Detect",

@@ -41,6 +41,8 @@
   "chatPlus.translator.regexes": "Regex Patterns",
   "chatPlus.translator.match": "Pattern",
   "chatPlus.translator.match.tooltip": "Regex Pattern that matches chat messages to translate.",
+  "chatPlus.translator.translatorToggle": "Enabled",
+  "chatPlus.translator.translatorToggle.tooltip": "Enables/Disables the chat translator.",
   "chatPlus.translator.senderNameGroupIndex": "Group Index",
   "chatPlus.translator.senderNameGroupIndex.tooltip": "Group index of the sender's name in the regex pattern.",
   "chatPlus.translator.translateInvalid": "Invalid Language",

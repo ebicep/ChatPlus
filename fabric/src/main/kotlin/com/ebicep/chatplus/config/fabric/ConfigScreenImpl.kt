@@ -147,6 +147,11 @@ object ConfigScreenImpl {
 
     private fun addTranslatorRegexOptions(builder: ConfigBuilder, entryBuilder: ConfigEntryBuilder) {
         val chatTabs = builder.getOrCreateCategory(Component.translatable("chatPlus.translator.title"))
+        chatTabs.addEntry(
+            entryBuilder.booleanToggle(
+                "chatPlus.translator.translatorToggle",
+                Config.values.translatorEnabled
+            ) { Config.values.translatorEnabled = it })
         val languageNames = languages.map {
             it.name
         }
