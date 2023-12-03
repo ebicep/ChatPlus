@@ -28,7 +28,6 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
 
     private val USAGE_TEXT: Component = Component.translatable("chat_plus_screen.usage")
     private var historyBuffer = ""
-
     /**
      * keeps position of which chat message you will select when you press up, (does not increase for duplicated messages
      * sent immediately after each other)
@@ -36,11 +35,12 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
     private var historyPos = -1
 
     /** Chat entry field  */
+    private var inputTranslatePrefix: EditBox? = null
     private var input: EditBox? = null
-
     /** is the text that appears when you press the chat key and the input box appears pre-filled  */
     private var initial: String = pInitial
     private var editBoxWidth: Int = 0
+    private var translateSpeakStartX: Int = 0
     var commandSuggestions: CommandSuggestions? = null
 
     override fun init() {
@@ -49,30 +49,49 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
         if (Config.values.translatorEnabled) {
             editBoxWidth -= Minecraft.getInstance().font.width(Config.values.translateSpeak) + 12
         }
+        translateSpeakStartX = editBoxWidth + TRANSLATE_SPEAK_X_OFFSET
         input = object : EditBox(
             minecraft!!.fontFilterFishy,
-            4,
-            height - EDIT_BOX_HEIGHT + 2,
-            editBoxWidth - 2,
-            12,
+            2,
+            height - EDIT_BOX_HEIGHT + 4,
+            editBoxWidth + 1,
+            EDIT_BOX_HEIGHT,
             Component.translatable("chatPlus.editBox")
         ) {
             override fun createNarrationMessage(): MutableComponent {
                 return super.createNarrationMessage().append(commandSuggestions!!.narrationMessage)
             }
         }
-        val editBox = input as EditBox
+        var editBox = input as EditBox
         editBox.setMaxLength(256 * 5) // default 256
         editBox.isBordered = false
         editBox.value = initial
         editBox.setResponder { str: String -> onEdited(str) }
-        editBox.setCanLoseFocus(false)
+        editBox.setCanLoseFocus(true)
         addWidget(editBox)
+        setInitialFocus(editBox)
         commandSuggestions =
             CommandSuggestions(minecraft!!, this, editBox, font, false, false, 1, Config.values.maxCommandSuggestions, true, -805306368)
         commandSuggestions!!.setAllowHiding(false)
         commandSuggestions!!.updateCommandInfo()
-        setInitialFocus(editBox)
+
+        inputTranslatePrefix = object : EditBox(
+            minecraft!!.fontFilterFishy,
+            translateSpeakStartX + 3,
+            height - EDIT_BOX_HEIGHT * 2 + 1,
+            width - translateSpeakStartX - 2,
+            EDIT_BOX_HEIGHT,
+            Component.translatable("chatPlus.editBox")
+        ) {
+            override fun createNarrationMessage(): MutableComponent {
+                return super.createNarrationMessage().append(commandSuggestions!!.narrationMessage)
+            }
+        }
+        editBox = inputTranslatePrefix as EditBox
+        editBox.setMaxLength(256 * 5) // default 256
+        editBox.isBordered = false
+        editBox.setCanLoseFocus(true)
+        addWidget(editBox)
     }
 
     override fun resize(pMinecraft: Minecraft, pWidth: Int, pHeight: Int) {
@@ -217,7 +236,9 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
                     return true
                 }
             }
-            if (input!!.mouseClicked(pMouseX, pMouseY, pButton)) {
+            if (input!!.isFocused && input!!.mouseClicked(pMouseX, pMouseY, pButton)) {
+                true
+            } else if (inputTranslatePrefix!!.isFocused && inputTranslatePrefix!!.mouseClicked(pMouseX, pMouseY, pButton)) {
                 true
             } else {
                 super.mouseClicked(pMouseX, pMouseY, pButton)
@@ -321,12 +342,8 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
         lastMouseY = pMouseY
         // input box
         guiGraphics.fill(0, height - EDIT_BOX_HEIGHT, editBoxWidth + 5, height, minecraft!!.options.getBackgroundColor(Int.MIN_VALUE))
-        guiGraphics.pose().pushPose()
-        guiGraphics.pose().translate(-2.0, 2.0, 0.0)
         input!!.render(guiGraphics, pMouseX, pMouseY, pPartialTick)
-        guiGraphics.pose().popPose()
         // translate speak
-        val translateSpeakStartX = editBoxWidth + TRANSLATE_SPEAK_X_OFFSET
         guiGraphics.fill(
             translateSpeakStartX,
             height - EDIT_BOX_HEIGHT,
@@ -349,6 +366,16 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
                 EDIT_BOX_HEIGHT - 1,
                 (0xFF55FF55).toInt()
             )
+        // translate speak input prefix box
+        guiGraphics.fill(
+            translateSpeakStartX + 1,
+            height - EDIT_BOX_HEIGHT * 2 - 2,
+            width - 2,
+            height - EDIT_BOX_HEIGHT - 2,
+            minecraft!!.options.getBackgroundColor(Int.MIN_VALUE)
+        )
+        inputTranslatePrefix!!.render(guiGraphics, pMouseX, pMouseY, pPartialTick)
+
 
         super.render(guiGraphics, pMouseX, pMouseY, pPartialTick)
 
@@ -404,7 +431,7 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
                 minecraft!!.player!!.connection.sendCommand(command.substring(1))
             } else {
                 if (languageSpeakEnabled) {
-                    SelfTranslator(normalizeChatMessage, "").start()
+                    SelfTranslator(normalizeChatMessage, inputTranslatePrefix!!.value).start()
                 } else {
                     splitChatMessage(normalizeChatMessage).forEach {
                         if (pAddToRecentChat) {
