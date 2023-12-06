@@ -37,11 +37,11 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
     private var historyPos = -1
 
     /** Chat entry field  */
-    private var inputTranslatePrefix: EditBox? = null
+    var inputTranslatePrefix: EditBox? = null
     var input: EditBox? = null
 
     /** is the text that appears when you press the chat key and the input box appears pre-filled  */
-    private var initial: String = pInitial
+    var initial: String = pInitial
     private var editBoxWidth: Int = 0
     private var textBarElements = mutableListOf<TextBarElement>()
     private var textBarElementsStartX: MutableMap<TextBarElement, Int> = mutableMapOf()
@@ -54,7 +54,7 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
         if (textBarElements.isEmpty()) {
             textBarElements.add(FindTextBarElement(this))
             if (Config.values.translatorEnabled) {
-                textBarElements.add(TranslateSpeakTextBarElement())
+                textBarElements.add(TranslateSpeakTextBarElement(this))
             }
 
         }
@@ -63,15 +63,11 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
             val calculatedWidth = it.getPaddedWidth() + SPACER
             editBoxWidth -= calculatedWidth
         }
-        var currentX = editBoxWidth + SPACER
-        textBarElements.forEach {
-            textBarElementsStartX[it] = currentX
-            currentX += it.getPaddedWidth() + SPACER
-        }
+        cacheTextBarElementXs()
 
         input = object : EditBox(
             minecraft!!.fontFilterFishy,
-            2,
+            if (languageSpeakEnabled) 68 else 2,
             height - EDIT_BOX_HEIGHT + 4,
             editBoxWidth + 1,
             EDIT_BOX_HEIGHT,
@@ -87,22 +83,48 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
         editBox.setResponder { str: String -> onEdited(str) }
         addWidget(editBox)
         setInitialFocus(editBox)
-        commandSuggestions =
-            CommandSuggestions(minecraft!!, this, editBox, font, false, false, 1, Config.values.maxCommandSuggestions, true, -805306368)
+        editBox.isFocused = true
+        commandSuggestions = CommandSuggestions(
+            minecraft!!,
+            this,
+            editBox,
+            font,
+            false,
+            false,
+            1,
+            Config.values.maxCommandSuggestions,
+            true,
+            -805306368
+        )
         commandSuggestions!!.setAllowHiding(false)
         commandSuggestions!!.updateCommandInfo()
 
-        inputTranslatePrefix = EditBox(
-            minecraft!!.fontFilterFishy,
-            500 + 3,
-            height - EDIT_BOX_HEIGHT * 2 + 1,
-            width - 50 - 2,
-            EDIT_BOX_HEIGHT,
-            Component.translatable("chatPlus.editBox")
-        )
-        editBox = inputTranslatePrefix as EditBox
-        initializeBaseEditBox(editBox)
-        addWidget(editBox)
+        inputTranslatePrefix = null
+        if (languageSpeakEnabled) {
+            inputTranslatePrefix = EditBox(
+                minecraft!!.fontFilterFishy,
+                3,
+                height - EDIT_BOX_HEIGHT + 4,
+                63,
+                EDIT_BOX_HEIGHT,
+                Component.translatable("chatPlus.editBox")
+            )
+            editBox = inputTranslatePrefix as EditBox
+            initializeBaseEditBox(editBox)
+            addWidget(editBox)
+        }
+    }
+
+    fun rebuildWidgets0() {
+        rebuildWidgets()
+    }
+
+    private fun cacheTextBarElementXs() {
+        var currentX = editBoxWidth + SPACER
+        textBarElements.forEach {
+            textBarElementsStartX[it] = currentX
+            currentX += it.getPaddedWidth() + SPACER
+        }
     }
 
     private fun initializeBaseEditBox(editBox: EditBox) {
@@ -269,7 +291,11 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
             }
             if (input!!.isFocused && input!!.mouseClicked(pMouseX, pMouseY, pButton)) {
                 true
-            } else if (inputTranslatePrefix!!.isFocused && inputTranslatePrefix!!.mouseClicked(pMouseX, pMouseY, pButton)) {
+            } else if (
+                inputTranslatePrefix != null &&
+                inputTranslatePrefix!!.isFocused &&
+                inputTranslatePrefix!!.mouseClicked(pMouseX, pMouseY, pButton)
+            ) {
                 true
             } else {
                 super.mouseClicked(pMouseX, pMouseY, pButton)
@@ -374,6 +400,9 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
         lastMouseY = pMouseY
 
         renderInputBox(guiGraphics, pMouseX, pMouseY, pPartialTick)
+        if (inputTranslatePrefix != null) {
+            renderTranslateSpeakPrefixInputBox(guiGraphics, pMouseX, pMouseY, pPartialTick)
+        }
         val currentY = height - EDIT_BOX_HEIGHT
         textBarElements.forEach {
             it.onRender(guiGraphics, textBarElementsStartX[it]!!, currentY, pMouseX, pMouseY, pPartialTick)
@@ -405,14 +434,21 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
         pMouseY: Int,
         pPartialTick: Float
     ) {
-//        guiGraphics.fill(
-//            translateSpeakStartX,
-//            height - EDIT_BOX_HEIGHT * 2 - 3,
-//            width,
-//            height - EDIT_BOX_HEIGHT - 2,
-//            minecraft!!.options.getBackgroundColor(Int.MIN_VALUE)
-//        )
-//        inputTranslatePrefix!!.render(guiGraphics, pMouseX, pMouseY, pPartialTick)
+        guiGraphics.fill(
+            0,
+            height - EDIT_BOX_HEIGHT,
+            65,
+            height,
+            minecraft!!.options.getBackgroundColor(Int.MIN_VALUE)
+        )
+        guiGraphics.renderOutline(
+            0,
+            height - EDIT_BOX_HEIGHT,
+            65,
+            EDIT_BOX_HEIGHT - 1,
+            0xFF55FF55.toInt()
+        )
+        inputTranslatePrefix!!.render(guiGraphics, pMouseX, pMouseY, pPartialTick)
 //        if (
 //            pMouseX in (translateSpeakStartX + 1) until width &&
 //            pMouseY in (height - EDIT_BOX_HEIGHT * 2 - 3) until (height - EDIT_BOX_HEIGHT - 2)
@@ -426,63 +462,19 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
 //        }
     }
 
-    private fun renderFindToggle(guiGraphics: GuiGraphics) {
-//        guiGraphics.fill(
-//            findToggleStartX,
-//            height - EDIT_BOX_HEIGHT,
-//            findToggleWidth,
-//            height,
-//            minecraft!!.options.getBackgroundColor(Int.MIN_VALUE)
-//        )
-//        guiGraphics.drawCenteredString(
-//            Minecraft.getInstance().font,
-//            "F",
-//            findToggleStartX + findToggleWidth / 2,
-//            height - 11,
-//            if (languageSpeakEnabled) 0x55FF55 else 0xFFFFFF // green if enabled
-//        )
-//        if (languageSpeakEnabled)
-//            guiGraphics.renderOutline(
-//                translateSpeakStartX,
-//                height - EDIT_BOX_HEIGHT,
-//                width - translateSpeakStartX - 1,
-//                EDIT_BOX_HEIGHT - 1,
-//                (0xFF55FF55).toInt()
-//            )
-    }
-
-    private fun renderTranslateSpeakToggle(guiGraphics: GuiGraphics) {
-//        guiGraphics.fill(
-//            translateSpeakStartX,
-//            height - EDIT_BOX_HEIGHT,
-//            translateSpeakWidth,
-//            height,
-//            minecraft!!.options.getBackgroundColor(Int.MIN_VALUE)
-//        )
-//        guiGraphics.drawCenteredString(
-//            Minecraft.getInstance().font,
-//            Config.values.translateSpeak,
-//            translateSpeakStartX + (width - editBoxWidth) / 2 - (PADDING / 2),
-//            height - 11,
-//            if (languageSpeakEnabled) 0x55FF55 else 0xFFFFFF // green if enabled
-//        )
-//        if (languageSpeakEnabled)
-//            guiGraphics.renderOutline(
-//                translateSpeakStartX,
-//                height - EDIT_BOX_HEIGHT,
-//                width - translateSpeakStartX - 1,
-//                EDIT_BOX_HEIGHT - 1,
-//                (0xFF55FF55).toInt()
-//            )
-    }
-
     private fun renderInputBox(
         guiGraphics: GuiGraphics,
         pMouseX: Int,
         pMouseY: Int,
         pPartialTick: Float
     ) {
-        guiGraphics.fill(0, height - EDIT_BOX_HEIGHT, editBoxWidth, height, minecraft!!.options.getBackgroundColor(Int.MIN_VALUE))
+        guiGraphics.fill(
+            if (languageSpeakEnabled) 65 else 0,
+            height - EDIT_BOX_HEIGHT,
+            editBoxWidth,
+            height,
+            minecraft!!.options.getBackgroundColor(Int.MIN_VALUE)
+        )
         input!!.render(guiGraphics, pMouseX, pMouseY, pPartialTick)
     }
 
@@ -523,7 +515,7 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
                 minecraft!!.player!!.connection.sendCommand(command.substring(1))
             } else {
                 if (languageSpeakEnabled) {
-                    SelfTranslator(normalizeChatMessage, inputTranslatePrefix!!.value).start()
+                    SelfTranslator(normalizeChatMessage, if (inputTranslatePrefix == null) "" else inputTranslatePrefix!!.value).start()
                 } else {
                     splitChatMessage(normalizeChatMessage).forEach {
                         if (pAddToRecentChat) {

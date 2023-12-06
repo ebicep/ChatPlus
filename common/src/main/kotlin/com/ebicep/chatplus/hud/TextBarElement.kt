@@ -36,14 +36,14 @@ interface TextBarElement {
         )
     }
 
-    fun drawCenteredString(guiGraphics: GuiGraphics, currentX: Int, currentY: Int, enabledColor: Int) {
+    fun drawCenteredString(guiGraphics: GuiGraphics, currentX: Int, currentY: Int, color: Int) {
         getText()?.let {
             guiGraphics.drawCenteredString(
                 Minecraft.getInstance().font,
                 it,
                 currentX + getPaddedWidth() / 2,
                 currentY + EDIT_BOX_HEIGHT / 4,
-                if (findEnabled) enabledColor else 0xFFFFFF
+                color
             )
         }
     }
@@ -78,11 +78,12 @@ class FindTextBarElement(private val chatPlusScreen: ChatPlusScreen) : TextBarEl
         } else {
             ChatManager.selectedTab.refreshDisplayedMessage()
         }
+        chatPlusScreen.rebuildWidgets0()
     }
 
     override fun onRender(guiGraphics: GuiGraphics, currentX: Int, currentY: Int, pMouseX: Int, pMouseY: Int, pPartialTick: Float) {
         fill(guiGraphics, currentX, currentY)
-        drawCenteredString(guiGraphics, currentX, currentY, 0xFFFF55)
+        drawCenteredString(guiGraphics, currentX, currentY, if (findEnabled) 0xFFFF55 else 0xFFFFFF)
         if (findEnabled) {
             renderOutline(guiGraphics, currentX, currentY, (0xFFFFFF55).toInt())
         }
@@ -90,7 +91,7 @@ class FindTextBarElement(private val chatPlusScreen: ChatPlusScreen) : TextBarEl
 
 }
 
-class TranslateSpeakTextBarElement : TextBarElement {
+class TranslateSpeakTextBarElement(private val chatPlusScreen: ChatPlusScreen) : TextBarElement {
 
     override fun getWidth(): Int {
         return Minecraft.getInstance().font.width(Config.values.translateSpeak)
@@ -105,11 +106,13 @@ class TranslateSpeakTextBarElement : TextBarElement {
         if (languageSpeakEnabled) {
             findEnabled = false
         }
+        chatPlusScreen.initial = chatPlusScreen.input!!.value
+        chatPlusScreen.rebuildWidgets0()
     }
 
     override fun onRender(guiGraphics: GuiGraphics, currentX: Int, currentY: Int, pMouseX: Int, pMouseY: Int, pPartialTick: Float) {
         fill(guiGraphics, currentX, currentY)
-        drawCenteredString(guiGraphics, currentX, currentY, 0x55FF55)
+        drawCenteredString(guiGraphics, currentX, currentY, if (languageSpeakEnabled) 0x55FF55 else 0xFFFFFF)
         if (languageSpeakEnabled) {
             renderOutline(guiGraphics, currentX, currentY, (0xFF55FF55).toInt())
         }
