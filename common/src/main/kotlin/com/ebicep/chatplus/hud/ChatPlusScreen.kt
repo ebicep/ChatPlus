@@ -52,7 +52,7 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
 
         editBoxWidth = width
         if (textBarElements.isEmpty()) {
-            textBarElements.add(FindTextBarElement())
+            textBarElements.add(FindTextBarElement(this))
             if (Config.values.translatorEnabled) {
                 textBarElements.add(TranslateSpeakTextBarElement())
             }
@@ -91,7 +91,6 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
             CommandSuggestions(minecraft!!, this, editBox, font, false, false, 1, Config.values.maxCommandSuggestions, true, -805306368)
         commandSuggestions!!.setAllowHiding(false)
         commandSuggestions!!.updateCommandInfo()
-
 
         inputTranslatePrefix = EditBox(
             minecraft!!.fontFilterFishy,

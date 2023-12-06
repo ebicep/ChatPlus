@@ -26,9 +26,41 @@ interface TextBarElement {
         pPartialTick: Float
     )
 
+    fun fill(guiGraphics: GuiGraphics, currentX: Int, currentY: Int) {
+        guiGraphics.fill(
+            currentX,
+            currentY,
+            currentX + getPaddedWidth(),
+            currentY + EDIT_BOX_HEIGHT,
+            Minecraft.getInstance().options.getBackgroundColor(Int.MIN_VALUE)
+        )
+    }
+
+    fun drawCenteredString(guiGraphics: GuiGraphics, currentX: Int, currentY: Int, enabledColor: Int) {
+        getText()?.let {
+            guiGraphics.drawCenteredString(
+                Minecraft.getInstance().font,
+                it,
+                currentX + getPaddedWidth() / 2,
+                currentY + EDIT_BOX_HEIGHT / 4,
+                if (findEnabled) enabledColor else 0xFFFFFF
+            )
+        }
+    }
+
+    fun renderOutline(guiGraphics: GuiGraphics, currentX: Int, currentY: Int, color: Int) {
+        guiGraphics.renderOutline(
+            currentX,
+            currentY,
+            getPaddedWidth(),
+            EDIT_BOX_HEIGHT - 1,
+            color
+        )
+    }
+
 }
 
-class FindTextBarElement() : TextBarElement {
+class FindTextBarElement(private val chatPlusScreen: ChatPlusScreen) : TextBarElement {
 
     override fun getWidth(): Int {
         return Minecraft.getInstance().font.width("F")
@@ -41,10 +73,7 @@ class FindTextBarElement() : TextBarElement {
     override fun onClick() {
         findEnabled = !findEnabled
         if (findEnabled) {
-            val screen = Minecraft.getInstance().screen
-            if (screen is ChatPlusScreen) {
-                ChatManager.selectedTab.refreshDisplayedMessage(screen.input?.value)
-            }
+            ChatManager.selectedTab.refreshDisplayedMessage(chatPlusScreen.input?.value)
             languageSpeakEnabled = false
         } else {
             ChatManager.selectedTab.refreshDisplayedMessage()
@@ -52,28 +81,11 @@ class FindTextBarElement() : TextBarElement {
     }
 
     override fun onRender(guiGraphics: GuiGraphics, currentX: Int, currentY: Int, pMouseX: Int, pMouseY: Int, pPartialTick: Float) {
-        guiGraphics.fill(
-            currentX,
-            currentY,
-            currentX + getPaddedWidth(),
-            guiGraphics.guiHeight(),
-            Minecraft.getInstance().options.getBackgroundColor(Int.MIN_VALUE)
-        )
-        guiGraphics.drawCenteredString(
-            Minecraft.getInstance().font,
-            "F",
-            currentX + getPaddedWidth() / 2,
-            currentY + EDIT_BOX_HEIGHT / 4,
-            if (findEnabled) 0xFFFF55 else 0xFFFFFF // yellow // if enabled
-        )
-        if (findEnabled)
-            guiGraphics.renderOutline(
-                currentX,
-                guiGraphics.guiHeight() - EDIT_BOX_HEIGHT,
-                getPaddedWidth(),
-                EDIT_BOX_HEIGHT - 1,
-                (0xFFFFFF55).toInt()
-            )
+        fill(guiGraphics, currentX, currentY)
+        drawCenteredString(guiGraphics, currentX, currentY, 0xFFFF55)
+        if (findEnabled) {
+            renderOutline(guiGraphics, currentX, currentY, (0xFFFFFF55).toInt())
+        }
     }
 
 }
@@ -96,28 +108,11 @@ class TranslateSpeakTextBarElement : TextBarElement {
     }
 
     override fun onRender(guiGraphics: GuiGraphics, currentX: Int, currentY: Int, pMouseX: Int, pMouseY: Int, pPartialTick: Float) {
-        guiGraphics.fill(
-            currentX,
-            currentY,
-            currentX + getPaddedWidth(),
-            guiGraphics.guiHeight(),
-            Minecraft.getInstance().options.getBackgroundColor(Int.MIN_VALUE)
-        )
-        guiGraphics.drawCenteredString(
-            Minecraft.getInstance().font,
-            Config.values.translateSpeak,
-            currentX + getPaddedWidth() / 2,
-            currentY + EDIT_BOX_HEIGHT / 4,
-            if (languageSpeakEnabled) 0x55FF55 else 0xFFFFFF // green if enabled
-        )
-        if (languageSpeakEnabled)
-            guiGraphics.renderOutline(
-                currentX,
-                currentY,
-                getPaddedWidth(),
-                EDIT_BOX_HEIGHT - 1,
-                (0xFF55FF55).toInt()
-            )
+        fill(guiGraphics, currentX, currentY)
+        drawCenteredString(guiGraphics, currentX, currentY, 0x55FF55)
+        if (languageSpeakEnabled) {
+            renderOutline(guiGraphics, currentX, currentY, (0xFF55FF55).toInt())
+        }
     }
 
 }
