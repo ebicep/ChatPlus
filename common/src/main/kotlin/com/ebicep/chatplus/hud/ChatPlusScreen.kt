@@ -50,12 +50,15 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
     override fun init() {
         historyPos = ChatManager.sentMessages.size
 
-        textBarElements.add(FindTextBarElement())
-        if (Config.values.translatorEnabled) {
-            textBarElements.add(TranslateSpeakTextBarElement())
+        editBoxWidth = width
+        if (textBarElements.isEmpty()) {
+            textBarElements.add(FindTextBarElement())
+            if (Config.values.translatorEnabled) {
+                textBarElements.add(TranslateSpeakTextBarElement())
+            }
+
         }
         //____TEXTBOX_____-FIND--TRANSLATE-
-        editBoxWidth = width
         textBarElements.forEach {
             val calculatedWidth = it.getPaddedWidth() + SPACER
             editBoxWidth -= calculatedWidth
@@ -114,13 +117,6 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
         this.init(pMinecraft, pWidth, pHeight)
         setChatLine(s)
         commandSuggestions!!.updateCommandInfo()
-
-        var currentX = editBoxWidth + SPACER
-        textBarElements.forEach {
-            textBarElementsStartX[it] = currentX
-            currentX += it.getPaddedWidth() + SPACER
-        }
-
     }
 
     override fun removed() {
