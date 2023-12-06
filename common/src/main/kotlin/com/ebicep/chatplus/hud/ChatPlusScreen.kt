@@ -38,7 +38,7 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
 
     /** Chat entry field  */
     private var inputTranslatePrefix: EditBox? = null
-    private var input: EditBox? = null
+    var input: EditBox? = null
 
     /** is the text that appears when you press the chat key and the input box appears pre-filled  */
     private var initial: String = pInitial
@@ -128,6 +128,10 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
     }
 
     private fun onEdited(str: String) {
+        if (findEnabled) {
+            ChatManager.selectedTab.refreshDisplayedMessage(str)
+            return
+        }
         val s = input!!.value
         commandSuggestions!!.setAllowSuggestions(s != initial)
         commandSuggestions!!.updateCommandInfo()

@@ -292,10 +292,17 @@ class ChatTab {
     }
 
     fun refreshDisplayedMessage() {
+        refreshDisplayedMessage(null)
+    }
+
+    fun refreshDisplayedMessage(filter: String?) {
         resetDisplayMessageAtTick = -1
         displayedMessages.clear()
         for (i in messages.indices) {
             val guiMessage: GuiMessage = messages[i]
+            if (filter != null && !guiMessage.content.string.lowercase().contains(filter.lowercase())) {
+                continue
+            }
             addMessage(guiMessage.content(), guiMessage.signature(), guiMessage.addedTime(), guiMessage.tag(), true)
         }
     }

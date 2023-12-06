@@ -40,6 +40,15 @@ class FindTextBarElement() : TextBarElement {
 
     override fun onClick() {
         findEnabled = !findEnabled
+        if (findEnabled) {
+            val screen = Minecraft.getInstance().screen
+            if (screen is ChatPlusScreen) {
+                ChatManager.selectedTab.refreshDisplayedMessage(screen.input?.value)
+            }
+            languageSpeakEnabled = false
+        } else {
+            ChatManager.selectedTab.refreshDisplayedMessage()
+        }
     }
 
     override fun onRender(guiGraphics: GuiGraphics, currentX: Int, currentY: Int, pMouseX: Int, pMouseY: Int, pPartialTick: Float) {
@@ -81,6 +90,9 @@ class TranslateSpeakTextBarElement : TextBarElement {
 
     override fun onClick() {
         languageSpeakEnabled = !languageSpeakEnabled
+        if (languageSpeakEnabled) {
+            findEnabled = false
+        }
     }
 
     override fun onRender(guiGraphics: GuiGraphics, currentX: Int, currentY: Int, pMouseX: Int, pMouseY: Int, pPartialTick: Float) {
