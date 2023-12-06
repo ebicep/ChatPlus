@@ -172,20 +172,20 @@ object ChatRenderer {
         if (screenHeight != previousScreenHeight && previousScreenHeight != -1) {
             val oldY = Config.values.y
             if (oldY <= 0) {
-                Config.values.y = -baseYOffset
+                Config.values.y = -BASE_Y_OFFSET
             } else {
                 val oldRatio = oldY / previousScreenHeight.toDouble()
                 var newY = (screenHeight * oldRatio).roundToInt()
-                if (newY > screenHeight - baseYOffset) {
-                    newY = -baseYOffset
+                if (newY > screenHeight - BASE_Y_OFFSET) {
+                    newY = -BASE_Y_OFFSET
                 }
                 Config.values.y = newY
             }
             val oldHeight = Config.values.chatHeight
             if ((oldY > 0 && oldHeight >= oldY - 1) ||
-                (oldY == -baseYOffset && oldHeight >= previousScreenHeight - baseYOffset - 1)
+                (oldY == -BASE_Y_OFFSET && oldHeight >= previousScreenHeight - BASE_Y_OFFSET - 1)
             ) {
-                Config.values.chatHeight = screenHeight - baseYOffset - 1
+                Config.values.chatHeight = screenHeight - BASE_Y_OFFSET - 1
             }
         }
         previousScreenWidth = screenWidth

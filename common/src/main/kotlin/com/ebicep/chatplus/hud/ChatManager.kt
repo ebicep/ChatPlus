@@ -4,9 +4,10 @@ import com.ebicep.chatplus.config.Config
 import net.minecraft.client.Minecraft
 import kotlin.math.roundToInt
 
-const val baseYOffset = 29
-const val minHeight = 80
-const val minWidth = 160
+const val BASE_Y_OFFSET = 29
+const val MIN_HEIGHT = 80
+const val MIN_WIDTH = 160
+var findEnabled: Boolean = true
 
 object ChatManager {
 
@@ -26,11 +27,11 @@ object ChatManager {
     }
 
     fun getMinWidthScaled(): Int {
-        return (minWidth / getScale()).roundToInt()
+        return (MIN_WIDTH / getScale()).roundToInt()
     }
 
     fun getMinHeightScaled(): Int {
-        return (minHeight / getScale()).roundToInt()
+        return (MIN_HEIGHT / getScale()).roundToInt()
     }
 
     /**
@@ -151,8 +152,8 @@ object ChatManager {
             y += Minecraft.getInstance().window.guiScaledHeight
         }
         if (y >= Minecraft.getInstance().window.guiScaledHeight) {
-            y = Minecraft.getInstance().window.guiScaledHeight - baseYOffset
-            Config.values.y = -baseYOffset
+            y = Minecraft.getInstance().window.guiScaledHeight - BASE_Y_OFFSET
+            Config.values.y = -BASE_Y_OFFSET
         }
         return y
     }

@@ -8,9 +8,9 @@ import com.ebicep.chatplus.ChatPlus
 import com.ebicep.chatplus.MOD_ID
 import com.ebicep.chatplus.config.serializers.KeySerializer
 import com.ebicep.chatplus.config.serializers.KeyWithModifier
+import com.ebicep.chatplus.hud.BASE_Y_OFFSET
 import com.ebicep.chatplus.hud.ChatManager
 import com.ebicep.chatplus.hud.ChatTab
-import com.ebicep.chatplus.hud.baseYOffset
 import com.ebicep.chatplus.translator.LanguageManager
 import com.ebicep.chatplus.translator.RegexMatch
 import com.mojang.blaze3d.platform.InputConstants
@@ -100,7 +100,7 @@ const val MAX_MAX_COMMAND_SUGGESTIONS = 30
 data class ConfigVariables(
     // internal
     var x: Int = 0,
-    var y: Int = -baseYOffset,
+    var y: Int = -BASE_Y_OFFSET,
     var height: Int = 180,
     var width: Int = 320,
     // general
@@ -126,8 +126,7 @@ data class ConfigVariables(
     var translatorRegexes: MutableList<RegexMatch> = mutableListOf(),
     var translateTo: String = "Auto Detect",
     var translateSelf: String = "Auto Detect",
-    var translateSpeak: String = "English"
-
+    var translateSpeak: String = "English",
 ) {
 
     @Transient
