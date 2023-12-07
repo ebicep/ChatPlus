@@ -4,6 +4,7 @@ import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.translator.languageSpeakEnabled
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.network.chat.Component
 
 interface TextBarElement {
 
@@ -16,6 +17,10 @@ interface TextBarElement {
     fun getText(): String?
 
     fun onClick()
+
+    fun onHover(guiGraphics: GuiGraphics, pMouseX: Int, pMouseY: Int) {
+
+    }
 
     fun onRender(
         guiGraphics: GuiGraphics,
@@ -81,6 +86,10 @@ class FindTextBarElement(private val chatPlusScreen: ChatPlusScreen) : TextBarEl
         chatPlusScreen.rebuildWidgets0()
     }
 
+    override fun onHover(guiGraphics: GuiGraphics, pMouseX: Int, pMouseY: Int) {
+        guiGraphics.renderTooltip(chatPlusScreen.font(), Component.translatable("chatPlus.chat.find.tooltip"), pMouseX, pMouseY)
+    }
+
     override fun onRender(guiGraphics: GuiGraphics, currentX: Int, currentY: Int, pMouseX: Int, pMouseY: Int, pPartialTick: Float) {
         fill(guiGraphics, currentX, currentY)
         drawCenteredString(guiGraphics, currentX, currentY, if (findEnabled) 0xFFFF55 else 0xFFFFFF)
@@ -108,6 +117,15 @@ class TranslateSpeakTextBarElement(private val chatPlusScreen: ChatPlusScreen) :
         }
         chatPlusScreen.initial = chatPlusScreen.input!!.value
         chatPlusScreen.rebuildWidgets0()
+    }
+
+    override fun onHover(guiGraphics: GuiGraphics, pMouseX: Int, pMouseY: Int) {
+        guiGraphics.renderTooltip(
+            chatPlusScreen.font(),
+            Component.translatable("chatPlus.translator.translateSpeak.chat.tooltip"),
+            pMouseX,
+            pMouseY
+        )
     }
 
     override fun onRender(guiGraphics: GuiGraphics, currentX: Int, currentY: Int, pMouseX: Int, pMouseY: Int, pPartialTick: Float) {

@@ -8,6 +8,7 @@ import com.ebicep.chatplus.translator.languageSpeakEnabled
 import com.mojang.blaze3d.platform.InputConstants
 import net.minecraft.client.GuiMessage
 import net.minecraft.client.Minecraft
+import net.minecraft.client.gui.Font
 import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.client.gui.components.CommandSuggestions
 import net.minecraft.client.gui.components.EditBox
@@ -413,7 +414,11 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
         }
         val currentY = height - EDIT_BOX_HEIGHT
         textBarElements.forEach {
-            it.onRender(guiGraphics, textBarElementsStartX[it]!!, currentY, pMouseX, pMouseY, pPartialTick)
+            val elementStartX = textBarElementsStartX[it]!!
+            it.onRender(guiGraphics, elementStartX, currentY, pMouseX, pMouseY, pPartialTick)
+            if (elementStartX < pMouseX && pMouseX < elementStartX + it.getPaddedWidth() && height - EDIT_BOX_HEIGHT < pMouseY && pMouseY < height) {
+                it.onHover(guiGraphics, pMouseX, pMouseY)
+            }
         }
 
         super.render(guiGraphics, pMouseX, pMouseY, pPartialTick)
@@ -454,17 +459,12 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
             0xFF55FF55.toInt()
         )
         inputTranslatePrefix!!.render(guiGraphics, pMouseX, pMouseY, pPartialTick)
-//        if (
-//            pMouseX in (translateSpeakStartX + 1) until width &&
-//            pMouseY in (height - EDIT_BOX_HEIGHT * 2 - 3) until (height - EDIT_BOX_HEIGHT - 2)
-//        ) {
-//            guiGraphics.renderTooltip(font, Component.translatable("chatPlus.translator.translateSpeakPrefix.tooltip"), pMouseX, pMouseY)
-//        } else if (
-//            pMouseX in (editBoxWidth + PADDING) until width &&
-//            pMouseY in (height - EDIT_BOX_HEIGHT) until height
-//        ) {
-//            guiGraphics.renderTooltip(font, Component.translatable("chatPlus.translator.translateSpeak.chat.tooltip"), pMouseX, pMouseY)
-//        }
+        if (
+            pMouseX in 0 until 65 &&
+            pMouseY in height - EDIT_BOX_HEIGHT until height
+        ) {
+            guiGraphics.renderTooltip(font, Component.translatable("chatPlus.translator.translateSpeakPrefix.tooltip"), pMouseX, pMouseY)
+        }
     }
 
     private fun renderInputBox(
@@ -536,6 +536,10 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
 
     fun normalizeChatMessage(message: String): String {
         return StringUtils.normalizeSpace(message.trim { it <= ' ' })
+    }
+
+    fun font(): Font {
+        return font
     }
 
     companion object {

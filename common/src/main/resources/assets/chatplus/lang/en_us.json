@@ -53,5 +53,6 @@
   "chatPlus.translator.translateSpeak": "Speaking Language",
   "chatPlus.translator.translateSpeak.tooltip": "Language your messages are translated to.",
   "chatPlus.translator.translateSpeak.chat.tooltip": "Language your messages are translated to. Click to toggle.",
-  "chatPlus.translator.translateSpeakPrefix.tooltip": "Text to prepend that will not get translated."
+  "chatPlus.translator.translateSpeakPrefix.tooltip": "Text to prepend that will not get translated.",
+  "chatPlus.chat.find.tooltip": "Click to toggle the find option."
 }
