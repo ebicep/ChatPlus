@@ -155,6 +155,8 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
     }
 
     override fun keyPressed(pKeyCode: Int, pScanCode: Int, pModifiers: Int): Boolean {
+        //input!!.setEditable(true)
+
         val window = Minecraft.getInstance().window.window
         val copyMessage = Config.values.keyCopyMessageWithModifier
         val copyMessageModifier = Config.values.keyCopyMessageWithModifier.modifier
@@ -162,18 +164,20 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
                 (copyMessageModifier == 1.toShort() && hasAltDown()) ||
                 (copyMessageModifier == 2.toShort() && hasControlDown()) ||
                 (copyMessageModifier == 4.toShort() && hasShiftDown())
+        val messageCopied = copiedMessageCooldown < Events.currentTick &&
+                InputConstants.isKeyDown(window, copyMessage.key.value) &&
+                copyMessageModifierDown
         return when {
             commandSuggestions!!.keyPressed(pKeyCode, pScanCode, pModifiers) -> {
                 true
             }
 
-            copiedMessageCooldown < Events.currentTick &&
-                    InputConstants.isKeyDown(window, copyMessage.key.value) &&
-                    copyMessageModifierDown -> {
+            messageCopied -> {
                 copiedMessageCooldown = Events.currentTick + 20
                 ChatManager.selectedTab.getMessageAt(lastMouseX.toDouble(), lastMouseY.toDouble())?.let {
                     copyToClipboard(it.content)
                     lastCopiedMessage = Pair(it.line, Events.currentTick + 60)
+                    //input!!.setEditable(false)
                     return@keyPressed true
                 }
                 true
