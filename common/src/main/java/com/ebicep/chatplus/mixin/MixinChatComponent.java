@@ -32,7 +32,7 @@ public class MixinChatComponent {
             return;
         }
         for (ChatTab chatTab : Config.INSTANCE.getValues().getChatTabs()) {
-            chatTab.addMessage(pChatComponent, pHeaderSignature, pAddedTime, pTag, pOnlyTrim);
+            chatTab.addMessage(pChatComponent, pHeaderSignature, pAddedTime, pTag, false, chatTab.getMessages().size());
         }
     }
 

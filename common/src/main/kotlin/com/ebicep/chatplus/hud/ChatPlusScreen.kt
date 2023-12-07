@@ -174,6 +174,7 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
                 ChatManager.selectedTab.getMessageAt(lastMouseX.toDouble(), lastMouseY.toDouble())?.let {
                     copyToClipboard(it.content)
                     lastCopiedMessage = Pair(it.line, Events.currentTick + 60)
+                    return@keyPressed true
                 }
                 true
             }
@@ -257,6 +258,16 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
                 val sideInner = ChatManager.getX() + ChatManager.getWidth() - renderingMovingSize
                 val roof = ChatManager.getY() - ChatManager.getHeight()
                 val roofInner = ChatManager.getY() - ChatManager.getHeight() + renderingMovingSize
+                if (findEnabled) {
+                    ChatManager.selectedTab.getMessageAt(lastMouseX.toDouble(), lastMouseY.toDouble())?.let {
+                        val lineOffset = ChatManager.getLinesPerPage() / 3
+                        val scrollTo = ChatManager.selectedTab.messages.size - it.linkedMessageIndex - lineOffset
+                        findEnabled = false
+                        ChatManager.selectedTab.refreshDisplayedMessage()
+                        rebuildWidgets0()
+                        ChatManager.selectedTab.scrollChat(scrollTo)
+                    }
+                }
                 if (pMouseX > sideInner && pMouseX < side && pMouseY > roof && pMouseY < ChatManager.getY()) {
                     movingChatX = true
                 }
@@ -318,13 +329,6 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
             movingChat = false
             return super.mouseDragged(pMouseX, pMouseY, pButton, pDragX, pDragY)
         }
-//        if (
-//            pMouseX > Minecraft.getInstance().window.guiScaledWidth || pMouseY > Minecraft.getInstance().window.guiScaledHeight ||
-//            pMouseX < 0 || pMouseY < 0
-//        ) {
-//            //movingChat = false
-//            return super.mouseDragged(pMouseX, pMouseY, pButton, pDragX, pDragY)
-//        }
         if (movingChatX) {
             val newWidth: Double = Mth.clamp(
                 pMouseX - ChatManager.getX(),
@@ -407,9 +411,6 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
         textBarElements.forEach {
             it.onRender(guiGraphics, textBarElementsStartX[it]!!, currentY, pMouseX, pMouseY, pPartialTick)
         }
-//        renderFindToggle(guiGraphics)
-//        renderTranslateSpeakToggle(guiGraphics)
-//        renderTranslateSpeakPrefixInputBox(guiGraphics, pMouseX, pMouseY, pPartialTick)
 
         super.render(guiGraphics, pMouseX, pMouseY, pPartialTick)
 
@@ -553,6 +554,7 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
 
         var lastCopiedMessage: Pair<GuiMessage.Line, Long>? = null
         var copiedMessageCooldown = -1L
+
         fun splitChatMessage(message: String): List<String> {
             return if (message.length <= 256) {
                 listOf(message)

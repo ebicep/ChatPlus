@@ -27,7 +27,7 @@ import kotlin.math.min
 @Serializable
 class ChatTab {
 
-    data class ChatPlusGuiMessageLine(val line: GuiMessage.Line, val content: String)
+    data class ChatPlusGuiMessageLine(val line: GuiMessage.Line, val content: String, val linkedMessageIndex: Int)
 
 
     var name: String
@@ -66,7 +66,8 @@ class ChatTab {
         pHeaderSignature: MessageSignature?,
         pAddedTime: Int,
         pTag: GuiMessageTag?,
-        pOnlyTrim: Boolean
+        pOnlyTrim: Boolean,
+        linkedMessageIndex: Int
     ) {
         if (!regex.matches(pChatComponent.string)) {
             return
@@ -93,7 +94,8 @@ class ChatTab {
             this.displayedMessages.add(
                 ChatPlusGuiMessageLine(
                     GuiMessage.Line(pAddedTime, formattedCharSequence, pTag, lastComponent),
-                    content
+                    content,
+                    linkedMessageIndex
                 )
             )
         }
@@ -303,7 +305,7 @@ class ChatTab {
             if (filter != null && !guiMessage.content.string.lowercase().contains(filter.lowercase())) {
                 continue
             }
-            addMessage(guiMessage.content(), guiMessage.signature(), guiMessage.addedTime(), guiMessage.tag(), true)
+            addMessage(guiMessage.content(), guiMessage.signature(), guiMessage.addedTime(), guiMessage.tag(), true, i)
         }
     }
 

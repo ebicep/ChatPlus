@@ -74,7 +74,10 @@ class Translator(val message: String, val from: Language?, val to: Language) : T
                 logException(transRequest)
                 return null
             }
-            return TranslateResult(transRequest.message, transRequest.from!!)
+            if (transRequest.from == null) {
+                return null
+            }
+            return TranslateResult(transRequest.message, transRequest.from)
         }
         return null
     }
