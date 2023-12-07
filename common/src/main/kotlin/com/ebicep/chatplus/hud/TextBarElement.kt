@@ -83,6 +83,7 @@ class FindTextBarElement(private val chatPlusScreen: ChatPlusScreen) : TextBarEl
         } else {
             ChatManager.selectedTab.refreshDisplayedMessage()
         }
+        chatPlusScreen.initial = chatPlusScreen.input!!.value
         chatPlusScreen.rebuildWidgets0()
     }
 
