@@ -143,6 +143,8 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
 
     override fun removed() {
         ChatManager.selectedTab.resetChatScroll()
+        findEnabled = false
+        ChatManager.selectedTab.refreshDisplayedMessage()
     }
 
     private fun onEdited(str: String) {
