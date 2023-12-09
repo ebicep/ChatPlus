@@ -1,18 +1,17 @@
 modLoader = "kotlinforforge"
 loaderVersion = "[4,)"
-#issueTrackerURL = ""
-license = "GNU GPL 3.0"
+issueTrackerURL = "https://github.com/ebicep/ChatPlus/issues/"
+license = "GPL-3.0"
 
 [[mods]]
 modId = "${mod_id}"
 version = "${version}"
-displayName = "ChatPlus"
-authors = "Me!"
-description = '''
-D
-'''
+displayName = "${mod_name}"
+authors = "${mod_authors}"
+description = "${mod_description}"
+logoFile = "icon.png"
 
-[[dependencies.${mod_id}]]
+[[dependencies.${ mod_id }]]
 modId = "forge"
 mandatory = true
 versionRange = "[43,)"

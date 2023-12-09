@@ -2,18 +2,19 @@
   "schemaVersion": 1,
   "id": "${mod_id}",
   "version": "${version}",
-  "name": "ChatPlus",
-  "description": "YO",
+  "name": "${mod_name}",
+  "description": "${mod_description}",
   "authors": [
-    "ebicep"
+    "${mod_authors}"
   ],
   "contact": {
-    "homepage": "https://fabricmc.net/",
-    "sources": "TEST"
+    "homepage": "https://github.com/ebicep/ChatPlus/",
+    "sources": "https://github.com/ebicep/ChatPlus/",
+    "issues": "https://github.com/ebicep/ChatPlus/issues/"
   },
-  "license": "",
+  "license": "GPL-3.0",
   "icon": "assets/chatplus/icon.png",
-  "environment": "*",
+  "environment": "client",
   "entrypoints": {
     "main": [
       {
