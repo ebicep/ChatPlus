@@ -80,6 +80,20 @@ class ChatTab {
         if (Config.values.chatTimestampMode != TimestampMode.NONE && !pOnlyTrim) {
             addTimestampToComponent(componentWithTimeStamp, 0)
         }
+        if (!pOnlyTrim) {
+            val guiMessage = GuiMessage(pAddedTime, componentWithTimeStamp, pHeaderSignature, pTag)
+            this.messages.add(guiMessage)
+            while (this.messages.size > Config.values.maxMessages) {
+                this.messages.removeAt(0)
+            }
+            val screen = Minecraft.getInstance().screen
+            if (findEnabled && screen is ChatPlusScreen) {
+                val filter = screen.input?.value
+                if (filter != null && !guiMessage.content.string.lowercase().contains(filter.lowercase())) {
+                    return
+                }
+            }
+        }
         val list = wrapComponents(componentWithTimeStamp, i, Minecraft.getInstance().font)
         val flag = ChatManager.isChatFocused()
         for (j in list.indices) {
@@ -101,12 +115,6 @@ class ChatTab {
         }
         while (this.displayedMessages.size > Config.values.maxMessages) {
             this.displayedMessages.removeAt(0)
-        }
-        if (!pOnlyTrim) {
-            this.messages.add(GuiMessage(pAddedTime, componentWithTimeStamp, pHeaderSignature, pTag))
-            while (this.messages.size > Config.values.maxMessages) {
-                this.messages.removeAt(0)
-            }
         }
     }
 
