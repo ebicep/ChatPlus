@@ -1,14 +1,17 @@
 package com.ebicep.chatplus.events
 
+import com.ebicep.chatplus.ChatPlus
 import com.ebicep.chatplus.ChatPlus.isEnabled
 import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.config.ConfigScreen
 import com.ebicep.chatplus.config.queueUpdateConfig
+import com.ebicep.chatplus.hud.ChatManager
 import com.ebicep.chatplus.hud.ChatPlusScreen
 import com.ebicep.chatplus.translator.Translator
 import com.ebicep.chatplus.translator.languageTo
 import dev.architectury.event.CompoundEventResult
 import dev.architectury.event.events.client.*
+import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.screens.ChatScreen
 import net.minecraft.network.chat.ChatType
 import net.minecraft.network.chat.Component
@@ -27,6 +30,16 @@ object Events {
             Config.values.chatTabs.forEach {
                 if (it.resetDisplayMessageAtTick == currentTick) {
                     it.refreshDisplayedMessage()
+                }
+            }
+            val messagesToSend = ChatPlusScreen.messagesToSend
+            if (messagesToSend.isNotEmpty() && ChatPlusScreen.lastMessageSentTick + 5 < currentTick) {
+                val message = messagesToSend.removeAt(0)
+                ChatManager.addSentMessage(message)
+                try {
+                    Minecraft.getInstance().player!!.connection.sendChat(message)
+                } catch (e: Exception) {
+                    ChatPlus.LOGGER.error(e)
                 }
             }
 

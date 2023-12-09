@@ -197,7 +197,7 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
                 }
 
                 257, 335 -> { // enter
-                    if (handleChatInput(input!!.value, true)) {
+                    if (handleChatInput(input!!.value)) {
                         minecraft!!.setScreen(null as Screen?)
                     }
                     true
@@ -509,27 +509,27 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
         return ChatManager.selectedTab.getClickedComponentStyleAt(pMouseX, pMouseY)
     }
 
-    fun handleChatInput(pInput: String, pAddToRecentChat: Boolean): Boolean {
+    fun handleChatInput(pInput: String): Boolean {
         val normalizeChatMessage = normalizeChatMessage(pInput)
         return if (normalizeChatMessage.isEmpty()) {
             true
         } else {
             if (normalizeChatMessage.startsWith("/")) {
                 val command = splitChatMessage(normalizeChatMessage)[0]
-                if (pAddToRecentChat) {
-                    ChatManager.addSentMessage(command)
-                }
+                ChatManager.addSentMessage(command)
                 minecraft!!.player!!.connection.sendCommand(command.substring(1))
             } else {
                 if (languageSpeakEnabled) {
                     SelfTranslator(normalizeChatMessage, if (inputTranslatePrefix == null) "" else inputTranslatePrefix!!.value).start()
                 } else {
-                    splitChatMessage(normalizeChatMessage).forEach {
-                        if (pAddToRecentChat) {
-                            ChatManager.addSentMessage(it)
-                        }
-                        minecraft!!.player!!.connection.sendChat(it)
+                    val messages = splitChatMessage(normalizeChatMessage)
+                    if (messages.isEmpty()) {
+                        return minecraft!!.screen === this
                     }
+                    ChatManager.addSentMessage(messages[0])
+                    minecraft!!.player!!.connection.sendChat(messages[0])
+                    messagesToSend.addAll(messages.subList(1, messages.size))
+
                 }
             }
             minecraft!!.screen === this // FORGE: Prevent closing the screen if another screen has been opened.
@@ -564,6 +564,9 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
 
         var lastCopiedMessage: Pair<GuiMessage.Line, Long>? = null
         var copiedMessageCooldown = -1L
+
+        val messagesToSend: MutableList<String> = mutableListOf()
+        var lastMessageSentTick = 0L
 
         fun splitChatMessage(message: String): List<String> {
             return if (message.length <= 256) {

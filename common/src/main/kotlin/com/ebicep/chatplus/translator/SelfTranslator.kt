@@ -1,23 +1,26 @@
 package com.ebicep.chatplus.translator
 
 import com.ebicep.chatplus.hud.ChatManager
+import com.ebicep.chatplus.hud.ChatPlusScreen
 import com.ebicep.chatplus.hud.ChatPlusScreen.Companion.splitChatMessage
 import net.minecraft.client.Minecraft
 
-class SelfTranslator(val message: String, val prefix: String) : Thread() {
+class SelfTranslator(val toTranslate: String, val prefix: String) : Thread() {
 
     override fun run() {
         languageSpeak?.let {
-            val translator = Translator(message, languageSelf, it)
-            val translateResult = translator.translate(message) ?: return
-            splitChatMessage(translateResult.translatedText).forEach { splitMessage ->
-                ChatManager.addSentMessage(splitMessage)
-                if (prefix.isEmpty()) {
-                    Minecraft.getInstance().player!!.connection.sendChat(splitMessage)
-                } else {
-                    Minecraft.getInstance().player!!.connection.sendChat("$prefix $splitMessage")
-                }
+            val translator = Translator(toTranslate, languageSelf, it)
+            val translateResult = translator.translate(toTranslate) ?: return
+            val messages = splitChatMessage(translateResult.translatedText)
+
+            val translatedMessage = messages[0]
+            ChatManager.addSentMessage(translatedMessage)
+            if (prefix.isEmpty()) {
+                Minecraft.getInstance().player!!.connection.sendChat(translatedMessage)
+            } else {
+                Minecraft.getInstance().player!!.connection.sendChat("$prefix $translatedMessage")
             }
+            ChatPlusScreen.messagesToSend.addAll(messages.subList(1, messages.size))
         }
     }
 

@@ -372,6 +372,7 @@ class ChatTab {
                 componentCollector.resultOrEmpty, pMaxWidth, Style.EMPTY
             ) { formattedText: FormattedText, p_94004_: Boolean ->
                 val formattedCharSequence = Language.getInstance().getVisualOrder(formattedText)
+
                 list.add(
                     Pair(
                         if (p_94004_) FormattedCharSequence.composite(INDENT, formattedCharSequence) else formattedCharSequence,

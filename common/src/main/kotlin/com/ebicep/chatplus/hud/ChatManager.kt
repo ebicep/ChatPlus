@@ -1,6 +1,7 @@
 package com.ebicep.chatplus.hud
 
 import com.ebicep.chatplus.config.Config
+import com.ebicep.chatplus.events.Events
 import net.minecraft.client.Minecraft
 import kotlin.math.roundToInt
 
@@ -45,6 +46,7 @@ object ChatManager {
      * Adds this string to the list of sent messages, for recall using the up/down arrow keys
      */
     fun addSentMessage(pMessage: String) {
+        ChatPlusScreen.lastMessageSentTick = Events.currentTick
         if (this.sentMessages.isEmpty() || this.sentMessages[this.sentMessages.size - 1] != pMessage) {
             this.sentMessages.add(pMessage)
         }
