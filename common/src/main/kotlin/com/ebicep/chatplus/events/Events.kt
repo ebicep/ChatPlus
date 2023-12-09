@@ -33,7 +33,7 @@ object Events {
                 }
             }
             val messagesToSend = ChatPlusScreen.messagesToSend
-            if (messagesToSend.isNotEmpty() && ChatPlusScreen.lastMessageSentTick + 5 < currentTick) {
+            if (messagesToSend.isNotEmpty() && ChatPlusScreen.lastMessageSentTick + 10 < currentTick) {
                 val message = messagesToSend.removeAt(0)
                 ChatManager.addSentMessage(message)
                 try {
