@@ -27,12 +27,12 @@ public class MixinChatComponent {
     }
 
     @Inject(method = "addMessage(Lnet/minecraft/network/chat/Component;Lnet/minecraft/network/chat/MessageSignature;ILnet/minecraft/client/GuiMessageTag;Z)V", at = @At("RETURN"))
-    public void addMessage(Component pChatComponent, MessageSignature pHeaderSignature, int pAddedTime, GuiMessageTag pTag, boolean pOnlyTrim, CallbackInfo ci) {
+    public void addMessage(Component component, MessageSignature messageSignature, int i, GuiMessageTag guiMessageTag, boolean bl, CallbackInfo ci) {
         if (!ChatPlus.INSTANCE.isEnabled()) {
             return;
         }
         for (ChatTab chatTab : Config.INSTANCE.getValues().getChatTabs()) {
-            chatTab.addMessage(pChatComponent, pHeaderSignature, pAddedTime, pTag, false, chatTab.getMessages().size());
+            chatTab.addNewMessage(component, messageSignature, i, guiMessageTag, chatTab.getMessages().size());
         }
     }
 

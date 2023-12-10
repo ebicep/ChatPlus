@@ -61,40 +61,59 @@ class ChatTab {
     @Transient
     var resetDisplayMessageAtTick = -1L
 
-    fun addMessage(
+    fun addNewMessage(
         component: Component,
         signature: MessageSignature?,
         addedTime: Int,
         tag: GuiMessageTag?,
-        onlyTrim: Boolean,
         linkedMessageIndex: Int
     ) {
         if (!regex.matches(component.string)) {
             return
         }
-        val i = Mth.floor(ChatManager.getBackgroundWidth())
-//            if (pTag?.icon() != null) {
-//                i -= pTag.icon()!!.width + 4 + 2
-//            }
+        val componentWithTimeStamp: MutableComponent = getTimeStampedMessage(component)
+        val guiMessage = GuiMessage(addedTime, componentWithTimeStamp, signature, tag)
+        this.messages.add(guiMessage)
+        while (this.messages.size > Config.values.maxMessages) {
+            this.messages.removeAt(0)
+        }
+        val screen = Minecraft.getInstance().screen
+        if (findEnabled && screen is ChatPlusScreen) {
+            val filter = screen.input?.value
+            if (filter != null && !guiMessage.content.string.lowercase().contains(filter.lowercase())) {
+                return
+            }
+        }
+        addNewDisplayMessage0(componentWithTimeStamp, addedTime, tag, linkedMessageIndex)
+    }
+
+    private fun getTimeStampedMessage(component: Component): MutableComponent {
         val componentWithTimeStamp: MutableComponent = component.copy()
-        if (Config.values.chatTimestampMode != TimestampMode.NONE && !onlyTrim) {
+        if (Config.values.chatTimestampMode != TimestampMode.NONE) {
             addTimestampToComponent(componentWithTimeStamp, 0)
         }
-        if (!onlyTrim) {
-            val guiMessage = GuiMessage(addedTime, componentWithTimeStamp, signature, tag)
-            this.messages.add(guiMessage)
-            while (this.messages.size > Config.values.maxMessages) {
-                this.messages.removeAt(0)
-            }
-            val screen = Minecraft.getInstance().screen
-            if (findEnabled && screen is ChatPlusScreen) {
-                val filter = screen.input?.value
-                if (filter != null && !guiMessage.content.string.lowercase().contains(filter.lowercase())) {
-                    return
-                }
-            }
+        return componentWithTimeStamp
+    }
+
+    private fun addNewDisplayMessage(
+        component: Component,
+        addedTime: Int,
+        tag: GuiMessageTag?,
+        linkedMessageIndex: Int
+    ) {
+        if (!regex.matches(component.string)) {
+            return
         }
-        val list = wrapComponents(componentWithTimeStamp, i, Minecraft.getInstance().font)
+        addNewDisplayMessage0(component, addedTime, tag, linkedMessageIndex)
+    }
+
+    private fun addNewDisplayMessage0(
+        component: Component,
+        addedTime: Int,
+        tag: GuiMessageTag?,
+        linkedMessageIndex: Int
+    ) {
+        val list = wrapComponents(component, Mth.floor(ChatManager.getBackgroundWidth()), Minecraft.getInstance().font)
         val flag = ChatManager.isChatFocused()
         for (j in list.indices) {
             val chatPlusLine = list[j]
@@ -313,7 +332,7 @@ class ChatTab {
             if (filter != null && !guiMessage.content.string.lowercase().contains(filter.lowercase())) {
                 continue
             }
-            addMessage(guiMessage.content(), guiMessage.signature(), guiMessage.addedTime(), guiMessage.tag(), true, i)
+            addNewDisplayMessage0(guiMessage.content(), guiMessage.addedTime(), guiMessage.tag(), i)
         }
     }
 
