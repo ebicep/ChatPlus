@@ -84,7 +84,7 @@ class ChatTab {
                 return
             }
         }
-        addNewDisplayMessage0(componentWithTimeStamp, addedTime, tag, linkedMessageIndex)
+        this.addNewDisplayMessage(componentWithTimeStamp, addedTime, tag, linkedMessageIndex)
     }
 
     private fun getTimeStampedMessage(component: Component): MutableComponent {
@@ -96,18 +96,6 @@ class ChatTab {
     }
 
     private fun addNewDisplayMessage(
-        component: Component,
-        addedTime: Int,
-        tag: GuiMessageTag?,
-        linkedMessageIndex: Int
-    ) {
-        if (!regex.matches(component.string)) {
-            return
-        }
-        addNewDisplayMessage0(component, addedTime, tag, linkedMessageIndex)
-    }
-
-    private fun addNewDisplayMessage0(
         component: Component,
         addedTime: Int,
         tag: GuiMessageTag?,
@@ -332,7 +320,7 @@ class ChatTab {
             if (filter != null && !guiMessage.content.string.lowercase().contains(filter.lowercase())) {
                 continue
             }
-            addNewDisplayMessage0(guiMessage.content(), guiMessage.addedTime(), guiMessage.tag(), i)
+            this.addNewDisplayMessage(guiMessage.content(), guiMessage.addedTime(), guiMessage.tag(), i)
         }
     }
 
