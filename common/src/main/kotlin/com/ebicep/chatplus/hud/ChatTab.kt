@@ -62,26 +62,26 @@ class ChatTab {
     var resetDisplayMessageAtTick = -1L
 
     fun addMessage(
-        pChatComponent: Component,
-        pHeaderSignature: MessageSignature?,
-        pAddedTime: Int,
-        pTag: GuiMessageTag?,
-        pOnlyTrim: Boolean,
+        component: Component,
+        signature: MessageSignature?,
+        addedTime: Int,
+        tag: GuiMessageTag?,
+        onlyTrim: Boolean,
         linkedMessageIndex: Int
     ) {
-        if (!regex.matches(pChatComponent.string)) {
+        if (!regex.matches(component.string)) {
             return
         }
         val i = Mth.floor(ChatManager.getBackgroundWidth())
 //            if (pTag?.icon() != null) {
 //                i -= pTag.icon()!!.width + 4 + 2
 //            }
-        val componentWithTimeStamp: MutableComponent = pChatComponent.copy()
-        if (Config.values.chatTimestampMode != TimestampMode.NONE && !pOnlyTrim) {
+        val componentWithTimeStamp: MutableComponent = component.copy()
+        if (Config.values.chatTimestampMode != TimestampMode.NONE && !onlyTrim) {
             addTimestampToComponent(componentWithTimeStamp, 0)
         }
-        if (!pOnlyTrim) {
-            val guiMessage = GuiMessage(pAddedTime, componentWithTimeStamp, pHeaderSignature, pTag)
+        if (!onlyTrim) {
+            val guiMessage = GuiMessage(addedTime, componentWithTimeStamp, signature, tag)
             this.messages.add(guiMessage)
             while (this.messages.size > Config.values.maxMessages) {
                 this.messages.removeAt(0)
@@ -107,7 +107,7 @@ class ChatTab {
             val lastComponent = j == list.size - 1
             this.displayedMessages.add(
                 ChatPlusGuiMessageLine(
-                    GuiMessage.Line(pAddedTime, formattedCharSequence, pTag, lastComponent),
+                    GuiMessage.Line(addedTime, formattedCharSequence, tag, lastComponent),
                     content,
                     linkedMessageIndex
                 )
