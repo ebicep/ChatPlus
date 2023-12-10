@@ -121,6 +121,7 @@ data class ConfigVariables(
     var keyLargeScroll: InputConstants.Key = InputConstants.getKey("key.keyboard.left.alt"),
     var keyMoveChat: InputConstants.Key = InputConstants.getKey("key.keyboard.right.control"),
     var keyCopyMessageWithModifier: KeyWithModifier = KeyWithModifier(InputConstants.getKey("key.keyboard.c"), 2),
+    var copyNoFormatting: Boolean = true,
     // translator
     var translatorEnabled: Boolean = true,
     var translatorRegexes: MutableList<RegexMatch> = mutableListOf(),

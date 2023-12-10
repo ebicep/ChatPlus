@@ -142,6 +142,10 @@ object ConfigScreenImpl {
                 }
                 .build()
         )
+        keyBinds.addEntry(entryBuilder.booleanToggle(
+            "key.copyMessage.noFormatting.toggle",
+            Config.values.copyNoFormatting
+        ) { Config.values.copyNoFormatting = it })
     }
 
     private fun addTranslatorRegexOptions(builder: ConfigBuilder, entryBuilder: ConfigEntryBuilder) {

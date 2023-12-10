@@ -6,6 +6,7 @@ import com.ebicep.chatplus.events.Events
 import com.ebicep.chatplus.translator.SelfTranslator
 import com.ebicep.chatplus.translator.languageSpeakEnabled
 import com.mojang.blaze3d.platform.InputConstants
+import net.minecraft.ChatFormatting
 import net.minecraft.client.GuiMessage
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.Font
@@ -178,7 +179,11 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
             messageCopied -> {
                 copiedMessageCooldown = Events.currentTick + 20
                 ChatManager.selectedTab.getMessageAt(lastMouseX.toDouble(), lastMouseY.toDouble())?.let {
-                    copyToClipboard(it.content)
+                    if (Config.values.copyNoFormatting) {
+                        copyToClipboard(ChatFormatting.stripFormatting(it.content)!!)
+                    } else {
+                        copyToClipboard(it.content)
+                    }
                     lastCopiedMessage = Pair(it.line, Events.currentTick + 60)
                     //input!!.setEditable(false)
                     return@keyPressed true
