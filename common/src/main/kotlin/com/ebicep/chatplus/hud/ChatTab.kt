@@ -27,7 +27,43 @@ import kotlin.math.min
 @Serializable
 class ChatTab {
 
+    fun literalIgnored(string: String): MutableComponent {
+        return MutableComponent.create(LiteralContentsIgnored(string))
+    }
+
+    data class ChatPlusGuiMessage(val guiMessage: GuiMessage, var timesRepeated: Int = 1)
+
     data class ChatPlusGuiMessageLine(val line: GuiMessage.Line, val content: String, val linkedMessageIndex: Int)
+
+    class LiteralContentsIgnored(val text: String) : ComponentContents {
+
+        override fun <T> visit(arg: FormattedText.ContentConsumer<T>): Optional<T> {
+            return arg.accept(this.text)
+        }
+
+        override fun <T> visit(arg: FormattedText.StyledContentConsumer<T>, arg2: Style): Optional<T> {
+            return arg.accept(arg2, this.text)
+        }
+
+        override fun toString(): String {
+            return "literalIgnored{" + this.text + "}"
+        }
+
+        override fun equals(other: Any?): Boolean {
+            return if (this === other) {
+                true
+            } else if (other !is LiteralContentsIgnored) {
+                false
+            } else {
+                this.text == other.text
+            }
+        }
+
+        override fun hashCode(): Int {
+            return text.hashCode()
+        }
+
+    }
 
 
     var name: String
@@ -47,7 +83,7 @@ class ChatTab {
     var regex: Regex = Regex("")
 
     @Transient
-    val messages: MutableList<GuiMessage> = ArrayList()
+    val messages: MutableList<ChatPlusGuiMessage> = ArrayList()
 
     @Transient
     val displayedMessages: MutableList<ChatPlusGuiMessageLine> = ArrayList()
@@ -72,15 +108,37 @@ class ChatTab {
             return
         }
         val componentWithTimeStamp: MutableComponent = getTimeStampedMessage(component)
-        val guiMessage = GuiMessage(addedTime, componentWithTimeStamp, signature, tag)
-        this.messages.add(guiMessage)
+        if (messages.isNotEmpty()) {
+            val lastMessage = messages[messages.size - 1]
+            val guiMessage = lastMessage.guiMessage
+            val content = guiMessage.content.copy()
+            content.siblings.removeIf { it.contents is LiteralContentsIgnored }
+            if (content.equals(componentWithTimeStamp)) {
+                lastMessage.timesRepeated++
+                guiMessage.content.siblings.removeIf { it.contents is LiteralContentsIgnored }
+                guiMessage.content.siblings.add(literalIgnored(" (${lastMessage.timesRepeated})").withStyle { it.withColor(ChatFormatting.GRAY) })
+                // remove previous displayed message and update it
+                for (i in displayedMessages.size - 1 downTo 0) {
+                    val displayedMessage = displayedMessages[i]
+                    if (displayedMessage.linkedMessageIndex == messages.size - 1) {
+                        displayedMessages.removeLast()
+                    } else {
+                        break
+                    }
+                }
+                this.addNewDisplayMessage(guiMessage.content as MutableComponent, addedTime, tag, linkedMessageIndex)
+                return
+            }
+        }
+        val chatPlusGuiMessage = ChatPlusGuiMessage(GuiMessage(addedTime, componentWithTimeStamp, signature, tag))
+        this.messages.add(chatPlusGuiMessage)
         while (this.messages.size > Config.values.maxMessages) {
-            this.messages.removeAt(0)
+            this.messages.removeFirst()
         }
         val screen = Minecraft.getInstance().screen
         if (findEnabled && screen is ChatPlusScreen) {
             val filter = screen.input?.value
-            if (filter != null && !guiMessage.content.string.lowercase().contains(filter.lowercase())) {
+            if (filter != null && !chatPlusGuiMessage.guiMessage.content.string.lowercase().contains(filter.lowercase())) {
                 return
             }
         }
@@ -96,18 +154,22 @@ class ChatTab {
     }
 
     private fun addNewDisplayMessage(
-        component: Component,
+        component: MutableComponent,
         addedTime: Int,
         tag: GuiMessageTag?,
         linkedMessageIndex: Int
     ) {
-        val list = wrapComponents(component, Mth.floor(ChatManager.getBackgroundWidth()), Minecraft.getInstance().font)
-        val flag = ChatManager.isChatFocused()
+//        val timesRepeated = messages[linkedMessageIndex].timesRepeated
+//        if (timesRepeated > 0) {
+//            component.append(Component.literal(" ($timesRepeated)").withStyle { it.withColor(ChatFormatting.GRAY) })
+//        }
+        val list: List<Pair<FormattedCharSequence, String>> =
+            wrapComponents(component, Mth.floor(ChatManager.getBackgroundWidth()), Minecraft.getInstance().font)
         for (j in list.indices) {
             val chatPlusLine = list[j]
             val formattedCharSequence = chatPlusLine.first
             val content = chatPlusLine.second
-            if (flag && chatScrollbarPos > 0) {
+            if (ChatManager.isChatFocused() && chatScrollbarPos > 0) {
                 newMessageSinceScroll = true
                 scrollChat(1)
             }
@@ -150,7 +212,7 @@ class ChatTab {
     }
 
     private fun getTimestamp(newLine: Boolean): Component {
-        return Component.literal((if (newLine) "\n" else "") + "Sent at ")
+        return literalIgnored((if (newLine) "\n" else "") + "Sent at ")
             .withStyle {
                 it.withColor(ChatFormatting.GRAY)
             }
@@ -316,11 +378,12 @@ class ChatTab {
         resetDisplayMessageAtTick = -1
         displayedMessages.clear()
         for (i in messages.indices) {
-            val guiMessage: GuiMessage = messages[i]
+            val guiMessage: GuiMessage = messages[i].guiMessage
             if (filter != null && !guiMessage.content.string.lowercase().contains(filter.lowercase())) {
                 continue
             }
-            this.addNewDisplayMessage(guiMessage.content(), guiMessage.addedTime(), guiMessage.tag(), i)
+            // assume all messages are mutable from adding timestamp method call
+            this.addNewDisplayMessage(guiMessage.content() as MutableComponent, guiMessage.addedTime(), guiMessage.tag(), i)
         }
     }
 
@@ -368,15 +431,15 @@ class ChatTab {
             return if (Minecraft.getInstance().options.chatColors().get()) pText else ChatFormatting.stripFormatting(pText)
         }
 
-        fun wrapComponents(pComponent: FormattedText, pMaxWidth: Int, pFont: Font): List<Pair<FormattedCharSequence, String>> {
+        fun wrapComponents(component: FormattedText, maxWidth: Int, font: Font): List<Pair<FormattedCharSequence, String>> {
             val componentCollector = ComponentCollector()
-            pComponent.visit({ style: Style, string: String ->
+            component.visit({ style: Style, string: String ->
                 componentCollector.append(FormattedText.of(stripColor(string)!!, style))
                 Optional.empty<Any?>()
             }, Style.EMPTY)
             val list: MutableList<Pair<FormattedCharSequence, String>> = Lists.newArrayList()
-            pFont.splitter.splitLines(
-                componentCollector.resultOrEmpty, pMaxWidth, Style.EMPTY
+            font.splitter.splitLines(
+                componentCollector.resultOrEmpty, maxWidth, Style.EMPTY
             ) { formattedText: FormattedText, p_94004_: Boolean ->
                 val formattedCharSequence = Language.getInstance().getVisualOrder(formattedText)
 
