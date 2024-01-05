@@ -183,7 +183,7 @@ class ChatTab {
             )
         }
         while (this.displayedMessages.size > Config.values.maxMessages) {
-            this.displayedMessages.removeAt(0)
+            this.displayedMessages.removeFirst()
         }
     }
 
@@ -228,13 +228,13 @@ class ChatTab {
     }
 
     fun getMessageTagAt(pMouseX: Double, pMouseY: Double): GuiMessageTag? {
-        val d0: Double = this.screenToChatX(pMouseX)
-        val d1: Double = this.screenToChatY(pMouseY)
-        val i: Int = this.getMessageEndIndexAt(d0, d1)
+        val chatX: Double = this.screenToChatX(pMouseX)
+        val chatY: Double = this.screenToChatY(pMouseY)
+        val i: Int = this.getMessageEndIndexAt(chatX, chatY)
         if (i >= 0 && i < this.displayedMessages.size) {
             val guiMessageLine: GuiMessage.Line = this.displayedMessages[i].line
             val guiMessageTag = guiMessageLine.tag()
-            if (guiMessageTag != null && this.hasSelectedMessageTag(d0, guiMessageLine, guiMessageTag)) {
+            if (guiMessageTag != null && this.hasSelectedMessageTag(chatX, guiMessageLine, guiMessageTag)) {
                 return guiMessageTag
             }
         }
@@ -296,8 +296,8 @@ class ChatTab {
         }
     }
 
-    private fun hasSelectedMessageTag(p_240619_: Double, pLine: GuiMessage.Line, pTag: GuiMessageTag): Boolean {
-        return if (p_240619_ < 0.0) {
+    private fun hasSelectedMessageTag(chatX: Double, pLine: GuiMessage.Line, pTag: GuiMessageTag): Boolean {
+        return if (chatX < 0.0) {
             true
         } else {
             val guiMessageTagIcon = pTag.icon()
@@ -306,7 +306,7 @@ class ChatTab {
             } else {
                 val i: Int = this.getTagIconLeft(pLine)
                 val j = i + guiMessageTagIcon.width
-                p_240619_ >= i.toDouble() && p_240619_ <= j.toDouble()
+                chatX >= i.toDouble() && chatX <= j.toDouble()
             }
         }
     }

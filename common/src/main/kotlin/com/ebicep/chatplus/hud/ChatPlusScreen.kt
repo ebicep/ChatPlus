@@ -434,14 +434,9 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
         commandSuggestions!!.render(guiGraphics, pMouseX, pMouseY)
 
         // hoverables
-        val guiMessageTag = ChatManager.selectedTab.getMessageTagAt(pMouseX.toDouble(), pMouseY.toDouble())
-        if (guiMessageTag?.text() != null) {
-            //guiGraphics.renderTooltip(font, font.split(guiMessageTag.text()!!, 210), pMouseX, pMouseY)
-        } else {
-            val style = getComponentStyleAt(pMouseX.toDouble(), pMouseY.toDouble())
-            if (style?.hoverEvent != null) {
-                guiGraphics.renderComponentHoverEffect(font, style, pMouseX, pMouseY)
-            }
+        val style = getComponentStyleAt(pMouseX.toDouble(), pMouseY.toDouble())
+        if (style?.hoverEvent != null) {
+            guiGraphics.renderComponentHoverEffect(font, style, pMouseX, pMouseY)
         }
     }
 
@@ -566,6 +561,8 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
 
         var lastMouseX = 0
         var lastMouseY = 0
+
+        var hoveredOverMessage: GuiMessage.Line? = null
 
         var lastCopiedMessage: Pair<GuiMessage.Line, Long>? = null
         var copiedMessageCooldown = -1L
