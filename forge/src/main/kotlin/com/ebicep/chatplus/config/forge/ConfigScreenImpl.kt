@@ -11,6 +11,7 @@ import com.mojang.blaze3d.platform.InputConstants
 import me.shedaniel.clothconfig2.api.*
 import me.shedaniel.clothconfig2.gui.entries.*
 import me.shedaniel.clothconfig2.impl.builders.DropdownMenuBuilder
+import me.shedaniel.math.Color
 import net.minecraft.client.gui.screens.Screen
 import net.minecraft.network.chat.Component
 import java.util.*
@@ -76,6 +77,26 @@ object ConfigScreenImpl {
             .setTooltip(Component.translatable("chatPlus.chatSettings.chatTimestampMode.tooltip"))
             .setSaveConsumer { Config.values.chatTimestampMode = it }
             .build())
+        general.addEntry(
+            entryBuilder.booleanToggle(
+                "chatPlus.chatSettings.hoverHighlight.toggle",
+                Config.values.hoverHighlightEnabled
+            ) { Config.values.hoverHighlightEnabled = it })
+        general.addEntry(
+            entryBuilder.startAlphaColorField(
+                Component.translatable("chatPlus.chatSettings.hoverHighlight.color"),
+                Color.ofTransparent(Config.values.hoverHighlightColor)
+            )
+                .setTooltip(Component.translatable("chatPlus.chatSettings.hoverHighlight.color.tooltip"))
+                .setAlphaMode(true)
+                .setDefaultValue2 {
+                    Color.ofTransparent(Config.values.hoverHighlightColor)
+                }
+                .setSaveConsumer2 {
+                    Config.values.hoverHighlightColor = it.color
+                }
+                .build()
+        )
     }
 
     private fun addChatTabsOption(builder: ConfigBuilder, entryBuilder: ConfigEntryBuilder) {

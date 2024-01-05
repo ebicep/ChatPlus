@@ -36,7 +36,7 @@ object ChatRenderer {
         val backgroundWidthEndX = x + width
 
         val textOpacity: Double = ChatManager.getTextOpacity() * 0.9 + 0.1
-        val backGroundOpacity: Float = ChatManager.getBackgroundOpacity()
+        val backgroundOpacity: Float = ChatManager.getBackgroundOpacity()
         val lineSpacing: Float = ChatManager.getLineSpacing()
         val l1 = (-8.0 * (lineSpacing + 1.0) + 4.0 * lineSpacing).roundToInt()
 
@@ -55,7 +55,7 @@ object ChatRenderer {
                     y - height,
                     backgroundWidthEndX,
                     y,
-                    (255 * backGroundOpacity).toInt() shl 24
+                    (255 * backgroundOpacity).toInt() shl 24
                 )
             }
             renderMoving(
@@ -88,7 +88,7 @@ object ChatRenderer {
             }
             val fadeOpacity = if (chatFocused) 1.0 else getTimeFactor(ticksLived)
             val textColor = (255.0 * fadeOpacity * textOpacity).toInt()
-            val backgroundColor = (255.0 * fadeOpacity * backGroundOpacity).toInt()
+            val backgroundColor = (255.0 * fadeOpacity * backgroundOpacity).toInt()
             if (textColor <= 3) {
                 ++displayMessageIndex
                 continue
@@ -96,6 +96,8 @@ object ChatRenderer {
             // how high chat is from input bar, if changed need to change queue offset
             val verticalChatOffset = rescaledY - displayMessageIndex * lineHeight
             val verticalTextOffset = verticalChatOffset + l1 // align text with background
+
+            val hoveredOver = line === ChatPlusScreen.hoveredOverMessage
 
             poseStack.pushPose()
             poseStack.translate(0.0f, 0.0f, 50.0f)
@@ -105,7 +107,7 @@ object ChatRenderer {
                 verticalChatOffset - lineHeight,
                 rescaledWidth,
                 verticalChatOffset,
-                backgroundColor shl 24
+                if (hoveredOver) Config.values.hoverHighlightColor else backgroundColor shl 24
             )
             poseStack.translate(0f, 0f, 50f)
             guiGraphics.drawString(
@@ -116,6 +118,7 @@ object ChatRenderer {
                 16777215 + (textColor shl 24)
             )
             poseStack.translate(0f, 0f, 50f)
+
             // copy outline
             ChatPlusScreen.lastCopiedMessage?.let {
                 if (it.first != line) {
@@ -142,7 +145,7 @@ object ChatRenderer {
                 rescaledY - rescaledHeight,
                 rescaledWidth,
                 rescaledY - displayMessageIndex * lineHeight,
-                (255 * backGroundOpacity).toInt() shl 24
+                (255 * backgroundOpacity).toInt() shl 24
             )
         }
         poseStack.popPose()

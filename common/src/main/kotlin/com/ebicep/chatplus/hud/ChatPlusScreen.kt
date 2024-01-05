@@ -143,6 +143,7 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
     }
 
     override fun removed() {
+        hoveredOverMessage = null
         ChatManager.selectedTab.resetChatScroll()
         findEnabled = false
         ChatManager.selectedTab.refreshDisplayedMessage()
@@ -286,7 +287,8 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
                 if (pMouseY < roofInner && pMouseY > roof && pMouseX > ChatManager.getX() && pMouseX < side) {
                     movingChatY = true
                 }
-                if (!movingChatX && !movingChatY) {
+                val window = Minecraft.getInstance().window.window
+                if (!movingChatX && !movingChatY && InputConstants.isKeyDown(window, Config.values.keyMoveChat.value)) {
                     if (
                         pMouseX > ChatManager.getX() && pMouseX < sideInner &&
                         pMouseY > roofInner && pMouseY < ChatManager.getY()
@@ -335,9 +337,7 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
     }
 
     override fun mouseDragged(pMouseX: Double, pMouseY: Double, pButton: Int, pDragX: Double, pDragY: Double): Boolean {
-        val window = Minecraft.getInstance().window.window
-        val moving = InputConstants.isKeyDown(window, Config.values.keyMoveChat.value)
-        if (!ChatManager.isChatFocused() || !moving || pButton != 0) {
+        if (!ChatManager.isChatFocused() || pButton != 0) {
             movingChat = false
             return super.mouseDragged(pMouseX, pMouseY, pButton, pDragX, pDragY)
         }
@@ -437,6 +437,14 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
         val style = getComponentStyleAt(pMouseX.toDouble(), pMouseY.toDouble())
         if (style?.hoverEvent != null) {
             guiGraphics.renderComponentHoverEffect(font, style, pMouseX, pMouseY)
+        }
+
+        if (Config.values.hoverHighlightEnabled) {
+            hoveredOverMessage = if (movingChat) {
+                null
+            } else {
+                ChatManager.selectedTab.getMessageAt(lastMouseX.toDouble(), lastMouseY.toDouble())?.line
+            }
         }
     }
 

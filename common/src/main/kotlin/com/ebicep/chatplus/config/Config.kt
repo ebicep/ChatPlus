@@ -112,6 +112,8 @@ data class ConfigVariables(
     var backgroundOpacity: Float = .5f,
     var lineSpacing: Float = 0f,
     var chatTimestampMode: TimestampMode = TimestampMode.HR_12_SECOND,
+    var hoverHighlightEnabled: Boolean = true,
+    var hoverHighlightColor: Int = 0,
     // tabs
     var chatTabs: MutableList<ChatTab> = mutableListOf(ChatTab("All", "(?s).*")),
     var selectedTab: Int = 0,
