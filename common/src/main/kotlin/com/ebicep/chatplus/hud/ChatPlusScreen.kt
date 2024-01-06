@@ -6,7 +6,6 @@ import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.translator.SelfTranslator
 import com.ebicep.chatplus.translator.languageSpeakEnabled
 import com.mojang.blaze3d.platform.InputConstants
-import net.minecraft.client.GuiMessage
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.Font
 import net.minecraft.client.gui.GuiGraphics
@@ -390,14 +389,6 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
         }
 
         EventBus.post(ChatScreenRenderEvent(this, guiGraphics, mouseX, mouseY))
-
-//        if (Config.values.hoverHighlightEnabled) {
-//            hoveredOverMessage = if (movingChat) {
-//                null
-//            } else {
-//                ChatManager.selectedTab.getMessageAt(lastMouseX.toDouble(), lastMouseY.toDouble())?.line
-//            }
-//        }
     }
 
     private fun renderTranslateSpeakPrefixInputBox(
@@ -508,9 +499,6 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
 
         var lastMouseX = 0
         var lastMouseY = 0
-
-        var lastCopiedMessage: Pair<GuiMessage.Line, Long>? = null
-        var copiedMessageCooldown = -1L
 
         val messagesToSend: MutableList<String> = mutableListOf()
         var lastMessageSentTick = 0L

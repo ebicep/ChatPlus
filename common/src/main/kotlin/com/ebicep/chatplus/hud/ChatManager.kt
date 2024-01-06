@@ -60,7 +60,7 @@ object ChatManager {
         var xOff = 0.0
         val font = Minecraft.getInstance().font
         //ChatPlus.LOGGER.debug("x: $x, translatedY: $translatedY")
-        if (translatedY > tabYOffset || translatedY < -(9 + ChatTab.PADDING + ChatTab.PADDING)) {
+        if (translatedY > TAB_Y_OFFSET || translatedY < -(9 + ChatTab.PADDING + ChatTab.PADDING)) {
             return
         }
         Config.values.chatTabs.forEachIndexed { index, it ->
@@ -71,7 +71,7 @@ object ChatManager {
                 selectedTab.refreshDisplayedMessage()
                 return
             }
-            xOff += categoryLength + tabXBetween
+            xOff += categoryLength + TAB_X_BETWEEN
         }
     }
 

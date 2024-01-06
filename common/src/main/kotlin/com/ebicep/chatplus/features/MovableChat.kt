@@ -14,6 +14,7 @@ import kotlin.math.roundToInt
 
 object MovableChat {
 
+    private const val RENDER_MOVING_SIZE = 3 // width/length of box when rendering moving chat
     private var movingChat: Boolean
         get() = movingChatX || movingChatY || movingChatBox
         set(value) {
@@ -34,11 +35,11 @@ object MovableChat {
                 return@register
             }
             val side = ChatManager.getX() + ChatManager.getWidth()
-            val sideInner = ChatManager.getX() + ChatManager.getWidth() - renderingMovingSize
+            val sideInner = ChatManager.getX() + ChatManager.getWidth() - RENDER_MOVING_SIZE
             val roof = ChatManager.getY() - ChatManager.getHeight()
-            val roofInner = ChatManager.getY() - ChatManager.getHeight() + renderingMovingSize
+            val roofInner = ChatManager.getY() - ChatManager.getHeight() + RENDER_MOVING_SIZE
             if (findEnabled) {
-                ChatManager.selectedTab.getMessageAt(ChatPlusScreen.lastMouseX.toDouble(), ChatPlusScreen.lastMouseY.toDouble())
+                ChatManager.selectedTab.getMessageAt(it.mouseX, it.mouseY)
                     ?.let { message ->
                         val lineOffset = ChatManager.getLinesPerPage() / 3
                         val scrollTo = ChatManager.selectedTab.messages.size - message.linkedMessageIndex - lineOffset
@@ -192,7 +193,7 @@ object MovableChat {
             poseStack.translate(0f, 0f, 200f)
             if (movingChatX) {
                 guiGraphics.fill(
-                    x + backgroundWidth - renderingMovingSize,
+                    x + backgroundWidth - RENDER_MOVING_SIZE,
                     y - height,
                     x + backgroundWidth,
                     y,
@@ -204,7 +205,7 @@ object MovableChat {
                     x,
                     y - height,
                     x + backgroundWidth,
-                    y - height + renderingMovingSize,
+                    y - height + RENDER_MOVING_SIZE,
                     0xFFFFFFFF.toInt()
                 )
             }

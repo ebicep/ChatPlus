@@ -13,9 +13,8 @@ import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.util.Mth
 import kotlin.math.roundToInt
 
-const val tabYOffset = 1 // offset from text box
-const val tabXBetween = 1 // space between categories
-const val renderingMovingSize = 3 // width/length of box when rendering moving chat
+const val TAB_Y_OFFSET = 1 // offset from text box
+const val TAB_X_BETWEEN = 1 // space between categories
 
 open class ChatRenderLineEvent(
     open val guiGraphics: GuiGraphics,
@@ -208,11 +207,11 @@ object ChatRenderer {
         y: Int
     ) {
         poseStack.pushPose()
-        poseStack.translate(x.toFloat(), y.toFloat() + tabYOffset, 0f)
+        poseStack.translate(x.toFloat(), y.toFloat() + TAB_Y_OFFSET, 0f)
         Config.values.chatTabs.forEach {
             it.render(guiGraphics)
             poseStack.translate(
-                Minecraft.getInstance().font.width(it.name).toFloat() + ChatTab.PADDING + ChatTab.PADDING + tabXBetween,
+                Minecraft.getInstance().font.width(it.name).toFloat() + ChatTab.PADDING + ChatTab.PADDING + TAB_X_BETWEEN,
                 0f,
                 0f
             )
