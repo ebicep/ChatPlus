@@ -40,7 +40,7 @@ object CopyMessage {
             it.returnFunction = true
         }
 
-        EventBus.register<RenderChatLineEvent> {
+        EventBus.register<ChatRenderLineEvent> {
             // copy outline
             ChatPlusScreen.lastCopiedMessage?.let { message ->
                 if (message.first != it.line) {

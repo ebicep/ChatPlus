@@ -57,6 +57,13 @@ data class ChatScreenMouseReleasedEvent(
     var returnFunction: Boolean = false
 ) : Event
 
+data class ChatScreenRenderEvent(
+    val screen: ChatPlusScreen,
+    val guiGraphics: GuiGraphics,
+    val mouseX: Int,
+    val mouseY: Int,
+) : Event
+
 
 class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plus_screen.title")) {
 
@@ -378,6 +385,8 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
             guiGraphics.renderComponentHoverEffect(font, style, mouseX, mouseY)
         }
 
+        EventBus.post(ChatScreenRenderEvent(this, guiGraphics, mouseX, mouseY))
+
 //        if (Config.values.hoverHighlightEnabled) {
 //            hoveredOverMessage = if (movingChat) {
 //                null
@@ -495,8 +504,6 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
 
         var lastMouseX = 0
         var lastMouseY = 0
-
-        var hoveredOverMessage: GuiMessage.Line? = null
 
         var lastCopiedMessage: Pair<GuiMessage.Line, Long>? = null
         var copiedMessageCooldown = -1L

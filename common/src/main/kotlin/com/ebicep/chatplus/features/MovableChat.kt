@@ -121,7 +121,7 @@ object MovableChat {
         }
 
         var moving = false
-        EventBus.register<RenderChatPreLinesEvent> {
+        EventBus.register<ChatRenderPreLinesEvent> {
             moving = ChatManager.isChatFocused() && InputConstants.isKeyDown(
                 Minecraft.getInstance().window.window,
                 Config.values.keyMoveChat.value
@@ -151,7 +151,7 @@ object MovableChat {
             )
             it.returnFunction = true
         }
-        EventBus.register<RenderChatPostLinesEvent> {
+        EventBus.register<ChatRenderPostLinesEvent> {
             if (!moving) {
                 return@register
             }

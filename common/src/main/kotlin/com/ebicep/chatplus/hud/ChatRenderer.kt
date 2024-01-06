@@ -15,19 +15,19 @@ const val tabYOffset = 1 // offset from text box
 const val tabXBetween = 1 // space between categories
 const val renderingMovingSize = 3 // width/length of box when rendering moving chat
 
-data class RenderChatPreLinesEvent(
+data class ChatRenderPreLinesEvent(
     val guiGraphics: GuiGraphics,
     var returnFunction: Boolean = false
 ) : Event
 
-data class RenderChatLineEvent(
+data class ChatRenderLineEvent(
     val guiGraphics: GuiGraphics,
     val line: GuiMessage.Line,
     val verticalChatOffset: Int,
     val verticalTextOffset: Int,
 ) : Event
 
-data class RenderChatPostLinesEvent(
+data class ChatRenderPostLinesEvent(
     val guiGraphics: GuiGraphics,
     var displayMessageIndex: Int,
     var returnFunction: Boolean = false
@@ -87,7 +87,7 @@ object ChatRenderer {
             renderTabs(poseStack, guiGraphics, x, y)
         }
 
-        if (EventBus.post(RenderChatPreLinesEvent(guiGraphics)).returnFunction) {
+        if (EventBus.post(ChatRenderPreLinesEvent(guiGraphics)).returnFunction) {
             return
         }
 
@@ -136,13 +136,13 @@ object ChatRenderer {
             )
             poseStack.translate(0f, 0f, 50f)
 
-            EventBus.post(RenderChatLineEvent(guiGraphics, line, verticalChatOffset, verticalTextOffset))
+            EventBus.post(ChatRenderLineEvent(guiGraphics, line, verticalChatOffset, verticalTextOffset))
 
             poseStack.popPose()
 
             ++displayMessageIndex
         }
-        if (EventBus.post(RenderChatPostLinesEvent(guiGraphics, displayMessageIndex)).returnFunction) {
+        if (EventBus.post(ChatRenderPostLinesEvent(guiGraphics, displayMessageIndex)).returnFunction) {
             return
         }
         poseStack.popPose()
