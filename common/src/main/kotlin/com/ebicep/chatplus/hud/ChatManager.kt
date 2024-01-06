@@ -87,7 +87,7 @@ object ChatManager {
      * Width of chat window, raw value not scaled
      */
     fun getWidth(): Int {
-        var width = Config.values.chatWidth
+        var width = Config.values.width
         val guiWidth = Minecraft.getInstance().window.guiScaledWidth
         val minWidthScaled = getMinWidthScaled()
         val lowerThanMin = width < minWidthScaled
@@ -114,15 +114,15 @@ object ChatManager {
      * Height of chat window, raw value not scaled
      */
     fun getHeight(): Int {
-        var height = Config.values.chatHeight
+        var height = Config.values.height
         val minHeightScaled = getMinHeightScaled()
-        val lowerThanMin = Config.values.chatHeight < minHeightScaled
+        val lowerThanMin = Config.values.height < minHeightScaled
         val hasSpace = getY() - 1 >= minHeightScaled
         if (lowerThanMin && hasSpace) {
             height = minHeightScaled
             selectedTab.rescaleChat()
         }
-        if (getY() - Config.values.chatHeight <= 0) {
+        if (getY() - Config.values.height <= 0) {
             height = getY() - 1
         }
         if (height >= getY()) {

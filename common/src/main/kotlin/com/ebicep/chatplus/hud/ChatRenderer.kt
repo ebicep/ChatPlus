@@ -39,12 +39,11 @@ object ChatRenderer {
     private var previousScreenWidth = -1
     private var previousScreenHeight = -1
 
-    // cached values
+    // cached values since render is called every tick they only need to be calculated once/on change
     var textOpacity: Double = 0.0
     var backgroundOpacity: Float = 0f
     var lineSpacing: Float = 0f
     var l1 = 0
-
     var scale: Float = 0f
     var x: Int = 0
     var y: Int = 0
@@ -57,6 +56,7 @@ object ChatRenderer {
     var rescaledWidth: Int = 0
     var rescaledLinesPerPage: Int = 0
     var lineHeight: Int = 0
+
     fun updateCachedDimension() {
         textOpacity = ChatManager.getTextOpacity() * 0.9 + 0.1
         backgroundOpacity = ChatManager.getBackgroundOpacity()
@@ -78,7 +78,7 @@ object ChatRenderer {
 
     fun render(guiGraphics: GuiGraphics, guiTicks: Int, mouseX: Int, mouseY: Int) {
         handleScreenResize()
-        updateCachedDimension()
+
         val poseStack: PoseStack = guiGraphics.pose()
         val chatFocused: Boolean = ChatManager.isChatFocused()
 
@@ -154,6 +154,7 @@ object ChatRenderer {
 
         if (screenWidth != previousScreenWidth && previousScreenWidth != -1) {
             Config.values.x = (screenWidth * Config.values.x / previousScreenWidth.toDouble()).roundToInt()
+            updateCachedDimension()
         }
         if (screenHeight != previousScreenHeight && previousScreenHeight != -1) {
             val oldY = Config.values.y
@@ -167,12 +168,13 @@ object ChatRenderer {
                 }
                 Config.values.y = newY
             }
-            val oldHeight = Config.values.chatHeight
+            val oldHeight = Config.values.height
             if ((oldY > 0 && oldHeight >= oldY - 1) ||
                 (oldY == -BASE_Y_OFFSET && oldHeight >= previousScreenHeight - BASE_Y_OFFSET - 1)
             ) {
-                Config.values.chatHeight = screenHeight - BASE_Y_OFFSET - 1
+                Config.values.height = screenHeight - BASE_Y_OFFSET - 1
             }
+            updateCachedDimension()
         }
         previousScreenWidth = screenWidth
         previousScreenHeight = screenHeight

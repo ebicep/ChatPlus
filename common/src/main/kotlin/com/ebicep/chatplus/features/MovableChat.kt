@@ -91,7 +91,7 @@ object MovableChat {
                     Minecraft.getInstance().window.guiScaledWidth - ChatManager.getX() - 1.0
                 )
                 val width = newWidth.roundToInt()
-                Config.values.chatWidth = width
+                Config.values.width = width
             }
             if (movingChatY) {
                 val newHeight: Double = Mth.clamp(
@@ -100,7 +100,7 @@ object MovableChat {
                     ChatManager.getY() - 1.0
                 )
                 val height = newHeight.roundToInt()
-                Config.values.chatHeight = height
+                Config.values.height = height
             }
             if (movingChatBox) {
                 Config.values.x = Mth.clamp(

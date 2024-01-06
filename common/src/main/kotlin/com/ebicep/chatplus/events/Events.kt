@@ -50,8 +50,11 @@ object Events {
                 Config.save()
             }
         }
+        // scuffed fix for joining a server with a diff window dimension than before
+        ClientLifecycleEvent.CLIENT_LEVEL_LOAD.register {
+            ChatRenderer.updateCachedDimension()
+        }
         ClientLifecycleEvent.CLIENT_STARTED.register {
-            ChatPlus.LOGGER.info("CLIENT STARTED")
             ChatRenderer.updateCachedDimension()
         }
         ClientLifecycleEvent.CLIENT_STOPPING.register {

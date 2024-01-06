@@ -10,12 +10,12 @@ import com.ebicep.chatplus.config.serializers.KeySerializer
 import com.ebicep.chatplus.config.serializers.KeyWithModifier
 import com.ebicep.chatplus.hud.BASE_Y_OFFSET
 import com.ebicep.chatplus.hud.ChatManager
+import com.ebicep.chatplus.hud.ChatRenderer
 import com.ebicep.chatplus.hud.ChatTab
 import com.ebicep.chatplus.translator.LanguageManager
 import com.ebicep.chatplus.translator.RegexMatch
 import com.mojang.blaze3d.platform.InputConstants
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.Transient
 import kotlinx.serialization.UseSerializers
 import kotlinx.serialization.json.Json
 import java.io.File
@@ -98,19 +98,10 @@ const val MAX_MAX_COMMAND_SUGGESTIONS = 30
 
 @Serializable
 data class ConfigVariables(
-    // internal
-    var x: Int = 0,
-    var y: Int = -BASE_Y_OFFSET,
-    var height: Int = 180,
-    var width: Int = 320,
     // general
     var enabled: Boolean = true,
     var maxMessages: Int = 1000,
     var maxCommandSuggestions: Int = 15,
-    var scale: Float = 1f,
-    var textOpacity: Float = 1f,
-    var backgroundOpacity: Float = .5f,
-    var lineSpacing: Float = 0f,
     var chatTimestampMode: TimestampMode = TimestampMode.HR_12_SECOND,
     var hoverHighlightEnabled: Boolean = true,
     var hoverHighlightColor: Int = 0,
@@ -131,23 +122,52 @@ data class ConfigVariables(
     var translateSelf: String = "Auto Detect",
     var translateSpeak: String = "English",
 ) {
+    // variables here for custom setters
 
-    @Transient
-    var chatWidth: Int = width
+    // internal
+    var x: Int = 0
+        set(newX) {
+            field = newX
+            ChatRenderer.updateCachedDimension()
+        }
+    var y: Int = -BASE_Y_OFFSET
+        set(newY) {
+            field = newY
+            ChatRenderer.updateCachedDimension()
+        }
+    var width: Int = 180
         set(newWidth) {
             field = newWidth
-            width = newWidth
+            queueUpdateConfig = true
+            ChatManager.selectedTab.rescaleChat()
+        }
+    var height: Int = 320
+        set(newHeight) {
+            field = newHeight
             queueUpdateConfig = true
             ChatManager.selectedTab.rescaleChat()
         }
 
-    @Transient
-    var chatHeight: Int = height
-        set(newHeight) {
-            field = newHeight
-            height = newHeight
-            queueUpdateConfig = true
-            ChatManager.selectedTab.rescaleChat()
+    // general
+    var scale: Float = 1f
+        set(newY) {
+            field = newY
+            ChatRenderer.updateCachedDimension()
+        }
+    var textOpacity: Float = 1f
+        set(newY) {
+            field = newY
+            ChatRenderer.updateCachedDimension()
+        }
+    var backgroundOpacity: Float = .5f
+        set(newY) {
+            field = newY
+            ChatRenderer.updateCachedDimension()
+        }
+    var lineSpacing: Float = 0f
+        set(newY) {
+            field = newY
+            ChatRenderer.updateCachedDimension()
         }
 
 }
