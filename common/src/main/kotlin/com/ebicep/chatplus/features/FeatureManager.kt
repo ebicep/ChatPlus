@@ -5,6 +5,7 @@ object FeatureManager {
     init {
         CopyMessage
         MovableChat
+        HoverHighlight
     }
 
 }

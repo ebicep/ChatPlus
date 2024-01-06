@@ -64,6 +64,10 @@ data class ChatScreenRenderEvent(
     val mouseY: Int,
 ) : Event
 
+data class ChatScreenCloseEvent(
+    val screen: ChatPlusScreen,
+) : Event
+
 
 class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plus_screen.title")) {
 
@@ -181,7 +185,7 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
     }
 
     override fun removed() {
-        hoveredOverMessage = null
+        EventBus.post(ChatScreenCloseEvent(this))
         ChatManager.selectedTab.resetChatScroll()
         findEnabled = false
         ChatManager.selectedTab.refreshDisplayedMessage()

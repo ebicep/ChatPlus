@@ -172,6 +172,12 @@ object MovableChat {
                 ChatRenderer.rescaledWidth
             )
         }
+
+        EventBus.register<HoverHighlight.HoverHighlightRenderEvent> {
+            if (movingChat) {
+                it.cancelled = true
+            }
+        }
     }
 
     private fun renderMoving(

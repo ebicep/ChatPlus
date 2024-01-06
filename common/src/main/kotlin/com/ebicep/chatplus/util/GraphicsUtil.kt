@@ -10,4 +10,11 @@ object GraphicsUtil {
         popPose()
     }
 
+    /**
+     * Moves the pose stack forward by 50 (anything new rendered will be on top)
+     */
+    fun PoseStack.guiForward() {
+        translate(0.0, 0.0, 50.0)
+    }
+
 }

@@ -4,6 +4,8 @@ import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.events.Event
 import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.hud.ChatManager.selectedTab
+import com.ebicep.chatplus.util.GraphicsUtil.createPose
+import com.ebicep.chatplus.util.GraphicsUtil.guiForward
 import com.mojang.blaze3d.vertex.PoseStack
 import net.minecraft.client.GuiMessage
 import net.minecraft.client.Minecraft
@@ -15,16 +17,33 @@ const val tabYOffset = 1 // offset from text box
 const val tabXBetween = 1 // space between categories
 const val renderingMovingSize = 3 // width/length of box when rendering moving chat
 
+open class ChatRenderLineEvent(
+    open val guiGraphics: GuiGraphics,
+    open val line: GuiMessage.Line,
+    open val verticalChatOffset: Int,
+    open val verticalTextOffset: Int,
+) : Event
+
+class ChatRenderLineBackgroundEvent(
+    guiGraphics: GuiGraphics,
+    line: GuiMessage.Line,
+    verticalChatOffset: Int,
+    verticalTextOffset: Int,
+    var backgroundColor: Int,
+) : ChatRenderLineEvent(guiGraphics, line, verticalChatOffset, verticalTextOffset)
+
+//class ChatRenderLineTextEvent(
+//    guiGraphics: GuiGraphics,
+//    line: GuiMessage.Line,
+//    verticalChatOffset: Int,
+//    verticalTextOffset: Int,
+//    var text: String,
+//) : ChatRenderLineEvent(guiGraphics, line, verticalChatOffset, verticalTextOffset)
+
+
 data class ChatRenderPreLinesEvent(
     val guiGraphics: GuiGraphics,
     var returnFunction: Boolean = false
-) : Event
-
-data class ChatRenderLineEvent(
-    val guiGraphics: GuiGraphics,
-    val line: GuiMessage.Line,
-    val verticalChatOffset: Int,
-    val verticalTextOffset: Int,
 ) : Event
 
 data class ChatRenderPostLinesEvent(
@@ -114,32 +133,34 @@ object ChatRenderer {
             val verticalChatOffset: Int = rescaledY - displayMessageIndex * lineHeight
             val verticalTextOffset: Int = verticalChatOffset + l1 // align text with background
 
-            val hoveredOver = line === ChatPlusScreen.hoveredOverMessage
-
-            poseStack.pushPose()
-            poseStack.translate(0.0f, 0.0f, 50.0f)
-            //background
-            guiGraphics.fill(
-                rescaledX,
-                verticalChatOffset - lineHeight,
-                rescaledWidth,
-                verticalChatOffset,
-                if (hoveredOver) Config.values.hoverHighlightColor else backgroundColor shl 24
-            )
-            poseStack.translate(0f, 0f, 50f)
-            guiGraphics.drawString(
-                Minecraft.getInstance().font,
-                line.content(),
-                rescaledX,
-                verticalTextOffset,
-                16777215 + (textColor shl 24)
-            )
-            poseStack.translate(0f, 0f, 50f)
-
-            EventBus.post(ChatRenderLineEvent(guiGraphics, line, verticalChatOffset, verticalTextOffset))
-
-            poseStack.popPose()
-
+            poseStack.createPose {
+                poseStack.guiForward()
+                val renderLineBackgroundEvent = ChatRenderLineBackgroundEvent(
+                    guiGraphics,
+                    line,
+                    verticalChatOffset,
+                    verticalTextOffset,
+                    backgroundColor shl 24
+                )
+                EventBus.post(renderLineBackgroundEvent)
+                //background
+                guiGraphics.fill(
+                    rescaledX,
+                    verticalChatOffset - lineHeight,
+                    rescaledWidth,
+                    verticalChatOffset,
+                    renderLineBackgroundEvent.backgroundColor
+                )
+                poseStack.guiForward()
+                // text
+                guiGraphics.drawString(
+                    Minecraft.getInstance().font,
+                    line.content(),
+                    rescaledX,
+                    verticalTextOffset,
+                    16777215 + (textColor shl 24)
+                )
+            }
             ++displayMessageIndex
         }
         if (EventBus.post(ChatRenderPostLinesEvent(guiGraphics, displayMessageIndex)).returnFunction) {
