@@ -1,9 +1,9 @@
 package com.ebicep.chatplus.hud
 
 import com.ebicep.chatplus.config.Config
-import com.ebicep.chatplus.events.Events
+import com.ebicep.chatplus.events.Event
+import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.hud.ChatManager.selectedTab
-import com.mojang.blaze3d.platform.InputConstants
 import com.mojang.blaze3d.vertex.PoseStack
 import net.minecraft.client.GuiMessage
 import net.minecraft.client.Minecraft
@@ -15,68 +15,85 @@ const val tabYOffset = 1 // offset from text box
 const val tabXBetween = 1 // space between categories
 const val renderingMovingSize = 3 // width/length of box when rendering moving chat
 
-object ChatRenderer {
+data class RenderChatPreLinesEvent(
+    val guiGraphics: GuiGraphics,
+    var returnFunction: Boolean = false
+) : Event
 
+data class RenderChatLineEvent(
+    val guiGraphics: GuiGraphics,
+    val line: GuiMessage.Line,
+    val verticalChatOffset: Int,
+    val verticalTextOffset: Int,
+) : Event
+
+data class RenderChatPostLinesEvent(
+    val guiGraphics: GuiGraphics,
+    var displayMessageIndex: Int,
+    var returnFunction: Boolean = false
+) : Event
+
+
+object ChatRenderer {
 
     private var previousScreenWidth = -1
     private var previousScreenHeight = -1
 
+    // cached values
+    var textOpacity: Double = 0.0
+    var backgroundOpacity: Float = 0f
+    var lineSpacing: Float = 0f
+    var l1 = 0
+
+    var scale: Float = 0f
+    var x: Int = 0
+    var y: Int = 0
+    var height: Int = 0
+    var width: Int = 0
+    var backgroundWidthEndX: Int = 0
+    var rescaledX: Int = 0
+    var rescaledY: Int = 0
+    var rescaledHeight: Int = 0
+    var rescaledWidth: Int = 0
+    var rescaledLinesPerPage: Int = 0
+    var lineHeight: Int = 0
+    fun updateCachedDimension() {
+        textOpacity = ChatManager.getTextOpacity() * 0.9 + 0.1
+        backgroundOpacity = ChatManager.getBackgroundOpacity()
+        lineSpacing = ChatManager.getLineSpacing()
+        l1 = (-8.0 * (lineSpacing + 1.0) + 4.0 * lineSpacing).roundToInt()
+        scale = ChatManager.getScale()
+        x = ChatManager.getX()
+        y = ChatManager.getY()
+        height = ChatManager.getHeight()
+        width = ChatManager.getWidth()
+        backgroundWidthEndX = x + width
+        rescaledX = (x / scale).toInt()
+        rescaledY = (y / scale).toInt()
+        rescaledHeight = (height / scale).toInt()
+        rescaledWidth = (backgroundWidthEndX / scale).toInt()
+        rescaledLinesPerPage = ChatManager.getLinesPerPageScaled()
+        lineHeight = ChatManager.getLineHeight()
+    }
+
     fun render(guiGraphics: GuiGraphics, guiTicks: Int, mouseX: Int, mouseY: Int) {
         handleScreenResize()
-
-        val mc = Minecraft.getInstance()
-        val poseStack = guiGraphics.pose()
-
+        updateCachedDimension()
+        val poseStack: PoseStack = guiGraphics.pose()
         val chatFocused: Boolean = ChatManager.isChatFocused()
-        val scale: Float = ChatManager.getScale()
-        val x: Int = ChatManager.getX()
-        val y: Int = ChatManager.getY()
-        val height: Int = ChatManager.getHeight()
-        val width: Int = ChatManager.getWidth()
-        val backgroundWidthEndX = x + width
-
-        val textOpacity: Double = ChatManager.getTextOpacity() * 0.9 + 0.1
-        val backgroundOpacity: Float = ChatManager.getBackgroundOpacity()
-        val lineSpacing: Float = ChatManager.getLineSpacing()
-        val l1 = (-8.0 * (lineSpacing + 1.0) + 4.0 * lineSpacing).roundToInt()
 
         // tabs
         if (chatFocused) {
             renderTabs(poseStack, guiGraphics, x, y)
         }
 
-        val moving = ChatManager.isChatFocused() && InputConstants.isKeyDown(mc.window.window, Config.values.keyMoveChat.value)
-        val messagesToDisplay = selectedTab.displayedMessages.size
-        if (messagesToDisplay <= 0) {
-            // render full chat box
-            if (moving) {
-                guiGraphics.fill(
-                    x,
-                    y - height,
-                    backgroundWidthEndX,
-                    y,
-                    (255 * backgroundOpacity).toInt() shl 24
-                )
-            }
-            renderMoving(
-                poseStack,
-                guiGraphics,
-                x,
-                y,
-                height,
-                width
-            )
+        if (EventBus.post(RenderChatPreLinesEvent(guiGraphics)).returnFunction) {
             return
         }
 
+        val messagesToDisplay = selectedTab.displayedMessages.size
         poseStack.pushPose()
         poseStack.scale(scale, scale, 1.0f)
-        val rescaledX = (x / scale).toInt()
-        val rescaledY = (y / scale).toInt()
-        val rescaledHeight = (height / scale).toInt()
-        val rescaledWidth = (backgroundWidthEndX / scale).toInt()
-        val rescaledLinesPerPage: Int = ChatManager.getLinesPerPageScaled()
-        val lineHeight: Int = ChatManager.getLineHeight()
         var displayMessageIndex = 0
         while (displayMessageIndex + selectedTab.chatScrollbarPos < messagesToDisplay && displayMessageIndex < rescaledLinesPerPage) {
             val messageIndex = messagesToDisplay - displayMessageIndex - selectedTab.chatScrollbarPos
@@ -94,8 +111,8 @@ object ChatRenderer {
                 continue
             }
             // how high chat is from input bar, if changed need to change queue offset
-            val verticalChatOffset = rescaledY - displayMessageIndex * lineHeight
-            val verticalTextOffset = verticalChatOffset + l1 // align text with background
+            val verticalChatOffset: Int = rescaledY - displayMessageIndex * lineHeight
+            val verticalTextOffset: Int = verticalChatOffset + l1 // align text with background
 
             val hoveredOver = line === ChatPlusScreen.hoveredOverMessage
 
@@ -119,48 +136,14 @@ object ChatRenderer {
             )
             poseStack.translate(0f, 0f, 50f)
 
-            // copy outline
-            ChatPlusScreen.lastCopiedMessage?.let {
-                if (it.first != line) {
-                    return@let
-                }
-                if (it.second < Events.currentTick) {
-                    return@let
-                }
-                guiGraphics.renderOutline(
-                    rescaledX,
-                    verticalChatOffset - lineHeight,
-                    (width / scale).toInt(),
-                    lineHeight,
-                    (0xd4d4d4FF).toInt()
-                )
-            }
+            EventBus.post(RenderChatLineEvent(guiGraphics, line, verticalChatOffset, verticalTextOffset))
+
             poseStack.popPose()
 
             ++displayMessageIndex
         }
-        if (moving) {
-            guiGraphics.fill(
-                rescaledX,
-                rescaledY - rescaledHeight,
-                rescaledWidth,
-                rescaledY - displayMessageIndex * lineHeight,
-                (255 * backgroundOpacity).toInt() shl 24
-            )
-        }
-        poseStack.popPose()
-
-
-        poseStack.pushPose()
-        if (moving) {
-            renderMoving(
-                poseStack,
-                guiGraphics,
-                x,
-                y,
-                height,
-                width
-            )
+        if (EventBus.post(RenderChatPostLinesEvent(guiGraphics, displayMessageIndex)).returnFunction) {
+            return
         }
         poseStack.popPose()
     }
@@ -209,37 +192,6 @@ object ChatRenderer {
                 Minecraft.getInstance().font.width(it.name).toFloat() + ChatTab.PADDING + ChatTab.PADDING + tabXBetween,
                 0f,
                 0f
-            )
-        }
-        poseStack.popPose()
-    }
-
-    private fun renderMoving(
-        poseStack: PoseStack,
-        guiGraphics: GuiGraphics,
-        x: Int,
-        y: Int,
-        height: Int,
-        backgroundWidth: Int
-    ) {
-        poseStack.pushPose()
-        poseStack.translate(0f, 0f, 200f)
-        if (ChatPlusScreen.movingChatX) {
-            guiGraphics.fill(
-                x + backgroundWidth - renderingMovingSize,
-                y - height,
-                x + backgroundWidth,
-                y,
-                0xFFFFFFFF.toInt()
-            )
-        }
-        if (ChatPlusScreen.movingChatY) {
-            guiGraphics.fill(
-                x,
-                y - height,
-                x + backgroundWidth,
-                y - height + renderingMovingSize,
-                0xFFFFFFFF.toInt()
             )
         }
         poseStack.popPose()

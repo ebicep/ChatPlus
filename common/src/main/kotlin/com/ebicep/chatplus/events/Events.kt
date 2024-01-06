@@ -7,6 +7,7 @@ import com.ebicep.chatplus.config.ConfigScreen
 import com.ebicep.chatplus.config.queueUpdateConfig
 import com.ebicep.chatplus.hud.ChatManager
 import com.ebicep.chatplus.hud.ChatPlusScreen
+import com.ebicep.chatplus.hud.ChatRenderer
 import com.ebicep.chatplus.translator.Translator
 import com.ebicep.chatplus.translator.languageTo
 import dev.architectury.event.CompoundEventResult
@@ -48,6 +49,10 @@ object Events {
                 queueUpdateConfig = false
                 Config.save()
             }
+        }
+        ClientLifecycleEvent.CLIENT_STARTED.register {
+            ChatPlus.LOGGER.info("CLIENT STARTED")
+            ChatRenderer.updateCachedDimension()
         }
         ClientLifecycleEvent.CLIENT_STOPPING.register {
             Config.save()

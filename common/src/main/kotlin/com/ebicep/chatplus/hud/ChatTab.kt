@@ -364,6 +364,7 @@ class ChatTab {
     fun rescaleChat() {
         resetChatScroll()
         queueRefreshDisplayedMessages()
+        ChatRenderer.updateCachedDimension()
     }
 
     private fun queueRefreshDisplayedMessages() {

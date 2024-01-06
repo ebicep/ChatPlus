@@ -1,7 +1,6 @@
 package com.ebicep.chatplus.hud
 
 import com.ebicep.chatplus.config.Config
-import com.ebicep.chatplus.config.queueUpdateConfig
 import com.ebicep.chatplus.events.Event
 import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.translator.SelfTranslator
@@ -21,19 +20,43 @@ import net.minecraft.network.chat.MutableComponent
 import net.minecraft.network.chat.Style
 import net.minecraft.util.Mth
 import org.apache.commons.lang3.StringUtils
-import kotlin.math.roundToInt
 
 const val EDIT_BOX_HEIGHT = 14
 const val PADDING = 6
 const val SPACER = 2 // space between text box / find / translate
 
-data class ChatScreenKeyPressed(
+data class ChatScreenKeyPressedEvent(
     val screen: ChatPlusScreen,
     val keyCode: Int,
     val scanCode: Int,
     val modifiers: Int,
-    var returnKeyPressed: Boolean = false
+    var returnFunction: Boolean = false
 ) : Event
+
+data class ChatScreenMouseClickedEvent(
+    val screen: ChatPlusScreen,
+    val mouseX: Double,
+    val mouseY: Double,
+    val button: Int,
+) : Event
+
+data class ChatScreenMouseDraggedEvent(
+    val screen: ChatPlusScreen,
+    val mouseX: Double,
+    val mouseY: Double,
+    val button: Int,
+    val dragX: Double,
+    val dragY: Double,
+) : Event
+
+data class ChatScreenMouseReleasedEvent(
+    val screen: ChatPlusScreen,
+    val mouseX: Double,
+    val mouseY: Double,
+    val button: Int,
+    var returnFunction: Boolean = false
+) : Event
+
 
 class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plus_screen.title")) {
 
@@ -174,7 +197,7 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
                 true
             }
 
-            EventBus.post(ChatScreenKeyPressed(this, pKeyCode, pScanCode, pModifiers)).returnKeyPressed -> {
+            EventBus.post(ChatScreenKeyPressedEvent(this, pKeyCode, pScanCode, pModifiers)).returnFunction -> {
                 true
             }
 
@@ -244,120 +267,54 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
         }
     }
 
-    override fun mouseClicked(pMouseX: Double, pMouseY: Double, pButton: Int): Boolean {
-        return if (commandSuggestions!!.mouseClicked(pMouseX.toInt().toDouble(), pMouseY.toInt().toDouble(), pButton)) {
+    override fun mouseClicked(mouseX: Double, mouseY: Double, pButton: Int): Boolean {
+        return if (commandSuggestions!!.mouseClicked(mouseX.toInt().toDouble(), mouseY.toInt().toDouble(), pButton)) {
             true
         } else {
+            EventBus.post(ChatScreenMouseClickedEvent(this, mouseX, mouseY, pButton))
             if (pButton == 0) {
-                val side = ChatManager.getX() + ChatManager.getWidth()
-                val sideInner = ChatManager.getX() + ChatManager.getWidth() - renderingMovingSize
-                val roof = ChatManager.getY() - ChatManager.getHeight()
-                val roofInner = ChatManager.getY() - ChatManager.getHeight() + renderingMovingSize
-                if (findEnabled) {
-                    ChatManager.selectedTab.getMessageAt(lastMouseX.toDouble(), lastMouseY.toDouble())?.let {
-                        val lineOffset = ChatManager.getLinesPerPage() / 3
-                        val scrollTo = ChatManager.selectedTab.messages.size - it.linkedMessageIndex - lineOffset
-                        findEnabled = false
-                        ChatManager.selectedTab.refreshDisplayedMessage()
-                        rebuildWidgets0()
-                        ChatManager.selectedTab.scrollChat(scrollTo)
-                    }
-                }
-                if (pMouseX > sideInner && pMouseX < side && pMouseY > roof && pMouseY < ChatManager.getY()) {
-                    movingChatX = true
-                }
-                if (pMouseY < roofInner && pMouseY > roof && pMouseX > ChatManager.getX() && pMouseX < side) {
-                    movingChatY = true
-                }
-                val window = Minecraft.getInstance().window.window
-                if (!movingChatX && !movingChatY && InputConstants.isKeyDown(window, Config.values.keyMoveChat.value)) {
-                    if (
-                        pMouseX > ChatManager.getX() && pMouseX < sideInner &&
-                        pMouseY > roofInner && pMouseY < ChatManager.getY()
-                    ) {
-                        movingChatBox = true
-                        xDisplacement = pMouseX - ChatManager.getX()
-                        yDisplacement = pMouseY - ChatManager.getY()
-                    }
-                }
-                ChatManager.handleClickedTab(pMouseX, pMouseY)
+                ChatManager.handleClickedTab(mouseX, mouseY)
                 textBarElements.forEach {
                     val x = textBarElementsStartX[it]!!
-                    if (x < pMouseX && pMouseX < x + it.getPaddedWidth() && height - EDIT_BOX_HEIGHT < pMouseY && pMouseY < height) {
+                    if (x < mouseX && mouseX < x + it.getPaddedWidth() && height - EDIT_BOX_HEIGHT < mouseY && mouseY < height) {
                         it.onClick()
                     }
                 }
-                if (ChatManager.selectedTab.handleChatQueueClicked(pMouseX, pMouseY)) {
+                if (ChatManager.selectedTab.handleChatQueueClicked(mouseX, mouseY)) {
                     return true
                 }
-                val style = getComponentStyleAt(pMouseX, pMouseY)
+                val style = getComponentStyleAt(mouseX, mouseY)
                 if (style != null && handleComponentClicked(style)) {
                     initial = input!!.value
                     return true
                 }
             }
-            if (input!!.isFocused && input!!.mouseClicked(pMouseX, pMouseY, pButton)) {
+            if (input!!.isFocused && input!!.mouseClicked(mouseX, mouseY, pButton)) {
                 true
             } else if (
                 inputTranslatePrefix != null &&
                 inputTranslatePrefix!!.isFocused &&
-                inputTranslatePrefix!!.mouseClicked(pMouseX, pMouseY, pButton)
+                inputTranslatePrefix!!.mouseClicked(mouseX, mouseY, pButton)
             ) {
                 true
             } else {
-                super.mouseClicked(pMouseX, pMouseY, pButton)
+                super.mouseClicked(mouseX, mouseY, pButton)
             }
         }
     }
 
-    override fun mouseReleased(pMouseX: Double, pMouseY: Double, pButton: Int): Boolean {
-        if (movingChat) {
-            movingChat = false
+    override fun mouseReleased(mouseX: Double, mouseY: Double, button: Int): Boolean {
+        if (EventBus.post(ChatScreenMouseReleasedEvent(this, mouseX, mouseY, button)).returnFunction) {
             return true
         }
-        return super.mouseReleased(pMouseX, pMouseY, pButton)
+        return super.mouseReleased(mouseX, mouseY, button)
     }
 
-    override fun mouseDragged(pMouseX: Double, pMouseY: Double, pButton: Int, pDragX: Double, pDragY: Double): Boolean {
-        if (!ChatManager.isChatFocused() || pButton != 0) {
-            movingChat = false
-            return super.mouseDragged(pMouseX, pMouseY, pButton, pDragX, pDragY)
+    override fun mouseDragged(mouseX: Double, mouseY: Double, button: Int, dragX: Double, dragY: Double): Boolean {
+        EventBus.post(ChatScreenMouseDraggedEvent(this, mouseX, mouseY, button, dragX, dragY))
+        if (!ChatManager.isChatFocused() || button != 0) { // forgot why this is here
+            return super.mouseDragged(mouseX, mouseY, button, dragX, dragY)
         }
-        if (movingChatX) {
-            val newWidth: Double = Mth.clamp(
-                pMouseX - ChatManager.getX(),
-                ChatManager.getMinWidthScaled().toDouble(),
-                Minecraft.getInstance().window.guiScaledWidth - ChatManager.getX() - 1.0
-            )
-            val width = newWidth.roundToInt()
-            Config.values.chatWidth = width
-        }
-        if (movingChatY) {
-            val newHeight: Double = Mth.clamp(
-                ChatManager.getY() - pMouseY,
-                ChatManager.getMinHeightScaled().toDouble(),
-                ChatManager.getY() - 1.0
-            )
-            val height = newHeight.roundToInt()
-            Config.values.chatHeight = height
-        }
-        if (movingChatBox) {
-            Config.values.x = Mth.clamp(
-                (pMouseX - xDisplacement).roundToInt(),
-                0,
-                Minecraft.getInstance().window.guiScaledWidth - ChatManager.getWidth() - 1
-            )
-            var newY = Mth.clamp(
-                (pMouseY - yDisplacement).roundToInt(),
-                ChatManager.getHeight() + 1,
-                Minecraft.getInstance().window.guiScaledHeight - BASE_Y_OFFSET
-            )
-            if (newY == Minecraft.getInstance().window.guiScaledHeight - BASE_Y_OFFSET) {
-                newY = -BASE_Y_OFFSET
-            }
-            Config.values.y = newY
-        }
-
         return true
     }
 
@@ -393,41 +350,41 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
         }
     }
 
-    override fun render(guiGraphics: GuiGraphics, pMouseX: Int, pMouseY: Int, pPartialTick: Float) {
-        lastMouseX = pMouseX
-        lastMouseY = pMouseY
+    override fun render(guiGraphics: GuiGraphics, mouseX: Int, mouseY: Int, partialTick: Float) {
+        lastMouseX = mouseX
+        lastMouseY = mouseY
 
-        renderInputBox(guiGraphics, pMouseX, pMouseY, pPartialTick)
+        renderInputBox(guiGraphics, mouseX, mouseY, partialTick)
         if (inputTranslatePrefix != null) {
-            renderTranslateSpeakPrefixInputBox(guiGraphics, pMouseX, pMouseY, pPartialTick)
+            renderTranslateSpeakPrefixInputBox(guiGraphics, mouseX, mouseY, partialTick)
         }
         val currentY = height - EDIT_BOX_HEIGHT
         textBarElements.forEach {
             val elementStartX = textBarElementsStartX[it]!!
-            it.onRender(guiGraphics, elementStartX, currentY, pMouseX, pMouseY, pPartialTick)
-            if (elementStartX < pMouseX && pMouseX < elementStartX + it.getPaddedWidth() && height - EDIT_BOX_HEIGHT < pMouseY && pMouseY < height) {
-                it.onHover(guiGraphics, pMouseX, pMouseY)
+            it.onRender(guiGraphics, elementStartX, currentY, mouseX, mouseY, partialTick)
+            if (elementStartX < mouseX && mouseX < elementStartX + it.getPaddedWidth() && height - EDIT_BOX_HEIGHT < mouseY && mouseY < height) {
+                it.onHover(guiGraphics, mouseX, mouseY)
             }
         }
 
-        super.render(guiGraphics, pMouseX, pMouseY, pPartialTick)
+        super.render(guiGraphics, mouseX, mouseY, partialTick)
 
         // brigadier
-        commandSuggestions!!.render(guiGraphics, pMouseX, pMouseY)
+        commandSuggestions!!.render(guiGraphics, mouseX, mouseY)
 
         // hoverables
-        val style = getComponentStyleAt(pMouseX.toDouble(), pMouseY.toDouble())
+        val style = getComponentStyleAt(mouseX.toDouble(), mouseY.toDouble())
         if (style?.hoverEvent != null) {
-            guiGraphics.renderComponentHoverEffect(font, style, pMouseX, pMouseY)
+            guiGraphics.renderComponentHoverEffect(font, style, mouseX, mouseY)
         }
 
-        if (Config.values.hoverHighlightEnabled) {
-            hoveredOverMessage = if (movingChat) {
-                null
-            } else {
-                ChatManager.selectedTab.getMessageAt(lastMouseX.toDouble(), lastMouseY.toDouble())?.line
-            }
-        }
+//        if (Config.values.hoverHighlightEnabled) {
+//            hoveredOverMessage = if (movingChat) {
+//                null
+//            } else {
+//                ChatManager.selectedTab.getMessageAt(lastMouseX.toDouble(), lastMouseY.toDouble())?.line
+//            }
+//        }
     }
 
     private fun renderTranslateSpeakPrefixInputBox(
@@ -535,19 +492,6 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
     }
 
     companion object {
-        var movingChat: Boolean
-            get() = movingChatX || movingChatY || movingChatBox
-            set(value) {
-                queueUpdateConfig = true
-                movingChatX = value
-                movingChatY = value
-                movingChatBox = value
-            }
-        var movingChatX = false
-        var movingChatY = false
-        var movingChatBox = false
-        var xDisplacement = 0.0
-        var yDisplacement = 0.0
 
         var lastMouseX = 0
         var lastMouseY = 0

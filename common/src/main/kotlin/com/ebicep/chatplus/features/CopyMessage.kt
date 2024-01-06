@@ -3,9 +3,7 @@ package com.ebicep.chatplus.features
 import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.events.Events
-import com.ebicep.chatplus.hud.ChatManager
-import com.ebicep.chatplus.hud.ChatPlusScreen
-import com.ebicep.chatplus.hud.ChatScreenKeyPressed
+import com.ebicep.chatplus.hud.*
 import com.mojang.blaze3d.platform.InputConstants
 import net.minecraft.ChatFormatting
 import net.minecraft.client.Minecraft
@@ -15,7 +13,7 @@ object CopyMessage {
 
     init {
         var messageCopied = false
-        EventBus.register<ChatScreenKeyPressed>(1, { messageCopied }) {
+        EventBus.register<ChatScreenKeyPressedEvent>(1, { messageCopied }) {
             val window = Minecraft.getInstance().window.window
             val copyMessage = Config.values.keyCopyMessageWithModifier
             val copyMessageModifier = Config.values.keyCopyMessageWithModifier.modifier
@@ -39,7 +37,26 @@ object CopyMessage {
                 ChatPlusScreen.lastCopiedMessage = Pair(it.line, Events.currentTick + 60)
                 //input!!.setEditable(false)
             }
-            it.returnKeyPressed = true
+            it.returnFunction = true
+        }
+
+        EventBus.register<RenderChatLineEvent> {
+            // copy outline
+            ChatPlusScreen.lastCopiedMessage?.let { message ->
+                if (message.first != it.line) {
+                    return@let
+                }
+                if (message.second < Events.currentTick) {
+                    return@let
+                }
+                it.guiGraphics.renderOutline(
+                    ChatRenderer.rescaledX,
+                    it.verticalChatOffset - ChatRenderer.lineHeight,
+                    (ChatRenderer.width / ChatRenderer.scale).toInt(),
+                    ChatRenderer.lineHeight,
+                    (0xd4d4d4FF).toInt()
+                )
+            }
         }
     }
 

@@ -4,6 +4,7 @@ object FeatureManager {
 
     init {
         CopyMessage
+        MovableChat
     }
 
 }
