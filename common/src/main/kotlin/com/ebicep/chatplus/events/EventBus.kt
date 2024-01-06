@@ -21,13 +21,14 @@ object EventBus {
             subscribers.removeIf { it.callback == callback }
         }
 
-        fun <E> post(data: E) {
+        fun <E> post(data: E): E {
             subscribers.forEach {
                 it.callback.invoke(data as T)
                 if (it.skipOtherCallbacks()) {
-                    return
+                    return@forEach
                 }
             }
+            return data
         }
 
         data class EventData<T>(
@@ -45,8 +46,7 @@ object EventBus {
         priority: Int = 0,
         noinline skipOtherCallbacks: () -> Boolean = { false },
         noinline callback: (T) -> Unit
-    ) =
-        register(priority, skipOtherCallbacks, T::class.java, callback)
+    ) = register(priority, skipOtherCallbacks, T::class.java, callback)
 
     inline fun <reified T> unregister(noinline callback: (T) -> Unit) =
         unregister(T::class.java, callback)
@@ -71,12 +71,12 @@ object EventBus {
         bus[clazz.toString()]!!.unregister(callback)
     }
 
-    fun <T> post(clazz: Class<T>, data: T) {
+    fun <T> post(clazz: Class<T>, data: T): T {
         if (!bus.containsKey(clazz.toString())) {
             bus[clazz.toString()] = Bus<T>()
         }
 
-        bus[clazz.toString()]!!.post(data)
+        return bus[clazz.toString()]!!.post(data)
     }
 
 

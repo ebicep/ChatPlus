@@ -169,15 +169,15 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
 
     override fun keyPressed(pKeyCode: Int, pScanCode: Int, pModifiers: Int): Boolean {
         //input!!.setEditable(true)
-        if (commandSuggestions!!.keyPressed(pKeyCode, pScanCode, pModifiers)) {
-            return true
-        }
-        val chatScreenKeyPressed = ChatScreenKeyPressed(this, pKeyCode, pScanCode, pModifiers)
-        EventBus.post(chatScreenKeyPressed)
-        if (chatScreenKeyPressed.returnKeyPressed) {
-            return true
-        }
         return when {
+            commandSuggestions!!.keyPressed(pKeyCode, pScanCode, pModifiers) -> {
+                true
+            }
+
+            EventBus.post(ChatScreenKeyPressed(this, pKeyCode, pScanCode, pModifiers)).returnKeyPressed -> {
+                true
+            }
+
             super.keyPressed(pKeyCode, pScanCode, pModifiers) -> {
                 true
             }
@@ -220,10 +220,6 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
                 }
             }
         }
-    }
-
-    private fun copyToClipboard(str: String) {
-        Minecraft.getInstance().keyboardHandler.clipboard = str
     }
 
     override fun mouseScrolled(pMouseX: Double, pMouseY: Double, f: Double, pDelta: Double): Boolean {
