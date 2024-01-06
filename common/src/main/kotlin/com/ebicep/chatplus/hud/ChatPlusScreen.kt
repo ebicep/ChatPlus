@@ -63,6 +63,10 @@ data class ChatScreenRenderEvent(
     val mouseY: Int,
 ) : Event
 
+data class ChatScreenInitEvent(
+    val screen: ChatPlusScreen,
+) : Event
+
 data class ChatScreenCloseEvent(
     val screen: ChatPlusScreen,
 ) : Event
@@ -85,28 +89,16 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
 
     /** is the text that appears when you press the chat key and the input box appears pre-filled  */
     var initial: String = pInitial
-    private var editBoxWidth: Int = 0
-    private var textBarElements = mutableListOf<TextBarElement>()
-    private var textBarElementsStartX: MutableMap<TextBarElement, Int> = mutableMapOf()
+    var editBoxWidth: Int = 0
     var commandSuggestions: CommandSuggestions? = null
 
     override fun init() {
+        ChatRenderer.updateCachedDimension()
         historyPos = ChatManager.sentMessages.size
 
         editBoxWidth = width
-        if (textBarElements.isEmpty()) {
-            textBarElements.add(FindTextBarElement(this))
-            if (Config.values.translatorEnabled) {
-                textBarElements.add(TranslateSpeakTextBarElement(this))
-            }
 
-        }
-        //____TEXTBOX_____-FIND--TRANSLATE-
-        textBarElements.forEach {
-            val calculatedWidth = it.getPaddedWidth() + SPACER
-            editBoxWidth -= calculatedWidth
-        }
-        cacheTextBarElementXs()
+        EventBus.post(ChatScreenInitEvent(this))
 
         input = object : EditBox(
             minecraft!!.fontFilterFishy,
@@ -161,15 +153,6 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
     fun rebuildWidgets0() {
         rebuildWidgets()
     }
-
-    private fun cacheTextBarElementXs() {
-        var currentX = editBoxWidth + SPACER
-        textBarElements.forEach {
-            textBarElementsStartX[it] = currentX
-            currentX += it.getPaddedWidth() + SPACER
-        }
-    }
-
     private fun initializeBaseEditBox(editBox: EditBox) {
         editBox.setMaxLength(256 * 5) // default 256
         editBox.isBordered = false
@@ -284,12 +267,6 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
             EventBus.post(ChatScreenMouseClickedEvent(this, mouseX, mouseY, pButton))
             if (pButton == 0) {
                 ChatManager.handleClickedTab(mouseX, mouseY)
-                textBarElements.forEach {
-                    val x = textBarElementsStartX[it]!!
-                    if (x < mouseX && mouseX < x + it.getPaddedWidth() && height - EDIT_BOX_HEIGHT < mouseY && mouseY < height) {
-                        it.onClick()
-                    }
-                }
                 if (ChatManager.selectedTab.handleChatQueueClicked(mouseX, mouseY)) {
                     return true
                 }
@@ -367,14 +344,6 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
         renderInputBox(guiGraphics, mouseX, mouseY, partialTick)
         if (inputTranslatePrefix != null) {
             renderTranslateSpeakPrefixInputBox(guiGraphics, mouseX, mouseY, partialTick)
-        }
-        val currentY = height - EDIT_BOX_HEIGHT
-        textBarElements.forEach {
-            val elementStartX = textBarElementsStartX[it]!!
-            it.onRender(guiGraphics, elementStartX, currentY, mouseX, mouseY, partialTick)
-            if (elementStartX < mouseX && mouseX < elementStartX + it.getPaddedWidth() && height - EDIT_BOX_HEIGHT < mouseY && mouseY < height) {
-                it.onHover(guiGraphics, mouseX, mouseY)
-            }
         }
 
         super.render(guiGraphics, mouseX, mouseY, partialTick)
