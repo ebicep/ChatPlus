@@ -2,11 +2,11 @@ package com.ebicep.chatplus.hud
 
 import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.config.queueUpdateConfig
-import com.ebicep.chatplus.events.Events
+import com.ebicep.chatplus.events.Event
+import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.translator.SelfTranslator
 import com.ebicep.chatplus.translator.languageSpeakEnabled
 import com.mojang.blaze3d.platform.InputConstants
-import net.minecraft.ChatFormatting
 import net.minecraft.client.GuiMessage
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.Font
@@ -26,6 +26,14 @@ import kotlin.math.roundToInt
 const val EDIT_BOX_HEIGHT = 14
 const val PADDING = 6
 const val SPACER = 2 // space between text box / find / translate
+
+data class ChatScreenKeyPressed(
+    val screen: ChatPlusScreen,
+    val keyCode: Int,
+    val scanCode: Int,
+    val modifiers: Int,
+    var returnKeyPressed: Boolean = false
+) : Event
 
 class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plus_screen.title")) {
 
@@ -161,37 +169,15 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
 
     override fun keyPressed(pKeyCode: Int, pScanCode: Int, pModifiers: Int): Boolean {
         //input!!.setEditable(true)
-
-        val window = Minecraft.getInstance().window.window
-        val copyMessage = Config.values.keyCopyMessageWithModifier
-        val copyMessageModifier = Config.values.keyCopyMessageWithModifier.modifier
-        val copyMessageModifierDown = copyMessageModifier == 0.toShort() ||
-                (copyMessageModifier == 1.toShort() && hasAltDown()) ||
-                (copyMessageModifier == 2.toShort() && hasControlDown()) ||
-                (copyMessageModifier == 4.toShort() && hasShiftDown())
-        val messageCopied = copiedMessageCooldown < Events.currentTick &&
-                InputConstants.isKeyDown(window, copyMessage.key.value) &&
-                copyMessageModifierDown
+        if (commandSuggestions!!.keyPressed(pKeyCode, pScanCode, pModifiers)) {
+            return true
+        }
+        val chatScreenKeyPressed = ChatScreenKeyPressed(this, pKeyCode, pScanCode, pModifiers)
+        EventBus.post(chatScreenKeyPressed)
+        if (chatScreenKeyPressed.returnKeyPressed) {
+            return true
+        }
         return when {
-            commandSuggestions!!.keyPressed(pKeyCode, pScanCode, pModifiers) -> {
-                true
-            }
-
-            messageCopied -> {
-                copiedMessageCooldown = Events.currentTick + 20
-                ChatManager.selectedTab.getMessageAt(lastMouseX.toDouble(), lastMouseY.toDouble())?.let {
-                    if (Config.values.copyNoFormatting) {
-                        copyToClipboard(ChatFormatting.stripFormatting(it.content)!!)
-                    } else {
-                        copyToClipboard(it.content)
-                    }
-                    lastCopiedMessage = Pair(it.line, Events.currentTick + 60)
-                    //input!!.setEditable(false)
-                    return@keyPressed true
-                }
-                true
-            }
-
             super.keyPressed(pKeyCode, pScanCode, pModifiers) -> {
                 true
             }

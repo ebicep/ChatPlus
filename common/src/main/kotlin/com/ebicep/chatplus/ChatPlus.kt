@@ -2,6 +2,7 @@ package com.ebicep.chatplus
 
 import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.events.Events
+import com.ebicep.chatplus.features.FeatureManager
 import com.ebicep.chatplus.translator.LanguageManager
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
@@ -18,6 +19,7 @@ object ChatPlus {
         LanguageManager.updateTranslateLanguages()
 
         Events
+        FeatureManager
     }
 
     fun isEnabled(): Boolean {
