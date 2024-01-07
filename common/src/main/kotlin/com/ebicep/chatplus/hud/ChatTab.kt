@@ -5,6 +5,7 @@ import com.ebicep.chatplus.config.TimestampMode
 import com.ebicep.chatplus.events.Event
 import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.events.Events
+import com.ebicep.chatplus.features.CompactMessages.literalIgnored
 import com.google.common.collect.Lists
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -25,6 +26,18 @@ import java.time.format.DateTimeFormatter
 import java.util.*
 import kotlin.math.min
 
+data class ChatTabAddNewMessageEvent(
+    val chatTab: ChatTab,
+    val componentWithTimeStamp: MutableComponent,
+    val component: Component,
+    val signature: MessageSignature?,
+    val addedTime: Int,
+    val tag: GuiMessageTag?,
+    val linkedMessageIndex: Int,
+    var returnFunction: Boolean = false
+) : Event
+
+
 data class ChatTabAddDisplayMessageEvent(
     val chatTab: ChatTab,
     val component: Component,
@@ -37,43 +50,9 @@ data class ChatTabAddDisplayMessageEvent(
 @Serializable
 class ChatTab {
 
-    fun literalIgnored(string: String): MutableComponent {
-        return MutableComponent.create(LiteralContentsIgnored(string))
-    }
-
     data class ChatPlusGuiMessage(val guiMessage: GuiMessage, var timesRepeated: Int = 1)
 
     data class ChatPlusGuiMessageLine(val line: GuiMessage.Line, val content: String, val linkedMessageIndex: Int, val wrappedIndex: Int)
-
-    class LiteralContentsIgnored(val text: String) : ComponentContents {
-
-        override fun <T> visit(arg: FormattedText.ContentConsumer<T>): Optional<T> {
-            return arg.accept(this.text)
-        }
-
-        override fun <T> visit(arg: FormattedText.StyledContentConsumer<T>, arg2: Style): Optional<T> {
-            return arg.accept(arg2, this.text)
-        }
-
-        override fun toString(): String {
-            return "literalIgnored{" + this.text + "}"
-        }
-
-        override fun equals(other: Any?): Boolean {
-            return if (this === other) {
-                true
-            } else if (other !is LiteralContentsIgnored) {
-                false
-            } else {
-                this.text == other.text
-            }
-        }
-
-        override fun hashCode(): Int {
-            return text.hashCode()
-        }
-
-    }
 
 
     var name: String
@@ -118,27 +97,19 @@ class ChatTab {
             return
         }
         val componentWithTimeStamp: MutableComponent = getTimeStampedMessage(component)
-        if (messages.isNotEmpty()) {
-            val lastMessage = messages[messages.size - 1]
-            val guiMessage = lastMessage.guiMessage
-            val content = guiMessage.content.copy()
-            content.siblings.removeIf { it.contents is LiteralContentsIgnored }
-            if (content.equals(componentWithTimeStamp)) {
-                lastMessage.timesRepeated++
-                guiMessage.content.siblings.removeIf { it.contents is LiteralContentsIgnored }
-                guiMessage.content.siblings.add(literalIgnored(" (${lastMessage.timesRepeated})").withStyle { it.withColor(ChatFormatting.GRAY) })
-                // remove previous displayed message and update it
-                for (i in displayedMessages.size - 1 downTo 0) {
-                    val displayedMessage = displayedMessages[i]
-                    if (displayedMessage.linkedMessageIndex == messages.size - 1) {
-                        displayedMessages.removeLast()
-                    } else {
-                        break
-                    }
-                }
-                this.addNewDisplayMessage(guiMessage.content as MutableComponent, addedTime, tag, linkedMessageIndex)
-                return
-            }
+        if (EventBus.post(
+                ChatTabAddNewMessageEvent(
+                    this,
+                    componentWithTimeStamp,
+                    component,
+                    signature,
+                    addedTime,
+                    tag,
+                    linkedMessageIndex
+                )
+            ).returnFunction
+        ) {
+            return
         }
         val chatPlusGuiMessage = ChatPlusGuiMessage(GuiMessage(addedTime, componentWithTimeStamp, signature, tag))
         this.messages.add(chatPlusGuiMessage)
@@ -156,7 +127,7 @@ class ChatTab {
         return componentWithTimeStamp
     }
 
-    private fun addNewDisplayMessage(
+    fun addNewDisplayMessage(
         component: MutableComponent,
         addedTime: Int,
         tag: GuiMessageTag?,
