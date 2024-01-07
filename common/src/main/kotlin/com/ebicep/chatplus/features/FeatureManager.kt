@@ -10,6 +10,7 @@ object FeatureManager {
         MovableChat
         HoverHighlight
         TextBarElements
+//        AlternatingColorBackground
     }
 
 }

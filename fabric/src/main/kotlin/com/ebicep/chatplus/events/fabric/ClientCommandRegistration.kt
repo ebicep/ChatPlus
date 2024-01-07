@@ -1,6 +1,7 @@
 package com.ebicep.chatplus.events.fabric
 
 import com.ebicep.chatplus.config.ConfigScreen
+import com.ebicep.chatplus.hud.ChatManager
 import com.mojang.brigadier.Command
 import com.mojang.brigadier.CommandDispatcher
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager
@@ -18,6 +19,12 @@ object ClientCommandRegistration {
                         ConfigScreen.open = true
                         Command.SINGLE_SUCCESS
                     }
+                    .then(ClientCommandManager.literal("clear")
+                        .executes {
+                            ChatManager.selectedTab.clear()
+                            Command.SINGLE_SUCCESS
+                        }
+                    )
             )
             dispatcher.register(ClientCommandManager.literal("cp").redirect(command))
         })

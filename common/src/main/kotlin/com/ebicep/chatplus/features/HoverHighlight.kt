@@ -24,7 +24,7 @@ object HoverHighlight {
             }
             hoveredOverMessage = ChatManager.selectedTab.getMessageAt(it.mouseX.toDouble(), it.mouseY.toDouble())?.line
         }
-        EventBus.register<ChatRenderLineBackgroundEvent> {
+        EventBus.register<ChatRenderLineBackgroundEvent>(10) {
             val hoveredOver = it.line === hoveredOverMessage
             if (hoveredOver) {
                 val renderEvent = EventBus.post(HoverHighlightRenderEvent(it.line))

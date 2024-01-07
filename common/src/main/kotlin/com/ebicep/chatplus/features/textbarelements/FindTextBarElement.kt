@@ -1,8 +1,9 @@
 package com.ebicep.chatplus.features.textbarelements
 
+import com.ebicep.chatplus.features.FindText.FIND_COLOR
+import com.ebicep.chatplus.features.FindText.findEnabled
 import com.ebicep.chatplus.hud.ChatManager
 import com.ebicep.chatplus.hud.ChatPlusScreen
-import com.ebicep.chatplus.hud.findEnabled
 import com.ebicep.chatplus.translator.languageSpeakEnabled
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphics
@@ -36,9 +37,9 @@ class FindTextBarElement(private val chatPlusScreen: ChatPlusScreen) : TextBarEl
 
     override fun onRender(guiGraphics: GuiGraphics, currentX: Int, currentY: Int, mouseX: Int, mouseY: Int) {
         fill(guiGraphics, currentX, currentY)
-        drawCenteredString(guiGraphics, currentX, currentY, if (findEnabled) 0xFFFF55 else 0xFFFFFF)
+        drawCenteredString(guiGraphics, currentX, currentY, (if (findEnabled) FIND_COLOR else 0xFFFFFF).toInt())
         if (findEnabled) {
-            renderOutline(guiGraphics, currentX, currentY, (0xFFFFFF55).toInt())
+            renderOutline(guiGraphics, currentX, currentY, FIND_COLOR.toInt())
         }
     }
 

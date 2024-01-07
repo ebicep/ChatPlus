@@ -8,7 +8,6 @@ import kotlin.math.roundToInt
 const val BASE_Y_OFFSET = 29
 const val MIN_HEIGHT = 80
 const val MIN_WIDTH = 160
-var findEnabled: Boolean = false
 
 object ChatManager {
 

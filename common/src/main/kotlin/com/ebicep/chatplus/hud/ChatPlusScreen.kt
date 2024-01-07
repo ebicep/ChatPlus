@@ -63,6 +63,12 @@ data class ChatScreenRenderEvent(
     val mouseY: Int,
 ) : Event
 
+data class ChatScreenInputBoxEditEvent(
+    val screen: ChatPlusScreen,
+    val str: String,
+    var returnFunction: Boolean = false
+) : Event
+
 data class ChatScreenInitEvent(
     val screen: ChatPlusScreen,
 ) : Event
@@ -153,6 +159,7 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
     fun rebuildWidgets0() {
         rebuildWidgets()
     }
+
     private fun initializeBaseEditBox(editBox: EditBox) {
         editBox.setMaxLength(256 * 5) // default 256
         editBox.isBordered = false
@@ -169,13 +176,11 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
     override fun removed() {
         EventBus.post(ChatScreenCloseEvent(this))
         ChatManager.selectedTab.resetChatScroll()
-        findEnabled = false
         ChatManager.selectedTab.refreshDisplayedMessage()
     }
 
     private fun onEdited(str: String) {
-        if (findEnabled) {
-            ChatManager.selectedTab.refreshDisplayedMessage(str)
+        if (EventBus.post(ChatScreenInputBoxEditEvent(this, str)).returnFunction) {
             return
         }
         val s = input!!.value

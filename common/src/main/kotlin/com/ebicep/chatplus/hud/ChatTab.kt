@@ -2,6 +2,8 @@ package com.ebicep.chatplus.hud
 
 import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.config.TimestampMode
+import com.ebicep.chatplus.events.Event
+import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.events.Events
 import com.google.common.collect.Lists
 import kotlinx.serialization.Serializable
@@ -23,6 +25,14 @@ import java.time.format.DateTimeFormatter
 import java.util.*
 import kotlin.math.min
 
+data class ChatTabAddDisplayMessageEvent(
+    val chatTab: ChatTab,
+    val component: Component,
+    val addedTime: Int,
+    val tag: GuiMessageTag?,
+    val linkedMessageIndex: Int,
+    var returnFunction: Boolean = false
+) : Event
 
 @Serializable
 class ChatTab {
@@ -33,7 +43,7 @@ class ChatTab {
 
     data class ChatPlusGuiMessage(val guiMessage: GuiMessage, var timesRepeated: Int = 1)
 
-    data class ChatPlusGuiMessageLine(val line: GuiMessage.Line, val content: String, val linkedMessageIndex: Int)
+    data class ChatPlusGuiMessageLine(val line: GuiMessage.Line, val content: String, val linkedMessageIndex: Int, val wrappedIndex: Int)
 
     class LiteralContentsIgnored(val text: String) : ComponentContents {
 
@@ -135,13 +145,6 @@ class ChatTab {
         while (this.messages.size > Config.values.maxMessages) {
             this.messages.removeFirst()
         }
-        val screen = Minecraft.getInstance().screen
-        if (findEnabled && screen is ChatPlusScreen) {
-            val filter = screen.input?.value
-            if (filter != null && !chatPlusGuiMessage.guiMessage.content.string.lowercase().contains(filter.lowercase())) {
-                return
-            }
-        }
         this.addNewDisplayMessage(componentWithTimeStamp, addedTime, tag, linkedMessageIndex)
     }
 
@@ -159,6 +162,9 @@ class ChatTab {
         tag: GuiMessageTag?,
         linkedMessageIndex: Int
     ) {
+        if (EventBus.post(ChatTabAddDisplayMessageEvent(this, component, addedTime, tag, linkedMessageIndex)).returnFunction) {
+            return
+        }
 //        val timesRepeated = messages[linkedMessageIndex].timesRepeated
 //        if (timesRepeated > 0) {
 //            component.append(Component.literal(" ($timesRepeated)").withStyle { it.withColor(ChatFormatting.GRAY) })
@@ -178,7 +184,8 @@ class ChatTab {
                 ChatPlusGuiMessageLine(
                     GuiMessage.Line(addedTime, formattedCharSequence, tag, lastComponent),
                     content,
-                    linkedMessageIndex
+                    linkedMessageIndex,
+                    j
                 )
             )
         }
@@ -239,6 +246,11 @@ class ChatTab {
             }
         }
         return null
+    }
+
+    fun clear() {
+        messages.clear()
+        displayedMessages.clear()
     }
 
     fun getMessageAt(pMouseX: Double, pMouseY: Double): ChatPlusGuiMessageLine? {

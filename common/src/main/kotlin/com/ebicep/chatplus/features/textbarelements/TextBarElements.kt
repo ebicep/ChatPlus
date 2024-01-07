@@ -1,24 +1,30 @@
 package com.ebicep.chatplus.features.textbarelements
 
 import com.ebicep.chatplus.config.Config
+import com.ebicep.chatplus.events.Event
 import com.ebicep.chatplus.events.EventBus
+import com.ebicep.chatplus.features.FindText
 import com.ebicep.chatplus.hud.*
 
 object TextBarElements {
 
+    data class AddTextBarElementEvent(
+        val screen: ChatPlusScreen,
+        val elements: MutableList<TextBarElement>
+    ) : Event
+
     private lateinit var chatPlusScreen: ChatPlusScreen
-    private var textBarElements = mutableListOf<TextBarElement>()
+    private var textBarElements: MutableList<TextBarElement> = mutableListOf()
     private var textBarElementsStartX: MutableMap<TextBarElement, Int> = mutableMapOf()
 
     init {
         EventBus.register<ChatScreenInitEvent> {
-            if (textBarElements.isNotEmpty()) {
-                return@register
-            }
             chatPlusScreen = it.screen
-            textBarElements.add(FindTextBarElement(chatPlusScreen))
-            if (Config.values.translatorEnabled) {
-                textBarElements.add(TranslateSpeakTextBarElement(chatPlusScreen))
+            if (textBarElements.isEmpty()) {
+                EventBus.post(AddTextBarElementEvent(chatPlusScreen, textBarElements))
+                if (Config.values.translatorEnabled) {
+                    textBarElements.add(TranslateSpeakTextBarElement(chatPlusScreen))
+                }
             }
 
             //____TEXTBOX_____-FIND--TRANSLATE-
@@ -67,6 +73,8 @@ object TextBarElements {
                 }
             }
         }
+
+        FindText
     }
 
     private fun cacheTextBarElementXs() {

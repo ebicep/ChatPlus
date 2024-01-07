@@ -18,18 +18,21 @@ const val TAB_X_BETWEEN = 1 // space between categories
 
 open class ChatRenderLineEvent(
     open val guiGraphics: GuiGraphics,
-    open val line: GuiMessage.Line,
+    open val chatPlusGuiMessageLine: ChatTab.ChatPlusGuiMessageLine,
     open val verticalChatOffset: Int,
     open val verticalTextOffset: Int,
-) : Event
+) : Event {
+    val line: GuiMessage.Line
+        get() = chatPlusGuiMessageLine.line
+}
 
 class ChatRenderLineBackgroundEvent(
     guiGraphics: GuiGraphics,
-    line: GuiMessage.Line,
+    chatPlusGuiMessageLine: ChatTab.ChatPlusGuiMessageLine,
     verticalChatOffset: Int,
     verticalTextOffset: Int,
     var backgroundColor: Int,
-) : ChatRenderLineEvent(guiGraphics, line, verticalChatOffset, verticalTextOffset)
+) : ChatRenderLineEvent(guiGraphics, chatPlusGuiMessageLine, verticalChatOffset, verticalTextOffset)
 
 //class ChatRenderLineTextEvent(
 //    guiGraphics: GuiGraphics,
@@ -115,7 +118,8 @@ object ChatRenderer {
         var displayMessageIndex = 0
         while (displayMessageIndex + selectedTab.chatScrollbarPos < messagesToDisplay && displayMessageIndex < rescaledLinesPerPage) {
             val messageIndex = messagesToDisplay - displayMessageIndex - selectedTab.chatScrollbarPos
-            val line: GuiMessage.Line = selectedTab.displayedMessages[messageIndex - 1].line
+            val chatPlusGuiMessageLine: ChatTab.ChatPlusGuiMessageLine = selectedTab.displayedMessages[messageIndex - 1]
+            val line: GuiMessage.Line = chatPlusGuiMessageLine.line
             val ticksLived: Int = guiTicks - line.addedTime()
             if (ticksLived >= 200 && !chatFocused) {
                 ++displayMessageIndex
@@ -136,7 +140,7 @@ object ChatRenderer {
                 poseStack.guiForward()
                 val renderLineBackgroundEvent = ChatRenderLineBackgroundEvent(
                     guiGraphics,
-                    line,
+                    chatPlusGuiMessageLine,
                     verticalChatOffset,
                     verticalTextOffset,
                     backgroundColor shl 24

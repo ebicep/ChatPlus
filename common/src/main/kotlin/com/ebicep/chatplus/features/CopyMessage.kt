@@ -45,6 +45,23 @@ object CopyMessage {
 
         EventBus.register<ChatRenderLineEvent> {
             // copy outline
+//            lastCopiedMessage?.let { message ->
+//                if (message.first != it.line) {
+//                    return@let
+//                }
+//                if (message.second < Events.currentTick) {
+//                    return@let
+//                }
+//                it.guiGraphics.renderOutline(
+//                    ChatRenderer.rescaledX,
+//                    it.verticalChatOffset - ChatRenderer.lineHeight,
+//                    (ChatRenderer.width / ChatRenderer.scale).toInt(),
+//                    ChatRenderer.lineHeight,
+//                    (0xd4d4d4FF).toInt()
+//                )
+//            }
+        }
+        EventBus.register<ChatRenderLineBackgroundEvent>(10) {
             lastCopiedMessage?.let { message ->
                 if (message.first != it.line) {
                     return@let
@@ -52,13 +69,7 @@ object CopyMessage {
                 if (message.second < Events.currentTick) {
                     return@let
                 }
-                it.guiGraphics.renderOutline(
-                    ChatRenderer.rescaledX,
-                    it.verticalChatOffset - ChatRenderer.lineHeight,
-                    (ChatRenderer.width / ChatRenderer.scale).toInt(),
-                    ChatRenderer.lineHeight,
-                    (0xd4d4d4FF).toInt()
-                )
+                it.backgroundColor = 402587903
             }
         }
     }

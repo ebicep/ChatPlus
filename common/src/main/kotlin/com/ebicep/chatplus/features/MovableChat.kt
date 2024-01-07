@@ -38,17 +38,6 @@ object MovableChat {
             val sideInner = ChatManager.getX() + ChatManager.getWidth() - RENDER_MOVING_SIZE
             val roof = ChatManager.getY() - ChatManager.getHeight()
             val roofInner = ChatManager.getY() - ChatManager.getHeight() + RENDER_MOVING_SIZE
-            if (findEnabled) {
-                ChatManager.selectedTab.getMessageAt(it.mouseX, it.mouseY)
-                    ?.let { message ->
-                        val lineOffset = ChatManager.getLinesPerPage() / 3
-                        val scrollTo = ChatManager.selectedTab.messages.size - message.linkedMessageIndex - lineOffset
-                        findEnabled = false
-                        ChatManager.selectedTab.refreshDisplayedMessage()
-                        it.screen.rebuildWidgets0()
-                        ChatManager.selectedTab.scrollChat(scrollTo)
-                    }
-            }
             val mouseX = it.mouseX
             val mouseY = it.mouseY
             if (mouseX > sideInner && mouseX < side && mouseY > roof && mouseY < ChatManager.getY()) {
