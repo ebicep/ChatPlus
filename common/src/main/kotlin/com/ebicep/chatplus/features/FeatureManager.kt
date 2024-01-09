@@ -11,6 +11,7 @@ object FeatureManager {
         HoverHighlight
         TextBarElements
         CompactMessages
+        FilterHighlight
 //        AlternatingColorBackground
     }
 

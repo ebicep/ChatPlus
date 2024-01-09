@@ -3,6 +3,8 @@ package com.ebicep.chatplus.config.forge
 import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.config.TimestampMode
 import com.ebicep.chatplus.config.queueUpdateConfig
+import com.ebicep.chatplus.features.FilterHighlight
+import com.ebicep.chatplus.features.FilterHighlight.DEFAULT_COLOR
 import com.ebicep.chatplus.hud.ChatTab
 import com.ebicep.chatplus.translator.LanguageManager
 import com.ebicep.chatplus.translator.RegexMatch
@@ -21,6 +23,7 @@ object ConfigScreenImpl {
 
     @JvmStatic
     fun getConfigScreen(previousScreen: Screen? = null): Screen {
+//        return ClothConfigDemo.getConfigBuilderWithDemo().build()
         val builder: ConfigBuilder = ConfigBuilder.create()
             .setParentScreen(previousScreen)
             .setTitle(Component.translatable("chatPlus.title"))
@@ -29,6 +32,7 @@ object ConfigScreenImpl {
         val entryBuilder: ConfigEntryBuilder = builder.entryBuilder()
         addGeneralOptions(builder, entryBuilder)
         addChatTabsOption(builder, entryBuilder)
+        addFilterHighlightOption(builder, entryBuilder)
         addKeyBindOptions(builder, entryBuilder)
         addTranslatorRegexOptions(builder, entryBuilder)
         return builder.build()
@@ -119,6 +123,39 @@ object ConfigScreenImpl {
                             .setTooltip(Component.translatable("chatPlus.chatTabs.pattern.tooltip"))
                             .setDefaultValue("")
                             .setSaveConsumer { value.pattern = it }
+                            .build(),
+                    )
+                }
+
+            )
+        )
+    }
+
+    private fun addFilterHighlightOption(builder: ConfigBuilder, entryBuilder: ConfigEntryBuilder) {
+        val filterHighlight = builder.getOrCreateCategory(Component.translatable("chatPlus.filterHighlight.title"))
+        filterHighlight.addEntry(
+            entryBuilder.booleanToggle(
+                "chatPlus.filterHighlight.toggle",
+                Config.values.filterHighlightEnabled
+            ) { Config.values.filterHighlightEnabled = it })
+        filterHighlight.addEntry(
+            getCustomListOption(
+                "chatPlus.filterHighlight.title",
+                Config.values.filterHighlights,
+                { Config.values.filterHighlights = it },
+                true,
+                { FilterHighlight.Filter("", DEFAULT_COLOR) },
+                { value ->
+                    listOf(
+                        entryBuilder.startStrField(Component.translatable("chatPlus.filterHighlight.pattern"), value.pattern)
+                            .setTooltip(Component.translatable("chatPlus.filterHighlight.pattern.tooltip"))
+                            .setDefaultValue("")
+                            .setSaveConsumer { value.pattern = it }
+                            .build(),
+                        entryBuilder.startAlphaColorField(Component.translatable("chatPlus.filterHighlight.color"), value.color)
+                            .setTooltip(Component.translatable("chatPlus.filterHighlight.color.tooltip"))
+                            .setDefaultValue(DEFAULT_COLOR)
+                            .setSaveConsumer { value.color = it }
                             .build(),
                     )
                 }

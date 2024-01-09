@@ -3,6 +3,7 @@ package com.ebicep.chatplus.features
 import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.hud.ChatManager
 import com.ebicep.chatplus.hud.ChatRenderLineBackgroundEvent
+import java.awt.Color
 
 object AlternatingColorBackground {
 
@@ -16,6 +17,6 @@ object AlternatingColorBackground {
 
 }
 
-//fun main() {
-//    println(Color(100, 50, 50, 75).rgb)
-//}
+fun main() {
+    println(Color(0, 155, 255, 255).rgb)
+}

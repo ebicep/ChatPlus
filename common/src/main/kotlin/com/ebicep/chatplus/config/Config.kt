@@ -8,6 +8,7 @@ import com.ebicep.chatplus.ChatPlus
 import com.ebicep.chatplus.MOD_ID
 import com.ebicep.chatplus.config.serializers.KeySerializer
 import com.ebicep.chatplus.config.serializers.KeyWithModifier
+import com.ebicep.chatplus.features.FilterHighlight
 import com.ebicep.chatplus.hud.BASE_Y_OFFSET
 import com.ebicep.chatplus.hud.ChatManager
 import com.ebicep.chatplus.hud.ChatRenderer
@@ -64,6 +65,9 @@ object Config {
         values.chatTabs.forEach {
             it.regex = Regex(it.pattern)
         }
+        values.filterHighlights.forEach {
+            it.regex = Regex(it.pattern)
+        }
     }
 
     private fun correctValues() {
@@ -108,6 +112,9 @@ data class ConfigVariables(
     // tabs
     var chatTabs: MutableList<ChatTab> = mutableListOf(ChatTab("All", "(?s).*")),
     var selectedTab: Int = 0,
+    // filter highlight
+    var filterHighlightEnabled: Boolean = true,
+    var filterHighlights: MutableList<FilterHighlight.Filter> = mutableListOf(),
     // keys binds
     var keyNoScroll: InputConstants.Key = InputConstants.getKey("key.keyboard.left.control"),
     var keyFineScroll: InputConstants.Key = InputConstants.getKey("key.keyboard.left.shift"),
