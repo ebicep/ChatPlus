@@ -99,7 +99,6 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
     var commandSuggestions: CommandSuggestions? = null
 
     override fun init() {
-        ChatRenderer.updateCachedDimension()
         historyPos = ChatManager.sentMessages.size
 
         editBoxWidth = width

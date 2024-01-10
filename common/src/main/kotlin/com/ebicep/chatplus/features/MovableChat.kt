@@ -3,7 +3,6 @@ package com.ebicep.chatplus.features
 import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.config.queueUpdateConfig
 import com.ebicep.chatplus.events.EventBus
-import com.ebicep.chatplus.features.chattabs.CHAT_TAB_HEIGHT
 import com.ebicep.chatplus.hud.*
 import com.ebicep.chatplus.util.GraphicsUtil.createPose
 import com.mojang.blaze3d.platform.InputConstants
@@ -79,7 +78,7 @@ object MovableChat {
                 val newWidth: Double = Mth.clamp(
                     mouseX - ChatManager.getX(),
                     ChatManager.getMinWidthScaled().toDouble(),
-                    Minecraft.getInstance().window.guiScaledWidth - ChatManager.getX() - 1.0
+                    Minecraft.getInstance().window.guiScaledWidth - ChatManager.getX().toDouble()
                 )
                 val width = newWidth.roundToInt()
                 Config.values.width = width
@@ -99,15 +98,17 @@ object MovableChat {
                     0,
                     Minecraft.getInstance().window.guiScaledWidth - ChatManager.getWidth() - 1
                 )
+                val maxHeightScaled = ChatManager.getMaxHeightScaled()
                 var newY = Mth.clamp(
                     (mouseY - yDisplacement).roundToInt(),
                     ChatManager.getHeight() + 1,
-                    Minecraft.getInstance().window.guiScaledHeight - CHAT_TAB_HEIGHT
+                    maxHeightScaled
                 )
-                if (newY == Minecraft.getInstance().window.guiScaledHeight - CHAT_TAB_HEIGHT) {
-                    newY = -CHAT_TAB_HEIGHT
+                if (newY == maxHeightScaled) {
+                    newY = ChatManager.getDefaultY()
                 }
                 Config.values.y = newY
+                ChatRenderer.updateCachedDimension()
             }
         }
 

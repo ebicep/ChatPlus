@@ -1,11 +1,10 @@
 package com.ebicep.chatplus.features.chattabs
 
 import com.ebicep.chatplus.config.Config
+import com.ebicep.chatplus.events.ChatPlusTickEvent
 import com.ebicep.chatplus.events.EventBus
-import com.ebicep.chatplus.hud.ChatManager
-import com.ebicep.chatplus.hud.ChatRenderPreLinesEvent
-import com.ebicep.chatplus.hud.ChatRenderer
-import com.ebicep.chatplus.hud.ChatScreenMouseClickedEvent
+import com.ebicep.chatplus.events.Events
+import com.ebicep.chatplus.hud.*
 import com.ebicep.chatplus.util.GraphicsUtil.createPose
 import com.ebicep.chatplus.util.GraphicsUtil.translateX
 import net.minecraft.client.Minecraft
@@ -18,17 +17,54 @@ const val CHAT_TAB_X_SPACE = 1 // space between categories
 
 object ChatTabs {
 
+    val defaultTab = ChatTab("All", "(?s).*")
+
     init {
-        EventBus.register<ChatRenderPreLinesEvent>(100) {
+        EventBus.register<ChatPlusTickEvent> {
+            if (!Config.values.chatTabsEnabled) {
+                checkTabRefresh(defaultTab)
+            } else {
+                Config.values.chatTabs.forEach { checkTabRefresh(it) }
+            }
+        }
+        EventBus.register<ChatRenderPreLinesEvent>(100)
+        {
+            if (!Config.values.chatTabsEnabled) {
+                return@register
+            }
             val chatFocused: Boolean = ChatManager.isChatFocused()
             if (chatFocused) {
                 renderTabs(it.guiGraphics, ChatRenderer.x, ChatRenderer.y)
             }
         }
-        EventBus.register<ChatScreenMouseClickedEvent> {
+        EventBus.register<ChatScreenMouseClickedEvent>
+        {
+            if (!Config.values.chatTabsEnabled) {
+                return@register
+            }
             if (it.button == 0) {
                 handleClickedTab(it.mouseX, it.mouseY)
             }
+        }
+        EventBus.register<GetMaxHeightEvent>
+        {
+            if (!Config.values.chatTabsEnabled) {
+                return@register
+            }
+            it.maxHeight -= CHAT_TAB_HEIGHT
+        }
+        EventBus.register<GetDefaultYEvent>
+        {
+            if (!Config.values.chatTabsEnabled) {
+                return@register
+            }
+            it.y = -CHAT_TAB_HEIGHT
+        }
+    }
+
+    private fun checkTabRefresh(it: ChatTab) {
+        if (it.resetDisplayMessageAtTick == Events.currentTick) {
+            it.refreshDisplayedMessage()
         }
     }
 

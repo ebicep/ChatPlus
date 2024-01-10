@@ -11,6 +11,7 @@ import com.ebicep.chatplus.config.serializers.KeyWithModifier
 import com.ebicep.chatplus.features.FilterHighlight
 import com.ebicep.chatplus.features.chattabs.CHAT_TAB_HEIGHT
 import com.ebicep.chatplus.features.chattabs.ChatTab
+import com.ebicep.chatplus.features.chattabs.ChatTabs.defaultTab
 import com.ebicep.chatplus.hud.ChatManager
 import com.ebicep.chatplus.hud.ChatRenderer
 import com.ebicep.chatplus.translator.LanguageManager
@@ -19,6 +20,7 @@ import com.mojang.blaze3d.platform.InputConstants
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.UseSerializers
 import kotlinx.serialization.json.Json
+import net.minecraft.util.Mth
 import java.io.File
 import java.util.*
 
@@ -82,11 +84,9 @@ object Config {
             values.maxCommandSuggestions = MAX_MAX_COMMAND_SUGGESTIONS
         }
         if (values.chatTabs.isEmpty()) {
-            values.chatTabs.add(ChatTab("All", "(?s).*"))
+            values.chatTabs.add(defaultTab)
         }
-        if (values.selectedTab >= values.chatTabs.size) {
-            values.selectedTab = 0
-        }
+        values.selectedTab = Mth.clamp(values.selectedTab, 0, values.chatTabs.size - 1)
         LanguageManager.findLanguageFromName(values.translateTo).let { if (it == null) values.translateTo = "Auto Detect" }
         LanguageManager.findLanguageFromName(values.translateSelf).let { if (it == null) values.translateSelf = "Auto Detect" }
         LanguageManager.findLanguageFromName(values.translateSpeak).let { if (it == null) values.translateSpeak = "English" }
@@ -102,6 +102,8 @@ const val MAX_MAX_COMMAND_SUGGESTIONS = 30
 
 @Serializable
 data class ConfigVariables(
+    var x: Int = 0,
+    var y: Int = -CHAT_TAB_HEIGHT,
     // general
     var enabled: Boolean = true,
     var maxMessages: Int = 1000,
@@ -110,7 +112,8 @@ data class ConfigVariables(
     var hoverHighlightEnabled: Boolean = true,
     var hoverHighlightColor: Int = 0,
     // tabs
-    var chatTabs: MutableList<ChatTab> = mutableListOf(ChatTab("All", "(?s).*")),
+    var chatTabsEnabled: Boolean = true,
+    var chatTabs: MutableList<ChatTab> = mutableListOf(defaultTab),
     var selectedTab: Int = 0,
     // filter highlight
     var filterHighlightEnabled: Boolean = true,
@@ -132,16 +135,6 @@ data class ConfigVariables(
     // variables here for custom setters
 
     // internal
-    var x: Int = 0
-        set(newX) {
-            field = newX
-            ChatRenderer.updateCachedDimension()
-        }
-    var y: Int = -CHAT_TAB_HEIGHT
-        set(newY) {
-            field = newY
-            ChatRenderer.updateCachedDimension()
-        }
     var width: Int = 180
         set(newWidth) {
             field = newWidth

@@ -1,22 +1,41 @@
 package com.ebicep.chatplus.hud
 
 import com.ebicep.chatplus.config.Config
+import com.ebicep.chatplus.events.Event
+import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.events.Events
-import com.ebicep.chatplus.features.chattabs.CHAT_TAB_HEIGHT
 import com.ebicep.chatplus.features.chattabs.ChatTab
+import com.ebicep.chatplus.features.chattabs.ChatTabs.defaultTab
 import net.minecraft.client.Minecraft
 import kotlin.math.roundToInt
 
 const val MIN_HEIGHT = 80
 const val MIN_WIDTH = 160
 
+
+data class GetMaxWidthEvent(
+    var maxWidth: Int
+) : Event
+
+data class GetDefaultYEvent(
+    var y: Int
+) : Event
+
+data class GetMaxHeightEvent(
+    var maxHeight: Int
+) : Event
+
 object ChatManager {
+
 
     val sentMessages: MutableList<String> = ArrayList()
     val selectedTab: ChatTab
         get() {
+            if (!Config.values.chatTabsEnabled) {
+                return defaultTab
+            }
             if (Config.values.chatTabs.isEmpty()) {
-                Config.values.chatTabs.add(ChatTab("All", "(?s).*"))
+                Config.values.chatTabs.add(defaultTab)
                 Config.values.selectedTab = 0
                 Config.save()
             }
@@ -25,6 +44,22 @@ object ChatManager {
 
     init {
         sentMessages.addAll(Minecraft.getInstance().commandHistory().history())
+    }
+
+    fun getDefaultY(): Int {
+        return EventBus.post(GetDefaultYEvent(Minecraft.getInstance().window.guiScaledHeight - EDIT_BOX_HEIGHT)).y
+    }
+
+    fun getMaxWidthScaled(): Int {
+        return EventBus.post(GetMaxWidthEvent(Minecraft.getInstance().window.guiScaledWidth)).maxWidth
+    }
+
+    fun getMaxHeightScaled(): Int {
+        return EventBus.post(GetMaxHeightEvent(Minecraft.getInstance().window.guiScaledHeight - EDIT_BOX_HEIGHT)).maxHeight
+    }
+
+    fun getMaxHeightScaled(guiScaledHeight: Int): Int {
+        return EventBus.post(GetMaxHeightEvent(guiScaledHeight - EDIT_BOX_HEIGHT)).maxHeight
     }
 
     fun getMinWidthScaled(): Int {
@@ -71,7 +106,7 @@ object ChatManager {
         val guiWidth = Minecraft.getInstance().window.guiScaledWidth
         val minWidthScaled = getMinWidthScaled()
         val lowerThanMin = width < minWidthScaled
-        val hasSpace = guiWidth - getX() - 1 >= minWidthScaled
+        val hasSpace = guiWidth - getX() >= minWidthScaled
         if (lowerThanMin && hasSpace) {
             width = minWidthScaled
             selectedTab.rescaleChat()
@@ -80,7 +115,7 @@ object ChatManager {
             width = 200.coerceAtMost(guiWidth - getX() - 1)
         }
         if (getX() + width >= guiWidth) {
-            width = guiWidth - getX() - 1
+            width = guiWidth - getX()
         }
         return width
     }
@@ -108,11 +143,7 @@ object ChatManager {
         if (height >= getY()) {
             height = getY() - 1
         }
-        return if (isChatFocused()) {
-            height
-        } else {
-            (height * .5).roundToInt()
-        }
+        return height
     }
 
     fun getX(): Int {
@@ -134,8 +165,8 @@ object ChatManager {
             y += Minecraft.getInstance().window.guiScaledHeight
         }
         if (y >= Minecraft.getInstance().window.guiScaledHeight) {
-            y = Minecraft.getInstance().window.guiScaledHeight - CHAT_TAB_HEIGHT
-            Config.values.y = -CHAT_TAB_HEIGHT
+            y = getMaxHeightScaled()
+            Config.values.y = getDefaultY()
         }
         return y
     }

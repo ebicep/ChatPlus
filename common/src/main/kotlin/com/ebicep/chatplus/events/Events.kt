@@ -17,22 +17,21 @@ import net.minecraft.client.gui.screens.ChatScreen
 import net.minecraft.network.chat.ChatType
 import net.minecraft.network.chat.Component
 
+data class ChatPlusTickEvent(
+    val tick: Long
+) : Event
 
 object Events {
 
     var latestDefaultText = ""
-    var currentTick = 0L
+    var currentTick = 1L
 
     init {
         ClientTickEvent.CLIENT_POST.register {
-            currentTick++
+            EventBus.post(ChatPlusTickEvent(currentTick))
 
             ConfigScreen.handleOpenScreen()
-            Config.values.chatTabs.forEach {
-                if (it.resetDisplayMessageAtTick == currentTick) {
-                    it.refreshDisplayedMessage()
-                }
-            }
+
             val messagesToSend = ChatPlusScreen.messagesToSend
             if (messagesToSend.isNotEmpty() && ChatPlusScreen.lastMessageSentTick + 10 < currentTick) {
                 val message = messagesToSend.removeAt(0)
@@ -49,6 +48,8 @@ object Events {
                 queueUpdateConfig = false
                 Config.save()
             }
+
+            currentTick++
         }
         // scuffed fix for joining a server with a diff window dimension than before
         ClientLifecycleEvent.CLIENT_LEVEL_LOAD.register {

@@ -1,10 +1,12 @@
 package com.ebicep.chatplus.hud
 
+import com.ebicep.chatplus.ChatPlus
 import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.events.Event
 import com.ebicep.chatplus.events.EventBus
-import com.ebicep.chatplus.features.chattabs.CHAT_TAB_HEIGHT
 import com.ebicep.chatplus.features.chattabs.ChatTab
+import com.ebicep.chatplus.hud.ChatManager.getDefaultY
+import com.ebicep.chatplus.hud.ChatManager.getMaxHeightScaled
 import com.ebicep.chatplus.hud.ChatManager.selectedTab
 import com.ebicep.chatplus.util.GraphicsUtil.createPose
 import com.ebicep.chatplus.util.GraphicsUtil.guiForward
@@ -78,6 +80,7 @@ object ChatRenderer {
     var lineHeight: Int = 0
 
     fun updateCachedDimension() {
+        ChatPlus.LOGGER.info("updateCachedDimension")
         textOpacity = ChatManager.getTextOpacity() * 0.9 + 0.1
         backgroundOpacity = ChatManager.getBackgroundOpacity()
         lineSpacing = ChatManager.getLineSpacing()
@@ -110,7 +113,11 @@ object ChatRenderer {
         poseStack.pushPose()
         poseStack.scale(scale, scale, 1.0f)
         var displayMessageIndex = 0
-        while (displayMessageIndex + selectedTab.chatScrollbarPos < messagesToDisplay && displayMessageIndex < rescaledLinesPerPage) {
+        var linesPerPage = rescaledLinesPerPage
+        if (!chatFocused) {
+            linesPerPage /= 2
+        }
+        while (displayMessageIndex + selectedTab.chatScrollbarPos < messagesToDisplay && displayMessageIndex < linesPerPage) {
             val messageIndex = messagesToDisplay - displayMessageIndex - selectedTab.chatScrollbarPos
             val chatPlusGuiMessageLine: ChatTab.ChatPlusGuiMessageLine = selectedTab.displayedMessages[messageIndex - 1]
             val line: GuiMessage.Line = chatPlusGuiMessageLine.line
@@ -170,32 +177,42 @@ object ChatRenderer {
         val screenWidth = Minecraft.getInstance().window.guiScaledWidth
         val screenHeight = Minecraft.getInstance().window.guiScaledHeight
 
-        if (screenWidth != previousScreenWidth && previousScreenWidth != -1) {
+        val widthChanged = screenWidth != previousScreenWidth && previousScreenWidth != -1
+        val heightChanged = screenHeight != previousScreenHeight && previousScreenHeight != -1
+
+        if (widthChanged) {
             Config.values.x = (screenWidth * Config.values.x / previousScreenWidth.toDouble()).roundToInt()
-            updateCachedDimension()
         }
-        if (screenHeight != previousScreenHeight && previousScreenHeight != -1) {
+        if (heightChanged) {
             val oldY = Config.values.y
+            val defaultY = getDefaultY()
             if (oldY <= 0) {
-                Config.values.y = -CHAT_TAB_HEIGHT
+                Config.values.y = defaultY
             } else {
-                val oldRatio = oldY / previousScreenHeight.toDouble()
-                var newY = (screenHeight * oldRatio).roundToInt()
-                if (newY > screenHeight - CHAT_TAB_HEIGHT) {
-                    newY = -CHAT_TAB_HEIGHT
+                if (oldY >= getMaxHeightScaled(previousScreenHeight)) {
+                    Config.values.y = getMaxHeightScaled()
+                } else {
+                    val oldRatio = oldY / previousScreenHeight.toDouble()
+                    var newY = (screenHeight * oldRatio).roundToInt()
+                    if (newY >= getMaxHeightScaled()) {
+                        newY = defaultY
+                    }
+                    Config.values.y = newY
                 }
-                Config.values.y = newY
             }
             val oldHeight = Config.values.height
             if ((oldY > 0 && oldHeight >= oldY - 1) ||
-                (oldY == -CHAT_TAB_HEIGHT && oldHeight >= previousScreenHeight - CHAT_TAB_HEIGHT - 1)
+                (oldY == defaultY && oldHeight >= getMaxHeightScaled(previousScreenHeight) - 1)
             ) {
-                Config.values.height = screenHeight - CHAT_TAB_HEIGHT - 1
+                Config.values.height = getMaxHeightScaled() - 1
             }
-            updateCachedDimension()
         }
         previousScreenWidth = screenWidth
         previousScreenHeight = screenHeight
+
+        if (heightChanged || widthChanged) {
+            updateCachedDimension()
+        }
     }
 
     private fun getTimeFactor(ticksLived: Int): Double {

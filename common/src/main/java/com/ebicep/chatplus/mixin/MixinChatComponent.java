@@ -3,6 +3,7 @@ package com.ebicep.chatplus.mixin;
 import com.ebicep.chatplus.ChatPlus;
 import com.ebicep.chatplus.config.Config;
 import com.ebicep.chatplus.features.chattabs.ChatTab;
+import com.ebicep.chatplus.features.chattabs.ChatTabs;
 import com.ebicep.chatplus.hud.ChatRenderer;
 import net.minecraft.client.GuiMessageTag;
 import net.minecraft.client.gui.GuiGraphics;
@@ -31,8 +32,12 @@ public class MixinChatComponent {
         if (!ChatPlus.INSTANCE.isEnabled()) {
             return;
         }
-        for (ChatTab chatTab : Config.INSTANCE.getValues().getChatTabs()) {
-            chatTab.addNewMessage(component, messageSignature, i, guiMessageTag, chatTab.getMessages().size());
+        if (Config.INSTANCE.getValues().getChatTabsEnabled()) {
+            for (ChatTab chatTab : Config.INSTANCE.getValues().getChatTabs()) {
+                chatTab.addNewMessage(component, messageSignature, i, guiMessageTag, chatTab.getMessages().size());
+            }
+        } else {
+            ChatTabs.INSTANCE.getDefaultTab().addNewMessage(component, messageSignature, i, guiMessageTag, ChatTabs.INSTANCE.getDefaultTab().getMessages().size());
         }
     }
 

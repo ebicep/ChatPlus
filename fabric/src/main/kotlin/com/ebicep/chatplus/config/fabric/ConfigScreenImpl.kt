@@ -106,6 +106,11 @@ object ConfigScreenImpl {
     private fun addChatTabsOption(builder: ConfigBuilder, entryBuilder: ConfigEntryBuilder) {
         val chatTabs = builder.getOrCreateCategory(Component.translatable("chatPlus.chatTabs.title"))
         chatTabs.addEntry(
+            entryBuilder.booleanToggle(
+                "chatPlus.chatTabs.toggle",
+                Config.values.chatTabsEnabled
+            ) { Config.values.chatTabsEnabled = it })
+        chatTabs.addEntry(
             getCustomListOption(
                 "chatPlus.chatTabs.title",
                 Config.values.chatTabs,
