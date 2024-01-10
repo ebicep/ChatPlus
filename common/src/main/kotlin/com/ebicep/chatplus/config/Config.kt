@@ -9,10 +9,10 @@ import com.ebicep.chatplus.MOD_ID
 import com.ebicep.chatplus.config.serializers.KeySerializer
 import com.ebicep.chatplus.config.serializers.KeyWithModifier
 import com.ebicep.chatplus.features.FilterHighlight
-import com.ebicep.chatplus.hud.BASE_Y_OFFSET
+import com.ebicep.chatplus.features.chattabs.CHAT_TAB_HEIGHT
+import com.ebicep.chatplus.features.chattabs.ChatTab
 import com.ebicep.chatplus.hud.ChatManager
 import com.ebicep.chatplus.hud.ChatRenderer
-import com.ebicep.chatplus.hud.ChatTab
 import com.ebicep.chatplus.translator.LanguageManager
 import com.ebicep.chatplus.translator.RegexMatch
 import com.mojang.blaze3d.platform.InputConstants
@@ -137,7 +137,7 @@ data class ConfigVariables(
             field = newX
             ChatRenderer.updateCachedDimension()
         }
-    var y: Int = -BASE_Y_OFFSET
+    var y: Int = -CHAT_TAB_HEIGHT
         set(newY) {
             field = newY
             ChatRenderer.updateCachedDimension()

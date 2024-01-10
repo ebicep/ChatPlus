@@ -1,7 +1,7 @@
 package com.ebicep.chatplus.features
 
 import com.ebicep.chatplus.events.EventBus
-import com.ebicep.chatplus.hud.ChatTabAddNewMessageEvent
+import com.ebicep.chatplus.features.chattabs.ChatTabAddNewMessageEvent
 import net.minecraft.ChatFormatting
 import net.minecraft.network.chat.ComponentContents
 import net.minecraft.network.chat.FormattedText

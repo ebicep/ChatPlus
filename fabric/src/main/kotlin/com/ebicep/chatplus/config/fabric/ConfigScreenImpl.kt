@@ -5,7 +5,7 @@ import com.ebicep.chatplus.config.TimestampMode
 import com.ebicep.chatplus.config.queueUpdateConfig
 import com.ebicep.chatplus.features.FilterHighlight
 import com.ebicep.chatplus.features.FilterHighlight.DEFAULT_COLOR
-import com.ebicep.chatplus.hud.ChatTab
+import com.ebicep.chatplus.features.chattabs.ChatTab
 import com.ebicep.chatplus.translator.LanguageManager
 import com.ebicep.chatplus.translator.RegexMatch
 import com.ebicep.chatplus.translator.languages

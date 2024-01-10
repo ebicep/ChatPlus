@@ -2,6 +2,7 @@ package com.ebicep.chatplus.features
 
 import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.events.Events
+import com.ebicep.chatplus.features.chattabs.ChatTabAddDisplayMessageEvent
 import com.ebicep.chatplus.features.textbarelements.FindTextBarElement
 import com.ebicep.chatplus.features.textbarelements.TextBarElements
 import com.ebicep.chatplus.features.textbarelements.TranslateToggleEvent

@@ -2,8 +2,8 @@ package com.ebicep.chatplus.mixin;
 
 import com.ebicep.chatplus.ChatPlus;
 import com.ebicep.chatplus.config.Config;
+import com.ebicep.chatplus.features.chattabs.ChatTab;
 import com.ebicep.chatplus.hud.ChatRenderer;
-import com.ebicep.chatplus.hud.ChatTab;
 import net.minecraft.client.GuiMessageTag;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.ChatComponent;

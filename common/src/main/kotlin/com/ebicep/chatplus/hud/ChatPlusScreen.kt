@@ -271,7 +271,6 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
         } else {
             EventBus.post(ChatScreenMouseClickedEvent(this, mouseX, mouseY, pButton))
             if (pButton == 0) {
-                ChatManager.handleClickedTab(mouseX, mouseY)
                 if (ChatManager.selectedTab.handleChatQueueClicked(mouseX, mouseY)) {
                     return true
                 }

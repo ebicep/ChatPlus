@@ -3,6 +3,7 @@ package com.ebicep.chatplus.features
 import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.config.queueUpdateConfig
 import com.ebicep.chatplus.events.EventBus
+import com.ebicep.chatplus.features.chattabs.CHAT_TAB_HEIGHT
 import com.ebicep.chatplus.hud.*
 import com.ebicep.chatplus.util.GraphicsUtil.createPose
 import com.mojang.blaze3d.platform.InputConstants
@@ -101,10 +102,10 @@ object MovableChat {
                 var newY = Mth.clamp(
                     (mouseY - yDisplacement).roundToInt(),
                     ChatManager.getHeight() + 1,
-                    Minecraft.getInstance().window.guiScaledHeight - BASE_Y_OFFSET
+                    Minecraft.getInstance().window.guiScaledHeight - CHAT_TAB_HEIGHT
                 )
-                if (newY == Minecraft.getInstance().window.guiScaledHeight - BASE_Y_OFFSET) {
-                    newY = -BASE_Y_OFFSET
+                if (newY == Minecraft.getInstance().window.guiScaledHeight - CHAT_TAB_HEIGHT) {
+                    newY = -CHAT_TAB_HEIGHT
                 }
                 Config.values.y = newY
             }

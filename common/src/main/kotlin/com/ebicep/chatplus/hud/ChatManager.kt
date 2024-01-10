@@ -2,10 +2,11 @@ package com.ebicep.chatplus.hud
 
 import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.events.Events
+import com.ebicep.chatplus.features.chattabs.CHAT_TAB_HEIGHT
+import com.ebicep.chatplus.features.chattabs.ChatTab
 import net.minecraft.client.Minecraft
 import kotlin.math.roundToInt
 
-const val BASE_Y_OFFSET = 29
 const val MIN_HEIGHT = 80
 const val MIN_WIDTH = 160
 
@@ -51,26 +52,6 @@ object ChatManager {
         }
         if (pMessage.startsWith("/")) {
             Minecraft.getInstance().commandHistory().addCommand(pMessage)
-        }
-    }
-
-    fun handleClickedTab(x: Double, y: Double) {
-        val translatedY = getY() - y
-        var xOff = 0.0
-        val font = Minecraft.getInstance().font
-        //ChatPlus.LOGGER.debug("x: $x, translatedY: $translatedY")
-        if (translatedY > TAB_Y_OFFSET || translatedY < -(9 + ChatTab.PADDING + ChatTab.PADDING)) {
-            return
-        }
-        Config.values.chatTabs.forEachIndexed { index, it ->
-            val categoryLength = font.width(it.name) + ChatTab.PADDING + ChatTab.PADDING
-            if (x > xOff && x < xOff + categoryLength && it != selectedTab) {
-                Config.values.selectedTab = index
-                Config.save()
-                selectedTab.refreshDisplayedMessage()
-                return
-            }
-            xOff += categoryLength + TAB_X_BETWEEN
         }
     }
 
@@ -153,8 +134,8 @@ object ChatManager {
             y += Minecraft.getInstance().window.guiScaledHeight
         }
         if (y >= Minecraft.getInstance().window.guiScaledHeight) {
-            y = Minecraft.getInstance().window.guiScaledHeight - BASE_Y_OFFSET
-            Config.values.y = -BASE_Y_OFFSET
+            y = Minecraft.getInstance().window.guiScaledHeight - CHAT_TAB_HEIGHT
+            Config.values.y = -CHAT_TAB_HEIGHT
         }
         return y
     }

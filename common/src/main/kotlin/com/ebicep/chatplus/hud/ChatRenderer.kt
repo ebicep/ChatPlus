@@ -3,6 +3,8 @@ package com.ebicep.chatplus.hud
 import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.events.Event
 import com.ebicep.chatplus.events.EventBus
+import com.ebicep.chatplus.features.chattabs.CHAT_TAB_HEIGHT
+import com.ebicep.chatplus.features.chattabs.ChatTab
 import com.ebicep.chatplus.hud.ChatManager.selectedTab
 import com.ebicep.chatplus.util.GraphicsUtil.createPose
 import com.ebicep.chatplus.util.GraphicsUtil.guiForward
@@ -12,9 +14,6 @@ import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.util.Mth
 import kotlin.math.roundToInt
-
-const val TAB_Y_OFFSET = 1 // offset from text box
-const val TAB_X_BETWEEN = 1 // space between categories
 
 open class ChatRenderLineEvent(
     open val guiGraphics: GuiGraphics,
@@ -103,11 +102,6 @@ object ChatRenderer {
         val poseStack: PoseStack = guiGraphics.pose()
         val chatFocused: Boolean = ChatManager.isChatFocused()
 
-        // tabs
-        if (chatFocused) {
-            renderTabs(poseStack, guiGraphics, x, y)
-        }
-
         if (EventBus.post(ChatRenderPreLinesEvent(guiGraphics)).returnFunction) {
             return
         }
@@ -183,44 +177,25 @@ object ChatRenderer {
         if (screenHeight != previousScreenHeight && previousScreenHeight != -1) {
             val oldY = Config.values.y
             if (oldY <= 0) {
-                Config.values.y = -BASE_Y_OFFSET
+                Config.values.y = -CHAT_TAB_HEIGHT
             } else {
                 val oldRatio = oldY / previousScreenHeight.toDouble()
                 var newY = (screenHeight * oldRatio).roundToInt()
-                if (newY > screenHeight - BASE_Y_OFFSET) {
-                    newY = -BASE_Y_OFFSET
+                if (newY > screenHeight - CHAT_TAB_HEIGHT) {
+                    newY = -CHAT_TAB_HEIGHT
                 }
                 Config.values.y = newY
             }
             val oldHeight = Config.values.height
             if ((oldY > 0 && oldHeight >= oldY - 1) ||
-                (oldY == -BASE_Y_OFFSET && oldHeight >= previousScreenHeight - BASE_Y_OFFSET - 1)
+                (oldY == -CHAT_TAB_HEIGHT && oldHeight >= previousScreenHeight - CHAT_TAB_HEIGHT - 1)
             ) {
-                Config.values.height = screenHeight - BASE_Y_OFFSET - 1
+                Config.values.height = screenHeight - CHAT_TAB_HEIGHT - 1
             }
             updateCachedDimension()
         }
         previousScreenWidth = screenWidth
         previousScreenHeight = screenHeight
-    }
-
-    private fun renderTabs(
-        poseStack: PoseStack,
-        guiGraphics: GuiGraphics,
-        x: Int,
-        y: Int
-    ) {
-        poseStack.pushPose()
-        poseStack.translate(x.toFloat(), y.toFloat() + TAB_Y_OFFSET, 0f)
-        Config.values.chatTabs.forEach {
-            it.render(guiGraphics)
-            poseStack.translate(
-                Minecraft.getInstance().font.width(it.name).toFloat() + ChatTab.PADDING + ChatTab.PADDING + TAB_X_BETWEEN,
-                0f,
-                0f
-            )
-        }
-        poseStack.popPose()
     }
 
     private fun getTimeFactor(ticksLived: Int): Double {

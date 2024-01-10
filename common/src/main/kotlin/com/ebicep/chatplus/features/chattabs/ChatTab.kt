@@ -1,4 +1,4 @@
-package com.ebicep.chatplus.hud
+package com.ebicep.chatplus.features.chattabs
 
 import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.config.TimestampMode
@@ -6,6 +6,8 @@ import com.ebicep.chatplus.events.Event
 import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.events.Events
 import com.ebicep.chatplus.features.CompactMessages.literalIgnored
+import com.ebicep.chatplus.hud.ChatManager
+import com.ebicep.chatplus.hud.ChatRenderer
 import com.google.common.collect.Lists
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -93,7 +95,7 @@ class ChatTab {
         tag: GuiMessageTag?,
         linkedMessageIndex: Int
     ) {
-        if (!regex.matches(component.string)) {
+        if (!regex.matches(ChatFormatting.stripFormatting(component.string)!!)) {
             return
         }
         val componentWithTimeStamp: MutableComponent = getTimeStampedMessage(component)

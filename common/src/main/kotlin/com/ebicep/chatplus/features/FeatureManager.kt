@@ -1,5 +1,6 @@
 package com.ebicep.chatplus.features
 
+import com.ebicep.chatplus.features.chattabs.ChatTabs
 import com.ebicep.chatplus.features.textbarelements.TextBarElements
 
 object FeatureManager {
@@ -12,6 +13,7 @@ object FeatureManager {
         TextBarElements
         CompactMessages
         FilterHighlight
+        ChatTabs
 //        AlternatingColorBackground
     }
 
