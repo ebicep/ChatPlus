@@ -2,6 +2,7 @@ package com.ebicep.chatplus.events.fabric
 
 import com.ebicep.chatplus.config.ConfigScreen
 import com.ebicep.chatplus.hud.ChatManager
+import com.ebicep.chatplus.hud.ChatRenderer
 import com.mojang.brigadier.Command
 import com.mojang.brigadier.CommandDispatcher
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager
@@ -22,6 +23,12 @@ object ClientCommandRegistration {
                     .then(ClientCommandManager.literal("clear")
                         .executes {
                             ChatManager.selectedTab.clear()
+                            Command.SINGLE_SUCCESS
+                        }
+                    )
+                    .then(ClientCommandManager.literal("test")
+                        .executes {
+                            ChatRenderer.updateCachedDimension()
                             Command.SINGLE_SUCCESS
                         }
                     )

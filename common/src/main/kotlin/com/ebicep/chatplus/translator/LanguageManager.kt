@@ -31,11 +31,11 @@ object LanguageManager {
 
     fun updateTranslateLanguages() {
         languageTo = findLanguageFromName(Config.values.translateTo)
-        ChatPlus.LOGGER.info("LanguageTo: $languageTo")
+//        ChatPlus.LOGGER.info("LanguageTo: $languageTo")
         languageSelf = findLanguageFromName(Config.values.translateSelf)
-        ChatPlus.LOGGER.info("LanguageSelf: $languageSelf")
+//        ChatPlus.LOGGER.info("LanguageSelf: $languageSelf")
         languageSpeak = findLanguageFromName(Config.values.translateSpeak)
-        ChatPlus.LOGGER.info("LanguageSpeak: $languageSpeak")
+//        ChatPlus.LOGGER.info("LanguageSpeak: $languageSpeak")
     }
 
     fun findLanguageFromName(name: String): Language? {

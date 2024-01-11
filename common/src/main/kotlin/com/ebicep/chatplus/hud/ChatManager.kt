@@ -47,7 +47,7 @@ object ChatManager {
     }
 
     fun getDefaultY(): Int {
-        return EventBus.post(GetDefaultYEvent(Minecraft.getInstance().window.guiScaledHeight - EDIT_BOX_HEIGHT)).y
+        return EventBus.post(GetDefaultYEvent(-EDIT_BOX_HEIGHT)).y
     }
 
     fun getMaxWidthScaled(): Int {
@@ -106,16 +106,17 @@ object ChatManager {
         val guiWidth = Minecraft.getInstance().window.guiScaledWidth
         val minWidthScaled = getMinWidthScaled()
         val lowerThanMin = width < minWidthScaled
-        val hasSpace = guiWidth - getX() >= minWidthScaled
+        val x = ChatRenderer.x
+        val hasSpace = guiWidth - x >= minWidthScaled
         if (lowerThanMin && hasSpace) {
             width = minWidthScaled
             selectedTab.rescaleChat()
         }
         if (width <= 0) {
-            width = 200.coerceAtMost(guiWidth - getX() - 1)
+            width = 200.coerceAtMost(guiWidth - x - 1)
         }
-        if (getX() + width >= guiWidth) {
-            width = guiWidth - getX()
+        if (x + width >= guiWidth) {
+            width = guiWidth - x
         }
         return width
     }
@@ -132,16 +133,17 @@ object ChatManager {
         var height = Config.values.height
         val minHeightScaled = getMinHeightScaled()
         val lowerThanMin = Config.values.height < minHeightScaled
-        val hasSpace = getY() - 1 >= minHeightScaled
+        val y = ChatRenderer.y
+        val hasSpace = y - 1 >= minHeightScaled
         if (lowerThanMin && hasSpace) {
             height = minHeightScaled
             selectedTab.rescaleChat()
         }
-        if (getY() - Config.values.height <= 0) {
-            height = getY() - 1
+        if (y - Config.values.height <= 0) {
+            height = y - 1
         }
-        if (height >= getY()) {
-            height = getY() - 1
+        if (height >= y) {
+            height = y - 1
         }
         return height
     }
@@ -164,24 +166,12 @@ object ChatManager {
         if (y < 0) {
             y += Minecraft.getInstance().window.guiScaledHeight
         }
-        if (y >= Minecraft.getInstance().window.guiScaledHeight) {
+        if (y >= Minecraft.getInstance().window.guiScaledHeight - EDIT_BOX_HEIGHT) {
             y = getMaxHeightScaled()
             Config.values.y = getDefaultY()
         }
         return y
     }
-
-//    /**
-//     * Y offset from bottom, all values should be negative
-//     */
-//    fun getYOffset(): Int {
-//        var y = Config.values.y
-//        if (y > 0) {
-//            y = -baseYOffset
-//            Config.values.y = y
-//        }
-//    }
-
 
     fun getLinesPerPage(): Int {
         return getHeight() / getLineHeight()

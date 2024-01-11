@@ -11,7 +11,7 @@ import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphics
 
 
-const val CHAT_TAB_HEIGHT = 29
+const val CHAT_TAB_HEIGHT = 15
 const val CHAT_TAB_Y_OFFSET = 1 // offset from text box
 const val CHAT_TAB_X_SPACE = 1 // space between categories
 
@@ -27,8 +27,7 @@ object ChatTabs {
                 Config.values.chatTabs.forEach { checkTabRefresh(it) }
             }
         }
-        EventBus.register<ChatRenderPreLinesEvent>(100)
-        {
+        EventBus.register<ChatRenderPreLinesEvent>(100) {
             if (!Config.values.chatTabsEnabled) {
                 return@register
             }
@@ -37,8 +36,7 @@ object ChatTabs {
                 renderTabs(it.guiGraphics, ChatRenderer.x, ChatRenderer.y)
             }
         }
-        EventBus.register<ChatScreenMouseClickedEvent>
-        {
+        EventBus.register<ChatScreenMouseClickedEvent> {
             if (!Config.values.chatTabsEnabled) {
                 return@register
             }
@@ -46,19 +44,17 @@ object ChatTabs {
                 handleClickedTab(it.mouseX, it.mouseY)
             }
         }
-        EventBus.register<GetMaxHeightEvent>
-        {
+        EventBus.register<GetMaxHeightEvent> {
             if (!Config.values.chatTabsEnabled) {
                 return@register
             }
             it.maxHeight -= CHAT_TAB_HEIGHT
         }
-        EventBus.register<GetDefaultYEvent>
-        {
+        EventBus.register<GetDefaultYEvent> {
             if (!Config.values.chatTabsEnabled) {
                 return@register
             }
-            it.y = -CHAT_TAB_HEIGHT
+            it.y -= CHAT_TAB_HEIGHT
         }
     }
 

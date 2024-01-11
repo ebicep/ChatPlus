@@ -1,6 +1,5 @@
 package com.ebicep.chatplus.hud
 
-import com.ebicep.chatplus.ChatPlus
 import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.events.Event
 import com.ebicep.chatplus.events.EventBus
@@ -61,6 +60,7 @@ object ChatRenderer {
     private var previousScreenWidth = -1
     private var previousScreenHeight = -1
 
+
     // cached values since render is called every tick they only need to be calculated once/on change
     var textOpacity: Double = 0.0
     var backgroundOpacity: Float = 0f
@@ -80,7 +80,6 @@ object ChatRenderer {
     var lineHeight: Int = 0
 
     fun updateCachedDimension() {
-        ChatPlus.LOGGER.info("updateCachedDimension")
         textOpacity = ChatManager.getTextOpacity() * 0.9 + 0.1
         backgroundOpacity = ChatManager.getBackgroundOpacity()
         lineSpacing = ChatManager.getLineSpacing()

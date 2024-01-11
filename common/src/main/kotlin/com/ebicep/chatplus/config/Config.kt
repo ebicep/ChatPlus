@@ -14,6 +14,7 @@ import com.ebicep.chatplus.features.chattabs.ChatTab
 import com.ebicep.chatplus.features.chattabs.ChatTabs.defaultTab
 import com.ebicep.chatplus.hud.ChatManager
 import com.ebicep.chatplus.hud.ChatRenderer
+import com.ebicep.chatplus.hud.EDIT_BOX_HEIGHT
 import com.ebicep.chatplus.translator.LanguageManager
 import com.ebicep.chatplus.translator.RegexMatch
 import com.mojang.blaze3d.platform.InputConstants
@@ -103,16 +104,19 @@ const val MAX_MAX_COMMAND_SUGGESTIONS = 30
 @Serializable
 data class ConfigVariables(
     var x: Int = 0,
-    var y: Int = -CHAT_TAB_HEIGHT,
+    var y: Int = -CHAT_TAB_HEIGHT - EDIT_BOX_HEIGHT,
     // general
     var enabled: Boolean = true,
+    var scale: Float = 1f,
+    var textOpacity: Float = 1f,
+    var backgroundOpacity: Float = .5f,
+    var lineSpacing: Float = 0f,
     var maxMessages: Int = 1000,
     var maxCommandSuggestions: Int = 15,
     var chatTimestampMode: TimestampMode = TimestampMode.HR_12_SECOND,
     var hoverHighlightEnabled: Boolean = true,
     var hoverHighlightColor: Int = 0,
     // tabs
-    var chatTabsEnabled: Boolean = true,
     var chatTabs: MutableList<ChatTab> = mutableListOf(defaultTab),
     var selectedTab: Int = 0,
     // filter highlight
@@ -148,23 +152,8 @@ data class ConfigVariables(
             ChatManager.selectedTab.rescaleChat()
         }
 
-    // general
-    var scale: Float = 1f
-        set(newY) {
-            field = newY
-            ChatRenderer.updateCachedDimension()
-        }
-    var textOpacity: Float = 1f
-        set(newY) {
-            field = newY
-            ChatRenderer.updateCachedDimension()
-        }
-    var backgroundOpacity: Float = .5f
-        set(newY) {
-            field = newY
-            ChatRenderer.updateCachedDimension()
-        }
-    var lineSpacing: Float = 0f
+    // tabs
+    var chatTabsEnabled: Boolean = true
         set(newY) {
             field = newY
             ChatRenderer.updateCachedDimension()

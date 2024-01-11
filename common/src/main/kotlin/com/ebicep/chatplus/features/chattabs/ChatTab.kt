@@ -239,12 +239,12 @@ class ChatTab {
     }
 
     private fun screenToChatX(pX: Double): Double {
-        return (pX - ChatManager.getX()) / ChatManager.getScale()
+        return (pX - ChatRenderer.x) / ChatRenderer.scale
     }
 
     private fun screenToChatY(pY: Double): Double {
-        val d0: Double = ChatManager.getY() - pY
-        return d0 / (ChatManager.getScale() * ChatManager.getLineHeight().toDouble())
+        val yDiff: Double = ChatRenderer.y - pY
+        return yDiff / (ChatRenderer.scale * ChatRenderer.lineHeight.toDouble())
     }
 
     private fun getMessageEndIndexAt(pMouseX: Double, pMouseY: Double): Int {
