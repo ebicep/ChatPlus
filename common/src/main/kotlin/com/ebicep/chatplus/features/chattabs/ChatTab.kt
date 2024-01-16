@@ -386,28 +386,6 @@ class ChatTab {
         }
     }
 
-    fun render(guiGraphics: GuiGraphics) {
-        val mc = Minecraft.getInstance()
-        val poseStack = guiGraphics.pose()
-        val isSelected = this == ChatManager.selectedTab
-        val backgroundOpacity = ((if (isSelected) 255 else 100) * ChatManager.getBackgroundOpacity()).toInt() shl 24
-        val textColor = if (isSelected) 0xffffff else 0x999999
-
-        poseStack.pushPose()
-        poseStack.translate(0.0f, 0.0f, 50.0f)
-        guiGraphics.fill(0, 0, mc.font.width(name) + PADDING + PADDING, 9 + PADDING + PADDING, backgroundOpacity)
-        poseStack.translate(0.0f, 0.0f, 50.0f)
-        guiGraphics.drawString(
-            Minecraft.getInstance().font,
-            name,
-            PADDING,
-            PADDING + PADDING / 2,
-            textColor
-        )
-        poseStack.popPose()
-    }
-
-
     companion object {
         const val PADDING = 2
 

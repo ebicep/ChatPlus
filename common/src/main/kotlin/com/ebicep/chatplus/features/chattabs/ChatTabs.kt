@@ -1,12 +1,15 @@
 package com.ebicep.chatplus.features.chattabs
 
 import com.ebicep.chatplus.config.Config
+import com.ebicep.chatplus.config.queueUpdateConfig
 import com.ebicep.chatplus.events.ChatPlusTickEvent
 import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.events.Events
 import com.ebicep.chatplus.hud.*
 import com.ebicep.chatplus.util.GraphicsUtil.createPose
+import com.ebicep.chatplus.util.GraphicsUtil.guiForward
 import com.ebicep.chatplus.util.GraphicsUtil.translateX
+import com.mojang.blaze3d.vertex.PoseStack
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphics
 
@@ -15,9 +18,13 @@ const val CHAT_TAB_HEIGHT = 15
 const val CHAT_TAB_Y_OFFSET = 1 // offset from text box
 const val CHAT_TAB_X_SPACE = 1 // space between categories
 
+data class ChatTabClickedEvent(val chatTab: ChatTab, val mouseX: Double, val tabXStart: Double)
+
+data class ChatTabRenderEvent(val poseStack: PoseStack, val chatTab: ChatTab, val tabWidth: Int, var xStart: Double)
+
 object ChatTabs {
 
-    val defaultTab = ChatTab("All", "(?s).*")
+    val defaultTab: ChatTab = ChatTab("All", "(?s).*")
 
     init {
         EventBus.register<ChatPlusTickEvent> {
@@ -56,6 +63,8 @@ object ChatTabs {
             }
             it.y -= CHAT_TAB_HEIGHT
         }
+        // moving tabs
+        ChatTabsMover
     }
 
     private fun checkTabRefresh(it: ChatTab) {
@@ -66,39 +75,76 @@ object ChatTabs {
 
     private fun handleClickedTab(x: Double, y: Double) {
         val translatedY = ChatManager.getY() - y
-        var xOff = 0.0
+        var tabXStart = 0.0
         val font = Minecraft.getInstance().font
-        //ChatPlus.LOGGER.debug("x: $x, translatedY: $translatedY")
         if (translatedY > CHAT_TAB_Y_OFFSET || translatedY < -(9 + ChatTab.PADDING + ChatTab.PADDING)) {
             return
         }
         Config.values.chatTabs.forEachIndexed { index, it ->
             val categoryLength = font.width(it.name) + ChatTab.PADDING + ChatTab.PADDING
-            if (x > xOff && x < xOff + categoryLength && it != ChatManager.selectedTab) {
-                Config.values.selectedTab = index
-                Config.save()
-                ChatManager.selectedTab.refreshDisplayedMessage()
-                return
+            val insideTabX = tabXStart < x && x < tabXStart + categoryLength
+            if (insideTabX) {
+                EventBus.post(ChatTabClickedEvent(it, x, tabXStart))
+                if (it != ChatManager.selectedTab) {
+                    Config.values.selectedTab = index
+                    queueUpdateConfig = true
+                    ChatManager.selectedTab.refreshDisplayedMessage()
+                    return
+                }
             }
-            xOff += categoryLength + CHAT_TAB_X_SPACE
+            tabXStart += categoryLength + CHAT_TAB_X_SPACE
         }
     }
-
 
     private fun renderTabs(guiGraphics: GuiGraphics, x: Int, y: Int) {
         val poseStack = guiGraphics.pose()
         poseStack.createPose {
             poseStack.translate(x.toFloat(), y.toFloat() + CHAT_TAB_Y_OFFSET, 0f)
+            var xStart = x.toDouble()
             Config.values.chatTabs.forEach {
-                it.render(guiGraphics)
-                poseStack.translateX(
-                    ChatTab.PADDING +
-                            Minecraft.getInstance().font.width(it.name).toFloat() +
-                            ChatTab.PADDING +
-                            CHAT_TAB_X_SPACE
-                )
+                poseStack.createPose {
+                    val tabWidth = ChatTab.PADDING +
+                            Minecraft.getInstance().font.width(it.name) +
+                            ChatTab.PADDING
+                    poseStack.translateX(EventBus.post(ChatTabRenderEvent(poseStack, it, tabWidth, xStart)).xStart)
+
+                    renderTab(it, guiGraphics)
+
+                    xStart += tabWidth + CHAT_TAB_X_SPACE
+                }
+
             }
         }
     }
+
+    private fun renderTab(chatTab: ChatTab, guiGraphics: GuiGraphics) {
+        val mc = Minecraft.getInstance()
+        val poseStack = guiGraphics.pose()
+        val isSelected = chatTab == ChatManager.selectedTab
+        val backgroundOpacity = ((if (isSelected) 255 else 100) * ChatManager.getBackgroundOpacity()).toInt() shl 24
+        val textColor = if (isSelected) 0xffffff else 0x999999
+
+        poseStack.createPose {
+            poseStack.guiForward()
+            guiGraphics.fill(
+                0,
+                0,
+                mc.font.width(chatTab.name) + ChatTab.PADDING + ChatTab.PADDING,
+                9 + ChatTab.PADDING + ChatTab.PADDING,
+                backgroundOpacity
+            )
+            poseStack.guiForward()
+            guiGraphics.drawString(
+                Minecraft.getInstance().font,
+                chatTab.name,
+                ChatTab.PADDING,
+                ChatTab.PADDING + ChatTab.PADDING / 2,
+                textColor
+            )
+        }
+    }
+
+
 }
+
 

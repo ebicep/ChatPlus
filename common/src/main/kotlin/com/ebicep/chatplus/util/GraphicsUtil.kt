@@ -22,6 +22,18 @@ object GraphicsUtil {
         translate(0f, 0f, z)
     }
 
+    fun PoseStack.translateX(x: Double) {
+        translate(x, 0.0, 0.0)
+    }
+
+    fun PoseStack.translateY(y: Double) {
+        translate(0.0, y, 0.0)
+    }
+
+    fun PoseStack.translateZ(z: Double) {
+        translate(0.0, 0.0, z)
+    }
+
     /**
      * Moves the pose stack forward by 50 (anything new rendered will be on top)
      */

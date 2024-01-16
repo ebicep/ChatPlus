@@ -1,6 +1,7 @@
 package com.ebicep.chatplus.hud
 
 import com.ebicep.chatplus.config.Config
+import com.ebicep.chatplus.config.queueUpdateConfig
 import com.ebicep.chatplus.events.Event
 import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.events.Events
@@ -37,7 +38,7 @@ object ChatManager {
             if (Config.values.chatTabs.isEmpty()) {
                 Config.values.chatTabs.add(defaultTab)
                 Config.values.selectedTab = 0
-                Config.save()
+                queueUpdateConfig = true
             }
             return Config.values.chatTabs[Config.values.selectedTab]
         }
