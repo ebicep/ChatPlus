@@ -3,6 +3,7 @@ package com.ebicep.chatplus.features.chattabs
 import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.config.queueUpdateConfig
 import com.ebicep.chatplus.events.EventBus
+import com.ebicep.chatplus.hud.ChatManager
 import com.ebicep.chatplus.hud.ChatScreenMouseDraggedEvent
 import com.ebicep.chatplus.hud.ChatScreenMouseReleasedEvent
 import com.ebicep.chatplus.util.GraphicsUtil.guiForward
@@ -21,7 +22,7 @@ class TabInfo(var xStart: Double, var width: Int) {
 
 object ChatTabsMover {
 
-    private var movingTab: ChatTab? = null
+    private var movingTab: Boolean = false
     private var movingTabMouseStart: Double = 0.0
     private var movingTabXOffset: Double = 0.0
     private var movingTabXStart: Double = 0.0
@@ -29,11 +30,12 @@ object ChatTabsMover {
 
     init {
         EventBus.register<ChatScreenMouseDraggedEvent> {
-            if (movingTab == null) {
+            if (!movingTab) {
                 return@register
             }
-            val movingTabPosition = chatTabPositions[movingTab] ?: return@register
-            val movingTabIndex: Int = Config.values.chatTabs.indexOf(movingTab)
+            val selectedTab = ChatManager.selectedTab
+            val movingTabPosition = chatTabPositions[selectedTab] ?: return@register
+            val movingTabIndex: Int = Config.values.chatTabs.indexOf(selectedTab)
             if (movingTabIndex == -1) {
                 return@register
             }
@@ -41,7 +43,7 @@ object ChatTabsMover {
             for (otherTab in chatTabPositions) {
                 val chatTab = otherTab.key
                 val chatTabPosition = otherTab.value
-                if (chatTab == movingTab) {
+                if (chatTab === selectedTab) {
                     continue
                 }
                 val tabIndex = Config.values.chatTabs.indexOf(chatTab)
@@ -58,19 +60,19 @@ object ChatTabsMover {
             }
         }
         EventBus.register<ChatScreenMouseReleasedEvent> {
-            if (movingTab != null) {
-                movingTab = null
+            if (movingTab) {
+                movingTab = false
             }
         }
         EventBus.register<ChatTabClickedEvent> {
-            movingTab = it.chatTab
+            movingTab = true
             movingTabMouseStart = it.mouseX
             movingTabXOffset = 0.0
             movingTabXStart = it.tabXStart
         }
         EventBus.register<ChatTabRenderEvent> {
             val poseStack = it.poseStack
-            val moving = movingTab == it.chatTab
+            val moving = movingTab && it.chatTab === ChatManager.selectedTab
             if (moving) {
                 it.xStart = movingTabXStart + movingTabXOffset
                 poseStack.guiForward()
