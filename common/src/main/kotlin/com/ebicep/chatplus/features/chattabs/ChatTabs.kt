@@ -80,13 +80,12 @@ object ChatTabs {
     private fun handleClickedTab(x: Double, y: Double) {
         val translatedY = ChatManager.getY() - y
         var tabXStart = 0.0
-        val font = Minecraft.getInstance().font
         if (translatedY > CHAT_TAB_Y_OFFSET || translatedY < -(9 + ChatTab.PADDING + ChatTab.PADDING)) {
             return
         }
         Config.values.chatTabs.forEachIndexed { index, it ->
-            val categoryLength = font.width(it.name) + ChatTab.PADDING + ChatTab.PADDING
-            val insideTabX = tabXStart < x && x < tabXStart + categoryLength
+            val tabWidth = it.getTabWidth()
+            val insideTabX = tabXStart < x && x < tabXStart + tabWidth
             if (insideTabX) {
                 EventBus.post(ChatTabClickedEvent(it, x, tabXStart))
                 if (it != ChatManager.selectedTab) {
@@ -96,7 +95,7 @@ object ChatTabs {
                     return
                 }
             }
-            tabXStart += categoryLength + CHAT_TAB_X_SPACE
+            tabXStart += tabWidth + CHAT_TAB_X_SPACE
         }
     }
 
@@ -107,9 +106,8 @@ object ChatTabs {
             var xStart = x.toDouble()
             Config.values.chatTabs.forEach {
                 poseStack.createPose {
-                    val tabWidth = ChatTab.PADDING +
-                            Minecraft.getInstance().font.width(it.name) +
-                            ChatTab.PADDING
+                    val tabWidth = it.getTabWidth()
+
                     poseStack.translateX(EventBus.post(ChatTabRenderEvent(poseStack, it, tabWidth, xStart)).xStart)
 
                     renderTab(it, guiGraphics)
@@ -122,7 +120,6 @@ object ChatTabs {
     }
 
     private fun renderTab(chatTab: ChatTab, guiGraphics: GuiGraphics) {
-        val mc = Minecraft.getInstance()
         val poseStack = guiGraphics.pose()
         val isSelected = chatTab == ChatManager.selectedTab
         val backgroundOpacity = ((if (isSelected) 255 else 100) * ChatManager.getBackgroundOpacity()).toInt() shl 24
@@ -133,7 +130,7 @@ object ChatTabs {
             guiGraphics.fill(
                 0,
                 0,
-                mc.font.width(chatTab.name) + ChatTab.PADDING + ChatTab.PADDING,
+                chatTab.getTabWidth(),
                 9 + ChatTab.PADDING + ChatTab.PADDING,
                 backgroundOpacity
             )

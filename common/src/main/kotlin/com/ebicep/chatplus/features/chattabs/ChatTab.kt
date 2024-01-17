@@ -325,6 +325,10 @@ class ChatTab {
         }
     }
 
+    fun getTabWidth(): Int {
+        return PADDING + Minecraft.getInstance().font.width(this.name) + PADDING
+    }
+
     fun drawTagIcon(pGuiGraphics: GuiGraphics, pLeft: Int, pBottom: Int, pTagIcon: GuiMessageTag.Icon) {
         val i = pBottom - pTagIcon.height - 1
         pTagIcon.draw(pGuiGraphics, pLeft, i)
