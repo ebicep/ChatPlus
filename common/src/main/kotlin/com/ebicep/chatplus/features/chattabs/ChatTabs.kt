@@ -9,6 +9,7 @@ import com.ebicep.chatplus.hud.*
 import com.ebicep.chatplus.util.GraphicsUtil.createPose
 import com.ebicep.chatplus.util.GraphicsUtil.guiForward
 import com.ebicep.chatplus.util.GraphicsUtil.translateX
+import com.ebicep.chatplus.util.GraphicsUtil.translateY
 import com.mojang.blaze3d.vertex.PoseStack
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphics
@@ -25,6 +26,8 @@ data class ChatTabRenderEvent(val poseStack: PoseStack, val chatTab: ChatTab, va
 object ChatTabs {
 
     val defaultTab: ChatTab = ChatTab("All", "(?s).*")
+    val maxX: Int
+        get() = if (true) ChatRenderer.width else Minecraft.getInstance().window.guiScaledWidth
 
     init {
         EventBus.register<ChatPlusTickEvent> {
@@ -71,6 +74,22 @@ object ChatTabs {
         ChatTabsMover
     }
 
+    private fun getTabRows(): Int {
+        var rows = 0
+        var currentX = ChatRenderer.x
+        Config.values.chatTabs.forEach {
+            val tabWidth = it.getTabWidth()
+            val newX = tabWidth + CHAT_TAB_X_SPACE
+            if (currentX + newX > maxX) {
+                currentX = ChatRenderer.x
+                rows++
+            } else {
+                currentX += newX
+            }
+        }
+        return rows
+    }
+
     private fun checkTabRefresh(it: ChatTab) {
         if (it.resetDisplayMessageAtTick == Events.currentTick) {
             it.refreshDisplayedMessage()
@@ -104,17 +123,24 @@ object ChatTabs {
         val poseStack = guiGraphics.pose()
         poseStack.createPose {
             poseStack.translate(x.toFloat(), y.toFloat() + CHAT_TAB_Y_OFFSET, 0f)
-            var xStart = x.toDouble()
+            var currentX = x.toDouble()
+            var currentY = 0.0
             Config.values.chatTabs.forEach {
                 poseStack.createPose {
-                    val tabWidth = ChatTab.PADDING +
-                            Minecraft.getInstance().font.width(it.name) +
-                            ChatTab.PADDING
-                    poseStack.translateX(EventBus.post(ChatTabRenderEvent(poseStack, it, tabWidth, xStart)).xStart)
+                    val tabWidth = it.getTabWidth()
+                    val newX = tabWidth + CHAT_TAB_X_SPACE
+                    val nextRow = currentX + newX > maxX
+                    if (nextRow) {
+                        currentX = x.toDouble()
+                        currentY += CHAT_TAB_HEIGHT
+                    }
+
+                    poseStack.translateX(EventBus.post(ChatTabRenderEvent(poseStack, it, tabWidth, currentX)).xStart)
+                    poseStack.translateY(currentY)
 
                     renderTab(it, guiGraphics)
 
-                    xStart += tabWidth + CHAT_TAB_X_SPACE
+                    currentX += newX
                 }
 
             }
@@ -133,7 +159,7 @@ object ChatTabs {
             guiGraphics.fill(
                 0,
                 0,
-                mc.font.width(chatTab.name) + ChatTab.PADDING + ChatTab.PADDING,
+                chatTab.getTabWidth(),
                 9 + ChatTab.PADDING + ChatTab.PADDING,
                 backgroundOpacity
             )

@@ -335,6 +335,10 @@ class ChatTab {
         this.newMessageSinceScroll = false
     }
 
+    fun getTabWidth(): Int {
+        return PADDING + Minecraft.getInstance().font.width(this.name) + PADDING
+    }
+
     fun scrollChat(pPosInc: Int) {
         chatScrollbarPos += pPosInc
         val displayedMessagesSize: Int = this.displayedMessages.size
