@@ -77,6 +77,11 @@ data class ChatScreenCloseEvent(
     val screen: ChatPlusScreen,
 ) : Event
 
+data class ChatScreenSendMessageEvent(
+    val screen: ChatPlusScreen,
+    var message: String,
+) : Event
+
 
 class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plus_screen.title")) {
 
@@ -432,31 +437,33 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
         return ChatManager.selectedTab.getClickedComponentStyleAt(pMouseX, pMouseY)
     }
 
-    fun handleChatInput(pInput: String): Boolean {
-        val normalizeChatMessage = normalizeChatMessage(pInput)
-        return if (normalizeChatMessage.isEmpty()) {
-            true
-        } else {
-            if (normalizeChatMessage.startsWith("/")) {
-                val command = splitChatMessage(normalizeChatMessage)[0]
-                ChatManager.addSentMessage(command)
-                minecraft!!.player!!.connection.sendCommand(command.substring(1))
-            } else {
-                if (languageSpeakEnabled) {
-                    SelfTranslator(normalizeChatMessage, if (inputTranslatePrefix == null) "" else inputTranslatePrefix!!.value).start()
-                } else {
-                    val messages = splitChatMessage(normalizeChatMessage)
-                    if (messages.isEmpty()) {
-                        return minecraft!!.screen === this
-                    }
-                    ChatManager.addSentMessage(messages[0])
-                    minecraft!!.player!!.connection.sendChat(messages[0])
-                    messagesToSend.addAll(messages.subList(1, messages.size))
-
-                }
-            }
-            minecraft!!.screen === this // FORGE: Prevent closing the screen if another screen has been opened.
+    fun handleChatInput(rawMessage: String): Boolean {
+        val newMessage = EventBus.post(ChatScreenSendMessageEvent(this, rawMessage)).message
+        val normalizeChatMessage = normalizeChatMessage(newMessage)
+        if (normalizeChatMessage.isEmpty()) {
+            return true
         }
+        val messages = splitChatMessage(normalizeChatMessage)
+        if (messages.isEmpty()) {
+            return minecraft!!.screen === this
+        }
+        var sentMessage = messages[0]
+        if (rawMessage != newMessage) {
+            sentMessage = splitChatMessage(rawMessage)[0]
+        }
+        ChatManager.addSentMessage(sentMessage)
+        val messageToSend = messages[0]
+        if (normalizeChatMessage.startsWith("/")) {
+            minecraft!!.player!!.connection.sendCommand(messageToSend.substring(1))
+        } else {
+            if (languageSpeakEnabled) {
+                SelfTranslator(normalizeChatMessage, if (inputTranslatePrefix == null) "" else inputTranslatePrefix!!.value).start()
+            } else {
+                minecraft!!.player!!.connection.sendChat(messageToSend)
+                messagesToSend.addAll(messages.subList(1, messages.size))
+            }
+        }
+        return minecraft!!.screen === this // FORGE: Prevent closing the screen if another screen has been opened.
     }
 
     fun normalizeChatMessage(message: String): String {

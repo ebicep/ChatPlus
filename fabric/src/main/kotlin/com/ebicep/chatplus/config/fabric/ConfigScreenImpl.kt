@@ -140,6 +140,11 @@ object ConfigScreenImpl {
                             .setDefaultValue("")
                             .setSaveConsumer { value.pattern = it }
                             .build(),
+                        entryBuilder.startStrField(Component.translatable("chatPlus.chatTabs.autoPrefix"), value.autoPrefix)
+                            .setTooltip(Component.translatable("chatPlus.chatTabs.autoPrefix.tooltip"))
+                            .setDefaultValue("")
+                            .setSaveConsumer { value.autoPrefix = it }
+                            .build(),
                     )
                 }
 

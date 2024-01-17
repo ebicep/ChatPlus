@@ -63,11 +63,13 @@ class ChatTab {
             field = value
             regex = Regex(value)
         }
+    var autoPrefix: String
 
-    constructor(name: String, pattern: String) {
+    constructor(name: String, pattern: String, autoPrefix: String = "") {
         this.name = name
         this.pattern = pattern
         this.regex = Regex(pattern)
+        this.autoPrefix = autoPrefix
     }
 
     @Transient

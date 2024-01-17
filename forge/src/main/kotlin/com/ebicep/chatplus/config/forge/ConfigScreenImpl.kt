@@ -6,6 +6,7 @@ import com.ebicep.chatplus.config.queueUpdateConfig
 import com.ebicep.chatplus.features.FilterHighlight
 import com.ebicep.chatplus.features.FilterHighlight.DEFAULT_COLOR
 import com.ebicep.chatplus.features.chattabs.ChatTab
+import com.ebicep.chatplus.hud.ChatRenderer
 import com.ebicep.chatplus.translator.LanguageManager
 import com.ebicep.chatplus.translator.RegexMatch
 import com.ebicep.chatplus.translator.languages
@@ -55,22 +56,32 @@ object ConfigScreenImpl {
                 10,
                 30
             ) { Config.values.maxCommandSuggestions = it })
-        general.addEntry(entryBuilder.percentSlider("chatPlus.chatSettings.chatTextSize", Config.values.scale) { Config.values.scale = it })
+        general.addEntry(
+            entryBuilder.percentSlider(
+                "chatPlus.chatSettings.chatTextSize",
+                Config.values.scale,
+                { Config.values.scale = it })
+        )
         general.addEntry(
             entryBuilder.percentSlider(
                 "chatPlus.chatSettings.textOpacity",
-                Config.values.textOpacity
-            ) { Config.values.textOpacity = it })
+                Config.values.textOpacity,
+                { Config.values.textOpacity = it })
+        )
         general.addEntry(
             entryBuilder.percentSlider(
                 "chatPlus.chatSettings.backgroundOpacity",
-                Config.values.backgroundOpacity
-            ) { Config.values.backgroundOpacity = it })
+                Config.values.backgroundOpacity,
+                { Config.values.backgroundOpacity = it }
+            )
+        )
         general.addEntry(
             entryBuilder.percentSlider(
                 "chatPlus.chatSettings.lineSpacing",
-                Config.values.lineSpacing
-            ) { Config.values.lineSpacing = it })
+                Config.values.lineSpacing,
+                { Config.values.lineSpacing = it }
+            )
+        )
         general.addEntry(entryBuilder.startEnumSelector(
             Component.translatable("chatPlus.chatSettings.chatTimestampMode"),
             TimestampMode::class.java,
@@ -128,6 +139,11 @@ object ConfigScreenImpl {
                             .setTooltip(Component.translatable("chatPlus.chatTabs.pattern.tooltip"))
                             .setDefaultValue("")
                             .setSaveConsumer { value.pattern = it }
+                            .build(),
+                        entryBuilder.startStrField(Component.translatable("chatPlus.chatTabs.autoPrefix"), value.autoPrefix)
+                            .setTooltip(Component.translatable("chatPlus.chatTabs.autoPrefix.tooltip"))
+                            .setDefaultValue("")
+                            .setSaveConsumer { value.autoPrefix = it }
                             .build(),
                     )
                 }
@@ -338,11 +354,23 @@ object ConfigScreenImpl {
             .build()
     }
 
-    private fun ConfigEntryBuilder.percentSlider(translatable: String, variable: Float, saveConsumer: Consumer<Float>): IntegerSliderEntry {
-        return percentSlider(translatable, variable, 0, 1, saveConsumer)
+    private fun ConfigEntryBuilder.percentSlider(
+        translatable: String,
+        variable: Float,
+        saveConsumer: Consumer<Float>,
+        updateDimensions: Boolean = true
+    ): IntegerSliderEntry {
+        return percentSlider(translatable, variable, 0, 1, saveConsumer, updateDimensions)
     }
 
-    private fun ConfigEntryBuilder.percentSlider(translatable: String, variable: Float, min: Int, max: Int, saveConsumer: Consumer<Float>):
+    private fun ConfigEntryBuilder.percentSlider(
+        translatable: String,
+        variable: Float,
+        min: Int,
+        max: Int,
+        saveConsumer: Consumer<Float>,
+        updateDimensions: Boolean = true
+    ):
             IntegerSliderEntry {
         val intValue = (variable * 100).toInt()
         return startIntSlider(Component.translatable(translatable), intValue, min * 100, max * 100)
@@ -351,6 +379,9 @@ object ConfigScreenImpl {
             .setTextGetter { Component.literal("$it%") }
             .setSaveConsumer {
                 saveConsumer.accept(it / 100f)
+                if (updateDimensions) {
+                    ChatRenderer.updateCachedDimension()
+                }
                 queueUpdateConfig = true
             }
             .build()

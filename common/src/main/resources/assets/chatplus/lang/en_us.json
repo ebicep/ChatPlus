@@ -45,6 +45,8 @@
   "chatPlus.chatTabs.name.tooltip": "Name of the tab.",
   "chatPlus.chatTabs.pattern": "Pattern",
   "chatPlus.chatTabs.pattern.tooltip": "Regex Pattern (Based on Raw Text, No style/formatting)",
+  "chatPlus.chatTabs.autoPrefix": "Auto Prefix",
+  "chatPlus.chatTabs.autoPrefix.tooltip": "Text to prepend when sending messages in this tab.",
   "chatPlus.filterHighlight.title": "Filter Highlights",
   "chatPlus.filterHighlight.tooltip": "Customize what messages are highlighted in chat.",
   "chatPlus.filterHighlight.toggle": "Enabled",
