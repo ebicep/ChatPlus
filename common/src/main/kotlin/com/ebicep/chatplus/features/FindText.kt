@@ -18,7 +18,7 @@ object FindText {
 
     init {
         var lastMovedToMessage: Pair<Pair<Int, Int>, Long>? = null // <linked index, wrapped index>, tick
-        EventBus.register<TextBarElements.AddTextBarElementEvent> {
+        EventBus.register<TextBarElements.AddTextBarElementEvent>(5) {
             it.elements.add(FindTextBarElement(it.screen))
         }
         EventBus.register<ChatScreenCloseEvent> {

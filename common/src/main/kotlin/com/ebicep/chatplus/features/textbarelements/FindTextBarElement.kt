@@ -1,13 +1,18 @@
 package com.ebicep.chatplus.features.textbarelements
 
+import com.ebicep.chatplus.events.Event
+import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.features.FindText.FIND_COLOR
 import com.ebicep.chatplus.features.FindText.findEnabled
 import com.ebicep.chatplus.hud.ChatManager
 import com.ebicep.chatplus.hud.ChatPlusScreen
-import com.ebicep.chatplus.translator.languageSpeakEnabled
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.network.chat.Component
+
+data class FindToggleEvent(
+    val enabled: Boolean
+) : Event
 
 class FindTextBarElement(private val chatPlusScreen: ChatPlusScreen) : TextBarElement {
 
@@ -21,9 +26,9 @@ class FindTextBarElement(private val chatPlusScreen: ChatPlusScreen) : TextBarEl
 
     override fun onClick() {
         findEnabled = !findEnabled
+        EventBus.post(FindToggleEvent(findEnabled))
         if (findEnabled) {
             ChatManager.selectedTab.refreshDisplayedMessage(chatPlusScreen.input?.value)
-            languageSpeakEnabled = false
         } else {
             ChatManager.selectedTab.refreshDisplayedMessage()
         }

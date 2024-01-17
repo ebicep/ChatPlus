@@ -64,7 +64,7 @@ object ChatTabs {
             it.y -= CHAT_TAB_HEIGHT
         }
         // tab auto prefix
-        EventBus.register<ChatScreenSendMessageEvent> {
+        EventBus.register<ChatScreenSendMessagePreEvent> {
             it.message = ChatManager.selectedTab.autoPrefix + it.message
         }
         // moving tabs

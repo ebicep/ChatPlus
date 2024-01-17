@@ -14,6 +14,7 @@ object FeatureManager {
         CompactMessages
         FilterHighlight
         ChatTabs
+        TranslateText
 //        AlternatingColorBackground
     }
 

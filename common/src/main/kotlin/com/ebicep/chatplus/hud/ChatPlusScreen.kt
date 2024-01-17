@@ -3,7 +3,6 @@ package com.ebicep.chatplus.hud
 import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.events.Event
 import com.ebicep.chatplus.events.EventBus
-import com.ebicep.chatplus.translator.SelfTranslator
 import com.ebicep.chatplus.translator.languageSpeakEnabled
 import com.mojang.blaze3d.platform.InputConstants
 import net.minecraft.client.Minecraft
@@ -11,6 +10,8 @@ import net.minecraft.client.gui.Font
 import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.client.gui.components.CommandSuggestions
 import net.minecraft.client.gui.components.EditBox
+import net.minecraft.client.gui.components.events.GuiEventListener
+import net.minecraft.client.gui.narration.NarratableEntry
 import net.minecraft.client.gui.narration.NarratedElementType
 import net.minecraft.client.gui.narration.NarrationElementOutput
 import net.minecraft.client.gui.screens.Screen
@@ -37,6 +38,7 @@ data class ChatScreenMouseClickedEvent(
     val mouseX: Double,
     val mouseY: Double,
     val button: Int,
+    var returnFunction: Boolean = false
 ) : Event
 
 data class ChatScreenMouseDraggedEvent(
@@ -61,6 +63,7 @@ data class ChatScreenRenderEvent(
     val guiGraphics: GuiGraphics,
     val mouseX: Int,
     val mouseY: Int,
+    val partialTick: Float,
 ) : Event
 
 data class ChatScreenInputBoxEditEvent(
@@ -69,7 +72,11 @@ data class ChatScreenInputBoxEditEvent(
     var returnFunction: Boolean = false
 ) : Event
 
-data class ChatScreenInitEvent(
+data class ChatScreenInitPreEvent(
+    val screen: ChatPlusScreen,
+) : Event
+
+data class ChatScreenInitPostEvent(
     val screen: ChatPlusScreen,
 ) : Event
 
@@ -77,9 +84,20 @@ data class ChatScreenCloseEvent(
     val screen: ChatPlusScreen,
 ) : Event
 
-data class ChatScreenSendMessageEvent(
+data class ChatScreenSendMessagePreEvent(
     val screen: ChatPlusScreen,
     var message: String,
+    var returnFunction: Boolean = false
+) : Event
+
+data class ChatScreenSendMessagePostEvent(
+    val screen: ChatPlusScreen,
+    var message: String,
+    var sentMessage: String,
+    val messageToSend: String,
+    val normalizeChatMessage: String,
+    val messages: List<String>,
+    var dontSendMessage: Boolean = false
 ) : Event
 
 
@@ -95,7 +113,6 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
     private var historyPos = -1
 
     /** Chat entry field  */
-    var inputTranslatePrefix: EditBox? = null
     var input: EditBox? = null
 
     /** is the text that appears when you press the chat key and the input box appears pre-filled  */
@@ -108,11 +125,11 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
 
         editBoxWidth = width
 
-        EventBus.post(ChatScreenInitEvent(this))
+        EventBus.post(ChatScreenInitPreEvent(this))
 
         input = object : EditBox(
             minecraft!!.fontFilterFishy,
-            if (languageSpeakEnabled) 68 else 2,
+            2,
             height - EDIT_BOX_HEIGHT + 4,
             editBoxWidth + 1,
             EDIT_BOX_HEIGHT,
@@ -122,7 +139,7 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
                 return super.createNarrationMessage().append(commandSuggestions!!.narrationMessage)
             }
         }
-        var editBox = input as EditBox
+        val editBox = input as EditBox
         initializeBaseEditBox(editBox)
         editBox.value = initial
         editBox.setResponder { str: String -> onEdited(str) }
@@ -144,27 +161,19 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
         commandSuggestions!!.setAllowHiding(false)
         commandSuggestions!!.updateCommandInfo()
 
-        inputTranslatePrefix = null
-        if (languageSpeakEnabled) {
-            inputTranslatePrefix = EditBox(
-                minecraft!!.fontFilterFishy,
-                3,
-                height - EDIT_BOX_HEIGHT + 4,
-                63,
-                EDIT_BOX_HEIGHT,
-                Component.translatable("chatPlus.editBox")
-            )
-            editBox = inputTranslatePrefix as EditBox
-            initializeBaseEditBox(editBox)
-            addWidget(editBox)
-        }
+        EventBus.post(ChatScreenInitPostEvent(this))
+
+    }
+
+    fun <T> addWidget0(guiEventListener: T & Any): T where T : GuiEventListener?, T : NarratableEntry? {
+        return addWidget(guiEventListener)
     }
 
     fun rebuildWidgets0() {
         rebuildWidgets()
     }
 
-    private fun initializeBaseEditBox(editBox: EditBox) {
+    fun initializeBaseEditBox(editBox: EditBox) {
         editBox.setMaxLength(256 * 5) // default 256
         editBox.isBordered = false
         editBox.setCanLoseFocus(true)
@@ -273,7 +282,9 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
         return if (commandSuggestions!!.mouseClicked(mouseX.toInt().toDouble(), mouseY.toInt().toDouble(), pButton)) {
             true
         } else {
-            EventBus.post(ChatScreenMouseClickedEvent(this, mouseX, mouseY, pButton))
+            if (EventBus.post(ChatScreenMouseClickedEvent(this, mouseX, mouseY, pButton)).returnFunction) {
+                return true
+            }
             if (pButton == 0) {
                 if (ChatManager.selectedTab.handleChatQueueClicked(mouseX, mouseY)) {
                     return true
@@ -285,12 +296,6 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
                 }
             }
             if (input!!.isFocused && input!!.mouseClicked(mouseX, mouseY, pButton)) {
-                true
-            } else if (
-                inputTranslatePrefix != null &&
-                inputTranslatePrefix!!.isFocused &&
-                inputTranslatePrefix!!.mouseClicked(mouseX, mouseY, pButton)
-            ) {
                 true
             } else {
                 super.mouseClicked(mouseX, mouseY, pButton)
@@ -350,9 +355,6 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
         lastMouseY = mouseY
 
         renderInputBox(guiGraphics, mouseX, mouseY, partialTick)
-        if (inputTranslatePrefix != null) {
-            renderTranslateSpeakPrefixInputBox(guiGraphics, mouseX, mouseY, partialTick)
-        }
 
         super.render(guiGraphics, mouseX, mouseY, partialTick)
 
@@ -365,36 +367,7 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
             guiGraphics.renderComponentHoverEffect(font, style, mouseX, mouseY)
         }
 
-        EventBus.post(ChatScreenRenderEvent(this, guiGraphics, mouseX, mouseY))
-    }
-
-    private fun renderTranslateSpeakPrefixInputBox(
-        guiGraphics: GuiGraphics,
-        pMouseX: Int,
-        pMouseY: Int,
-        pPartialTick: Float
-    ) {
-        guiGraphics.fill(
-            0,
-            height - EDIT_BOX_HEIGHT,
-            65,
-            height,
-            minecraft!!.options.getBackgroundColor(Int.MIN_VALUE)
-        )
-        guiGraphics.renderOutline(
-            0,
-            height - EDIT_BOX_HEIGHT,
-            65,
-            EDIT_BOX_HEIGHT - 1,
-            0xFF55FF55.toInt()
-        )
-        inputTranslatePrefix!!.render(guiGraphics, pMouseX, pMouseY, pPartialTick)
-        if (
-            pMouseX in 0 until 65 &&
-            pMouseY in height - EDIT_BOX_HEIGHT until height
-        ) {
-            guiGraphics.renderTooltip(font, Component.translatable("chatPlus.translator.translateSpeakPrefix.tooltip"), pMouseX, pMouseY)
-        }
+        EventBus.post(ChatScreenRenderEvent(this, guiGraphics, mouseX, mouseY, partialTick))
     }
 
     private fun renderInputBox(
@@ -438,7 +411,11 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
     }
 
     fun handleChatInput(rawMessage: String): Boolean {
-        val newMessage = EventBus.post(ChatScreenSendMessageEvent(this, rawMessage)).message
+        val sendMessageEvent = EventBus.post(ChatScreenSendMessagePreEvent(this, rawMessage))
+        if (sendMessageEvent.returnFunction) {
+            return minecraft!!.screen === this
+        }
+        val newMessage = sendMessageEvent.message
         val normalizeChatMessage = normalizeChatMessage(newMessage)
         if (normalizeChatMessage.isEmpty()) {
             return true
@@ -451,19 +428,30 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
         if (rawMessage != newMessage) {
             sentMessage = splitChatMessage(rawMessage)[0]
         }
-        ChatManager.addSentMessage(sentMessage)
         val messageToSend = messages[0]
+
+        if (EventBus.post(
+                ChatScreenSendMessagePostEvent(
+                    this,
+                    newMessage,
+                    sentMessage,
+                    messageToSend,
+                    normalizeChatMessage,
+                    messages
+                )
+            ).dontSendMessage
+        ) {
+            return minecraft!!.screen === this
+        }
+
+        ChatManager.addSentMessage(sentMessage)
         if (normalizeChatMessage.startsWith("/")) {
             minecraft!!.player!!.connection.sendCommand(messageToSend.substring(1))
         } else {
-            if (languageSpeakEnabled) {
-                SelfTranslator(normalizeChatMessage, if (inputTranslatePrefix == null) "" else inputTranslatePrefix!!.value).start()
-            } else {
-                minecraft!!.player!!.connection.sendChat(messageToSend)
-                messagesToSend.addAll(messages.subList(1, messages.size))
-            }
+            minecraft!!.player!!.connection.sendChat(messageToSend)
+            messagesToSend.addAll(messages.subList(1, messages.size))
         }
-        return minecraft!!.screen === this // FORGE: Prevent closing the screen if another screen has been opened.
+        return minecraft!!.screen === this
     }
 
     fun normalizeChatMessage(message: String): String {

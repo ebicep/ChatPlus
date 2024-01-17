@@ -1,6 +1,5 @@
 package com.ebicep.chatplus.features.textbarelements
 
-import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.events.Event
 import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.features.FindText
@@ -18,13 +17,10 @@ object TextBarElements {
     private var textBarElementsStartX: MutableMap<TextBarElement, Int> = mutableMapOf()
 
     init {
-        EventBus.register<ChatScreenInitEvent> {
+        EventBus.register<ChatScreenInitPreEvent> {
             chatPlusScreen = it.screen
             if (textBarElements.isEmpty()) {
                 EventBus.post(AddTextBarElementEvent(chatPlusScreen, textBarElements))
-                if (Config.values.translatorEnabled) {
-                    textBarElements.add(TranslateSpeakTextBarElement(chatPlusScreen))
-                }
             }
 
             //____TEXTBOX_____-FIND--TRANSLATE-
