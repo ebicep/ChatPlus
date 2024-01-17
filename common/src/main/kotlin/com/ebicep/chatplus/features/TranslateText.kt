@@ -29,10 +29,10 @@ object TranslateText {
                 return@register
             }
             val screen = it.screen
-            screen.input?.x = 68
 
             inputTranslatePrefix = null
             if (languageSpeakEnabled) {
+                screen.input?.x = 68
                 inputTranslatePrefix = EditBox(
                     screen.minecraft!!.fontFilterFishy,
                     3,
