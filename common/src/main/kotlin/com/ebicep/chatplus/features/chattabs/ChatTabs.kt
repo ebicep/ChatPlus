@@ -25,8 +25,7 @@ data class ChatTabRenderEvent(val poseStack: PoseStack, val chatTab: ChatTab, va
 object ChatTabs {
 
     val defaultTab: ChatTab = ChatTab("All", "(?s).*")
-    val maxX: Int
-        get() = if (true) ChatRenderer.width else Minecraft.getInstance().window.guiScaledWidth
+    private var startRenderTabIndex = 0
 
     init {
         EventBus.register<ChatPlusTickEvent> {
@@ -43,6 +42,32 @@ object ChatTabs {
             val chatFocused: Boolean = ChatManager.isChatFocused()
             if (chatFocused) {
                 renderTabs(it.guiGraphics, ChatRenderer.x.toDouble(), ChatRenderer.y.toDouble())
+            }
+        }
+        EventBus.register<ChatScreenKeyPressedEvent> {
+            if (!Config.values.chatTabsEnabled || !Config.values.arrowCycleTabEnabled) {
+                return@register
+            }
+            val keyCode = it.keyCode
+            if (keyCode == 263 && startRenderTabIndex > 0) { // left arrow
+                startRenderTabIndex--
+            } else if (keyCode == 262 && startRenderTabIndex < Config.values.chatTabs.size - 1) { // right arrow
+                startRenderTabIndex++
+            }
+        }
+        EventBus.register<ChatScreenMouseScrolledEvent> {
+            if (!Config.values.chatTabsEnabled || !Config.values.scrollCycleTabEnabled) {
+                return@register
+            }
+            val amountX = it.amountX
+            if (amountX == 0.0) {
+                return@register
+            }
+            // negative = scroll right , positive = scroll left
+            if (amountX > 0 && startRenderTabIndex > 0) {
+                startRenderTabIndex--
+            } else if (amountX < 0 && startRenderTabIndex < Config.values.chatTabs.size - 1) {
+                startRenderTabIndex++
             }
         }
         EventBus.register<ChatScreenMouseClickedEvent> {
@@ -85,6 +110,9 @@ object ChatTabs {
             return
         }
         Config.values.chatTabs.forEachIndexed { index, it ->
+            if (index < startRenderTabIndex) {
+                return@forEachIndexed
+            }
             val insideTabX = it.xStart < x && x < it.xEnd
             if (insideTabX) {
                 EventBus.post(ChatTabClickedEvent(it, x, it.xStart))
@@ -104,7 +132,10 @@ object ChatTabs {
         val yStart = y + CHAT_TAB_Y_OFFSET
         poseStack.createPose {
             poseStack.translate0(y = yStart)
-            Config.values.chatTabs.forEach {
+            Config.values.chatTabs.forEachIndexed { index, it ->
+                if (index < startRenderTabIndex) {
+                    return@forEachIndexed
+                }
                 poseStack.createPose {
                     val tabWidth = it.width
 
@@ -118,7 +149,6 @@ object ChatTabs {
 
                     xStart += tabWidth + CHAT_TAB_X_SPACE
                 }
-
             }
         }
     }

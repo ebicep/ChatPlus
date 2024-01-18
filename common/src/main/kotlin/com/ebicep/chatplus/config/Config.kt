@@ -119,6 +119,8 @@ data class ConfigVariables(
     // tabs
     var chatTabs: MutableList<ChatTab> = mutableListOf(defaultTab),
     var selectedTab: Int = 0,
+    var scrollCycleTabEnabled: Boolean = true,
+    var arrowCycleTabEnabled: Boolean = true,
     // filter highlight
     var filterHighlightEnabled: Boolean = true,
     var filterHighlights: MutableList<FilterHighlight.Filter> = mutableListOf(),

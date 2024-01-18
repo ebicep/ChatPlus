@@ -41,6 +41,15 @@ data class ChatScreenMouseClickedEvent(
     var returnFunction: Boolean = false
 ) : Event
 
+data class ChatScreenMouseScrolledEvent(
+    val screen: ChatPlusScreen,
+    val mouseX: Double,
+    val mouseY: Double,
+    val amountX: Double,
+    val amountY: Double,
+    var returnFunction: Boolean = false
+) : Event
+
 data class ChatScreenMouseDraggedEvent(
     val screen: ChatPlusScreen,
     val mouseX: Double,
@@ -256,11 +265,14 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
         }
     }
 
-    override fun mouseScrolled(pMouseX: Double, pMouseY: Double, f: Double, pDelta: Double): Boolean {
-        var delta = Mth.clamp(pDelta, -1.0, 1.0)
+    override fun mouseScrolled(mouseX: Double, mouseY: Double, amountX: Double, amountY: Double): Boolean {
+        var delta = Mth.clamp(amountY, -1.0, 1.0)
         return if (commandSuggestions!!.mouseScrolled(delta)) {
             true
         } else {
+            if (EventBus.post(ChatScreenMouseScrolledEvent(this, mouseX, mouseY, amountX, amountY)).returnFunction) {
+                return true
+            }
             // control = no scroll
             // shift = fine scroll
             // alt = triple scroll

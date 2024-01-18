@@ -122,11 +122,21 @@ object ConfigScreenImpl {
                 Config.values.chatTabsEnabled
             ) { Config.values.chatTabsEnabled = it })
         chatTabs.addEntry(
+            entryBuilder.booleanToggle(
+                "chatPlus.chatTabs.scrollCycleTabEnabled.toggle",
+                Config.values.scrollCycleTabEnabled
+            ) { Config.values.scrollCycleTabEnabled = it })
+        chatTabs.addEntry(
+            entryBuilder.booleanToggle(
+                "chatPlus.chatTabs.arrowCycleTabEnabled.toggle",
+                Config.values.arrowCycleTabEnabled
+            ) { Config.values.arrowCycleTabEnabled = it })
+        chatTabs.addEntry(
             getCustomListOption(
                 "chatPlus.chatTabs.title",
                 Config.values.chatTabs,
                 { Config.values.chatTabs = it },
-                Config.values.chatTabs.size in 2..9,
+                Config.values.chatTabs.size > 0,
                 { ChatTab("", "") },
                 { value ->
                     listOf(
