@@ -15,6 +15,7 @@ object FeatureManager {
         FilterHighlight
         ChatTabs
         TranslateText
+        AlignText
 //        AlternatingColorBackground
     }
 

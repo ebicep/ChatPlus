@@ -3,6 +3,7 @@ package com.ebicep.chatplus.config.fabric
 import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.config.TimestampMode
 import com.ebicep.chatplus.config.queueUpdateConfig
+import com.ebicep.chatplus.features.AlignText
 import com.ebicep.chatplus.features.FilterHighlight
 import com.ebicep.chatplus.features.FilterHighlight.DEFAULT_COLOR
 import com.ebicep.chatplus.features.chattabs.ChatTab
@@ -112,6 +113,16 @@ object ConfigScreenImpl {
                 }
                 .build()
         )
+        general.addEntry(entryBuilder.startEnumSelector(
+            Component.translatable("chatPlus.chatSettings.textAlignment"),
+            AlignText.Alignment::class.java,
+            Config.values.textAlignment
+        )
+            .setEnumNameProvider { (it as AlignText.Alignment).translatable }
+            .setDefaultValue(Config.values.textAlignment)
+            .setTooltip(Component.translatable("chatPlus.chatSettings.textAlignment.tooltip"))
+            .setSaveConsumer { Config.values.textAlignment = it }
+            .build())
     }
 
     private fun addChatTabsOption(builder: ConfigBuilder, entryBuilder: ConfigEntryBuilder) {

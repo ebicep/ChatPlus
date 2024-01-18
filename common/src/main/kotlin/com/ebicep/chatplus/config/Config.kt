@@ -8,6 +8,7 @@ import com.ebicep.chatplus.ChatPlus
 import com.ebicep.chatplus.MOD_ID
 import com.ebicep.chatplus.config.serializers.KeySerializer
 import com.ebicep.chatplus.config.serializers.KeyWithModifier
+import com.ebicep.chatplus.features.AlignText
 import com.ebicep.chatplus.features.FilterHighlight
 import com.ebicep.chatplus.features.chattabs.CHAT_TAB_HEIGHT
 import com.ebicep.chatplus.features.chattabs.ChatTab
@@ -116,6 +117,7 @@ data class ConfigVariables(
     var chatTimestampMode: TimestampMode = TimestampMode.HR_12_SECOND,
     var hoverHighlightEnabled: Boolean = true,
     var hoverHighlightColor: Int = 0,
+    var textAlignment: AlignText.Alignment = AlignText.Alignment.LEFT,
     // tabs
     var chatTabs: MutableList<ChatTab> = mutableListOf(defaultTab),
     var selectedTab: Int = 0,

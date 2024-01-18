@@ -17,7 +17,7 @@ import net.minecraft.util.Mth
 import kotlin.math.ceil
 import kotlin.math.roundToInt
 
-open class ChatRenderLineEvent(
+abstract class ChatRenderLineEvent(
     open val guiGraphics: GuiGraphics,
     open val chatPlusGuiMessageLine: ChatTab.ChatPlusGuiMessageLine,
     open val verticalChatOffset: Int,
@@ -35,13 +35,13 @@ class ChatRenderLineBackgroundEvent(
     var backgroundColor: Int,
 ) : ChatRenderLineEvent(guiGraphics, chatPlusGuiMessageLine, verticalChatOffset, verticalTextOffset)
 
-//class ChatRenderLineTextEvent(
-//    guiGraphics: GuiGraphics,
-//    line: GuiMessage.Line,
-//    verticalChatOffset: Int,
-//    verticalTextOffset: Int,
-//    var text: String,
-//) : ChatRenderLineEvent(guiGraphics, line, verticalChatOffset, verticalTextOffset)
+class ChatRenderLineTextEvent(
+    guiGraphics: GuiGraphics,
+    chatPlusGuiMessageLine: ChatTab.ChatPlusGuiMessageLine,
+    verticalChatOffset: Int,
+    verticalTextOffset: Int,
+    val text: String,
+) : ChatRenderLineEvent(guiGraphics, chatPlusGuiMessageLine, verticalChatOffset, verticalTextOffset)
 
 
 data class ChatRenderPreLinesEvent(
@@ -158,11 +158,19 @@ object ChatRenderer {
                     renderLineBackgroundEvent.backgroundColor
                 )
                 poseStack.guiForward()
-//                    poseStack.translate0(x = width - Minecraft.getInstance().font.width(line.content()))
+                EventBus.post(
+                    ChatRenderLineTextEvent(
+                        guiGraphics,
+                        chatPlusGuiMessageLine,
+                        verticalChatOffset,
+                        verticalTextOffset,
+                        chatPlusGuiMessageLine.content
+                    )
+                )
                 // text
                 guiGraphics.drawString(
                     Minecraft.getInstance().font,
-                    line.content(),
+                    line.content,
                     rescaledX,
                     verticalTextOffset,
                     16777215 + (textColor shl 24)
