@@ -7,6 +7,7 @@ import com.ebicep.chatplus.hud.ChatManager
 import com.ebicep.chatplus.hud.ChatScreenMouseDraggedEvent
 import com.ebicep.chatplus.hud.ChatScreenMouseReleasedEvent
 import com.ebicep.chatplus.util.GraphicsUtil.guiForward
+import kotlin.math.abs
 
 object ChatTabsMover {
 
@@ -57,7 +58,7 @@ object ChatTabsMover {
         EventBus.register<ChatTabRenderEvent> {
             val poseStack = it.poseStack
             val moving = movingTab && it.chatTab === ChatManager.selectedTab
-            if (moving) {
+            if (moving && abs(movingTabXOffset) > 4) {
                 it.xStart = movingTabXStart + movingTabXOffset
                 poseStack.guiForward()
                 poseStack.guiForward()
