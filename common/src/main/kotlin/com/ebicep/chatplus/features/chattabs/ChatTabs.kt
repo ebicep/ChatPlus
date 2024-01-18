@@ -109,10 +109,11 @@ object ChatTabs {
                 poseStack.createPose {
                     val tabWidth = it.width
 
-                    it.x = xStart
-                    it.y = yStart
+                    val translateX = EventBus.post(ChatTabRenderEvent(poseStack, it, tabWidth, xStart)).xStart
+                    poseStack.translate0(x = translateX)
 
-                    poseStack.translate0(x = EventBus.post(ChatTabRenderEvent(poseStack, it, tabWidth, xStart)).xStart)
+                    it.x = translateX
+                    it.y = yStart
 
                     renderTab(it, guiGraphics)
 

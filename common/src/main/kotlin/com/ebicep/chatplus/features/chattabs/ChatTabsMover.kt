@@ -8,25 +8,12 @@ import com.ebicep.chatplus.hud.ChatScreenMouseDraggedEvent
 import com.ebicep.chatplus.hud.ChatScreenMouseReleasedEvent
 import com.ebicep.chatplus.util.GraphicsUtil.guiForward
 
-class TabInfo(var xStart: Double, var width: Int) {
-
-    var xMiddle: Double = (xStart + width) / 2
-    var xEnd: Double = xStart + width
-
-    fun update(newStart: Double) {
-        xStart = newStart
-        xMiddle = xStart + width.toDouble() / 2
-        xEnd = xStart + width
-    }
-}
-
 object ChatTabsMover {
 
     private var movingTab: Boolean = false
     private var movingTabMouseStart: Double = 0.0
     private var movingTabXOffset: Double = 0.0
     private var movingTabXStart: Double = 0.0
-    private var chatTabPositions: MutableMap<ChatTab, TabInfo> = mutableMapOf()
 
     init {
         EventBus.register<ChatScreenMouseDraggedEvent> {
@@ -34,27 +21,24 @@ object ChatTabsMover {
                 return@register
             }
             val selectedTab = ChatManager.selectedTab
-            val movingTabPosition = chatTabPositions[selectedTab] ?: return@register
             val movingTabIndex: Int = Config.values.chatTabs.indexOf(selectedTab)
             if (movingTabIndex == -1) {
                 return@register
             }
             movingTabXOffset = it.mouseX - movingTabMouseStart
-            for (otherTab in chatTabPositions) {
-                val chatTab = otherTab.key
-                val chatTabPosition = otherTab.value
-                if (chatTab === selectedTab) {
+            for (otherTab in Config.values.chatTabs) {
+                if (otherTab === selectedTab) {
                     continue
                 }
-                val tabIndex = Config.values.chatTabs.indexOf(chatTab)
+                val tabIndex = Config.values.chatTabs.indexOf(otherTab)
                 val movingLeft = tabIndex < movingTabIndex
-                val leftSwap = movingLeft && movingTabPosition.xStart < chatTabPosition.xMiddle
-                val rightSwap = !movingLeft && movingTabPosition.xEnd > chatTabPosition.xMiddle
+                val otherTabMiddleX = otherTab.x + otherTab.width / 2
+                val leftSwap = movingLeft && selectedTab.x < otherTabMiddleX
+                val rightSwap = !movingLeft && selectedTab.x + selectedTab.width > otherTabMiddleX
                 if (leftSwap || rightSwap) {
                     Config.values.chatTabs.add(tabIndex, Config.values.chatTabs.removeAt(movingTabIndex))
                     Config.values.selectedTab = tabIndex
                     queueUpdateConfig = true
-                    chatTabPositions.clear()
                     break
                 }
             }
@@ -78,7 +62,6 @@ object ChatTabsMover {
                 poseStack.guiForward()
                 poseStack.guiForward()
             }
-            chatTabPositions.computeIfAbsent(it.chatTab) { _ -> TabInfo(it.xStart, it.chatTab.width) }.update(it.xStart)
         }
     }
 
