@@ -85,10 +85,9 @@ object ChatTabs {
             return
         }
         Config.values.chatTabs.forEachIndexed { index, it ->
-            val tabWidth = it.width
-            val insideTabX = it.x < x && x < it.x + tabWidth
+            val insideTabX = it.xStart < x && x < it.xEnd
             if (insideTabX) {
-                EventBus.post(ChatTabClickedEvent(it, x, it.x))
+                EventBus.post(ChatTabClickedEvent(it, x, it.xStart))
                 if (it != ChatManager.selectedTab) {
                     Config.values.selectedTab = index
                     queueUpdateConfig = true
@@ -112,7 +111,7 @@ object ChatTabs {
                     val translateX = EventBus.post(ChatTabRenderEvent(poseStack, it, tabWidth, xStart)).xStart
                     poseStack.translate0(x = translateX)
 
-                    it.x = translateX
+                    it.xStart = translateX
                     it.y = yStart
 
                     renderTab(it, guiGraphics)

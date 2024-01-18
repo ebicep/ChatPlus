@@ -100,12 +100,20 @@ class ChatTab {
         get() {
             if (field == -1) {
                 field = PADDING + Minecraft.getInstance().font.width(this.name) + PADDING
+                xEnd = xStart + field
             }
             return field
         }
 
     @Transient
-    var x: Double = 0.0
+    var xStart: Double = 0.0
+        set(value) {
+            field = value
+            xEnd = field + width
+        }
+
+    @Transient
+    var xEnd: Double = 0.0
 
     @Transient
     var y: Double = 0.0
