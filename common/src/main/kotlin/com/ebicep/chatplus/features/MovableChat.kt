@@ -152,7 +152,7 @@ object MovableChat {
             guiGraphics.fill(
                 ChatRenderer.rescaledX,
                 ChatRenderer.rescaledY - ChatRenderer.rescaledHeight,
-                ChatRenderer.rescaledWidth,
+                ChatRenderer.rescaledEndX,
                 ChatRenderer.rescaledY - it.displayMessageIndex * ChatRenderer.lineHeight,
                 (255 * ChatRenderer.backgroundOpacity).toInt() shl 24
             )

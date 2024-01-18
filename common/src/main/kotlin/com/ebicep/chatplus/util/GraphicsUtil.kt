@@ -18,6 +18,10 @@ object GraphicsUtil {
         translate(x, y, z)
     }
 
+    fun PoseStack.translate0(x: Int = 0, y: Int = 0, z: Int = 0) {
+        translate(x.toDouble(), y.toDouble(), z.toDouble())
+    }
+
     /**
      * Moves the pose stack forward by 50 (anything new rendered will be on top)
      */

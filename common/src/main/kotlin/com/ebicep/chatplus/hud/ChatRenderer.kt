@@ -14,6 +14,7 @@ import net.minecraft.client.GuiMessage
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.util.Mth
+import kotlin.math.ceil
 import kotlin.math.roundToInt
 
 open class ChatRenderLineEvent(
@@ -76,6 +77,7 @@ object ChatRenderer {
     var rescaledY: Int = 0
     var rescaledHeight: Int = 0
     var rescaledWidth: Int = 0
+    var rescaledEndX: Int = 0
     var rescaledLinesPerPage: Int = 0
     var lineHeight: Int = 0
 
@@ -90,10 +92,11 @@ object ChatRenderer {
         height = ChatManager.getHeight()
         width = ChatManager.getWidth()
         backgroundWidthEndX = x + width
-        rescaledX = (x / scale).toInt()
-        rescaledY = (y / scale).toInt()
-        rescaledHeight = (height / scale).toInt()
-        rescaledWidth = (backgroundWidthEndX / scale).toInt()
+        rescaledX = ceil(x / scale).toInt()
+        rescaledY = ceil(y / scale).toInt()
+        rescaledHeight = ceil(height / scale).toInt()
+        rescaledWidth = ceil(width / scale).toInt()
+        rescaledEndX = ceil(backgroundWidthEndX / scale).toInt()
         rescaledLinesPerPage = ChatManager.getLinesPerPageScaled()
         lineHeight = ChatManager.getLineHeight()
     }
@@ -150,11 +153,12 @@ object ChatRenderer {
                 guiGraphics.fill(
                     rescaledX,
                     verticalChatOffset - lineHeight,
-                    rescaledWidth,
+                    rescaledEndX,
                     verticalChatOffset,
                     renderLineBackgroundEvent.backgroundColor
                 )
                 poseStack.guiForward()
+//                    poseStack.translate0(x = width - Minecraft.getInstance().font.width(line.content()))
                 // text
                 guiGraphics.drawString(
                     Minecraft.getInstance().font,
