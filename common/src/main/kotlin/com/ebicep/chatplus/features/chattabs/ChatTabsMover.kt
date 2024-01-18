@@ -32,7 +32,7 @@ object ChatTabsMover {
                 }
                 val tabIndex = Config.values.chatTabs.indexOf(otherTab)
                 val movingLeft = tabIndex < movingTabIndex
-                val otherTabMiddleX = otherTab.xStart + otherTab.width / 2
+                val otherTabMiddleX = otherTab.xStart + otherTab.width / 2.0
                 val leftSwap = movingLeft && selectedTab.xStart < otherTabMiddleX
                 val rightSwap = !movingLeft && selectedTab.xEnd > otherTabMiddleX
                 if (leftSwap || rightSwap) {
