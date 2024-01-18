@@ -8,7 +8,7 @@ import com.ebicep.chatplus.events.Events
 import com.ebicep.chatplus.hud.*
 import com.ebicep.chatplus.util.GraphicsUtil.createPose
 import com.ebicep.chatplus.util.GraphicsUtil.guiForward
-import com.ebicep.chatplus.util.GraphicsUtil.translateX
+import com.ebicep.chatplus.util.GraphicsUtil.translate0
 import com.mojang.blaze3d.vertex.PoseStack
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphics
@@ -25,6 +25,8 @@ data class ChatTabRenderEvent(val poseStack: PoseStack, val chatTab: ChatTab, va
 object ChatTabs {
 
     val defaultTab: ChatTab = ChatTab("All", "(?s).*")
+    val maxX: Int
+        get() = if (true) ChatRenderer.width else Minecraft.getInstance().window.guiScaledWidth
 
     init {
         EventBus.register<ChatPlusTickEvent> {
@@ -40,7 +42,7 @@ object ChatTabs {
             }
             val chatFocused: Boolean = ChatManager.isChatFocused()
             if (chatFocused) {
-                renderTabs(it.guiGraphics, ChatRenderer.x, ChatRenderer.y)
+                renderTabs(it.guiGraphics, ChatRenderer.x.toDouble(), ChatRenderer.y.toDouble())
             }
         }
         EventBus.register<ChatScreenMouseClickedEvent> {
@@ -79,15 +81,14 @@ object ChatTabs {
 
     private fun handleClickedTab(x: Double, y: Double) {
         val translatedY = ChatManager.getY() - y
-        var tabXStart = 0.0
         if (translatedY > CHAT_TAB_Y_OFFSET || translatedY < -(9 + ChatTab.PADDING + ChatTab.PADDING)) {
             return
         }
         Config.values.chatTabs.forEachIndexed { index, it ->
-            val tabWidth = it.getTabWidth()
-            val insideTabX = tabXStart < x && x < tabXStart + tabWidth
+            val tabWidth = it.width
+            val insideTabX = it.x < x && x < it.x + tabWidth
             if (insideTabX) {
-                EventBus.post(ChatTabClickedEvent(it, x, tabXStart))
+                EventBus.post(ChatTabClickedEvent(it, x, it.x))
                 if (it != ChatManager.selectedTab) {
                     Config.values.selectedTab = index
                     queueUpdateConfig = true
@@ -95,20 +96,23 @@ object ChatTabs {
                     return
                 }
             }
-            tabXStart += tabWidth + CHAT_TAB_X_SPACE
         }
     }
 
-    private fun renderTabs(guiGraphics: GuiGraphics, x: Int, y: Int) {
+    private fun renderTabs(guiGraphics: GuiGraphics, x: Double, y: Double) {
         val poseStack = guiGraphics.pose()
+        var xStart = x
+        val yStart = y + CHAT_TAB_Y_OFFSET
         poseStack.createPose {
-            poseStack.translate(x.toFloat(), y.toFloat() + CHAT_TAB_Y_OFFSET, 0f)
-            var xStart = x.toDouble()
+            poseStack.translate0(y = yStart)
             Config.values.chatTabs.forEach {
                 poseStack.createPose {
-                    val tabWidth = it.getTabWidth()
+                    val tabWidth = it.width
 
-                    poseStack.translateX(EventBus.post(ChatTabRenderEvent(poseStack, it, tabWidth, xStart)).xStart)
+                    it.x = xStart
+                    it.y = yStart
+
+                    poseStack.translate0(x = EventBus.post(ChatTabRenderEvent(poseStack, it, tabWidth, xStart)).xStart)
 
                     renderTab(it, guiGraphics)
 
@@ -130,7 +134,7 @@ object ChatTabs {
             guiGraphics.fill(
                 0,
                 0,
-                chatTab.getTabWidth(),
+                chatTab.width,
                 9 + ChatTab.PADDING + ChatTab.PADDING,
                 backgroundOpacity
             )

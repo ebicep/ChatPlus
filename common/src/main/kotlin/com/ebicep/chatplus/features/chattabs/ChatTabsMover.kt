@@ -78,7 +78,7 @@ object ChatTabsMover {
                 poseStack.guiForward()
                 poseStack.guiForward()
             }
-            chatTabPositions.computeIfAbsent(it.chatTab) { _ -> TabInfo(it.xStart, it.tabWidth) }.update(it.xStart)
+            chatTabPositions.computeIfAbsent(it.chatTab) { _ -> TabInfo(it.xStart, it.chatTab.width) }.update(it.xStart)
         }
     }
 

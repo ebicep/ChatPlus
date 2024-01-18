@@ -5,6 +5,7 @@ import com.ebicep.chatplus.config.queueUpdateConfig
 import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.hud.*
 import com.ebicep.chatplus.util.GraphicsUtil.createPose
+import com.ebicep.chatplus.util.GraphicsUtil.translate0
 import com.mojang.blaze3d.platform.InputConstants
 import com.mojang.blaze3d.vertex.PoseStack
 import net.minecraft.client.Minecraft
@@ -181,7 +182,7 @@ object MovableChat {
         backgroundWidth: Int
     ) {
         poseStack.createPose {
-            poseStack.translate(0f, 0f, 200f)
+            poseStack.translate0(z = 200f)
             if (movingChatX) {
                 guiGraphics.fill(
                     x + backgroundWidth - RENDER_MOVING_SIZE,

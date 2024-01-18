@@ -58,6 +58,10 @@ class ChatTab {
 
 
     var name: String
+        set(value) {
+            field = value
+            width = -1
+        }
     var pattern: String
         set(value) {
             field = value
@@ -89,6 +93,22 @@ class ChatTab {
 
     @Transient
     var resetDisplayMessageAtTick = -1L
+
+    // cached values
+    @Transient
+    var width: Int = -1
+        get() {
+            if (field == -1) {
+                field = PADDING + Minecraft.getInstance().font.width(this.name) + PADDING
+            }
+            return field
+        }
+
+    @Transient
+    var x: Double = 0.0
+
+    @Transient
+    var y: Double = 0.0
 
     fun addNewMessage(
         component: Component,
@@ -323,10 +343,6 @@ class ChatTab {
         } else {
             false
         }
-    }
-
-    fun getTabWidth(): Int {
-        return PADDING + Minecraft.getInstance().font.width(this.name) + PADDING
     }
 
     fun drawTagIcon(pGuiGraphics: GuiGraphics, pLeft: Int, pBottom: Int, pTagIcon: GuiMessageTag.Icon) {

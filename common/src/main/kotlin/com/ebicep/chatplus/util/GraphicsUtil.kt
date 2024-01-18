@@ -10,28 +10,12 @@ object GraphicsUtil {
         popPose()
     }
 
-    fun PoseStack.translateX(x: Float) {
-        translate(x, 0f, 0f)
+    fun PoseStack.translate0(x: Double = 0.0, y: Double = 0.0, z: Double = 0.0) {
+        translate(x, y, z)
     }
 
-    fun PoseStack.translateY(y: Float) {
-        translate(0f, y, 0f)
-    }
-
-    fun PoseStack.translateZ(z: Float) {
-        translate(0f, 0f, z)
-    }
-
-    fun PoseStack.translateX(x: Double) {
-        translate(x, 0.0, 0.0)
-    }
-
-    fun PoseStack.translateY(y: Double) {
-        translate(0.0, y, 0.0)
-    }
-
-    fun PoseStack.translateZ(z: Double) {
-        translate(0.0, 0.0, z)
+    fun PoseStack.translate0(x: Float = 0f, y: Float = 0f, z: Float = 0f) {
+        translate(x, y, z)
     }
 
     /**
