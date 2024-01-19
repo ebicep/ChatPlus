@@ -23,10 +23,10 @@ object GraphicsUtil {
     }
 
     /**
-     * Moves the pose stack forward by 50 (anything new rendered will be on top)
+     * Moves the pose stack forward by default 50 (anything new rendered will be on top)
      */
-    fun PoseStack.guiForward() {
-        translate(0.0, 0.0, 50.0)
+    fun PoseStack.guiForward(amount: Double = 50.0) {
+        translate(0.0, 0.0, amount)
     }
 
 }

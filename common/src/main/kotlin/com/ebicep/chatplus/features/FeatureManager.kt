@@ -16,6 +16,7 @@ object FeatureManager {
         ChatTabs
         TranslateText
         AlignText
+        ScreenshotChat
 //        AlternatingColorBackground
     }
 

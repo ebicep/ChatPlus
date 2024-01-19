@@ -81,5 +81,6 @@
   "chatPlus.translator.translateSpeak.tooltip": "Language your messages are translated to.",
   "chatPlus.translator.translateSpeak.chat.tooltip": "Language your messages are translated to. Click to toggle.",
   "chatPlus.translator.translateSpeakPrefix.tooltip": "Text to prepend that will not get translated.",
-  "chatPlus.chat.find.tooltip": "Click to toggle the find option. Control Click on any message to jump to it."
+  "chatPlus.chat.find.tooltip": "Click to toggle the find option. Control Click on any message to jump to it.",
+  "chatPlus.chat.screenShotChat.tooltip": "Click to take a screenshot of the chat. 3s Cooldown."
 }

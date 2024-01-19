@@ -4,6 +4,9 @@ import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.events.Events
 import com.ebicep.chatplus.features.FeatureManager
 import com.ebicep.chatplus.translator.LanguageManager
+import net.minecraft.ChatFormatting
+import net.minecraft.client.Minecraft
+import net.minecraft.network.chat.Component
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 
@@ -24,5 +27,16 @@ object ChatPlus {
 
     fun isEnabled(): Boolean {
         return Config.values.enabled
+    }
+
+    fun sendMessage(component: Component) {
+        // rgb(18, 227, 219)
+        Minecraft.getInstance().player?.sendSystemMessage(
+            Component.literal("ChatPlus").withStyle {
+                it.withColor(0xFF12e3DB.toInt())
+            }.append(Component.literal(" > ").withStyle {
+                it.withColor(ChatFormatting.DARK_GRAY)
+            }).append(component)
+        )
     }
 }
