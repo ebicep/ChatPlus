@@ -213,12 +213,35 @@ object ConfigScreenImpl {
     }
 
     private fun addChatScreenShotOption(builder: ConfigBuilder, entryBuilder: ConfigEntryBuilder) {
-        val hoverHighlight = builder.getOrCreateCategory(Component.translatable("chatPlus.screenShotChat.title"))
-        hoverHighlight.addEntry(
+        val screenshot = builder.getOrCreateCategory(Component.translatable("chatPlus.screenshotChat.title"))
+        screenshot.addEntry(
             entryBuilder.booleanToggle(
-                "chatPlus.screenShotChat.toggle",
-                Config.values.screenShotChatEnabled
-            ) { Config.values.screenShotChatEnabled = it })
+                "chatPlus.screenshotChat.toggle",
+                Config.values.screenshotChatEnabled
+            ) { Config.values.screenshotChatEnabled = it })
+        screenshot.addEntry(
+            entryBuilder.startModifierKeyCodeField(
+                Component.translatable("chatPlus.screenshotChat.line.key"),
+                ModifierKeyCode.of(
+                    Config.values.screenshotChatLine.key,
+                    Modifier.of(Config.values.screenshotChatLine.modifier)
+                )
+            )
+                .setDefaultValue(
+                    ModifierKeyCode.of(
+                        Config.values.screenshotChatLine.key,
+                        Modifier.of(Config.values.screenshotChatLine.modifier)
+                    )
+                )
+                .setKeySaveConsumer { Config.values.screenshotChatLine.key = it }
+                .setModifierSaveConsumer { Config.values.screenshotChatLine.modifier = it.modifier.value }
+                .build()
+        )
+        screenshot.addEntry(
+            entryBuilder.booleanToggle(
+                "chatPlus.screenshotChatAutoUpload.toggle",
+                Config.values.screenshotChatAutoUpload
+            ) { Config.values.screenshotChatAutoUpload = it })
     }
 
     private fun addKeyBindOptions(builder: ConfigBuilder, entryBuilder: ConfigEntryBuilder) {

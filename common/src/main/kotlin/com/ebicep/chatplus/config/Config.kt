@@ -127,7 +127,9 @@ data class ConfigVariables(
     var filterHighlightEnabled: Boolean = true,
     var filterHighlights: MutableList<FilterHighlight.Filter> = mutableListOf(),
     // screen shot chat
-    var screenShotChatEnabled: Boolean = true,
+    var screenshotChatEnabled: Boolean = true,
+    var screenshotChatLine: KeyWithModifier = KeyWithModifier(InputConstants.getKey("key.keyboard.s"), 2),
+    var screenshotChatAutoUpload: Boolean = true,
     // keys binds
     var keyNoScroll: InputConstants.Key = InputConstants.getKey("key.keyboard.left.control"),
     var keyFineScroll: InputConstants.Key = InputConstants.getKey("key.keyboard.left.shift"),

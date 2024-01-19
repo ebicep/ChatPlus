@@ -291,6 +291,7 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
     }
 
     override fun mouseClicked(mouseX: Double, mouseY: Double, pButton: Int): Boolean {
+//        ChatPlus.LOGGER.info("Clicked at: $mouseX, $mouseY")
         return if (commandSuggestions!!.mouseClicked(mouseX.toInt().toDouble(), mouseY.toInt().toDouble(), pButton)) {
             true
         } else {

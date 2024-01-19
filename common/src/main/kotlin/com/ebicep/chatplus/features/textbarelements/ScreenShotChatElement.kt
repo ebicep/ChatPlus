@@ -2,9 +2,8 @@ package com.ebicep.chatplus.features.textbarelements
 
 import com.ebicep.chatplus.events.Event
 import com.ebicep.chatplus.events.EventBus
-import com.ebicep.chatplus.events.Events
 import com.ebicep.chatplus.features.ScreenshotChat.SCREENSHOT_COLOR
-import com.ebicep.chatplus.features.ScreenshotChat.lastScreenShotTick
+import com.ebicep.chatplus.features.ScreenshotChat.onCooldown
 import com.ebicep.chatplus.hud.ChatPlusScreen
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphics
@@ -29,18 +28,16 @@ class ScreenShotChatElement(private val chatPlusScreen: ChatPlusScreen) : TextBa
         EventBus.post(ScreenShotChatEvent())
     }
 
-    private fun onCooldown() = lastScreenShotTick + 60 > Events.currentTick
-
     override fun onHover(guiGraphics: GuiGraphics, pMouseX: Int, pMouseY: Int) {
-        guiGraphics.renderTooltip(chatPlusScreen.font(), Component.translatable("chatPlus.screenShotChat.tooltip"), pMouseX, pMouseY)
+        guiGraphics.renderTooltip(chatPlusScreen.font(), Component.translatable("chatPlus.screenshotChat.tooltip"), pMouseX, pMouseY)
     }
 
     override fun onRender(guiGraphics: GuiGraphics, currentX: Int, currentY: Int, mouseX: Int, mouseY: Int) {
         fill(guiGraphics, currentX, currentY)
         val onCooldown = onCooldown()
-        drawCenteredString(guiGraphics, currentX, currentY, (if (onCooldown) SCREENSHOT_COLOR else 0xFFFFFF).toInt())
+        drawCenteredString(guiGraphics, currentX, currentY, (if (onCooldown) SCREENSHOT_COLOR else 0xFFFFFF))
         if (onCooldown) {
-            renderOutline(guiGraphics, currentX, currentY, SCREENSHOT_COLOR.toInt())
+            renderOutline(guiGraphics, currentX, currentY, SCREENSHOT_COLOR)
         }
     }
 
