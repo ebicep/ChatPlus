@@ -35,7 +35,9 @@ object ConfigScreenImpl {
         addGeneralOptions(builder, entryBuilder)
         addChatTabsOption(builder, entryBuilder)
         addFilterHighlightOption(builder, entryBuilder)
+        addHoverHighlightOption(builder, entryBuilder)
         addKeyBindOptions(builder, entryBuilder)
+        addChatScreenShotOption(builder, entryBuilder)
         addTranslatorRegexOptions(builder, entryBuilder)
         return builder.build()
     }
@@ -93,26 +95,6 @@ object ConfigScreenImpl {
             .setTooltip(Component.translatable("chatPlus.chatSettings.chatTimestampMode.tooltip"))
             .setSaveConsumer { Config.values.chatTimestampMode = it }
             .build())
-        general.addEntry(
-            entryBuilder.booleanToggle(
-                "chatPlus.chatSettings.hoverHighlight.toggle",
-                Config.values.hoverHighlightEnabled
-            ) { Config.values.hoverHighlightEnabled = it })
-        general.addEntry(
-            entryBuilder.startAlphaColorField(
-                Component.translatable("chatPlus.chatSettings.hoverHighlight.color"),
-                Color.ofTransparent(Config.values.hoverHighlightColor)
-            )
-                .setTooltip(Component.translatable("chatPlus.chatSettings.hoverHighlight.color.tooltip"))
-                .setAlphaMode(true)
-                .setDefaultValue2 {
-                    Color.ofTransparent(Config.values.hoverHighlightColor)
-                }
-                .setSaveConsumer2 {
-                    Config.values.hoverHighlightColor = it.color
-                }
-                .build()
-        )
         general.addEntry(entryBuilder.startEnumSelector(
             Component.translatable("chatPlus.chatSettings.textAlignment"),
             AlignText.Alignment::class.java,
@@ -204,6 +186,39 @@ object ConfigScreenImpl {
 
             )
         )
+    }
+
+    private fun addHoverHighlightOption(builder: ConfigBuilder, entryBuilder: ConfigEntryBuilder) {
+        val hoverHighlight = builder.getOrCreateCategory(Component.translatable("chatPlus.hoverHighlight.title"))
+        hoverHighlight.addEntry(
+            entryBuilder.booleanToggle(
+                "chatPlus.chatSettings.hoverHighlight.toggle",
+                Config.values.hoverHighlightEnabled
+            ) { Config.values.hoverHighlightEnabled = it })
+        hoverHighlight.addEntry(
+            entryBuilder.startAlphaColorField(
+                Component.translatable("chatPlus.hoverHighlight.color"),
+                Color.ofTransparent(Config.values.hoverHighlightColor)
+            )
+                .setTooltip(Component.translatable("chatPlus.hoverHighlight.color.tooltip"))
+                .setAlphaMode(true)
+                .setDefaultValue2 {
+                    Color.ofTransparent(Config.values.hoverHighlightColor)
+                }
+                .setSaveConsumer2 {
+                    Config.values.hoverHighlightColor = it.color
+                }
+                .build()
+        )
+    }
+
+    private fun addChatScreenShotOption(builder: ConfigBuilder, entryBuilder: ConfigEntryBuilder) {
+        val hoverHighlight = builder.getOrCreateCategory(Component.translatable("chatPlus.screenShotChat.title"))
+        hoverHighlight.addEntry(
+            entryBuilder.booleanToggle(
+                "chatPlus.screenShotChat.toggle",
+                Config.values.screenShotChatEnabled
+            ) { Config.values.screenShotChatEnabled = it })
     }
 
     private fun addKeyBindOptions(builder: ConfigBuilder, entryBuilder: ConfigEntryBuilder) {

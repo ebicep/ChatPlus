@@ -3,6 +3,7 @@
 package com.ebicep.chatplus.features
 
 import com.ebicep.chatplus.ChatPlus
+import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.events.Events
 import com.ebicep.chatplus.features.textbarelements.ScreenShotChatElement
@@ -54,9 +55,15 @@ object ScreenshotChat {
 
     init {
         EventBus.register<TextBarElements.AddTextBarElementEvent>(6) {
+            if (!Config.values.screenShotChatEnabled) {
+                return@register
+            }
             it.elements.add(ScreenShotChatElement(it.screen))
         }
         EventBus.register<ScreenShotChatEvent> {
+            if (!Config.values.screenShotChatEnabled) {
+                return@register
+            }
             lastScreenShotTick = Events.currentTick
             startScreenShot = true
         }

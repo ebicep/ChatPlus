@@ -32,7 +32,7 @@ class ScreenShotChatElement(private val chatPlusScreen: ChatPlusScreen) : TextBa
     private fun onCooldown() = lastScreenShotTick + 60 > Events.currentTick
 
     override fun onHover(guiGraphics: GuiGraphics, pMouseX: Int, pMouseY: Int) {
-        guiGraphics.renderTooltip(chatPlusScreen.font(), Component.translatable("chatPlus.chat.screenShotChat.tooltip"), pMouseX, pMouseY)
+        guiGraphics.renderTooltip(chatPlusScreen.font(), Component.translatable("chatPlus.screenShotChat.tooltip"), pMouseX, pMouseY)
     }
 
     override fun onRender(guiGraphics: GuiGraphics, currentX: Int, currentY: Int, mouseX: Int, mouseY: Int) {
