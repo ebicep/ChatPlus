@@ -67,7 +67,7 @@ class ChatTab {
             field = value
             regex = Regex(value)
         }
-    var autoPrefix: String
+    var autoPrefix: String = ""
 
     constructor(name: String, pattern: String, autoPrefix: String = "") {
         this.name = name
