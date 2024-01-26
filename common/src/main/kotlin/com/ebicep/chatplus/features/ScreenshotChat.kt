@@ -14,6 +14,8 @@ import com.ebicep.chatplus.util.GraphicsUtil.createPose
 import com.ebicep.chatplus.util.GraphicsUtil.guiForward
 import com.ebicep.chatplus.util.TimeStampedLine
 import com.google.gson.JsonParser
+import com.mojang.blaze3d.pipeline.RenderTarget
+import com.mojang.blaze3d.vertex.*
 import net.minecraft.ChatFormatting
 import net.minecraft.client.Minecraft
 import net.minecraft.network.chat.ClickEvent
@@ -386,4 +388,277 @@ object ScreenshotChat {
         }
     }
 
+    object ScreenshotRenderTarget : RenderTarget(false) {
+//
+//        val FULL: Int = (255 shl 24) or
+//                (0 shl 16) or
+//                (255 shl 8) or
+//                (0)
+//
+//        init {
+//            width = Minecraft.getInstance().window.width
+//            height = Minecraft.getInstance().window.height
+//            RenderSystem.assertOnRenderThreadOrInit()
+//            val dimension = allocateAttachments(width, height)
+//            frameBufferId = GlStateManager.glGenFramebuffers()
+//            GlStateManager._glBindFramebuffer(36160, frameBufferId)
+//            GlStateManager._bindTexture(colorTextureId)
+//            GlStateManager._texParameter(3553, 10241, 9728)
+//            GlStateManager._texParameter(3553, 10240, 9728)
+//            GlStateManager._texParameter(3553, 10242, 33071)
+//            GlStateManager._texParameter(3553, 10243, 33071)
+//            GlStateManager._glFramebufferTexture2D(36160, 36064, 3553, colorTextureId, 0)
+//            GlStateManager._bindTexture(depthBufferId)
+//            GlStateManager._texParameter(3553, 34892, 0)
+//            GlStateManager._texParameter(3553, 10241, 9728)
+//            GlStateManager._texParameter(3553, 10240, 9728)
+//            GlStateManager._texParameter(3553, 10242, 33071)
+//            GlStateManager._texParameter(3553, 10243, 33071)
+//            GlStateManager._glFramebufferTexture2D(36160, 36096, 3553, depthBufferId, 0)
+//            GlStateManager._bindTexture(0)
+//            viewWidth = dimension!!.width
+//            viewHeight = dimension.height
+//            this.width = dimension.width
+//            this.height = dimension.height
+//            checkStatus()
+//            GlStateManager._glBindFramebuffer(36160, 0)
+//        }
+//
+//        private fun allocateAttachments(i: Int, j: Int): Dimension? {
+//            RenderSystem.assertOnRenderThreadOrInit()
+//            colorTextureId = TextureUtil.generateTextureId()
+//            depthBufferId = TextureUtil.generateTextureId()
+//            var attachmentState = AttachmentState.NONE
+//            val var4: Iterator<*> = Dimension.listWithFallback(i, j).iterator()
+//            var dimension: Dimension?
+//            do {
+//                if (!var4.hasNext()) {
+//                    throw RuntimeException("Unrecoverable GL_OUT_OF_MEMORY (allocated attachments = " + attachmentState.name + ")")
+//                }
+//                dimension = var4.next() as Dimension
+//                attachmentState = AttachmentState.NONE
+//                if (this.allocateColorAttachment(dimension)) {
+//                    attachmentState = attachmentState.with(AttachmentState.COLOR)
+//                }
+//                if (this.allocateDepthAttachment(dimension)) {
+//                    attachmentState = attachmentState.with(AttachmentState.DEPTH)
+//                }
+//            } while (attachmentState != AttachmentState.COLOR_DEPTH)
+//            return dimension
+//        }
+//
+//        private fun allocateColorAttachment(arg: Dimension): Boolean {
+//            RenderSystem.assertOnRenderThreadOrInit()
+//            GlStateManager._getError()
+//            GlStateManager._bindTexture(colorTextureId)
+//            GlStateManager._texImage2D(3553, 0, 32856, arg.width, arg.height, 0, 6408, 5121, null as IntBuffer?)
+//            return GlStateManager._getError() != 1285
+//        }
+//
+//        private fun allocateDepthAttachment(arg: Dimension): Boolean {
+//            RenderSystem.assertOnRenderThreadOrInit()
+//            GlStateManager._getError()
+//            GlStateManager._bindTexture(depthBufferId)
+//            GlStateManager._texImage2D(3553, 0, 6402, arg.width, arg.height, 0, 6402, 5126, null as IntBuffer?)
+//            return GlStateManager._getError() != 1285
+//        }
+//
+//
+//        private class Dimension internal constructor(val width: Int, val height: Int) {
+//            override fun equals(other: Any?): Boolean {
+//                return if (this === other) {
+//                    true
+//                } else if (other != null && this.javaClass == other.javaClass) {
+//                    val dimension = other as Dimension
+//                    width == dimension.width && height == dimension.height
+//                } else {
+//                    false
+//                }
+//            }
+//
+//            override fun hashCode(): Int {
+//                return Objects.hash(*arrayOf<Any>(width, height))
+//            }
+//
+//            override fun toString(): String {
+//                return width.toString() + "x" + height
+//            }
+//
+//            companion object {
+//                private val DEFAULT_DIMENSIONS = Dimension(854, 480)
+//
+//                fun listWithFallback(i: Int, j: Int): List<Dimension> {
+//                    RenderSystem.assertOnRenderThreadOrInit()
+//                    val k = RenderSystem.maxSupportedTextureSize()
+//                    return if (i > 0 && i <= k && j > 0 && j <= k) ImmutableList.of(
+//                        Dimension(i, j),
+//                        DEFAULT_DIMENSIONS
+//                    ) else ImmutableList.of(
+//                        DEFAULT_DIMENSIONS
+//                    )
+//                }
+//            }
+//        }
+//
+//        private enum class AttachmentState {
+//            NONE, COLOR, DEPTH, COLOR_DEPTH;
+//
+//            fun with(arg: AttachmentState): AttachmentState {
+//                return values()[ordinal or arg.ordinal]
+//            }
+//        }
+//
+//        fun ss() {
+////            blitToScreen(width, height)
+////            createFrameBuffer()
+//            thingy(width, height, false)
+//        }
+//
+//        private fun createFrameBuffer() {
+//            RenderSystem.assertOnRenderThreadOrInit()
+//            clear(false)
+//            GL11.glMatrixMode(GL11.GL_PROJECTION)
+//            GL11.glLoadIdentity()
+//            GL11.glOrtho(0.0, width.toDouble(), height.toDouble(), 0.0, 1000.0, 3000.0)
+//            GL11.glMatrixMode(GL11.GL_MODELVIEW)
+//            GL11.glLoadIdentity()
+//            GL11.glTranslatef(0.0f, 0.0f, -2000.0f)
+//            bindWrite(true)
+//        }
+//
+//        private fun screenshot() {
+////            val i = w * h
+////            val pixelBuffer = BufferUtils.createIntBuffer(i)
+////            val pixelValues = IntArray(i)
+////            GL11.glPixelStorei(GL11.GL_PACK_ALIGNMENT, 1)
+////            GL11.glPixelStorei(GL11.GL_UNPACK_ALIGNMENT, 1)
+//
+//            ChatRenderer.render(GuiGraphics(Minecraft.getInstance(), Minecraft.getInstance().renderBuffers().bufferSource()), 0, 0, 0)
+//
+//            bindRead()
+////            GL11.glGetTexImage(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, pixelBuffer)
+////            pixelBuffer.get(pixelValues)
+////            TextureUtil.prepareImage()
+//            screenshot(0, 0, width, height)
+//        }
+//
+//        private fun thingy2() {
+//            val minecraft = Minecraft.getInstance()
+//            val window: Window = minecraft.getWindow()
+//            RenderSystem.clear(256, Minecraft.ON_OSX)
+//            val matrix4f = Matrix4f().setOrtho(
+//                0.0f,
+//                (window.width.toDouble() / window.guiScale).toFloat(),
+//                (window.height.toDouble() / window.guiScale).toFloat(),
+//                0.0f,
+//                1000.0f,
+//                21000.0f
+//            )
+//            RenderSystem.setProjectionMatrix(matrix4f, VertexSorting.ORTHOGRAPHIC_Z)
+//            val poseStack = RenderSystem.getModelViewStack()
+//            poseStack.pushPose()
+//            poseStack.setIdentity()
+//            poseStack.translate(0.0f, 0.0f, -11000.0f)
+//            RenderSystem.applyModelViewMatrix()
+//            Lighting.setupFor3DItems()
+//            val guiGraphics = GuiGraphics(minecraft, minecraft.renderBuffers().bufferSource())
+//
+//            RenderSystem.enableBlend()
+//
+//            poseStack.createPose {
+//                poseStack.translate(50f, 50f, -1000000000f)
+//                poseStack.scale(2f, 2f, 0f)
+//                guiGraphics.drawString(Minecraft.getInstance().font, "dwajiohawdhui42uhiouhicuiho412uhi", 0, 0, 0xFFFFFF)
+//            }
+//
+//
+//            RenderSystem.clear(256, Minecraft.ON_OSX)
+//
+//            guiGraphics.flush()
+//            poseStack.popPose()
+//            RenderSystem.applyModelViewMatrix()
+//        }
+//
+//        private fun thingy(w: Int, h: Int, bl: Boolean) {
+//            RenderSystem.assertOnRenderThread()
+//            GlStateManager._colorMask(true, true, true, false)
+//            GlStateManager._disableDepthTest()
+//            GlStateManager._depthMask(false)
+//            GlStateManager._viewport(0, 0, w, h)
+//            if (bl) {
+//                GlStateManager._disableBlend()
+//            }
+//            val minecraft = Minecraft.getInstance()
+//            val shaderInstance = minecraft.gameRenderer.blitShader
+//            shaderInstance.setSampler("DiffuseSampler", colorTextureId)
+//            val matrix4f = Matrix4f().setOrtho(0.0f, w.toFloat(), h.toFloat(), 0.0f, 1000.0f, 3000.0f)
+//            RenderSystem.setProjectionMatrix(matrix4f, VertexSorting.ORTHOGRAPHIC_Z)
+//            if (shaderInstance.MODEL_VIEW_MATRIX != null) {
+//                shaderInstance.MODEL_VIEW_MATRIX!!.set(Matrix4f().translation(0.0f, 0.0f, -2000.0f))
+//            }
+//            if (shaderInstance.PROJECTION_MATRIX != null) {
+//                shaderInstance.PROJECTION_MATRIX!!.set(matrix4f)
+//            }
+//            shaderInstance.apply()
+//            val width = w.toFloat()
+//            val height = h.toFloat()
+//            val widthScale = viewWidth.toFloat() / this.width.toFloat()
+//            val heightScale = viewHeight.toFloat() / this.height.toFloat()
+//
+//            val tesselator = RenderSystem.renderThreadTesselator()
+//            val bufferBuilder: BufferBuilder = tesselator.builder
+////            bufferBuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR)
+////            bufferBuilder.vertex(0.0, height.toDouble(), 0.0)
+////                .uv(0.0f, 0.0f)
+////                .color(255, 255, 255, 255)
+////                .endVertex()
+////            bufferBuilder.vertex(width.toDouble(), height.toDouble(), 0.0)
+////                .uv(widthScale, 0.0f)
+////                .color(255, 255, 255, 255)
+////                .endVertex()
+////            bufferBuilder.vertex(width.toDouble(), 0.0, 0.0)
+////                .uv(widthScale, heightScale)
+////                .color(255, 255, 255, 255)
+////                .endVertex()
+////            bufferBuilder.vertex(0.0, 0.0, 0.0)
+////                .uv(0.0f, heightScale)
+////                .color(255, 255, 255, 255)
+////                .endVertex()
+////            BufferUploader.draw(bufferBuilder.end())
+//
+//            Minecraft.getInstance().font.drawInBatch(
+//                "HELLO",
+//                0f,
+//                0f,
+//                FULL,
+//                false,
+//                matrix4f,
+//                Minecraft.getInstance().renderBuffers().bufferSource(),
+//                Font.DisplayMode.NORMAL,
+//                0,
+//                LightTexture.FULL_BRIGHT
+//            )
+//            GlStateManager.
+////            val guiGraphics = GuiGraphics(Minecraft.getInstance(), Minecraft.getInstance().renderBuffers().bufferSource())
+////            val poseStack = guiGraphics.pose()
+////            poseStack.createPose {
+////                poseStack.translate(50f, 50f, -100000f)
+////                poseStack.scale(10f, 10f, 0f)
+////                guiGraphics.drawString(Minecraft.getInstance().font, "HELLO", 50, 50, 0xFFFFFF)
+////            }
+////            guiGraphics.flush()
+//
+////            ChatRenderer.render(GuiGraphics(Minecraft.getInstance(), Minecraft.getInstance().renderBuffers().bufferSource()), 0, 0, 0)
+//
+////            screenshot()
+//
+//            shaderInstance.clear()
+//            GlStateManager._depthMask(true)
+//            GlStateManager._colorMask(true, true, true, true)
+//
+//            bindWrite(true)
+//        }
+//
+//    }
+    }
 }

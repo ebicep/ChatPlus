@@ -25,6 +25,10 @@ object ChatPlus {
         FeatureManager
     }
 
+    fun doTest() {
+
+    }
+
     fun isEnabled(): Boolean {
         return Config.values.enabled
     }
