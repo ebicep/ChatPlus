@@ -13,6 +13,7 @@ import com.ebicep.chatplus.features.FilterHighlight
 import com.ebicep.chatplus.features.chattabs.CHAT_TAB_HEIGHT
 import com.ebicep.chatplus.features.chattabs.ChatTab
 import com.ebicep.chatplus.features.chattabs.ChatTabs.defaultTab
+import com.ebicep.chatplus.features.speechtotext.SpeechToText
 import com.ebicep.chatplus.hud.ChatManager
 import com.ebicep.chatplus.hud.ChatRenderer
 import com.ebicep.chatplus.hud.EDIT_BOX_HEIGHT
@@ -31,14 +32,16 @@ private val json = Json {
     ignoreUnknownKeys = true
     prettyPrint = true
 }
-
+val configDirectoryPath: String
+    get() = ConfigDirectory.getConfigDirectory().toString() + "\\chatplus"
 var queueUpdateConfig = false
+
 
 object Config {
     var values = ConfigVariables()
 
     fun save() {
-        val configDirectory = File(ConfigDirectory.getConfigDirectory().toString())
+        val configDirectory = File(configDirectoryPath)
         if (!configDirectory.exists()) {
             configDirectory.mkdir()
         }
@@ -47,8 +50,8 @@ object Config {
     }
 
     fun load() {
-        ChatPlus.LOGGER.info("Config Directory: ${ConfigDirectory.getConfigDirectory().toAbsolutePath().normalize()}")
-        val configDirectory = File(ConfigDirectory.getConfigDirectory().toString())
+        ChatPlus.LOGGER.info("Config Directory: ${ConfigDirectory.getConfigDirectory().toAbsolutePath().normalize()}\\chatplus")
+        val configDirectory = File(configDirectoryPath)
         if (!configDirectory.exists()) {
             return
         }
@@ -143,6 +146,9 @@ data class ConfigVariables(
     var translateTo: String = "Auto Detect",
     var translateSelf: String = "Auto Detect",
     var translateSpeak: String = "English",
+    // speech to text
+    var speechToTextEnabled: Boolean = true,
+    var speechToTextMicrophoneKey: InputConstants.Key = InputConstants.getKey("key.keyboard.b"),
 ) {
     // variables here for custom setters
 
@@ -165,6 +171,33 @@ data class ConfigVariables(
         set(newY) {
             field = newY
             ChatRenderer.updateCachedDimension()
+            queueUpdateConfig = true
         }
 
+    // speech to text
+    var speechToTextSampleRate: Int = 48000
+        set(value) {
+            if (field != value) {
+                SpeechToText.microphoneThread.resetMicrophone()
+                SpeechToText.microphoneThread.resetRecognizer()
+            }
+            field = value
+            queueUpdateConfig = true
+        }
+    var speechToTextMicrophone: String = "Default"
+        set(value) {
+            if (field != value) {
+                SpeechToText.microphoneThread.resetMicrophone()
+            }
+            field = value
+            queueUpdateConfig = true
+        }
+    var speechToTextSelectedAudioModel: String = ""
+        set(value) {
+            if (field != value) {
+                SpeechToText.microphoneThread.resetRecognizer()
+            }
+            field = value
+            queueUpdateConfig = true
+        }
 }

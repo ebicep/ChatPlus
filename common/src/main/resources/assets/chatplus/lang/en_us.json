@@ -7,6 +7,8 @@
   "key.copyMessage.noFormatting.toggle": "Copy Unformatted",
   "key.copyMessage.noFormatting.toggle.tooltip": "Enable/Disable removing formatting when copying messages, relevant for older servers that use formatting codes.",
   "key.categories.chatPlus": "ChatPlus",
+  "key.speechToText.ptt": "Push to Talk",
+  "key.speechToText.ptt.tooltip": "Hold down the key for the model to listen.",
   "chatPlus.title": "ChatPlus",
   "chatPlus.chatSettings.title": "Chat Settings",
   "chatPlus.chatSettings.tooltip": "Change chat settings similar to vanilla Minecraft.",
@@ -89,5 +91,17 @@
   "chatPlus.translator.translateSpeak.tooltip": "Language your messages are translated to.",
   "chatPlus.translator.translateSpeak.chat.tooltip": "Language your messages are translated to. Click to toggle.",
   "chatPlus.translator.translateSpeakPrefix.tooltip": "Text to prepend that will not get translated.",
-  "chatPlus.chat.find.tooltip": "Click to toggle the find option. Control Click on any message to jump to it."
+  "chatPlus.chat.find.tooltip": "Click to toggle the find option. Control Click on any message to jump to it.",
+  "chatPlus.speechToText": "Speech to Text",
+  "chatPlus.speechToText.tooltip": "Convert speech to text.",
+  "chatPlus.speechToText.toggle": "Enabled",
+  "chatPlus.speechToText.toggle.tooltip": "Enables/Disables speech to text.",
+  "chatPlus.speechToText.speechToTextSampleRate": "Sample Rate",
+  "chatPlus.speechToText.speechToTextSampleRate.tooltip": "Sample rate of the audio. Must match the sample rate of your microphone.",
+  "chatPlus.speechToText.microphone": "Microphone",
+  "chatPlus.speechToText.microphone.tooltip": "The microphone to use for speech to text.",
+  "chatPlus.speechToText.microphone.invalid": "Invalid Microphone",
+  "chatPlus.speechToText.selectedAudioModel": "Audio Model",
+  "chatPlus.speechToText.selectedAudioModel.tooltip": "Audio model to use for speech to text.",
+  "chatPlus.speechToText.selectedAudioModel.invalid": "Invalid Audio Model"
 }

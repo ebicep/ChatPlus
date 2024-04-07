@@ -62,6 +62,8 @@ allprojects {
     dependencies {
         compileOnly("org.jetbrains.kotlin:kotlin-stdlib")
         implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
+        implementation("net.java.dev.jna:jna:5.14.0")
+        implementation("com.alphacephei:vosk:0.3.45")
     }
 
     tasks.withType<JavaCompile> {

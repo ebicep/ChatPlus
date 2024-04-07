@@ -7,6 +7,7 @@ import com.ebicep.chatplus.features.AlignText
 import com.ebicep.chatplus.features.FilterHighlight
 import com.ebicep.chatplus.features.FilterHighlight.DEFAULT_COLOR
 import com.ebicep.chatplus.features.chattabs.ChatTab
+import com.ebicep.chatplus.features.speechtotext.SpeechToText
 import com.ebicep.chatplus.hud.ChatRenderer
 import com.ebicep.chatplus.translator.LanguageManager
 import com.ebicep.chatplus.translator.RegexMatch
@@ -39,6 +40,7 @@ object ConfigScreenImpl {
         addKeyBindOptions(builder, entryBuilder)
         addChatScreenShotOption(builder, entryBuilder)
         addTranslatorRegexOptions(builder, entryBuilder)
+        addSpeechToTextOptions(builder, entryBuilder)
         return builder.build()
     }
 
@@ -192,7 +194,7 @@ object ConfigScreenImpl {
         val hoverHighlight = builder.getOrCreateCategory(Component.translatable("chatPlus.hoverHighlight.title"))
         hoverHighlight.addEntry(
             entryBuilder.booleanToggle(
-                "chatPlus.chatSettings.hoverHighlight.toggle",
+                "chatPlus.hoverHighlight.toggle",
                 Config.values.hoverHighlightEnabled
             ) { Config.values.hoverHighlightEnabled = it })
         hoverHighlight.addEntry(
@@ -397,6 +399,84 @@ object ConfigScreenImpl {
         )
     }
 
+    private fun addSpeechToTextOptions(builder: ConfigBuilder, entryBuilder: ConfigEntryBuilder) {
+        val speechToText = builder.getOrCreateCategory(Component.translatable("chatPlus.speechToText"))
+        speechToText.addEntry(entryBuilder.booleanToggle(
+            "chatPlus.speechToText.toggle",
+            Config.values.speechToTextEnabled
+        ) { Config.values.speechToTextEnabled = it })
+        speechToText.addEntry(entryBuilder.startIntField(
+            Component.translatable("chatPlus.speechToText.speechToTextSampleRate"),
+            Config.values.speechToTextSampleRate
+        )
+            .setTooltip(Component.translatable("chatPlus.speechToText.speechToTextSampleRate.tooltip"))
+            .setDefaultValue(Config.values.speechToTextSampleRate)
+            .setSaveConsumer { Config.values.speechToTextSampleRate = it }
+            .build()
+        )
+        val microphoneNames = SpeechToText.getAllMicrophoneNames()
+        microphoneNames.add(0, "Default")
+        speechToText.addEntry(entryBuilder.startDropdownMenu(
+            Component.translatable("chatPlus.speechToText.microphone"),
+            DropdownMenuBuilder.TopCellElementBuilder.of(Config.values.speechToTextMicrophone) { str -> str },
+            DropdownMenuBuilder.CellCreatorBuilder.of()
+        )
+            .setTooltip(Component.translatable("chatPlus.speechToText.microphone.tooltip"))
+            .setDefaultValue(Config.values.speechToTextMicrophone)
+            .setSelections(microphoneNames)
+            .setErrorSupplier { str: String ->
+                if (microphoneNames.contains(str)) {
+                    Optional.empty()
+                } else {
+                    Optional.of(Component.translatable("chatPlus.speechToText.microphone.invalid"))
+                }
+            }
+            .setSaveConsumer { str: String ->
+                Config.values.speechToTextMicrophone = str
+            }
+            .build()
+        )
+        val models = SpeechToText.getAllPossibleModels()
+        models.add(0, "")
+        speechToText.addEntry(entryBuilder.startDropdownMenu(
+            Component.translatable("chatPlus.speechToText.selectedAudioModel"),
+            DropdownMenuBuilder.TopCellElementBuilder.of(Config.values.speechToTextSelectedAudioModel) { str -> str },
+            DropdownMenuBuilder.CellCreatorBuilder.of()
+        )
+            .setTooltip(Component.translatable("chatPlus.speechToText.selectedAudioModel.tooltip"))
+            .setDefaultValue(Config.values.speechToTextSelectedAudioModel)
+            .setSelections(models)
+            .setErrorSupplier { str: String ->
+                if (models.contains(str)) {
+                    Optional.empty()
+                } else {
+                    Optional.of(Component.translatable("chatPlus.speechToText.selectedAudioModel.invalid"))
+                }
+            }
+            .setSaveConsumer { str: String ->
+                Config.values.speechToTextSelectedAudioModel = str
+            }
+            .build()
+        )
+        speechToText.addEntry(
+            entryBuilder.keyCodeOption(
+                "key.speechToText.ptt",
+                Config.values.speechToTextMicrophoneKey
+            ) { Config.values.speechToTextMicrophoneKey = it }
+        )
+    }
+
+
+    private fun ConfigEntryBuilder.stringField(translatable: String, variable: String, saveConsumer: Consumer<String>): StringListEntry {
+        return startStrField(Component.translatable(translatable), variable)
+            .setDefaultValue(variable)
+            .setTooltip(Component.translatable("$translatable.tooltip"))
+            .setSaveConsumer {
+                saveConsumer.accept(it)
+                queueUpdateConfig = true
+            }
+            .build()
+    }
 
     private fun ConfigEntryBuilder.booleanToggle(
         translatable: String,
