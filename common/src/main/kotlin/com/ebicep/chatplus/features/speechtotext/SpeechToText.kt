@@ -12,7 +12,9 @@ import com.ebicep.chatplus.util.GraphicsUtil.createPose
 import com.ebicep.chatplus.util.GraphicsUtil.translate0
 import com.ebicep.chatplus.util.KeyUtil.isDown
 import com.google.gson.JsonParser
+import dev.architectury.event.EventResult
 import dev.architectury.event.events.client.ClientGuiEvent
+import dev.architectury.event.events.client.ClientRawInputEvent
 import net.minecraft.ChatFormatting
 import net.minecraft.client.Minecraft
 import net.minecraft.network.chat.Component
@@ -35,7 +37,7 @@ object SpeechToText {
     @Volatile
     var recordMic = false
     val microphoneThread = MicrophoneThread()
-    var alFailed = false
+    private var alFailed = false
 
     init {
         microphoneThread.start()
@@ -92,6 +94,8 @@ object SpeechToText {
 
 class MicrophoneThread : Thread("ChatPlusMicrophoneThread") {
 
+    private val LISTENING_COLOR = Color(0, 200, 0, 255).rgb
+    private val FAILED_COLOR = Color(200, 0, 0, 255).rgb
     private var listening = false
     private var running = true
     private var disabled = false
@@ -99,14 +103,16 @@ class MicrophoneThread : Thread("ChatPlusMicrophoneThread") {
     private var recognizer: Recognizer? = null
     private var lastSpokenMessage: String? = null
     private var totalData: MutableList<Short> = mutableListOf()
-    private var quickSendTimer: Long = 0
+    private var quickSendTimer: Long = 0 // -1 = quicked sended, 0 = idle
+    private val canQuickSend: Boolean
+        get() = quickSendTimer > System.currentTimeMillis() && lastSpokenMessage != null
 
     init {
         ChatPlus.LOGGER.info("SpeechToText initialized")
         EventBus.register<ChatScreenInitPreEvent> {
             SpeechToText.recordMic = false
             lastSpokenMessage.let { message ->
-                if (message != null) {
+                if (message != null && quickSendTimer > 0) {
                     it.screen.initial = message
                 }
             }
@@ -117,11 +123,27 @@ class MicrophoneThread : Thread("ChatPlusMicrophoneThread") {
         ClientGuiEvent.RENDER_HUD.register { guiGraphics, tickDelta ->
             if (listening) {
                 val centerWidth = Minecraft.getInstance().window.guiScaledWidth / 2
-                guiGraphics.drawCenteredString(Minecraft.getInstance().font, "Listening", centerWidth, 40, Color(90, 90, 90, 255).rgb)
+                val text = "Listening"
+                val width = Minecraft.getInstance().font.width(text)
+                guiGraphics.fill(
+                    centerWidth - width / 2 - 5,
+                    35,
+                    centerWidth + width / 2 + 5,
+                    53,
+                    2130706432
+                )
+                guiGraphics.drawCenteredString(
+                    Minecraft.getInstance().font,
+                    text,
+                    centerWidth,
+                    40,
+                    LISTENING_COLOR
+                )
             }
-            if (quickSendTimer > System.currentTimeMillis() && lastSpokenMessage != null) {
+            if (canQuickSend) {
+                val failed = lastSpokenMessage.isNullOrEmpty()
                 val centerWidth = Minecraft.getInstance().window.guiScaledWidth / 2
-                val text = lastSpokenMessage!!
+                val text = if (failed) "Failed" else lastSpokenMessage!!
                 val width = Minecraft.getInstance().font.width(text)
                 val poseStack = guiGraphics.pose()
                 poseStack.createPose {
@@ -132,15 +154,39 @@ class MicrophoneThread : Thread("ChatPlusMicrophoneThread") {
                         53,
                         2130706432
                     )
-                    guiGraphics.drawCenteredString(Minecraft.getInstance().font, text, centerWidth, 40, -1)
+                    guiGraphics.drawCenteredString(
+                        Minecraft.getInstance().font,
+                        text,
+                        centerWidth,
+                        40,
+                        if (failed) FAILED_COLOR else -1
+                    )
                 }
-                poseStack.createPose {
-                    val scale = .8f
-                    poseStack.scale(scale, scale, scale)
-                    poseStack.translate0(x = centerWidth / scale, y = 55 / scale)
-                    guiGraphics.drawCenteredString(Minecraft.getInstance().font, "Quick Send (L)", 0, 0, Color(0, 200, 0, 255).rgb)
+                if (!failed) {
+                    poseStack.createPose {
+                        val scale = .8f
+                        poseStack.scale(scale, scale, scale)
+                        poseStack.translate0(x = centerWidth / scale, y = 55 / scale)
+                        guiGraphics.drawCenteredString(
+                            Minecraft.getInstance().font,
+                            Component.literal("Quick Send (")
+                                .append(Config.values.speechToTextQuickSendKey.displayName)
+                                .append(Component.literal(")")),
+                            0,
+                            0,
+                            LISTENING_COLOR
+                        )
+                    }
                 }
             }
+        }
+        ClientRawInputEvent.KEY_PRESSED.register { client, keyCode, scanCode, action, modifiers ->
+            val quickSend = keyCode == Config.values.speechToTextQuickSendKey.value && Minecraft.getInstance().screen !is ChatPlusScreen
+            if (canQuickSend && quickSend) {
+                quickSendTimer = -1
+                lastSpokenMessage?.let { Minecraft.getInstance().player?.connection?.sendChat(it) }
+            }
+            EventResult.pass()
         }
     }
 
@@ -182,6 +228,7 @@ class MicrophoneThread : Thread("ChatPlusMicrophoneThread") {
             try {
                 val recordMic = SpeechToText.recordMic
                 if (recordMic && !listening) {
+                    quickSendTimer = 0
                     totalData.clear()
                     val mic = getMicrophone()
                     if (mic == null) {
@@ -204,6 +251,9 @@ class MicrophoneThread : Thread("ChatPlusMicrophoneThread") {
                     lastSpokenMessage = JsonParser.parseString(recognizer!!.finalResult).asJsonObject.get("text")?.asString
                     quickSendTimer = System.currentTimeMillis() + 3000
                     ChatPlus.LOGGER.info("Final: $lastSpokenMessage")
+                    if (lastSpokenMessage.isNullOrBlank()) {
+                        continue
+                    }
                     val screen = Minecraft.getInstance().screen
                     if (screen is ChatPlusScreen) {
                         lastSpokenMessage?.let { screen.input?.insertText(it) }

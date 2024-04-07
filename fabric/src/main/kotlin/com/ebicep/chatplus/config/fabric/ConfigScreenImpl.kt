@@ -464,6 +464,12 @@ object ConfigScreenImpl {
                 Config.values.speechToTextMicrophoneKey
             ) { Config.values.speechToTextMicrophoneKey = it }
         )
+        speechToText.addEntry(
+            entryBuilder.keyCodeOption(
+                "key.speechToText.quickSend",
+                Config.values.speechToTextQuickSendKey
+            ) { Config.values.speechToTextQuickSendKey = it }
+        )
     }
 
 

@@ -149,6 +149,7 @@ data class ConfigVariables(
     // speech to text
     var speechToTextEnabled: Boolean = true,
     var speechToTextMicrophoneKey: InputConstants.Key = InputConstants.getKey("key.keyboard.b"),
+    var speechToTextQuickSendKey: InputConstants.Key = InputConstants.getKey("key.keyboard.enter"),
 ) {
     // variables here for custom setters
 

@@ -9,6 +9,8 @@
   "key.categories.chatPlus": "ChatPlus",
   "key.speechToText.ptt": "Push to Talk",
   "key.speechToText.ptt.tooltip": "Hold down the key for the model to listen.",
+  "key.speechToText.quickSend": "Quick Send",
+  "key.speechToText.quickSend.tooltip": "Press this key shortly after finishing speaking to instantly send the message.",
   "chatPlus.title": "ChatPlus",
   "chatPlus.chatSettings.title": "Chat Settings",
   "chatPlus.chatSettings.tooltip": "Change chat settings similar to vanilla Minecraft.",
