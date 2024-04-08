@@ -25,7 +25,6 @@ import kotlinx.serialization.UseSerializers
 import kotlinx.serialization.json.Json
 import net.minecraft.util.Mth
 import java.io.File
-import java.util.*
 
 private val json = Json {
     encodeDefaults = true
@@ -140,6 +139,7 @@ data class ConfigVariables(
     var keyMoveChat: InputConstants.Key = InputConstants.getKey("key.keyboard.right.control"),
     var keyCopyMessageWithModifier: KeyWithModifier = KeyWithModifier(InputConstants.getKey("key.keyboard.c"), 2),
     var copyNoFormatting: Boolean = true,
+    var keyPeekChat: InputConstants.Key = InputConstants.getKey("key.keyboard.p"),
     // translator
     var translatorEnabled: Boolean = true,
     var translatorRegexes: MutableList<RegexMatch> = mutableListOf(),

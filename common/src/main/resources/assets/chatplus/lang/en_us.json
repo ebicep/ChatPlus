@@ -6,6 +6,7 @@
   "key.copyMessage": "Copy Message (Hover Over)",
   "key.copyMessage.noFormatting.toggle": "Copy Unformatted",
   "key.copyMessage.noFormatting.toggle.tooltip": "Enable/Disable removing formatting when copying messages, relevant for older servers that use formatting codes.",
+  "key.peekChat": "Peek Chat",
   "key.categories.chatPlus": "ChatPlus",
   "key.speechToText.ptt": "Push to Talk",
   "key.speechToText.ptt.tooltip": "Hold down the key for the model to listen.",

@@ -1,5 +1,6 @@
 package com.ebicep.chatplus.features
 
+import com.ebicep.chatplus.PeakChat
 import com.ebicep.chatplus.features.chattabs.ChatTabs
 import com.ebicep.chatplus.features.speechtotext.SpeechToText
 import com.ebicep.chatplus.features.textbarelements.TextBarElements
@@ -19,6 +20,7 @@ object FeatureManager {
         AlignText
         ScreenshotChat
         SpeechToText
+        PeakChat
 //        AlternatingColorBackground
     }
 

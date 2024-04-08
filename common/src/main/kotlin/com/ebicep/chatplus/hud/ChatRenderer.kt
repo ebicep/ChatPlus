@@ -43,6 +43,11 @@ class ChatRenderLineTextEvent(
     val text: String,
 ) : ChatRenderLineEvent(guiGraphics, chatPlusGuiMessageLine, verticalChatOffset, verticalTextOffset)
 
+class ChatRenderPreLineAppearanceEvent(
+    val guiGraphics: GuiGraphics,
+    var textColor: Int,
+    var backgroundColor: Int,
+) : Event
 
 data class ChatRenderPreLinesEvent(
     val guiGraphics: GuiGraphics,
@@ -129,8 +134,12 @@ object ChatRenderer {
                 continue
             }
             val fadeOpacity = if (chatFocused) 1.0 else getTimeFactor(ticksLived)
-            val textColor = (255.0 * fadeOpacity * textOpacity).toInt()
-            val backgroundColor = (255.0 * fadeOpacity * backgroundOpacity).toInt()
+            var textColor = (255.0 * fadeOpacity * textOpacity).toInt()
+            var backgroundColor = (255.0 * fadeOpacity * backgroundOpacity).toInt() shl 24
+            val lineAppearanceEvent = ChatRenderPreLineAppearanceEvent(guiGraphics, textColor, backgroundColor)
+            EventBus.post(lineAppearanceEvent)
+            textColor = lineAppearanceEvent.textColor
+            backgroundColor = lineAppearanceEvent.backgroundColor
             if (textColor <= 3) {
                 ++displayMessageIndex
                 continue
@@ -141,12 +150,13 @@ object ChatRenderer {
 
             poseStack.createPose {
                 poseStack.guiForward()
+                // TODO remove and use ChatRenderPreLineAppearanceEvent
                 val renderLineBackgroundEvent = ChatRenderLineBackgroundEvent(
                     guiGraphics,
                     chatPlusGuiMessageLine,
                     verticalChatOffset,
                     verticalTextOffset,
-                    backgroundColor shl 24
+                    backgroundColor
                 )
                 EventBus.post(renderLineBackgroundEvent)
                 //background

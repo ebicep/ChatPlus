@@ -286,6 +286,9 @@ object ConfigScreenImpl {
             "key.copyMessage.noFormatting.toggle",
             Config.values.copyNoFormatting
         ) { Config.values.copyNoFormatting = it })
+        keyBinds.addEntry(
+            entryBuilder.keyCodeOption("key.peekChat", Config.values.keyPeekChat) { Config.values.keyPeekChat = it }
+        )
     }
 
     private fun addTranslatorRegexOptions(builder: ConfigBuilder, entryBuilder: ConfigEntryBuilder) {
