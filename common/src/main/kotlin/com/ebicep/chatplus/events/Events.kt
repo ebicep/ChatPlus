@@ -8,14 +8,12 @@ import com.ebicep.chatplus.config.queueUpdateConfig
 import com.ebicep.chatplus.hud.ChatManager
 import com.ebicep.chatplus.hud.ChatPlusScreen
 import com.ebicep.chatplus.hud.ChatRenderer
-import com.ebicep.chatplus.translator.Translator
-import com.ebicep.chatplus.translator.languageTo
 import dev.architectury.event.CompoundEventResult
-import dev.architectury.event.events.client.*
+import dev.architectury.event.events.client.ClientGuiEvent
+import dev.architectury.event.events.client.ClientLifecycleEvent
+import dev.architectury.event.events.client.ClientTickEvent
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.screens.ChatScreen
-import net.minecraft.network.chat.ChatType
-import net.minecraft.network.chat.Component
 
 data class ChatPlusTickEvent(
     val tick: Long
@@ -67,25 +65,5 @@ object Events {
             }
             return@register CompoundEventResult.pass()
         }
-
-        ClientChatEvent.RECEIVED.register { type: ChatType.Bound, component: Component ->
-            handleTranslate(component)
-            CompoundEventResult.pass()
-        }
-        ClientSystemMessageEvent.RECEIVED.register { component: Component ->
-            handleTranslate(component)
-            CompoundEventResult.pass()
-        }
     }
-
-    private fun handleTranslate(component: Component) {
-        if (!Config.values.translatorEnabled) {
-            return
-        }
-        val unformattedText = component.string
-        languageTo?.let {
-            Translator(unformattedText, null, it).start()
-        }
-    }
-
 }

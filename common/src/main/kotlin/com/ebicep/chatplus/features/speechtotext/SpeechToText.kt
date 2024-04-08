@@ -44,9 +44,6 @@ object SpeechToText {
         EventBus.register<ChatPlusTickEvent> {
             recordMic = Config.values.speechToTextMicrophoneKey.isDown() && Minecraft.getInstance().screen !is ChatPlusScreen
         }
-        ClientGuiEvent.RENDER_HUD.register { guiGraphics, tickDelta ->
-
-        }
     }
 
     fun getAllPossibleModels(): MutableList<String> {

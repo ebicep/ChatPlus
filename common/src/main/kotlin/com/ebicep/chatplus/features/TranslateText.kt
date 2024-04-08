@@ -7,7 +7,13 @@ import com.ebicep.chatplus.features.textbarelements.TextBarElements
 import com.ebicep.chatplus.features.textbarelements.TranslateSpeakTextBarElement
 import com.ebicep.chatplus.hud.*
 import com.ebicep.chatplus.translator.SelfTranslator
+import com.ebicep.chatplus.translator.Translator
+import com.ebicep.chatplus.translator.languageTo
+import dev.architectury.event.CompoundEventResult
+import dev.architectury.event.events.client.ClientChatEvent
+import dev.architectury.event.events.client.ClientSystemMessageEvent
 import net.minecraft.client.gui.components.EditBox
+import net.minecraft.network.chat.ChatType
 import net.minecraft.network.chat.Component
 
 
@@ -114,6 +120,26 @@ object TranslateText {
             it.dontSendMessage = true
             SelfTranslator(it.normalizeChatMessage, if (inputTranslatePrefix == null) "" else inputTranslatePrefix!!.value).start()
         }
+
+        ClientChatEvent.RECEIVED.register { type: ChatType.Bound, component: Component ->
+            handleTranslate(component)
+            CompoundEventResult.pass()
+        }
+        ClientSystemMessageEvent.RECEIVED.register { component: Component ->
+            handleTranslate(component)
+            CompoundEventResult.pass()
+        }
     }
+
+    private fun handleTranslate(component: Component) {
+        if (!Config.values.translatorEnabled) {
+            return
+        }
+        val unformattedText = component.string
+        languageTo?.let {
+            Translator(unformattedText, null, it).start()
+        }
+    }
+
 
 }
