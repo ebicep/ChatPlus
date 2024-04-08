@@ -40,7 +40,7 @@ object CompactMessages {
                         break
                     }
                 }
-                chatTab.addNewDisplayMessage(guiMessage.content as MutableComponent, it.addedTime, it.tag, it.linkedMessageIndex)
+                chatTab.addNewDisplayMessage(guiMessage.content as MutableComponent, it.addedTime, it.tag, it.linkedMessageIndex - 1)
                 it.returnFunction = true
             }
         }
