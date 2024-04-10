@@ -74,6 +74,9 @@ object ScreenshotChat {
             if (!Config.values.screenshotChatEnabled) {
                 return@register
             }
+            if (ChatManager.selectedTab.displayedMessages.isEmpty()) {
+                return@register
+            }
             resetScreenShotTick()
             screenshotMode = ScreenshotMode.FULL
         }
