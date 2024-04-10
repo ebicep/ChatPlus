@@ -92,12 +92,12 @@ object ScreenshotChat {
                 )
                 screenshotUnscaledPadded(
                     ChatRenderer.x.toDouble(),
-                    ChatRenderer.y.toDouble(),
+                    ChatRenderer.y.toDouble() + 2,
                     ChatRenderer.width.toDouble(),
                     min(
                         it.displayMessageIndex,
                         ChatRenderer.rescaledLinesPerPage
-                    ) * ChatManager.getLineHeight() * ChatRenderer.scale.toDouble()
+                    ) * ChatManager.getLineHeight() * ChatRenderer.scale.toDouble() + 2
                 )
             }
         }
@@ -135,8 +135,6 @@ object ScreenshotChat {
                 val poseStack = guiGraphics.pose()
                 val line = lastLineScreenShotted!!.line
                 poseStack.createPose {
-                    val window = Minecraft.getInstance().window
-                    val scale = window.guiScale
                     poseStack.guiForward(1000.0)
                     poseStack.scale(ChatRenderer.scale, ChatRenderer.scale, 1f)
                     guiGraphics.fill(
@@ -146,18 +144,19 @@ object ScreenshotChat {
                         20,
                         SCREENSHOT_TRANSPARENCY_COLOR
                     )
+                    val padding = 5
                     guiGraphics.drawString(
                         Minecraft.getInstance().font,
                         line.content,
-                        5,
+                        padding,
                         20 / 3,
                         0xFFFFFF
                     )
                     screenshotUnscaledPadded(
                         0.0,
-                        20.0 * ChatRenderer.scale,
-                        ChatRenderer.width + 5.0 * ChatRenderer.scale,
-                        20.0 * ChatRenderer.scale
+                        16.0 * ChatRenderer.scale,
+                        ChatRenderer.width + padding.toDouble() * ChatRenderer.scale,
+                        10.0 * ChatRenderer.scale
                     )
                 }
             }
@@ -168,6 +167,99 @@ object ScreenshotChat {
 
     private fun resetScreenShotTick() {
         lastScreenShotTick = Events.currentTick
+    }
+
+    private fun screenshot(y: Int, h: Int) {
+        val window = Minecraft.getInstance().window
+        val guiScale = window.guiScale
+
+        screenshot(
+            (ChatRenderer.x * guiScale).roundToInt() - 1,
+            ((window.guiScaledHeight - y) * guiScale).roundToInt() - 6,
+            (ChatRenderer.width * guiScale).roundToInt() + 3,
+            (h * guiScale).roundToInt() + 2
+        )
+    }
+
+    private fun screenshot(x: Double, y: Double, width: Double, height: Double) {
+        screenshot(x.roundToInt(), y.roundToInt(), width.roundToInt(), height.roundToInt())
+    }
+
+    private fun screenshotUnscaledPadded(
+        x: Double,
+        y: Double,
+        width: Double,
+        height: Double,
+        lateralPadding: Double = 1.5,
+        verticalPadding: Double = 0.5,
+    ) {
+        val window = Minecraft.getInstance().window
+        val guiScale = window.guiScale
+        val xPadded = x - lateralPadding
+        val widthPadded = width + verticalPadding * 2
+        val heightPadded = height + verticalPadding * 2
+        screenshot(
+            xPadded * guiScale,
+            window.height - y * guiScale,
+            widthPadded * guiScale,
+            heightPadded * guiScale
+        )
+    }
+
+    private fun screenshot(x: Int, y: Int, width: Int, height: Int) {
+//        ChatPlus.LOGGER.info("Screenshotting $x, $y, $width, $height")
+        val window = Minecraft.getInstance().window
+        val byteBuffer: ByteBuffer = ByteBuffer.allocateDirect(width * height * 4)
+        GL11.glPixelStorei(GL11.GL_PACK_ALIGNMENT, 1)
+        GL11.glPixelStorei(GL11.GL_UNPACK_ALIGNMENT, 1)
+        GL11.glReadPixels(
+            Mth.clamp(x, 0, window.width),
+            Mth.clamp(y, 0, window.height),
+            Mth.clamp(width, 0, window.width - x),
+            Mth.clamp(height, 0, window.height - y),
+            GL11.GL_RGBA,
+            GL11.GL_UNSIGNED_BYTE,
+            byteBuffer
+        )
+
+        // Iterate through the ByteBuffer to add alpha channel
+        for (i in 0 until width * height) {
+            val baseIndex = i * BYTES_PER_PIXEL // Each pixel has 4 channels (RGBA)
+
+            val red = byteBuffer.get(baseIndex).toInt() and 0xFF
+            val green = byteBuffer.get(baseIndex + 1).toInt() and 0xFF
+            val blue = byteBuffer.get(baseIndex + 2).toInt() and 0xFF
+            val alpha = if (red == 54 && green == 57 && blue == 63) 0 else 255
+
+            byteBuffer.put(baseIndex, red.toByte())     // Red
+            byteBuffer.put(baseIndex + 1, green.toByte()) // Green
+            byteBuffer.put(baseIndex + 2, blue.toByte())  // Blue
+            byteBuffer.put(baseIndex + 3, alpha.toByte()) // Alpha
+        }
+
+        val line1 = ByteArray(width * BYTES_PER_PIXEL)
+        val line2 = ByteArray(width * BYTES_PER_PIXEL)
+
+        // flip buffer vertically
+        for (i in 0 until height / 2) {
+            val ofs1: Int = i * width * BYTES_PER_PIXEL
+            val ofs2: Int = (height - i - 1) * width * BYTES_PER_PIXEL
+
+            // read lines
+            byteBuffer.position(ofs1)
+            byteBuffer[line1]
+            byteBuffer.position(ofs2)
+            byteBuffer[line2]
+
+            // write lines at swapped positions
+            byteBuffer.position(ofs2)
+            byteBuffer.put(line1)
+            byteBuffer.position(ofs1)
+            byteBuffer.put(line2)
+        }
+        byteBuffer.rewind()
+
+        handleScreenshotAWT(byteBuffer, width, height, 4)
     }
 
     private fun handleScreenshotAWT(byteBuffer: ByteBuffer, width: Int, height: Int, components: Int) {
@@ -240,100 +332,6 @@ object ScreenshotChat {
                 throw UnsupportedFlavorException(flavor)
             }
         }
-    }
-
-    private fun screenshot(y: Int, h: Int) {
-        val window = Minecraft.getInstance().window
-        val guiScale = window.guiScale
-
-        screenshot(
-            (ChatRenderer.x * guiScale).roundToInt() - 1,
-            ((window.guiScaledHeight - y) * guiScale).roundToInt() - 6,
-            (ChatRenderer.width * guiScale).roundToInt() + 3,
-            (h * guiScale).roundToInt() + 2
-        )
-    }
-
-    private fun screenshot(x: Double, y: Double, width: Double, height: Double) {
-        screenshot(x.roundToInt(), y.roundToInt(), width.roundToInt(), height.roundToInt())
-    }
-
-    private fun screenshotUnscaledPadded(
-        x: Double,
-        y: Double,
-        width: Double,
-        height: Double,
-        lateralPadding: Double = 1.5,
-        verticalPadding: Double = 0.5,
-    ) {
-        val window = Minecraft.getInstance().window
-        val guiScale = window.guiScale
-        val xPadded = x - lateralPadding
-        val yPadded = y + lateralPadding
-        val widthPadded = width + verticalPadding * 2
-        val heightPadded = height + verticalPadding * 2
-        screenshot(
-            xPadded * guiScale,
-            window.height - yPadded * guiScale,
-            widthPadded * guiScale,
-            heightPadded * guiScale
-        )
-    }
-
-    private fun screenshot(x: Int, y: Int, width: Int, height: Int) {
-//        ChatPlus.LOGGER.info("Screenshotting $x, $y, $width, $height")
-        val window = Minecraft.getInstance().window
-        val byteBuffer: ByteBuffer = ByteBuffer.allocateDirect(width * height * 4)
-        GL11.glPixelStorei(GL11.GL_PACK_ALIGNMENT, 1)
-        GL11.glPixelStorei(GL11.GL_UNPACK_ALIGNMENT, 1)
-        GL11.glReadPixels(
-            Mth.clamp(x, 0, window.width),
-            Mth.clamp(y, 0, window.height),
-            Mth.clamp(width, 0, window.width - x),
-            Mth.clamp(height, 0, window.height - y),
-            GL11.GL_RGBA,
-            GL11.GL_UNSIGNED_BYTE,
-            byteBuffer
-        )
-
-        // Iterate through the ByteBuffer to add alpha channel
-        for (i in 0 until width * height) {
-            val baseIndex = i * BYTES_PER_PIXEL // Each pixel has 4 channels (RGBA)
-
-            val red = byteBuffer.get(baseIndex).toInt() and 0xFF
-            val green = byteBuffer.get(baseIndex + 1).toInt() and 0xFF
-            val blue = byteBuffer.get(baseIndex + 2).toInt() and 0xFF
-            val alpha = if (red == 54 && green == 57 && blue == 63) 0 else 255
-
-            byteBuffer.put(baseIndex, red.toByte())     // Red
-            byteBuffer.put(baseIndex + 1, green.toByte()) // Green
-            byteBuffer.put(baseIndex + 2, blue.toByte())  // Blue
-            byteBuffer.put(baseIndex + 3, alpha.toByte()) // Alpha
-        }
-
-        val line1 = ByteArray(width * BYTES_PER_PIXEL)
-        val line2 = ByteArray(width * BYTES_PER_PIXEL)
-
-        // flip buffer vertically
-        for (i in 0 until height / 2) {
-            val ofs1: Int = i * width * BYTES_PER_PIXEL
-            val ofs2: Int = (height - i - 1) * width * BYTES_PER_PIXEL
-
-            // read lines
-            byteBuffer.position(ofs1)
-            byteBuffer[line1]
-            byteBuffer.position(ofs2)
-            byteBuffer[line2]
-
-            // write lines at swapped positions
-            byteBuffer.position(ofs2)
-            byteBuffer.put(line1)
-            byteBuffer.position(ofs1)
-            byteBuffer.put(line2)
-        }
-        byteBuffer.rewind()
-
-        handleScreenshotAWT(byteBuffer, width, height, 4)
     }
 
     private fun upload(bufferedImage: BufferedImage?) {
