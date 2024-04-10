@@ -45,6 +45,7 @@ class ChatRenderPreLineAppearanceEvent(
 
 data class ChatRenderPreLinesEvent(
     val guiGraphics: GuiGraphics,
+    var chatFocused: Boolean,
     var returnFunction: Boolean = false
 ) : Event
 
@@ -104,11 +105,13 @@ object ChatRenderer {
         handleScreenResize()
 
         val poseStack: PoseStack = guiGraphics.pose()
-        val chatFocused: Boolean = ChatManager.isChatFocused()
+        var chatFocused: Boolean = ChatManager.isChatFocused()
 
-        if (EventBus.post(ChatRenderPreLinesEvent(guiGraphics)).returnFunction) {
+        val preLinesEvent = ChatRenderPreLinesEvent(guiGraphics, chatFocused)
+        if (EventBus.post(preLinesEvent).returnFunction) {
             return
         }
+        chatFocused = preLinesEvent.chatFocused
 
         val messagesToDisplay = selectedTab.displayedMessages.size
         poseStack.pushPose()
