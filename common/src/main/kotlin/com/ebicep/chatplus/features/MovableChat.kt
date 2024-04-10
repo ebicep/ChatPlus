@@ -6,6 +6,7 @@ import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.hud.*
 import com.ebicep.chatplus.util.GraphicsUtil.createPose
 import com.ebicep.chatplus.util.GraphicsUtil.translate0
+import com.ebicep.chatplus.util.KeyUtil.isDown
 import com.mojang.blaze3d.platform.InputConstants
 import com.mojang.blaze3d.vertex.PoseStack
 import net.minecraft.client.Minecraft
@@ -78,7 +79,7 @@ object MovableChat {
             if (movingChatX) {
                 val newWidth: Double = Mth.clamp(
                     mouseX - ChatManager.getX(),
-                    ChatManager.getMinWidthScaled().toDouble(),
+                    MIN_WIDTH.toDouble(),
                     Minecraft.getInstance().window.guiScaledWidth - ChatManager.getX().toDouble()
                 )
                 val width = newWidth.roundToInt()
@@ -87,7 +88,7 @@ object MovableChat {
             if (movingChatY) {
                 val newHeight: Double = Mth.clamp(
                     ChatManager.getY() - mouseY,
-                    ChatManager.getMinHeightScaled().toDouble(),
+                    MIN_HEIGHT.toDouble(),
                     ChatManager.getY() - 1.0
                 )
                 val height = newHeight.roundToInt()
@@ -115,10 +116,8 @@ object MovableChat {
 
         var moving = false
         EventBus.register<ChatRenderPreLinesEvent> {
-            moving = ChatManager.isChatFocused() && InputConstants.isKeyDown(
-                Minecraft.getInstance().window.window,
-                Config.values.keyMoveChat.value
-            )
+            // for when there are no messages
+            moving = ChatManager.isChatFocused() && Config.values.keyMoveChat.isDown()
             val messagesToDisplay = ChatManager.selectedTab.displayedMessages.size
             if (messagesToDisplay > 0) {
                 return@register
@@ -156,14 +155,19 @@ object MovableChat {
                 ChatRenderer.rescaledY - it.displayMessageIndex * ChatRenderer.lineHeight,
                 (255 * ChatRenderer.backgroundOpacity).toInt() shl 24
             )
-            renderMoving(
-                guiGraphics.pose(),
-                guiGraphics,
-                ChatRenderer.rescaledX,
-                ChatRenderer.rescaledY,
-                ChatRenderer.rescaledHeight,
-                ChatRenderer.rescaledWidth
-            )
+            val poseStack = guiGraphics.pose()
+            poseStack.createPose {
+                val unscaled = 1 / ChatRenderer.scale
+                poseStack.scale(unscaled, unscaled, 1f)
+                renderMoving(
+                    poseStack,
+                    guiGraphics,
+                    ChatRenderer.x,
+                    ChatRenderer.y,
+                    ChatRenderer.height,
+                    ChatRenderer.width
+                )
+            }
         }
 
         EventBus.register<HoverHighlight.HoverHighlightRenderEvent> {

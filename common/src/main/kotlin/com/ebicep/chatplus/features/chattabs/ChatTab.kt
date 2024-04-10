@@ -302,8 +302,8 @@ class ChatTab {
 
     private fun getMessageLineIndexAt(pMouseX: Double, pMouseY: Double): Int {
         return if (ChatManager.isChatFocused() && !Minecraft.getInstance().options.hideGui) {
-            if (pMouseX >= 0 && pMouseX <= Mth.floor(ChatManager.getBackgroundWidth())) {
-                val i = min(ChatManager.getLinesPerPageScaled(), this.displayedMessages.size)
+            if (pMouseX >= 0 && pMouseX <= Mth.floor(ChatRenderer.rescaledWidth.toDouble())) {
+                val i = min(ChatRenderer.rescaledLinesPerPage, this.displayedMessages.size)
                 if (pMouseY >= 0.0 && pMouseY < i.toDouble()) {
                     val j = Mth.floor(pMouseY + chatScrollbarPos.toDouble())
                     if (j >= 0 && j < this.displayedMessages.size) {

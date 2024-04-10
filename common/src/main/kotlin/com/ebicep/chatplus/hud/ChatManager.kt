@@ -64,11 +64,13 @@ object ChatManager {
     }
 
     fun getMinWidthScaled(): Int {
-        return (MIN_WIDTH / getScale()).roundToInt()
+        return MIN_WIDTH
+//        return (MIN_WIDTH / getScale()).roundToInt()
     }
 
     fun getMinHeightScaled(): Int {
-        return (MIN_HEIGHT / getScale()).roundToInt()
+        return MIN_HEIGHT
+//        return (MIN_HEIGHT / getScale()).roundToInt()
     }
 
     /**
@@ -96,7 +98,11 @@ object ChatManager {
     }
 
     fun getScale(): Float {
-        return Config.values.scale
+        val scale = Config.values.scale
+        if (scale <= 0) {
+            return .001f
+        }
+        return scale
     }
 
     /**
@@ -105,12 +111,11 @@ object ChatManager {
     fun getWidth(): Int {
         var width = Config.values.width
         val guiWidth = Minecraft.getInstance().window.guiScaledWidth
-        val minWidthScaled = getMinWidthScaled()
-        val lowerThanMin = width < minWidthScaled
+        val lowerThanMin = width < MIN_WIDTH
         val x = ChatRenderer.x
-        val hasSpace = guiWidth - x >= minWidthScaled
+        val hasSpace = guiWidth - x >= MIN_WIDTH
         if (lowerThanMin && hasSpace) {
-            width = minWidthScaled
+            width = MIN_WIDTH
             selectedTab.rescaleChat()
         }
         if (width <= 0) {
@@ -132,12 +137,11 @@ object ChatManager {
      */
     fun getHeight(): Int {
         var height = Config.values.height
-        val minHeightScaled = getMinHeightScaled()
-        val lowerThanMin = Config.values.height < minHeightScaled
+        val lowerThanMin = Config.values.height < MIN_HEIGHT
         val y = ChatRenderer.y
-        val hasSpace = y - 1 >= minHeightScaled
+        val hasSpace = y - 1 >= MIN_HEIGHT
         if (lowerThanMin && hasSpace) {
-            height = minHeightScaled
+            height = MIN_HEIGHT
             selectedTab.rescaleChat()
         }
         if (y - Config.values.height <= 0) {
