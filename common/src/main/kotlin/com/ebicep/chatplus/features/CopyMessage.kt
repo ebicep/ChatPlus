@@ -19,21 +19,22 @@ object CopyMessage {
         var copiedMessageCooldown = -1L
         var messageCopied = false
         EventBus.register<ChatScreenKeyPressedEvent>(1, { messageCopied }) {
-            messageCopied = copiedMessageCooldown < Events.currentTick && Config.values.keyCopyMessageWithModifier.isDown()
-            if (!messageCopied) {
-                return@register
-            }
-            copiedMessageCooldown = Events.currentTick + 20
-            ChatManager.selectedTab.getMessageAt(ChatPlusScreen.lastMouseX.toDouble(), ChatPlusScreen.lastMouseY.toDouble())?.let {
-                if (Config.values.copyNoFormatting) {
-                    copyToClipboard(ChatFormatting.stripFormatting(it.content)!!)
-                } else {
-                    copyToClipboard(it.content)
+            ChatManager.selectedTab.getMessageAt(ChatPlusScreen.lastMouseX.toDouble(), ChatPlusScreen.lastMouseY.toDouble())
+                ?.let { message ->
+                    messageCopied = copiedMessageCooldown < Events.currentTick && Config.values.keyCopyMessageWithModifier.isDown()
+                    if (!messageCopied) {
+                        return@register
+                    }
+                    copiedMessageCooldown = Events.currentTick + 20
+                    if (Config.values.copyNoFormatting) {
+                        copyToClipboard(ChatFormatting.stripFormatting(message.content)!!)
+                    } else {
+                        copyToClipboard(message.content)
+                    }
+                    lastCopiedMessage = TimeStampedLine(message.line, Events.currentTick + 60)
+                    //input!!.setEditable(false)
+                    it.returnFunction = true
                 }
-                lastCopiedMessage = TimeStampedLine(it.line, Events.currentTick + 60)
-                //input!!.setEditable(false)
-            }
-            it.returnFunction = true
         }
         EventBus.register<ChatRenderPreLineAppearanceEvent>(2) {
             if (lastCopiedMessage?.matches(it.line) == true) {
