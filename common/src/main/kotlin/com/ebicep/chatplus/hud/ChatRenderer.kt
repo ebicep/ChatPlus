@@ -149,7 +149,7 @@ object ChatRenderer {
             val verticalTextOffset: Int = verticalChatOffset + l1 // align text with background
 
             poseStack.createPose {
-                poseStack.guiForward()
+                poseStack.guiForward(amount = 50.0)
                 // TODO remove and use ChatRenderPreLineAppearanceEvent
                 val renderLineBackgroundEvent = ChatRenderLineBackgroundEvent(
                     guiGraphics,
@@ -167,7 +167,9 @@ object ChatRenderer {
                     verticalChatOffset,
                     renderLineBackgroundEvent.backgroundColor
                 )
-                poseStack.guiForward()
+            }
+            poseStack.createPose {
+                poseStack.guiForward(amount = 100.0)
                 EventBus.post(
                     ChatRenderLineTextEvent(
                         guiGraphics,

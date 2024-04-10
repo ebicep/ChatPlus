@@ -425,9 +425,8 @@ class ChatTab {
     }
 
     companion object {
-        const val PADDING = 2
 
-        private val INDENT = FormattedCharSequence.codepoint(32, Style.EMPTY)
+        const val PADDING = 2
 
         private fun stripColor(pText: String): String? {
             return if (Minecraft.getInstance().options.chatColors().get()) pText else ChatFormatting.stripFormatting(pText)
@@ -441,18 +440,19 @@ class ChatTab {
             }, Style.EMPTY)
             val list: MutableList<Pair<FormattedCharSequence, String>> = Lists.newArrayList()
             font.splitter.splitLines(
-                componentCollector.resultOrEmpty, maxWidth, Style.EMPTY
-            ) { formattedText: FormattedText, p_94004_: Boolean ->
+                componentCollector.resultOrEmpty,
+                maxWidth,
+                Style.EMPTY
+            ) { formattedText: FormattedText, isNewLine: Boolean ->
                 val formattedCharSequence = Language.getInstance().getVisualOrder(formattedText)
-
-                list.add(
-                    Pair(
-                        if (p_94004_) FormattedCharSequence.composite(INDENT, formattedCharSequence) else formattedCharSequence,
-                        formattedText.string
-                    )
-                )
+                // note: removed new line indent
+                list.add(Pair(formattedCharSequence, formattedText.string))
             }
-            return (if (list.isEmpty()) mutableListOf(Pair(FormattedCharSequence.EMPTY, "")) else list)
+            return if (list.isEmpty()) {
+                mutableListOf(Pair(FormattedCharSequence.EMPTY, ""))
+            } else {
+                list
+            }
         }
     }
 
