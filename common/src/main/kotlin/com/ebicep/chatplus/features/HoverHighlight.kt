@@ -4,7 +4,8 @@ import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.events.Event
 import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.hud.ChatManager
-import com.ebicep.chatplus.hud.ChatRenderLineBackgroundEvent
+import com.ebicep.chatplus.hud.ChatRenderPreLineAppearanceEvent
+
 import com.ebicep.chatplus.hud.ChatScreenCloseEvent
 import com.ebicep.chatplus.hud.ChatScreenRenderEvent
 import net.minecraft.client.GuiMessage
@@ -24,7 +25,7 @@ object HoverHighlight {
             }
             hoveredOverMessage = ChatManager.selectedTab.getMessageAt(it.mouseX.toDouble(), it.mouseY.toDouble())?.line
         }
-        EventBus.register<ChatRenderLineBackgroundEvent>(10) {
+        EventBus.register<ChatRenderPreLineAppearanceEvent>(15) {
             val hoveredOver = it.line === hoveredOverMessage
             if (hoveredOver) {
                 val renderEvent = EventBus.post(HoverHighlightRenderEvent(it.line))

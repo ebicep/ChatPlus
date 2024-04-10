@@ -2,7 +2,8 @@ package com.ebicep.chatplus.features
 
 import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.events.EventBus
-import com.ebicep.chatplus.hud.ChatRenderLineBackgroundEvent
+import com.ebicep.chatplus.hud.ChatRenderPreLineAppearanceEvent
+
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 
@@ -11,7 +12,7 @@ object FilterHighlight {
     const val DEFAULT_COLOR = -16737281
 
     init {
-        EventBus.register<ChatRenderLineBackgroundEvent>(5) {
+        EventBus.register<ChatRenderPreLineAppearanceEvent>(5) {
             if (!Config.values.filterHighlightEnabled) {
                 return@register
             }

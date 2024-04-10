@@ -60,7 +60,7 @@ object FindText {
                 }
             }
         }
-        EventBus.register<ChatRenderLineBackgroundEvent>(10) {
+        EventBus.register<ChatRenderPreLineAppearanceEvent>(10) {
             lastMovedToMessage?.let { message ->
                 if (message.first.first != it.chatPlusGuiMessageLine.linkedMessageIndex || message.first.second != it
                         .chatPlusGuiMessageLine.wrappedIndex

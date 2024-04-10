@@ -26,15 +26,6 @@ abstract class ChatRenderLineEvent(
     val line: GuiMessage.Line
         get() = chatPlusGuiMessageLine.line
 }
-
-class ChatRenderLineBackgroundEvent(
-    guiGraphics: GuiGraphics,
-    chatPlusGuiMessageLine: ChatTab.ChatPlusGuiMessageLine,
-    verticalChatOffset: Int,
-    verticalTextOffset: Int,
-    var backgroundColor: Int,
-) : ChatRenderLineEvent(guiGraphics, chatPlusGuiMessageLine, verticalChatOffset, verticalTextOffset)
-
 class ChatRenderLineTextEvent(
     guiGraphics: GuiGraphics,
     chatPlusGuiMessageLine: ChatTab.ChatPlusGuiMessageLine,
@@ -44,10 +35,13 @@ class ChatRenderLineTextEvent(
 ) : ChatRenderLineEvent(guiGraphics, chatPlusGuiMessageLine, verticalChatOffset, verticalTextOffset)
 
 class ChatRenderPreLineAppearanceEvent(
-    val guiGraphics: GuiGraphics,
+    guiGraphics: GuiGraphics,
+    chatPlusGuiMessageLine: ChatTab.ChatPlusGuiMessageLine,
+    verticalChatOffset: Int,
+    verticalTextOffset: Int,
     var textColor: Int,
     var backgroundColor: Int,
-) : Event
+) : ChatRenderLineEvent(guiGraphics, chatPlusGuiMessageLine, verticalChatOffset, verticalTextOffset)
 
 data class ChatRenderPreLinesEvent(
     val guiGraphics: GuiGraphics,
@@ -136,10 +130,6 @@ object ChatRenderer {
             val fadeOpacity = if (chatFocused) 1.0 else getTimeFactor(ticksLived)
             var textColor = (255.0 * fadeOpacity * textOpacity).toInt()
             var backgroundColor = (255.0 * fadeOpacity * backgroundOpacity).toInt() shl 24
-            val lineAppearanceEvent = ChatRenderPreLineAppearanceEvent(guiGraphics, textColor, backgroundColor)
-            EventBus.post(lineAppearanceEvent)
-            textColor = lineAppearanceEvent.textColor
-            backgroundColor = lineAppearanceEvent.backgroundColor
             if (textColor <= 3) {
                 ++displayMessageIndex
                 continue
@@ -147,25 +137,27 @@ object ChatRenderer {
             // how high chat is from input bar, if changed need to change queue offset
             val verticalChatOffset: Int = rescaledY - displayMessageIndex * lineHeight
             val verticalTextOffset: Int = verticalChatOffset + l1 // align text with background
+            val lineAppearanceEvent = ChatRenderPreLineAppearanceEvent(
+                guiGraphics,
+                chatPlusGuiMessageLine,
+                verticalChatOffset,
+                verticalTextOffset,
+                textColor,
+                backgroundColor
+            )
+            EventBus.post(lineAppearanceEvent)
+            textColor = lineAppearanceEvent.textColor
+            backgroundColor = lineAppearanceEvent.backgroundColor
 
             poseStack.createPose {
                 poseStack.guiForward(amount = 50.0)
-                // TODO remove and use ChatRenderPreLineAppearanceEvent
-                val renderLineBackgroundEvent = ChatRenderLineBackgroundEvent(
-                    guiGraphics,
-                    chatPlusGuiMessageLine,
-                    verticalChatOffset,
-                    verticalTextOffset,
-                    backgroundColor
-                )
-                EventBus.post(renderLineBackgroundEvent)
                 //background
                 guiGraphics.fill(
                     rescaledX,
                     verticalChatOffset - lineHeight,
                     rescaledEndX,
                     verticalChatOffset,
-                    renderLineBackgroundEvent.backgroundColor
+                    backgroundColor
                 )
             }
             poseStack.createPose {

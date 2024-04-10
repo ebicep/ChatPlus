@@ -5,7 +5,8 @@ import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.events.Events
 import com.ebicep.chatplus.hud.ChatManager
 import com.ebicep.chatplus.hud.ChatPlusScreen
-import com.ebicep.chatplus.hud.ChatRenderLineBackgroundEvent
+import com.ebicep.chatplus.hud.ChatRenderPreLineAppearanceEvent
+
 import com.ebicep.chatplus.hud.ChatScreenKeyPressedEvent
 import com.ebicep.chatplus.util.TimeStampedLine
 import net.minecraft.ChatFormatting
@@ -34,7 +35,7 @@ object CopyMessage {
             }
             it.returnFunction = true
         }
-        EventBus.register<ChatRenderLineBackgroundEvent>(10) {
+        EventBus.register<ChatRenderPreLineAppearanceEvent>(2) {
             if (lastCopiedMessage?.matches(it.line) == true) {
                 it.backgroundColor = 402587903
             }

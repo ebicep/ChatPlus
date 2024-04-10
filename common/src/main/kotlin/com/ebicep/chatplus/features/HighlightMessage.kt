@@ -4,7 +4,7 @@ object HighlightMessage {
 //
 //    init {
 //
-//        EventBus.register<ChatRenderLineBackgroundEvent>(10) {
+//        EventBus.register<ChatRenderPreLineAppearanceEvent>(10) {
 //            lastCopiedMessage?.let { message ->
 //                if (message.first != it.line) {
 //                    return@let

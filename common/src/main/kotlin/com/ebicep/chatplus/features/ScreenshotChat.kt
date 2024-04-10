@@ -120,7 +120,7 @@ object ScreenshotChat {
             it.returnFunction = true
         }
         var preventOtherRendering = false
-        EventBus.register<ChatRenderLineBackgroundEvent>(10, { preventOtherRendering }) {
+        EventBus.register<ChatRenderPreLineAppearanceEvent>(10, { preventOtherRendering }) {
             if (lastLineScreenShotted?.matches(it.line) == true) {
                 preventOtherRendering = true
                 it.backgroundColor = SCREENSHOT_COLOR
