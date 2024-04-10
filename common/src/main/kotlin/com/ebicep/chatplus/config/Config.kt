@@ -10,6 +10,7 @@ import com.ebicep.chatplus.config.serializers.KeySerializer
 import com.ebicep.chatplus.config.serializers.KeyWithModifier
 import com.ebicep.chatplus.features.AlignText
 import com.ebicep.chatplus.features.FilterHighlight
+import com.ebicep.chatplus.features.PlayerHeadChatDisplay
 import com.ebicep.chatplus.features.chattabs.CHAT_TAB_HEIGHT
 import com.ebicep.chatplus.features.chattabs.ChatTab
 import com.ebicep.chatplus.features.chattabs.ChatTabs.defaultTab
@@ -119,7 +120,6 @@ data class ConfigVariables(
     var chatTimestampMode: TimestampMode = TimestampMode.HR_12_SECOND,
     var hoverHighlightEnabled: Boolean = true,
     var hoverHighlightColor: Int = 0,
-    var textAlignment: AlignText.Alignment = AlignText.Alignment.LEFT,
     // tabs
     var chatTabs: MutableList<ChatTab> = mutableListOf(defaultTab),
     var selectedTab: Int = 0,
@@ -132,6 +132,11 @@ data class ConfigVariables(
     var screenshotChatEnabled: Boolean = true,
     var screenshotChatLine: KeyWithModifier = KeyWithModifier(InputConstants.getKey("key.keyboard.s"), 2),
     var screenshotChatAutoUpload: Boolean = true,
+    // player head chat display
+    var playerHeadChatDisplayEnabled: Boolean = true,
+    var playerHeadChatDisplayShowOnWrapped: Boolean = false,
+    var playerHeadChatDisplayOffsetNonHeadMessages: Boolean = false,
+    var playerHeadChatDisplayOffsetNonHeadMessagesShowOnWrapped: Boolean = true,
     // keys binds
     var keyNoScroll: InputConstants.Key = InputConstants.getKey("key.keyboard.left.control"),
     var keyFineScroll: InputConstants.Key = InputConstants.getKey("key.keyboard.left.shift"),
@@ -156,20 +161,40 @@ data class ConfigVariables(
     // internal
     var width: Int = 180
         set(newWidth) {
+            if (field == newWidth) {
+                return
+            }
             field = newWidth
             queueUpdateConfig = true
             ChatManager.selectedTab.rescaleChat()
         }
     var height: Int = 320
         set(newHeight) {
+            if (field == newHeight) {
+                return
+            }
             field = newHeight
             queueUpdateConfig = true
             ChatManager.selectedTab.rescaleChat()
         }
 
+    // general
+    var textAlignment: AlignText.Alignment = AlignText.Alignment.LEFT
+        set(newAlignment) {
+            if (field == newAlignment) {
+                return
+            }
+            field = newAlignment
+            queueUpdateConfig = true
+            PlayerHeadChatDisplay.updateTextOffset()
+        }
+
     // tabs
     var chatTabsEnabled: Boolean = true
         set(newY) {
+            if (field == newY) {
+                return
+            }
             field = newY
             ChatRenderer.updateCachedDimension()
             queueUpdateConfig = true
@@ -178,26 +203,29 @@ data class ConfigVariables(
     // speech to text
     var speechToTextSampleRate: Int = 48000
         set(value) {
-            if (field != value) {
-                SpeechToText.microphoneThread.resetMicrophone()
-                SpeechToText.microphoneThread.resetRecognizer()
+            if (field == value) {
+                return
             }
+            SpeechToText.microphoneThread.resetMicrophone()
+            SpeechToText.microphoneThread.resetRecognizer()
             field = value
             queueUpdateConfig = true
         }
     var speechToTextMicrophone: String = "Default"
         set(value) {
-            if (field != value) {
-                SpeechToText.microphoneThread.resetMicrophone()
+            if (field == value) {
+                return
             }
+            SpeechToText.microphoneThread.resetMicrophone()
             field = value
             queueUpdateConfig = true
         }
     var speechToTextSelectedAudioModel: String = ""
         set(value) {
-            if (field != value) {
-                SpeechToText.microphoneThread.resetRecognizer()
+            if (field == value) {
+                return
             }
+            SpeechToText.microphoneThread.resetRecognizer()
             field = value
             queueUpdateConfig = true
         }

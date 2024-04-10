@@ -30,6 +30,7 @@ import kotlin.math.min
 
 data class ChatTabAddNewMessageEvent(
     val chatTab: ChatTab,
+    val guiMessage: ChatTab.ChatPlusGuiMessage,
     val componentWithTimeStamp: MutableComponent,
     val component: Component,
     val signature: MessageSignature?,
@@ -46,13 +47,14 @@ data class ChatTabAddDisplayMessageEvent(
     val addedTime: Int,
     val tag: GuiMessageTag?,
     val linkedMessageIndex: Int,
+    var maxWidth: Int,
     var returnFunction: Boolean = false
 ) : Event
 
 @Serializable
 class ChatTab {
 
-    data class ChatPlusGuiMessage(val guiMessage: GuiMessage, var timesRepeated: Int = 1)
+    data class ChatPlusGuiMessage(val guiMessage: GuiMessage, var timesRepeated: Int = 1, var senderUUID: UUID? = null)
 
     data class ChatPlusGuiMessageLine(val line: GuiMessage.Line, val content: String, val linkedMessageIndex: Int, val wrappedIndex: Int)
 
@@ -129,9 +131,11 @@ class ChatTab {
             return
         }
         val componentWithTimeStamp: MutableComponent = getTimeStampedMessage(component)
+        val chatPlusGuiMessage = ChatPlusGuiMessage(GuiMessage(addedTime, componentWithTimeStamp, signature, tag))
         if (EventBus.post(
                 ChatTabAddNewMessageEvent(
                     this,
+                    chatPlusGuiMessage,
                     componentWithTimeStamp,
                     component,
                     signature,
@@ -143,7 +147,6 @@ class ChatTab {
         ) {
             return
         }
-        val chatPlusGuiMessage = ChatPlusGuiMessage(GuiMessage(addedTime, componentWithTimeStamp, signature, tag))
         this.messages.add(chatPlusGuiMessage)
         while (this.messages.size > Config.values.maxMessages) {
             this.messages.removeFirst()
@@ -165,15 +168,20 @@ class ChatTab {
         tag: GuiMessageTag?,
         linkedMessageIndex: Int
     ) {
-        if (EventBus.post(ChatTabAddDisplayMessageEvent(this, component, addedTime, tag, linkedMessageIndex)).returnFunction) {
+        val maxWidth = Mth.floor(ChatManager.getBackgroundWidth())
+        val displayMessageEvent = ChatTabAddDisplayMessageEvent(this, component, addedTime, tag, linkedMessageIndex, maxWidth)
+        if (EventBus.post(displayMessageEvent).returnFunction) {
             return
         }
 //        val timesRepeated = messages[linkedMessageIndex].timesRepeated
 //        if (timesRepeated > 0) {
 //            component.append(Component.literal(" ($timesRepeated)").withStyle { it.withColor(ChatFormatting.GRAY) })
 //        }
-        val list: List<Pair<FormattedCharSequence, String>> =
-            wrapComponents(component, Mth.floor(ChatManager.getBackgroundWidth()), Minecraft.getInstance().font)
+        val list: List<Pair<FormattedCharSequence, String>> = wrapComponents(
+            component,
+            displayMessageEvent.maxWidth,
+            Minecraft.getInstance().font
+        )
         for (j in list.indices) {
             val chatPlusLine = list[j]
             val formattedCharSequence = chatPlusLine.first

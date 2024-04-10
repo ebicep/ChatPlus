@@ -37,8 +37,9 @@ object ConfigScreenImpl {
         addChatTabsOption(builder, entryBuilder)
         addFilterHighlightOption(builder, entryBuilder)
         addHoverHighlightOption(builder, entryBuilder)
-        addKeyBindOptions(builder, entryBuilder)
         addChatScreenShotOption(builder, entryBuilder)
+        addPlayerHeadChatDisplayOption(builder, entryBuilder)
+        addKeyBindOptions(builder, entryBuilder)
         addTranslatorRegexOptions(builder, entryBuilder)
         addSpeechToTextOptions(builder, entryBuilder)
         return builder.build()
@@ -244,6 +245,31 @@ object ConfigScreenImpl {
                 "chatPlus.screenshotChatAutoUpload.toggle",
                 Config.values.screenshotChatAutoUpload
             ) { Config.values.screenshotChatAutoUpload = it })
+    }
+
+    private fun addPlayerHeadChatDisplayOption(builder: ConfigBuilder, entryBuilder: ConfigEntryBuilder) {
+        val headDisplay = builder.getOrCreateCategory(Component.translatable("chatPlus.playerHeadChatDisplay.title"))
+        headDisplay.addEntry(
+            entryBuilder.booleanToggle(
+                "chatPlus.playerHeadChatDisplayEnabled.toggle",
+                Config.values.playerHeadChatDisplayEnabled
+            ) { Config.values.playerHeadChatDisplayEnabled = it })
+        headDisplay.addEntry(
+            entryBuilder.booleanToggle(
+                "chatPlus.playerHeadChatDisplayShowOnWrapped.toggle",
+                Config.values.playerHeadChatDisplayShowOnWrapped
+            ) { Config.values.playerHeadChatDisplayShowOnWrapped = it })
+        headDisplay.addEntry(
+            entryBuilder.booleanToggle(
+                "chatPlus.playerHeadChatDisplayOffsetNonHeadMessages.toggle",
+                Config.values.playerHeadChatDisplayOffsetNonHeadMessages
+            ) { Config.values.playerHeadChatDisplayOffsetNonHeadMessages = it })
+        headDisplay.addEntry(
+            entryBuilder.booleanToggle(
+                "chatPlus.playerHeadChatDisplayOffsetNonHeadMessagesShowOnWrapped.toggle",
+                Config.values.playerHeadChatDisplayOffsetNonHeadMessagesShowOnWrapped
+            ) { Config.values.playerHeadChatDisplayOffsetNonHeadMessagesShowOnWrapped = it })
+
     }
 
     private fun addKeyBindOptions(builder: ConfigBuilder, entryBuilder: ConfigEntryBuilder) {

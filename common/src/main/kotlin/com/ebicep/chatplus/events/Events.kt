@@ -19,6 +19,14 @@ data class ChatPlusTickEvent(
     val tick: Long
 ) : Event
 
+data class ChatPlusSecondEvent(
+    val second: Long
+) : Event
+
+data class ChatPlusMinuteEvent(
+    val minute: Long
+) : Event
+
 object Events {
 
     var latestDefaultText = ""
@@ -27,6 +35,12 @@ object Events {
     init {
         ClientTickEvent.CLIENT_POST.register {
             EventBus.post(ChatPlusTickEvent(currentTick))
+            if (currentTick % 20 == 0L) {
+                EventBus.post(ChatPlusSecondEvent(currentTick / 20))
+                if (currentTick % 1200 == 0L) {
+                    EventBus.post(ChatPlusMinuteEvent(currentTick / 1200))
+                }
+            }
 
             ConfigScreen.handleOpenScreen()
 
