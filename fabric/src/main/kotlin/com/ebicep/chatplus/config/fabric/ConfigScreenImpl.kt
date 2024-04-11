@@ -135,26 +135,33 @@ object ConfigScreenImpl {
             getCustomListOption(
                 "chatPlus.chatTabs.title",
                 Config.values.chatTabs,
-                { Config.values.chatTabs = it },
+                {
+                    Config.values.chatTabs = it
+                    Config.resetSortedChatTabs()
+                },
                 Config.values.chatTabs.size > 0,
                 { ChatTab("", "") },
                 { value ->
                     listOf(
-                        entryBuilder.startStrField(Component.translatable("chatPlus.chatTabs.name"), value.name)
-                            .setTooltip(Component.translatable("chatPlus.chatTabs.name.tooltip"))
-                            .setDefaultValue("")
-                            .setSaveConsumer { value.name = it }
+                        entryBuilder.stringField("chatPlus.chatTabs.name", value.name) { value.name = it },
+                        entryBuilder.stringField("chatPlus.chatTabs.pattern", value.pattern) { value.pattern = it },
+                        entryBuilder.stringField("chatPlus.chatTabs.autoPrefix", value.autoPrefix) { value.autoPrefix = it },
+                        entryBuilder.startIntField(
+                            Component.translatable("chatPlus.chatTabs.priority"),
+                            value.priority
+                        )
+                            .setTooltip(Component.translatable("chatPlus.chatTabs.priority.tooltip"))
+                            .setDefaultValue(0)
+                            .setSaveConsumer { value.priority = it }
                             .build(),
-                        entryBuilder.startStrField(Component.translatable("chatPlus.chatTabs.pattern"), value.pattern)
-                            .setTooltip(Component.translatable("chatPlus.chatTabs.pattern.tooltip"))
-                            .setDefaultValue("")
-                            .setSaveConsumer { value.pattern = it }
-                            .build(),
-                        entryBuilder.startStrField(Component.translatable("chatPlus.chatTabs.autoPrefix"), value.autoPrefix)
-                            .setTooltip(Component.translatable("chatPlus.chatTabs.autoPrefix.tooltip"))
-                            .setDefaultValue("")
-                            .setSaveConsumer { value.autoPrefix = it }
-                            .build(),
+                        entryBuilder.booleanToggle(
+                            "chatPlus.chatTabs.alwaysAdd",
+                            value.alwaysAdd
+                        ) { value.alwaysAdd = it },
+                        entryBuilder.booleanToggle(
+                            "chatPlus.chatTabs.skipOthers",
+                            value.skipOthers
+                        ) { value.skipOthers = it },
                     )
                 }
 

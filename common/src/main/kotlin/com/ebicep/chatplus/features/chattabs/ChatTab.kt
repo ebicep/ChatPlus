@@ -71,6 +71,16 @@ class ChatTab {
         }
     var autoPrefix: String = ""
 
+    // priority of tab, when adding messages, tabs are sorted by priority first
+    // if a message got added to a tab then any other tab with a lower priority will not get the message
+    var priority: Int = 0
+
+    // if true then priority will be ignored when deciding to "skip" this tab
+    var alwaysAdd: Boolean = false
+
+    // if true then tab loop will break if message is added to this tab, overrides alwaysAdds
+    var skipOthers: Boolean = false
+
     constructor(name: String, pattern: String, autoPrefix: String = "") {
         this.name = name
         this.pattern = pattern
@@ -147,11 +157,13 @@ class ChatTab {
         ) {
             return
         }
+        var index = linkedMessageIndex
         this.messages.add(chatPlusGuiMessage)
         while (this.messages.size > Config.values.maxMessages) {
             this.messages.removeFirst()
+            index--
         }
-        this.addNewDisplayMessage(componentWithTimeStamp, addedTime, tag, linkedMessageIndex)
+        this.addNewDisplayMessage(componentWithTimeStamp, addedTime, tag, index)
     }
 
     private fun getTimeStampedMessage(component: Component): MutableComponent {

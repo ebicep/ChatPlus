@@ -22,6 +22,7 @@ import com.ebicep.chatplus.translator.LanguageManager
 import com.ebicep.chatplus.translator.RegexMatch
 import com.mojang.blaze3d.platform.InputConstants
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import kotlinx.serialization.UseSerializers
 import kotlinx.serialization.json.Json
 import net.minecraft.util.Mth
@@ -39,6 +40,10 @@ var queueUpdateConfig = false
 
 object Config {
     var values = ConfigVariables()
+
+    fun resetSortedChatTabs() {
+        values.sortedChatTabs = values.chatTabs.sortedBy { -it.priority }
+    }
 
     fun save() {
         val configDirectory = File(configDirectoryPath)
@@ -72,6 +77,7 @@ object Config {
         values.chatTabs.forEach {
             it.regex = Regex(it.pattern)
         }
+        resetSortedChatTabs()
         values.filterHighlights.forEach {
             it.regex = Regex(it.pattern)
         }
@@ -162,9 +168,9 @@ data class ConfigVariables(
     var speechToTextTranslateEnabled: Boolean = false,
     var speechToTextTranslateLang: String = "English",
 ) {
-    // variables here for custom setters
-
     // internal
+    @Transient
+    var sortedChatTabs: List<ChatTab> = listOf()
     var width: Int = 180
         set(newWidth) {
             if (field == newWidth) {
@@ -174,6 +180,9 @@ data class ConfigVariables(
             queueUpdateConfig = true
             ChatManager.selectedTab.rescaleChat()
         }
+
+    // variables here for custom setters
+
     var height: Int = 320
         set(newHeight) {
             if (field == newHeight) {

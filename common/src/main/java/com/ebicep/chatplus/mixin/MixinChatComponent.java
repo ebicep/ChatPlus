@@ -5,6 +5,8 @@ import com.ebicep.chatplus.config.Config;
 import com.ebicep.chatplus.features.chattabs.ChatTab;
 import com.ebicep.chatplus.features.chattabs.ChatTabs;
 import com.ebicep.chatplus.hud.ChatRenderer;
+import kotlin.text.Regex;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.GuiMessageTag;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.ChatComponent;
@@ -33,8 +35,24 @@ public class MixinChatComponent {
             return;
         }
         if (Config.INSTANCE.getValues().getChatTabsEnabled()) {
-            for (ChatTab chatTab : Config.INSTANCE.getValues().getChatTabs()) {
-                chatTab.addNewMessage(component, messageSignature, i, guiMessageTag, chatTab.getMessages().size());
+            Integer lastPriority = null;
+            for (ChatTab chatTab : Config.INSTANCE.getValues().getSortedChatTabs()) {
+                int priority = chatTab.getPriority();
+                boolean alwaysAdd = chatTab.getAlwaysAdd();
+                if (lastPriority != null && lastPriority > priority && !alwaysAdd) {
+                    continue;
+                }
+                Regex regex = chatTab.getRegex();
+                String rawText = ChatFormatting.stripFormatting(component.getString());
+                if (rawText != null && regex.matches(rawText)) {
+                    chatTab.addNewMessage(component, messageSignature, i, guiMessageTag, chatTab.getMessages().size());
+                    if (chatTab.getSkipOthers()) {
+                        break;
+                    }
+                    if (!alwaysAdd) {
+                        lastPriority = priority;
+                    }
+                }
             }
         } else {
             ChatTabs.INSTANCE.getDefaultTab().addNewMessage(component, messageSignature, i, guiMessageTag, ChatTabs.INSTANCE.getDefaultTab().getMessages().size());
