@@ -77,7 +77,7 @@ class Translator(val message: String, val from: Language?, val to: Language) : T
             if (transRequest.from == null) {
                 return null
             }
-            return TranslateResult(transRequest.message, transRequest.from)
+            return TranslateResult(transRequest.message.trim(), transRequest.from)
         }
         return null
     }

@@ -115,5 +115,9 @@
   "chatPlus.speechToText.microphone.invalid": "Invalid Microphone",
   "chatPlus.speechToText.selectedAudioModel": "Audio Model",
   "chatPlus.speechToText.selectedAudioModel.tooltip": "Audio model to use for speech to text.",
-  "chatPlus.speechToText.selectedAudioModel.invalid": "Invalid Audio Model"
+  "chatPlus.speechToText.selectedAudioModel.invalid": "Invalid Audio Model",
+  "chatPlus.speechToText.speechToTextTranslateEnabled.toggle": "Auto Translate Message",
+  "chatPlus.speechToText.speechToTextTranslateEnabled.toggle.tooltip": "Enables/Disables auto translating speech to text messages.",
+  "chatPlus.speechToText.speechToTextTranslateLang": "Translate To",
+  "chatPlus.speechToText.speechToTextTranslateLang.tooltip": "Language to translate speech to text messages to."
 }

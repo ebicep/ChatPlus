@@ -5,9 +5,13 @@ import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.config.configDirectoryPath
 import com.ebicep.chatplus.events.ChatPlusTickEvent
 import com.ebicep.chatplus.events.EventBus
+import com.ebicep.chatplus.hud.ChatManager
 import com.ebicep.chatplus.hud.ChatPlusScreen
 import com.ebicep.chatplus.hud.ChatScreenCloseEvent
 import com.ebicep.chatplus.hud.ChatScreenInitPreEvent
+import com.ebicep.chatplus.translator.Language
+import com.ebicep.chatplus.translator.LanguageManager
+import com.ebicep.chatplus.translator.Translator
 import com.ebicep.chatplus.util.GraphicsUtil.createPose
 import com.ebicep.chatplus.util.GraphicsUtil.translate0
 import com.ebicep.chatplus.util.KeyUtil.isDown
@@ -17,6 +21,7 @@ import dev.architectury.event.events.client.ClientGuiEvent
 import dev.architectury.event.events.client.ClientRawInputEvent
 import net.minecraft.ChatFormatting
 import net.minecraft.client.Minecraft
+import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.network.chat.Component
 import org.lwjgl.openal.ALC11
 import org.vosk.Model
@@ -25,19 +30,51 @@ import java.awt.Color
 import java.io.File
 import java.util.regex.Pattern
 
-val SAMPLE_RATE: Int
-    get() = Config.values.speechToTextSampleRate
 
 class MicrophoneException(override val message: String) : Exception(message)
 
 object SpeechToText {
 
     private val DEVICE_NAME = Pattern.compile("^(?:OpenAL.+?on )?(.*)$")
+    val LISTENING_COLOR = Color(0, 200, 0, 255).rgb
+    val FAILED_COLOR = Color(200, 0, 0, 255).rgb
+    val SAMPLE_RATE: Int
+        get() = Config.values.speechToTextSampleRate
 
     @Volatile
     var recordMic = false
     val microphoneThread = MicrophoneThread()
     private var alFailed = false
+
+    var speechToTextLang: Language? = null
+
+    internal fun renderBoxAndText(guiGraphics: GuiGraphics, text: String, color: Int) {
+        val centerWidth = Minecraft.getInstance().window.guiScaledWidth / 2
+        val width = Minecraft.getInstance().font.width(text)
+        guiGraphics.fill(
+            centerWidth - width / 2 - 5,
+            35,
+            centerWidth + width / 2 + 5,
+            52,
+            2130706432
+        )
+        guiGraphics.drawCenteredString(
+            Minecraft.getInstance().font,
+            text,
+            centerWidth,
+            40,
+            color
+        )
+        if (Config.values.speechToTextTranslateEnabled) {
+            guiGraphics.renderOutline(
+                centerWidth - width / 2 - 5,
+                35,
+                width + 10,
+                17,
+                (0xFF55FF55).toInt()
+            )
+        }
+    }
 
     init {
         microphoneThread.start()
@@ -87,12 +124,15 @@ object SpeechToText {
         checkALCError(0L)
         return present
     }
+
+    fun updateTranslateLanguage() {
+        speechToTextLang = LanguageManager.findLanguageFromName(Config.values.speechToTextTranslateLang)
+    }
+
 }
 
 class MicrophoneThread : Thread("ChatPlusMicrophoneThread") {
 
-    private val LISTENING_COLOR = Color(0, 200, 0, 255).rgb
-    private val FAILED_COLOR = Color(200, 0, 0, 255).rgb
     private var listening = false
     private var running = true
     private var disabled = false
@@ -100,7 +140,7 @@ class MicrophoneThread : Thread("ChatPlusMicrophoneThread") {
     private var recognizer: Recognizer? = null
     private var lastSpokenMessage: String? = null
     private var totalData: MutableList<Short> = mutableListOf()
-    private var quickSendTimer: Long = 0 // -1 = quicked sended, 0 = idle
+    private var quickSendTimer: Long = 0 // -1 = quick sended, 0 = idle
     private val canQuickSend: Boolean
         get() = quickSendTimer > System.currentTimeMillis() && lastSpokenMessage != null
 
@@ -108,9 +148,17 @@ class MicrophoneThread : Thread("ChatPlusMicrophoneThread") {
         ChatPlus.LOGGER.info("SpeechToText initialized")
         EventBus.register<ChatScreenInitPreEvent> {
             SpeechToText.recordMic = false
-            lastSpokenMessage.let { message ->
-                if (message != null && quickSendTimer > 0) {
-                    it.screen.initial = message
+            if (quickSendTimer <= 0) {
+                return@register
+            }
+            doWithMessage { messages ->
+                val text = messages.joinToString(" ")
+                ChatPlus.LOGGER.info("Quick Send: $text")
+                // for if translating messages enabled, takes time so input might already be initialized
+                if (it.screen.input != null) {
+                    it.screen.input?.insertText(text)
+                } else {
+                    it.screen.initial = text
                 }
             }
         }
@@ -119,45 +167,18 @@ class MicrophoneThread : Thread("ChatPlusMicrophoneThread") {
         }
         ClientGuiEvent.RENDER_HUD.register { guiGraphics, tickDelta ->
             if (listening) {
-                val centerWidth = Minecraft.getInstance().window.guiScaledWidth / 2
-                val text = "Listening"
-                val width = Minecraft.getInstance().font.width(text)
-                guiGraphics.fill(
-                    centerWidth - width / 2 - 5,
-                    35,
-                    centerWidth + width / 2 + 5,
-                    53,
-                    2130706432
-                )
-                guiGraphics.drawCenteredString(
-                    Minecraft.getInstance().font,
-                    text,
-                    centerWidth,
-                    40,
-                    LISTENING_COLOR
-                )
+                SpeechToText.renderBoxAndText(guiGraphics, "Listening", SpeechToText.LISTENING_COLOR)
             }
             if (canQuickSend) {
                 val failed = lastSpokenMessage.isNullOrEmpty()
                 val centerWidth = Minecraft.getInstance().window.guiScaledWidth / 2
-                val text = if (failed) "Failed" else lastSpokenMessage!!
-                val width = Minecraft.getInstance().font.width(text)
                 val poseStack = guiGraphics.pose()
                 poseStack.createPose {
-                    guiGraphics.fill(
-                        centerWidth - width / 2 - 5,
-                        35,
-                        centerWidth + width / 2 + 5,
-                        53,
-                        2130706432
-                    )
-                    guiGraphics.drawCenteredString(
-                        Minecraft.getInstance().font,
-                        text,
-                        centerWidth,
-                        40,
-                        if (failed) FAILED_COLOR else -1
-                    )
+                    if (failed) {
+                        SpeechToText.renderBoxAndText(guiGraphics, "Failed", SpeechToText.FAILED_COLOR)
+                    } else {
+                        SpeechToText.renderBoxAndText(guiGraphics, lastSpokenMessage!!, -1)
+                    }
                 }
                 if (!failed) {
                     poseStack.createPose {
@@ -171,19 +192,40 @@ class MicrophoneThread : Thread("ChatPlusMicrophoneThread") {
                                 .append(Component.literal(")")),
                             0,
                             0,
-                            LISTENING_COLOR
+                            SpeechToText.LISTENING_COLOR
                         )
                     }
                 }
             }
         }
-        ClientRawInputEvent.KEY_PRESSED.register { client, keyCode, scanCode, action, modifiers ->
+        ClientRawInputEvent.KEY_PRESSED.register { _, keyCode, _, _, _ ->
             val quickSend = keyCode == Config.values.speechToTextQuickSendKey.value && Minecraft.getInstance().screen !is ChatPlusScreen
             if (canQuickSend && quickSend) {
                 quickSendTimer = -1
-                lastSpokenMessage?.let { Minecraft.getInstance().player?.connection?.sendChat(it) }
+                doWithMessage { messages ->
+                    ChatManager.addSentMessage(messages[0])
+                    Minecraft.getInstance().player?.connection?.sendChat(messages[0])
+                    ChatPlusScreen.messagesToSend.addAll(messages.subList(1, messages.size))
+                }
             }
             EventResult.pass()
+        }
+    }
+
+    private fun doWithMessage(toRun: (List<String>) -> Unit) {
+        lastSpokenMessage?.let {
+            val speechToTextLang = SpeechToText.speechToTextLang
+            if (Config.values.speechToTextTranslateEnabled && speechToTextLang != null) {
+                object : Thread() {
+                    override fun run() {
+                        val translator = Translator(it, LanguageManager.autoLang, speechToTextLang)
+                        val translateResult = translator.translate(it) ?: return
+                        toRun(ChatPlusScreen.splitChatMessage(translateResult.translatedText))
+                    }
+                }.start()
+            } else {
+                toRun(ChatPlusScreen.splitChatMessage(it))
+            }
         }
     }
 
@@ -207,7 +249,7 @@ class MicrophoneThread : Thread("ChatPlusMicrophoneThread") {
                 try {
                     recognizer = Recognizer(
                         Model("$configDirectoryPath\\models\\" + Config.values.speechToTextSelectedAudioModel),
-                        SAMPLE_RATE.toFloat()
+                        SpeechToText.SAMPLE_RATE.toFloat()
                     )
                     val recognizedModel = "Recognized Model: ${Config.values.speechToTextSelectedAudioModel}"
                     ChatPlus.LOGGER.info(recognizedModel)
@@ -227,23 +269,15 @@ class MicrophoneThread : Thread("ChatPlusMicrophoneThread") {
                 if (recordMic && !listening) {
                     quickSendTimer = 0
                     totalData.clear()
-                    val mic = getMicrophone()
-                    if (mic == null) {
-                        throw MicrophoneException("Failed to get microphone")
-                    }
                     ChatPlus.LOGGER.info("Started Recording")
-                    mic.startRecording()
+                    getMicrophone()?.startRecording()
                     listening = true
                 } else if (!recordMic && listening) {
                     ChatPlus.LOGGER.info("Done Recording")
                     listening = false
-                    val mic = getMicrophone()
-                    if (mic == null) {
-                        throw MicrophoneException("Failed to get microphone")
-                    }
                     totalData.addAll(readMic().toList())
                     ChatPlus.LOGGER.info("Data: ${totalData.size}")
-                    mic.stopRecording()
+                    getMicrophone()?.stopRecording()
                     speechToText(totalData.toShortArray())
                     lastSpokenMessage = JsonParser.parseString(recognizer!!.finalResult).asJsonObject.get("text")?.asString
                     quickSendTimer = System.currentTimeMillis() + 3000
@@ -253,7 +287,9 @@ class MicrophoneThread : Thread("ChatPlusMicrophoneThread") {
                     }
                     val screen = Minecraft.getInstance().screen
                     if (screen is ChatPlusScreen) {
-                        lastSpokenMessage?.let { screen.input?.insertText(it) }
+                        doWithMessage { messages ->
+                            screen.input?.insertText(messages.joinToString(" "))
+                        }
                     }
                 } else if (listening) {
                     ChatPlus.LOGGER.debug("available: ${microphone!!.dataAvailable()}")

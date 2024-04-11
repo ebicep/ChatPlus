@@ -503,6 +503,40 @@ object ConfigScreenImpl {
                 Config.values.speechToTextQuickSendKey
             ) { Config.values.speechToTextQuickSendKey = it }
         )
+        speechToText.addEntry(entryBuilder.booleanToggle(
+            "chatPlus.speechToText.speechToTextTranslateEnabled.toggle",
+            Config.values.speechToTextTranslateEnabled
+        ) { Config.values.speechToTextTranslateEnabled = it })
+        val languageNamesSpeak: MutableList<String> = mutableListOf()
+        languages.map {
+            val name = it.name
+            if (name != "Auto Detect") {
+                languageNamesSpeak.add(name)
+            }
+            name
+        }
+        speechToText.addEntry(entryBuilder.startDropdownMenu(
+            Component.translatable("chatPlus.speechToText.speechToTextTranslateLang"),
+            DropdownMenuBuilder.TopCellElementBuilder.of(Config.values.speechToTextTranslateLang) { str -> str },
+            DropdownMenuBuilder.CellCreatorBuilder.of()
+        )
+            .setTooltip(Component.translatable("chatPlus.speechToText.speechToTextTranslateLang.tooltip"))
+            .setDefaultValue(Config.values.speechToTextTranslateLang)
+            .setSelections(languageNamesSpeak)
+            .setErrorSupplier { str: String ->
+                if (languageNamesSpeak.contains(str)) {
+                    Optional.empty()
+                } else {
+                    Optional.of(Component.translatable("chatPlus.translator.translateInvalid"))
+                }
+            }
+            .setSaveConsumer { str: String ->
+                Config.values.speechToTextTranslateLang = str
+                SpeechToText.updateTranslateLanguage()
+                queueUpdateConfig = true
+            }
+            .build()
+        )
     }
 
 

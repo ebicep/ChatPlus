@@ -109,7 +109,8 @@ class JavaxMicrophone(
 
     companion object {
         fun getMicrophoneNames(): List<String> {
-            val audioFormat = AudioFormat(PCM_SIGNED, SAMPLE_RATE.toFloat(), 16, 1, 2, SAMPLE_RATE.toFloat(), false)
+            val audioFormat =
+                AudioFormat(PCM_SIGNED, SpeechToText.SAMPLE_RATE.toFloat(), 16, 1, 2, SpeechToText.SAMPLE_RATE.toFloat(), false)
             val names = mutableListOf<String>()
             AudioSystem.getMixerInfo().forEach {
                 val mixer = AudioSystem.getMixer(it)

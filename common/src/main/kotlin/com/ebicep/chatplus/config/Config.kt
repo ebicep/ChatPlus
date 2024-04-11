@@ -75,6 +75,8 @@ object Config {
         values.filterHighlights.forEach {
             it.regex = Regex(it.pattern)
         }
+        LanguageManager.updateTranslateLanguages()
+        SpeechToText.updateTranslateLanguage()
     }
 
     private fun correctValues() {
@@ -95,6 +97,8 @@ object Config {
         LanguageManager.findLanguageFromName(values.translateTo).let { if (it == null) values.translateTo = "Auto Detect" }
         LanguageManager.findLanguageFromName(values.translateSelf).let { if (it == null) values.translateSelf = "Auto Detect" }
         LanguageManager.findLanguageFromName(values.translateSpeak).let { if (it == null) values.translateSpeak = "English" }
+        LanguageManager.findLanguageFromName(values.speechToTextTranslateLang)
+            .let { if (it == null) values.speechToTextTranslateLang = "English" }
         save()
     }
 
@@ -155,6 +159,8 @@ data class ConfigVariables(
     var speechToTextEnabled: Boolean = true,
     var speechToTextMicrophoneKey: InputConstants.Key = InputConstants.getKey("key.keyboard.b"),
     var speechToTextQuickSendKey: InputConstants.Key = InputConstants.getKey("key.keyboard.enter"),
+    var speechToTextTranslateEnabled: Boolean = false,
+    var speechToTextTranslateLang: String = "English",
 ) {
     // variables here for custom setters
 
