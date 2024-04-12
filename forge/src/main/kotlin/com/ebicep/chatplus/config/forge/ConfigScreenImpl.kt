@@ -42,6 +42,7 @@ object ConfigScreenImpl {
         addChatTabsOption(builder, entryBuilder)
         addFilterHighlightOption(builder, entryBuilder)
         addHoverHighlightOption(builder, entryBuilder)
+        addFindMessageOption(builder, entryBuilder)
         addChatScreenShotOption(builder, entryBuilder)
         addPlayerHeadChatDisplayOption(builder, entryBuilder)
         addKeyBindOptions(builder, entryBuilder)
@@ -203,6 +204,31 @@ object ConfigScreenImpl {
         )
     }
 
+    private fun addFindMessageOption(builder: ConfigBuilder, entryBuilder: ConfigEntryBuilder) {
+        val findMessage = builder.getOrCreateCategory(Component.translatable("chatPlus.findMessage.title"))
+        findMessage.addEntry(
+            entryBuilder.booleanToggle(
+                "chatPlus.findMessage.toggle",
+                Config.values.findMessageEnabled
+            ) { Config.values.findMessageEnabled = it })
+        findMessage.addEntry(
+            entryBuilder.booleanToggle(
+                "chatPlus.findMessage.highlightInputBox.toggle",
+                Config.values.findMessageHighlightInputBox
+            ) { Config.values.findMessageHighlightInputBox = it })
+        findMessage.addEntry(
+            entryBuilder.booleanToggle(
+                "chatPlus.findMessage.textBarElement.toggle",
+                Config.values.findMessageTextBarElementEnabled
+            ) { Config.values.findMessageTextBarElementEnabled = it })
+        findMessage.addEntry(
+            entryBuilder.keyCodeOptionWithModifier(
+                "chatPlus.findMessage.key",
+                Config.values.findMessageKey
+            )
+        )
+    }
+
     private fun addHoverHighlightOption(builder: ConfigBuilder, entryBuilder: ConfigEntryBuilder) {
         val hoverHighlight = builder.getOrCreateCategory(Component.translatable("chatPlus.hoverHighlight.title"))
         hoverHighlight.addEntry(
@@ -297,12 +323,6 @@ object ConfigScreenImpl {
         )
         keyBinds.addEntry(
             entryBuilder.keyCodeOption("key.moveChat", Config.values.keyMoveChat) { Config.values.keyMoveChat = it }
-        )
-        keyBinds.addEntry(
-            entryBuilder.keyCodeOptionWithModifier(
-                "key.findMessage",
-                Config.values.keyFindMessageWithModifier
-            )
         )
         keyBinds.addEntry(
             entryBuilder.keyCodeOptionWithModifier(

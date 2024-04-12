@@ -15,18 +15,26 @@ import java.awt.Color
 
 object FindMessage {
 
-    const val FIND_COLOR = (0xFFFFFF55).toInt()
+    val FIND_COLOR = Color(255, 255, 85, 255).rgb
     private val findBackgroundColor = Color(FIND_COLOR).darker().rgb
     var findEnabled: Boolean = false
 
     init {
         var lastMovedToMessage: Pair<Pair<ChatTab.ChatPlusGuiMessage, Int>, Long>? = null // <linked message, wrapped index>, tick
         EventBus.register<TextBarElements.AddTextBarElementEvent>(5) {
-            it.elements.add(FindTextBarElement(it.screen))
+            if (!Config.values.findMessageEnabled) {
+                return@register
+            }
+            if (Config.values.findMessageTextBarElementEnabled) {
+                it.elements.add(FindTextBarElement(it.screen))
+            }
         }
         var findShortcutUsed = false
         EventBus.register<ChatScreenKeyPressedEvent>(1, { findShortcutUsed }) {
-            findShortcutUsed = Config.values.keyFindMessageWithModifier.isDown()
+            if (!Config.values.findMessageEnabled) {
+                return@register
+            }
+            findShortcutUsed = Config.values.findMessageKey.isDown()
             if (findShortcutUsed) {
                 toggle(it.screen)
                 it.returnFunction = true
@@ -39,6 +47,18 @@ object FindMessage {
             if (findEnabled) {
                 ChatManager.selectedTab.refreshDisplayedMessage(it.str)
                 it.returnFunction = true
+            }
+        }
+        EventBus.register<ChatScreenRenderEvent> {
+            if (findEnabled && Config.values.findMessageHighlightInputBox) {
+                val editBox = it.screen.input ?: return@register
+                it.guiGraphics.renderOutline(
+                    editBox.x - 2,
+                    editBox.y - 5,
+                    editBox.width - 1,
+                    editBox.height,
+                    FIND_COLOR
+                )
             }
         }
         EventBus.register<TranslateToggleEvent> {
