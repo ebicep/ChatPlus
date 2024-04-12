@@ -15,8 +15,8 @@ object FeatureManager {
         CompactMessages
         FilterHighlight
         ChatTabs
-        TranslateText
-        AlignText
+        TranslateMessage
+        AlignMessage
         ScreenshotChat
         SpeechToText
         PeakChat

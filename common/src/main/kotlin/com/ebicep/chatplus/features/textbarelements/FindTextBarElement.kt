@@ -1,7 +1,7 @@
 package com.ebicep.chatplus.features.textbarelements
 
 import com.ebicep.chatplus.events.Event
-import com.ebicep.chatplus.features.FindText
+import com.ebicep.chatplus.features.FindMessage
 import com.ebicep.chatplus.hud.ChatPlusScreen
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphics
@@ -22,7 +22,7 @@ class FindTextBarElement(private val chatPlusScreen: ChatPlusScreen) : TextBarEl
     }
 
     override fun onClick() {
-        FindText.toggle(chatPlusScreen)
+        FindMessage.toggle(chatPlusScreen)
     }
 
     override fun onHover(guiGraphics: GuiGraphics, pMouseX: Int, pMouseY: Int) {
@@ -31,9 +31,9 @@ class FindTextBarElement(private val chatPlusScreen: ChatPlusScreen) : TextBarEl
 
     override fun onRender(guiGraphics: GuiGraphics, currentX: Int, currentY: Int, mouseX: Int, mouseY: Int) {
         fill(guiGraphics, currentX, currentY)
-        drawCenteredString(guiGraphics, currentX, currentY, if (FindText.findEnabled) FindText.FIND_COLOR else -1)
-        if (FindText.findEnabled) {
-            renderOutline(guiGraphics, currentX, currentY, FindText.FIND_COLOR)
+        drawCenteredString(guiGraphics, currentX, currentY, if (FindMessage.findEnabled) FindMessage.FIND_COLOR else -1)
+        if (FindMessage.findEnabled) {
+            renderOutline(guiGraphics, currentX, currentY, FindMessage.FIND_COLOR)
         }
     }
 

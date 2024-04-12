@@ -4,7 +4,7 @@ import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.config.TimestampMode
 import com.ebicep.chatplus.config.queueUpdateConfig
 import com.ebicep.chatplus.config.serializers.KeyWithModifier
-import com.ebicep.chatplus.features.AlignText
+import com.ebicep.chatplus.features.AlignMessage
 import com.ebicep.chatplus.features.FilterHighlight
 import com.ebicep.chatplus.features.FilterHighlight.DEFAULT_COLOR
 import com.ebicep.chatplus.features.chattabs.ChatTab
@@ -104,14 +104,14 @@ object ConfigScreenImpl {
             .setSaveConsumer { Config.values.chatTimestampMode = it }
             .build())
         general.addEntry(entryBuilder.startEnumSelector(
-            Component.translatable("chatPlus.chatSettings.textAlignment"),
-            AlignText.Alignment::class.java,
-            Config.values.textAlignment
+            Component.translatable("chatPlus.chatSettings.messageAlignment"),
+            AlignMessage.Alignment::class.java,
+            Config.values.messageAlignment
         )
-            .setEnumNameProvider { (it as AlignText.Alignment).translatable }
-            .setDefaultValue(Config.values.textAlignment)
-            .setTooltip(Component.translatable("chatPlus.chatSettings.textAlignment.tooltip"))
-            .setSaveConsumer { Config.values.textAlignment = it }
+            .setEnumNameProvider { (it as AlignMessage.Alignment).translatable }
+            .setDefaultValue(Config.values.messageAlignment)
+            .setTooltip(Component.translatable("chatPlus.chatSettings.messageAlignment.tooltip"))
+            .setSaveConsumer { Config.values.messageAlignment = it }
             .build())
     }
 

@@ -13,7 +13,7 @@ import com.ebicep.chatplus.hud.*
 import net.minecraft.client.Minecraft
 import java.awt.Color
 
-object FindText {
+object FindMessage {
 
     const val FIND_COLOR = (0xFFFFFF55).toInt()
     private val findBackgroundColor = Color(FIND_COLOR).darker().rgb

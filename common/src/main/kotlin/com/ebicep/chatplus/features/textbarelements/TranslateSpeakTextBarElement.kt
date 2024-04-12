@@ -3,7 +3,7 @@ package com.ebicep.chatplus.features.textbarelements
 import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.events.Event
 import com.ebicep.chatplus.events.EventBus
-import com.ebicep.chatplus.features.TranslateText.languageSpeakEnabled
+import com.ebicep.chatplus.features.TranslateMessage.languageSpeakEnabled
 import com.ebicep.chatplus.hud.ChatPlusScreen
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphics

@@ -17,7 +17,7 @@ import net.minecraft.network.chat.ChatType
 import net.minecraft.network.chat.Component
 
 
-object TranslateText {
+object TranslateMessage {
 
     const val TRANSLATE_COLOR = 0xFFFFFF55
     var languageSpeakEnabled = false

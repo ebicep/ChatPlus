@@ -9,11 +9,11 @@ import kotlinx.serialization.Serializable
 import net.minecraft.client.Minecraft
 import net.minecraft.network.chat.Component
 
-object AlignText {
+object AlignMessage {
 
     init {
         EventBus.register<ChatRenderLineTextEvent> {
-            it.guiGraphics.pose().translate0(x = Config.values.textAlignment.translation(it.text))
+            it.guiGraphics.pose().translate0(x = Config.values.messageAlignment.translation(it.text))
         }
     }
 

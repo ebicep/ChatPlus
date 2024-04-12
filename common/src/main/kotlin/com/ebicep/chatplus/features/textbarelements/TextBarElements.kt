@@ -2,7 +2,7 @@ package com.ebicep.chatplus.features.textbarelements
 
 import com.ebicep.chatplus.events.Event
 import com.ebicep.chatplus.events.EventBus
-import com.ebicep.chatplus.features.FindText
+import com.ebicep.chatplus.features.FindMessage
 import com.ebicep.chatplus.hud.*
 
 object TextBarElements {
@@ -70,7 +70,7 @@ object TextBarElements {
             }
         }
 
-        FindText
+        FindMessage
     }
 
     private fun cacheTextBarElementXs() {

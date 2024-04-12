@@ -8,7 +8,7 @@ import com.ebicep.chatplus.ChatPlus
 import com.ebicep.chatplus.MOD_ID
 import com.ebicep.chatplus.config.serializers.KeySerializer
 import com.ebicep.chatplus.config.serializers.KeyWithModifier
-import com.ebicep.chatplus.features.AlignText
+import com.ebicep.chatplus.features.AlignMessage
 import com.ebicep.chatplus.features.FilterHighlight
 import com.ebicep.chatplus.features.PlayerHeadChatDisplay
 import com.ebicep.chatplus.features.chattabs.CHAT_TAB_HEIGHT
@@ -195,14 +195,14 @@ data class ConfigVariables(
         }
 
     // general
-    var textAlignment: AlignText.Alignment = AlignText.Alignment.LEFT
+    var messageAlignment: AlignMessage.Alignment = AlignMessage.Alignment.LEFT
         set(newAlignment) {
             if (field == newAlignment) {
                 return
             }
             field = newAlignment
             queueUpdateConfig = true
-            PlayerHeadChatDisplay.updateTextOffset()
+            PlayerHeadChatDisplay.updateMessageOffset()
         }
 
     // tabs

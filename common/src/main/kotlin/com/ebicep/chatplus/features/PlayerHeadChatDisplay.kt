@@ -23,12 +23,12 @@ object PlayerHeadChatDisplay {
     private val NAME_REGEX = Regex("(§.)|\\W")
     private val playerNameUUIDs = mutableMapOf<String, TimedUUID>()
     private val playerHeads = mutableMapOf<UUID, ResourceLocation>()
-    private var textOffset = 0
+    private var messageOffset = 0
 
     data class TimedUUID(val uuid: UUID, val lastUsed: Long)
 
     init {
-        updateTextOffset()
+        updateMessageOffset()
         EventBus.register<ChatPlusMinuteEvent> {
             if (it.minute % 10 == 0L) {
                 val currentTime = System.currentTimeMillis()
@@ -70,7 +70,7 @@ object PlayerHeadChatDisplay {
             val poseStack = guiGraphics.pose()
             if (!Config.values.playerHeadChatDisplayShowOnWrapped && chatPlusGuiMessageLine.wrappedIndex != 0) {
                 if (Config.values.playerHeadChatDisplayOffsetNonHeadMessagesShowOnWrapped) {
-                    poseStack.translate0(x = textOffset)
+                    poseStack.translate0(x = messageOffset)
                 }
                 return@register
             }
@@ -78,18 +78,18 @@ object PlayerHeadChatDisplay {
             val senderUUID = chatPlusGuiMessage.senderUUID
             if (senderUUID == null) {
                 if (Config.values.playerHeadChatDisplayOffsetNonHeadMessages) {
-                    poseStack.translate0(x = textOffset)
+                    poseStack.translate0(x = messageOffset)
                 }
                 return@register
             }
             val resourceLocation = playerHeads[senderUUID]
             if (resourceLocation == null) {
                 if (Config.values.playerHeadChatDisplayOffsetNonHeadMessages) {
-                    poseStack.translate0(x = textOffset)
+                    poseStack.translate0(x = messageOffset)
                 }
                 return@register
             }
-            poseStack.translate0(x = textOffset)
+            poseStack.translate0(x = messageOffset)
             poseStack.createPose {
                 poseStack.guiForward()
                 poseStack.translate0(x = -HEAD_WIDTH_PADDED.toDouble())
@@ -110,11 +110,11 @@ object PlayerHeadChatDisplay {
         }
     }
 
-    fun updateTextOffset() {
-        textOffset = when (Config.values.textAlignment) {
-            AlignText.Alignment.LEFT -> HEAD_WIDTH_PADDED
-            AlignText.Alignment.CENTER -> HEAD_WIDTH_PADDED / 2
-            AlignText.Alignment.RIGHT -> 0
+    fun updateMessageOffset() {
+        messageOffset = when (Config.values.messageAlignment) {
+            AlignMessage.Alignment.LEFT -> HEAD_WIDTH_PADDED
+            AlignMessage.Alignment.CENTER -> HEAD_WIDTH_PADDED / 2
+            AlignMessage.Alignment.RIGHT -> 0
         }
     }
 
