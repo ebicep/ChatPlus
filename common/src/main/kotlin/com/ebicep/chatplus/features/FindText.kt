@@ -51,12 +51,15 @@ object FindText {
             }
             if (findEnabled) {
                 ChatManager.selectedTab.getMessageAt(it.mouseX, it.mouseY)?.let { message ->
-                    lastMovedToMessage = Pair(Pair(message.linkedMessage, message.wrappedIndex), Events.currentTick + 60)
-                    val lineOffset = ChatManager.getLinesPerPage() / 3
-                    val scrollTo = ChatManager.selectedTab.messages.indexOf(message.linkedMessage) - lineOffset
+                    val linkedMessage = message.linkedMessage
+                    lastMovedToMessage = Pair(Pair(linkedMessage, message.wrappedIndex), Events.currentTick + 60)
+                    val lineOffset = ChatManager.getLinesPerPageScaled() / 2 + 1 // center the message
                     findEnabled = false
                     ChatManager.selectedTab.refreshDisplayedMessage()
                     it.screen.rebuildWidgets0()
+                    val displayIndex =
+                        ChatManager.selectedTab.displayedMessages.indexOfFirst { line -> line.linkedMessage == linkedMessage }
+                    val scrollTo = ChatManager.selectedTab.displayedMessages.size - displayIndex - lineOffset
                     ChatManager.selectedTab.scrollChat(scrollTo)
                 }
             }
