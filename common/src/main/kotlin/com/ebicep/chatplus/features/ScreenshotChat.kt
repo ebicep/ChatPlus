@@ -12,7 +12,8 @@ import com.ebicep.chatplus.features.textbarelements.TextBarElements
 import com.ebicep.chatplus.hud.*
 import com.ebicep.chatplus.util.GraphicsUtil.createPose
 import com.ebicep.chatplus.util.GraphicsUtil.guiForward
-import com.ebicep.chatplus.util.TimeStampedLine
+import com.ebicep.chatplus.util.GraphicsUtil.translate0
+import com.ebicep.chatplus.util.TimeStampedLines
 import com.google.gson.JsonParser
 import com.mojang.blaze3d.pipeline.RenderTarget
 import com.mojang.blaze3d.vertex.*
@@ -52,14 +53,15 @@ object ScreenshotChat {
 
     const val SCREENSHOT_COLOR = 0xFFFFFFFF.toInt()
     private const val SCREENSHOT_TRANSPARENCY_COLOR = 0xFF36393F.toInt() // 54, 57, 63
-
+    private const val PADDING = 5
     private const val BYTES_PER_PIXEL = 4
+
     private var screenshotMode: ScreenshotMode = ScreenshotMode.NONE
-    private var lastLineScreenShotted: TimeStampedLine? = null
-    var lastScreenShotTick = -1L
+    private var lastLinesScreenShotted: TimeStampedLines? = null
+    private var lastScreenShotTick = -1L
 
     enum class ScreenshotMode {
-        NONE, FULL, LINE
+        NONE, FULL, SELECTED, LINE
     }
 
     init {
@@ -81,28 +83,29 @@ object ScreenshotChat {
             screenshotMode = ScreenshotMode.FULL
         }
         EventBus.register<ChatRenderPostLinesEvent> {
-            if (screenshotMode == ScreenshotMode.FULL) {
-                screenshotMode = ScreenshotMode.NONE
-                // fill background to change to transparent later
-                val guiGraphics = it.guiGraphics
-                guiGraphics.pose().guiForward(100.0)
-                guiGraphics.fill(
-                    ChatRenderer.rescaledX - 10,
-                    ChatRenderer.rescaledY - ChatRenderer.rescaledHeight - 10,
-                    ChatRenderer.rescaledEndX + 10,
-                    ChatRenderer.rescaledY + 10,
-                    SCREENSHOT_TRANSPARENCY_COLOR
-                )
-                screenshotUnscaledPadded(
-                    ChatRenderer.x.toDouble(),
-                    ChatRenderer.y.toDouble() + 2,
-                    ChatRenderer.width.toDouble(),
-                    min(
-                        it.displayMessageIndex,
-                        ChatRenderer.rescaledLinesPerPage
-                    ) * ChatManager.getLineHeight() * ChatRenderer.scale.toDouble() + 2
-                )
+            if (screenshotMode != ScreenshotMode.FULL) {
+                return@register
             }
+            screenshotMode = ScreenshotMode.NONE
+            // fill background to change to transparent later
+            val guiGraphics = it.guiGraphics
+            guiGraphics.pose().guiForward(100.0)
+            guiGraphics.fill(
+                ChatRenderer.rescaledX - 10,
+                ChatRenderer.rescaledY - ChatRenderer.rescaledHeight - 10,
+                ChatRenderer.rescaledEndX + 10,
+                ChatRenderer.rescaledY + 10,
+                SCREENSHOT_TRANSPARENCY_COLOR
+            )
+            screenshotUnscaledPadded(
+                ChatRenderer.x.toDouble(),
+                ChatRenderer.y.toDouble() + 2,
+                ChatRenderer.width.toDouble(),
+                min(
+                    it.displayMessageIndex,
+                    ChatRenderer.rescaledLinesPerPage
+                ) * ChatManager.getLineHeight() * ChatRenderer.scale.toDouble() + 2
+            )
         }
         // line screenshot
         var lineScreenShotted = false
@@ -114,17 +117,21 @@ object ScreenshotChat {
             if (!lineScreenShotted) {
                 return@register
             }
-            resetScreenShotTick()
-            screenshotMode = ScreenshotMode.LINE
-            ChatManager.selectedTab.getMessageAt(ChatPlusScreen.lastMouseX.toDouble(), ChatPlusScreen.lastMouseY.toDouble())
-                ?.let { message ->
-                    lastLineScreenShotted = TimeStampedLine(message.line, Events.currentTick + 60)
-                }
+            val hoveredOverMessage = ChatManager.selectedTab.getHoveredOverMessage()
+            if (hoveredOverMessage != null) {
+                resetScreenShotTick()
+                screenshotMode = ScreenshotMode.LINE
+                lastLinesScreenShotted = TimeStampedLines(hoveredOverMessage, Events.currentTick + 60)
+            } else if (SelectChat.selectedMessages.isNotEmpty()) {
+                resetScreenShotTick()
+                screenshotMode = ScreenshotMode.SELECTED
+                lastLinesScreenShotted = TimeStampedLines(SelectChat.selectedMessages, Events.currentTick + 60)
+            }
             it.returnFunction = true
         }
         var preventOtherRendering = false
         EventBus.register<ChatRenderPreLineAppearanceEvent>(10, { preventOtherRendering }) {
-            if (lastLineScreenShotted?.matches(it.line) == true) {
+            if (lastLinesScreenShotted?.matches(it.line) == true) {
                 preventOtherRendering = true
                 it.backgroundColor = SCREENSHOT_COLOR
             } else {
@@ -132,41 +139,54 @@ object ScreenshotChat {
             }
         }
         EventBus.register<ChatRenderPreLinesEvent> {
-            if (screenshotMode == ScreenshotMode.LINE && lastLineScreenShotted != null) {
-                screenshotMode = ScreenshotMode.NONE
-                val guiGraphics = it.guiGraphics
-                val poseStack = guiGraphics.pose()
-                val line = lastLineScreenShotted!!.line
-                poseStack.createPose {
-                    poseStack.guiForward(1000.0)
-                    poseStack.scale(ChatRenderer.scale, ChatRenderer.scale, 1f)
-                    guiGraphics.fill(
-                        0,
-                        0,
-                        ChatRenderer.rescaledWidth + 10,
-                        20,
-                        SCREENSHOT_TRANSPARENCY_COLOR
-                    )
-                    val padding = 5
+            if (lastLinesScreenShotted == null) {
+                return@register
+            }
+            if (screenshotMode != ScreenshotMode.SELECTED && screenshotMode != ScreenshotMode.LINE) {
+                return@register
+            }
+            screenshotMode = ScreenshotMode.NONE
+            val guiGraphics = it.guiGraphics
+            val poseStack = guiGraphics.pose()
+            val line = lastLinesScreenShotted!!.lines
+            poseStack.createPose {
+                poseStack.guiForward(1000.0)
+                poseStack.scale(ChatRenderer.scale, ChatRenderer.scale, 1f)
+                guiGraphics.fill(
+                    0,
+                    0,
+                    ChatRenderer.rescaledWidth + 10,
+                    20 * line.size,
+                    SCREENSHOT_TRANSPARENCY_COLOR
+                )
+                val linesOrdered = if (line.size == 1) {
+                    mutableListOf(line.first())
+                } else {
+                    SelectChat.getSelectedMessagesOrdered()
+                }
+                linesOrdered.forEach { line ->
                     guiGraphics.drawString(
                         Minecraft.getInstance().font,
-                        line.content,
-                        padding,
+                        line.line.content,
+                        PADDING,
                         20 / 3,
                         0xFFFFFF
                     )
-                    screenshotUnscaledPadded(
-                        0.0,
-                        16.0 * ChatRenderer.scale,
-                        ChatRenderer.width + padding.toDouble() * ChatRenderer.scale,
-                        10.0 * ChatRenderer.scale
-                    )
+                    poseStack.translate0(y = 10.0)
                 }
+                screenshotUnscaledPadded(
+                    0.0,
+                    16.0 * ChatRenderer.scale + ((line.size - 1) * 10.0 * ChatRenderer.scale),
+                    ChatRenderer.width + PADDING.toDouble() * ChatRenderer.scale,
+                    10.0 * ChatRenderer.scale * line.size
+                )
             }
         }
     }
 
-    fun onCooldown() = lastScreenShotTick + 60 > Events.currentTick
+    fun onCooldown(): Boolean {
+        return lastScreenShotTick + 60 > Events.currentTick
+    }
 
     private fun resetScreenShotTick() {
         lastScreenShotTick = Events.currentTick

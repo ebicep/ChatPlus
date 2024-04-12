@@ -21,6 +21,7 @@ object FeatureManager {
         SpeechToText
         PeakChat
         PlayerHeadChatDisplay
+        SelectChat
 //        AlternatingColorBackground
     }
 

@@ -7,6 +7,7 @@ import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.events.Events
 import com.ebicep.chatplus.features.CompactMessages.literalIgnored
 import com.ebicep.chatplus.hud.ChatManager
+import com.ebicep.chatplus.hud.ChatPlusScreen
 import com.ebicep.chatplus.hud.ChatRenderer
 import com.google.common.collect.Lists
 import kotlinx.serialization.Serializable
@@ -278,6 +279,10 @@ class ChatTab {
     fun clear() {
         messages.clear()
         displayedMessages.clear()
+    }
+
+    fun getHoveredOverMessage(): ChatPlusGuiMessageLine? {
+        return getMessageAt(ChatPlusScreen.lastMouseX.toDouble(), ChatPlusScreen.lastMouseY.toDouble())
     }
 
     fun getMessageAt(pMouseX: Double, pMouseY: Double): ChatPlusGuiMessageLine? {
