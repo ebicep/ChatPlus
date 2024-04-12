@@ -2,6 +2,7 @@ package com.ebicep.chatplus.features
 
 import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.events.Events
+import com.ebicep.chatplus.features.chattabs.ChatTab
 import com.ebicep.chatplus.features.chattabs.ChatTabAddDisplayMessageEvent
 import com.ebicep.chatplus.features.textbarelements.FindTextBarElement
 import com.ebicep.chatplus.features.textbarelements.TextBarElements
@@ -17,7 +18,7 @@ object FindText {
     var findEnabled: Boolean = false
 
     init {
-        var lastMovedToMessage: Pair<Pair<Int, Int>, Long>? = null // <linked index, wrapped index>, tick
+        var lastMovedToMessage: Pair<Pair<ChatTab.ChatPlusGuiMessage, Int>, Long>? = null // <linked message, wrapped index>, tick
         EventBus.register<TextBarElements.AddTextBarElementEvent>(5) {
             it.elements.add(FindTextBarElement(it.screen))
         }
@@ -50,9 +51,9 @@ object FindText {
             }
             if (findEnabled) {
                 ChatManager.selectedTab.getMessageAt(it.mouseX, it.mouseY)?.let { message ->
-                    lastMovedToMessage = Pair(Pair(message.linkedMessageIndex, message.wrappedIndex), Events.currentTick + 60)
+                    lastMovedToMessage = Pair(Pair(message.linkedMessage, message.wrappedIndex), Events.currentTick + 60)
                     val lineOffset = ChatManager.getLinesPerPage() / 3
-                    val scrollTo = ChatManager.selectedTab.messages.size - message.linkedMessageIndex - lineOffset
+                    val scrollTo = ChatManager.selectedTab.messages.indexOf(message.linkedMessage) - lineOffset
                     findEnabled = false
                     ChatManager.selectedTab.refreshDisplayedMessage()
                     it.screen.rebuildWidgets0()
@@ -62,8 +63,8 @@ object FindText {
         }
         EventBus.register<ChatRenderPreLineAppearanceEvent>(10) {
             lastMovedToMessage?.let { message ->
-                if (message.first.first != it.chatPlusGuiMessageLine.linkedMessageIndex || message.first.second != it
-                        .chatPlusGuiMessageLine.wrappedIndex
+                if (message.first.first != it.chatPlusGuiMessageLine.linkedMessage ||
+                    message.first.second != it.chatPlusGuiMessageLine.wrappedIndex
                 ) {
                     return@let
                 }

@@ -45,7 +45,7 @@ public class MixinChatComponent {
                 Regex regex = chatTab.getRegex();
                 String rawText = ChatFormatting.stripFormatting(component.getString());
                 if (rawText != null && regex.matches(rawText)) {
-                    chatTab.addNewMessage(component, messageSignature, i, guiMessageTag, chatTab.getMessages().size());
+                    chatTab.addNewMessage(component, messageSignature, i, guiMessageTag);
                     if (chatTab.getSkipOthers()) {
                         break;
                     }
@@ -55,7 +55,7 @@ public class MixinChatComponent {
                 }
             }
         } else {
-            ChatTabs.INSTANCE.getDefaultTab().addNewMessage(component, messageSignature, i, guiMessageTag, ChatTabs.INSTANCE.getDefaultTab().getMessages().size());
+            ChatTabs.INSTANCE.getDefaultTab().addNewMessage(component, messageSignature, i, guiMessageTag);
         }
     }
 

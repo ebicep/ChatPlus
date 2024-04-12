@@ -5,7 +5,6 @@ import com.ebicep.chatplus.events.ChatPlusMinuteEvent
 import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.features.chattabs.ChatTabAddDisplayMessageEvent
 import com.ebicep.chatplus.features.chattabs.ChatTabAddNewMessageEvent
-import com.ebicep.chatplus.hud.ChatManager
 import com.ebicep.chatplus.hud.ChatRenderLineTextEvent
 import com.ebicep.chatplus.hud.ChatRenderer
 import com.ebicep.chatplus.util.GraphicsUtil.createPose
@@ -66,7 +65,6 @@ object PlayerHeadChatDisplay {
             if (!Config.values.playerHeadChatDisplayEnabled) {
                 return@register
             }
-            val messages = ChatManager.selectedTab.messages
             val chatPlusGuiMessageLine = it.chatPlusGuiMessageLine
             val guiGraphics = it.guiGraphics
             val poseStack = guiGraphics.pose()
@@ -76,7 +74,7 @@ object PlayerHeadChatDisplay {
                 }
                 return@register
             }
-            val chatPlusGuiMessage = messages[chatPlusGuiMessageLine.linkedMessageIndex]
+            val chatPlusGuiMessage = chatPlusGuiMessageLine.linkedMessage
             val senderUUID = chatPlusGuiMessage.senderUUID
             if (senderUUID == null) {
                 if (Config.values.playerHeadChatDisplayOffsetNonHeadMessages) {

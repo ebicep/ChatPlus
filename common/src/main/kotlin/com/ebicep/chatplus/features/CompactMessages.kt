@@ -35,13 +35,13 @@ object CompactMessages {
                 // remove previous displayed message and update it
                 for (i in displayedMessages.size - 1 downTo 0) {
                     val displayedMessage = displayedMessages[i]
-                    if (displayedMessage.linkedMessageIndex == messages.size - 1) {
+                    if (messages[messages.size - 1] == displayedMessage.linkedMessage) {
                         displayedMessages.removeLast()
                     } else {
                         break
                     }
                 }
-                chatTab.addNewDisplayMessage(guiMessage.content as MutableComponent, it.addedTime, it.tag, it.linkedMessageIndex - 1)
+                chatTab.addNewDisplayMessage(guiMessage.content as MutableComponent, it.addedTime, it.tag, it.guiMessage)
                 it.returnFunction = true
             }
         }

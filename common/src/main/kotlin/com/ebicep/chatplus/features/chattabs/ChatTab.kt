@@ -36,7 +36,6 @@ data class ChatTabAddNewMessageEvent(
     val signature: MessageSignature?,
     val addedTime: Int,
     val tag: GuiMessageTag?,
-    val linkedMessageIndex: Int,
     var returnFunction: Boolean = false
 ) : Event
 
@@ -46,7 +45,7 @@ data class ChatTabAddDisplayMessageEvent(
     val component: Component,
     val addedTime: Int,
     val tag: GuiMessageTag?,
-    val linkedMessageIndex: Int,
+    val linkedMessage: ChatTab.ChatPlusGuiMessage,
     var maxWidth: Int,
     var returnFunction: Boolean = false
 ) : Event
@@ -54,10 +53,18 @@ data class ChatTabAddDisplayMessageEvent(
 @Serializable
 class ChatTab {
 
-    data class ChatPlusGuiMessage(val guiMessage: GuiMessage, var timesRepeated: Int = 1, var senderUUID: UUID? = null)
+    data class ChatPlusGuiMessage(
+        val guiMessage: GuiMessage,
+        var timesRepeated: Int = 1,
+        var senderUUID: UUID? = null
+    )
 
-    data class ChatPlusGuiMessageLine(val line: GuiMessage.Line, val content: String, val linkedMessageIndex: Int, val wrappedIndex: Int)
-
+    data class ChatPlusGuiMessageLine(
+        val line: GuiMessage.Line,
+        val content: String,
+        val linkedMessage: ChatPlusGuiMessage,
+        val wrappedIndex: Int,
+    )
 
     var name: String
         set(value) {
@@ -130,12 +137,17 @@ class ChatTab {
     @Transient
     var y: Double = 0.0
 
+    @Transient
+    var messagesAdded = 0
+
+    @Transient
+    var messagesDeleted = 0
+
     fun addNewMessage(
         component: Component,
         signature: MessageSignature?,
         addedTime: Int,
-        tag: GuiMessageTag?,
-        linkedMessageIndex: Int
+        tag: GuiMessageTag?
     ) {
         if (!regex.matches(ChatFormatting.stripFormatting(component.string)!!)) {
             return
@@ -151,19 +163,16 @@ class ChatTab {
                     signature,
                     addedTime,
                     tag,
-                    linkedMessageIndex
                 )
             ).returnFunction
         ) {
             return
         }
-        var index = linkedMessageIndex
         this.messages.add(chatPlusGuiMessage)
         while (this.messages.size > Config.values.maxMessages) {
             this.messages.removeFirst()
-            index--
         }
-        this.addNewDisplayMessage(componentWithTimeStamp, addedTime, tag, index)
+        this.addNewDisplayMessage(componentWithTimeStamp, addedTime, tag, chatPlusGuiMessage)
     }
 
     private fun getTimeStampedMessage(component: Component): MutableComponent {
@@ -178,10 +187,10 @@ class ChatTab {
         component: MutableComponent,
         addedTime: Int,
         tag: GuiMessageTag?,
-        linkedMessageIndex: Int
+        linkedMessage: ChatPlusGuiMessage
     ) {
         val maxWidth = Mth.floor(ChatManager.getBackgroundWidth())
-        val displayMessageEvent = ChatTabAddDisplayMessageEvent(this, component, addedTime, tag, linkedMessageIndex, maxWidth)
+        val displayMessageEvent = ChatTabAddDisplayMessageEvent(this, component, addedTime, tag, linkedMessage, maxWidth)
         if (EventBus.post(displayMessageEvent).returnFunction) {
             return
         }
@@ -207,12 +216,12 @@ class ChatTab {
                 ChatPlusGuiMessageLine(
                     GuiMessage.Line(addedTime, formattedCharSequence, tag, lastComponent),
                     content,
-                    linkedMessageIndex,
+                    linkedMessage,
                     j
                 )
             )
         }
-        while (this.displayedMessages.size > Config.values.maxMessages) {
+        while (this.displayedMessages.isNotEmpty() && !this.messages.contains(this.displayedMessages[0].linkedMessage)) {
             this.displayedMessages.removeFirst()
         }
     }
@@ -272,6 +281,7 @@ class ChatTab {
     }
 
     fun clear() {
+        messagesDeleted += messages.size
         messages.clear()
         displayedMessages.clear()
     }
@@ -414,12 +424,18 @@ class ChatTab {
         resetDisplayMessageAtTick = -1
         displayedMessages.clear()
         for (i in messages.indices) {
-            val guiMessage: GuiMessage = messages[i].guiMessage
+            val chatPlusGuiMessage = messages[i]
+            val guiMessage: GuiMessage = chatPlusGuiMessage.guiMessage
             if (filter != null && !guiMessage.content.string.lowercase().contains(filter.lowercase())) {
                 continue
             }
             // assume all messages are mutable from adding timestamp method call
-            this.addNewDisplayMessage(guiMessage.content() as MutableComponent, guiMessage.addedTime(), guiMessage.tag(), i)
+            this.addNewDisplayMessage(
+                guiMessage.content() as MutableComponent,
+                guiMessage.addedTime(),
+                guiMessage.tag(),
+                chatPlusGuiMessage
+            )
         }
     }
 

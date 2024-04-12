@@ -28,6 +28,7 @@ subprojects {
 
     val loom = project.extensions.getByName<LoomGradleExtensionAPI>("loom")
     loom.silentMojangMappingsLicense()
+    loom.log4jConfigs.from(file("log4j-dev.xml"))
 
     dependencies {
         "minecraft"("com.mojang:minecraft:${project.property("minecraft_version")}")
