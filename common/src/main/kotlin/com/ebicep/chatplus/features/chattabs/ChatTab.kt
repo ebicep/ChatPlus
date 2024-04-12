@@ -137,11 +137,6 @@ class ChatTab {
     @Transient
     var y: Double = 0.0
 
-    @Transient
-    var messagesAdded = 0
-
-    @Transient
-    var messagesDeleted = 0
 
     fun addNewMessage(
         component: Component,
@@ -281,7 +276,6 @@ class ChatTab {
     }
 
     fun clear() {
-        messagesDeleted += messages.size
         messages.clear()
         displayedMessages.clear()
     }
