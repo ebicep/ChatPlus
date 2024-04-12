@@ -24,6 +24,7 @@ import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.HoverEvent
 import net.minecraft.util.Mth
 import org.lwjgl.opengl.GL11
+import java.awt.Color
 import java.awt.Toolkit
 import java.awt.Transparency
 import java.awt.color.ColorSpace
@@ -51,8 +52,8 @@ import kotlin.math.roundToInt
  */
 object ScreenshotChat {
 
-    const val SCREENSHOT_COLOR = 0xFFFFFFFF.toInt()
-    private const val SCREENSHOT_TRANSPARENCY_COLOR = 0xFF36393F.toInt() // 54, 57, 63
+    val SCREENSHOT_COLOR = -1
+    private val SCREENSHOT_TRANSPARENCY_COLOR = Color(54, 57, 63, 255).rgb
     private const val PADDING = 5
     private const val BYTES_PER_PIXEL = 4
 

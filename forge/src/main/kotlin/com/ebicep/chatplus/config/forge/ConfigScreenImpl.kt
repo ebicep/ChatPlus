@@ -13,7 +13,6 @@ import com.ebicep.chatplus.hud.ChatManager
 import com.ebicep.chatplus.hud.ChatRenderer
 import com.ebicep.chatplus.translator.LanguageManager
 import com.ebicep.chatplus.translator.RegexMatch
-import com.ebicep.chatplus.translator.languages
 import com.mojang.blaze3d.platform.InputConstants
 import me.shedaniel.clothconfig2.api.*
 import me.shedaniel.clothconfig2.gui.entries.*
@@ -347,7 +346,7 @@ object ConfigScreenImpl {
                 Config.values.translatorEnabled
             ) { Config.values.translatorEnabled = it })
         val languageNamesSpeak: MutableList<String> = mutableListOf()
-        val languageNames = languages.map {
+        val languageNames = LanguageManager.languages.map {
             val name = it.name
             if (name != "Auto Detect") {
                 languageNamesSpeak.add(name)
@@ -526,17 +525,18 @@ object ConfigScreenImpl {
             Config.values.speechToTextTranslateEnabled
         ) { Config.values.speechToTextTranslateEnabled = it })
         val languageNamesSpeak: MutableList<String> = mutableListOf()
-        languages.map {
+        LanguageManager.languages.map {
             val name = it.name
             if (name != "Auto Detect") {
                 languageNamesSpeak.add(name)
             }
             name
         }
-        speechToText.addEntry(entryBuilder.startDropdownMenu(
-            Component.translatable("chatPlus.speechToText.speechToTextTranslateLang"),
-            DropdownMenuBuilder.TopCellElementBuilder.of(Config.values.speechToTextTranslateLang) { str -> str },
-            DropdownMenuBuilder.CellCreatorBuilder.of()
+        speechToText.addEntry(
+            entryBuilder.startDropdownMenu(
+                Component.translatable("chatPlus.speechToText.speechToTextTranslateLang"),
+                DropdownMenuBuilder.TopCellElementBuilder.of(Config.values.speechToTextTranslateLang) { str -> str },
+                DropdownMenuBuilder.CellCreatorBuilder.of()
         )
             .setTooltip(Component.translatable("chatPlus.speechToText.speechToTextTranslateLang.tooltip"))
             .setDefaultValue(Config.values.speechToTextTranslateLang)

@@ -8,13 +8,14 @@ import java.io.InputStreamReader
 import java.nio.charset.StandardCharsets
 import java.util.*
 
-var languages: List<Language> = ArrayList()
-var languageTo: Language? = null
-var languageSelf: Language? = null
-var languageSpeak: Language? = null
-var languageSpeakEnabled = false
 
 object LanguageManager {
+
+    var languages: List<Language> = ArrayList()
+    var languageTo: Language? = null
+    var languageSelf: Language? = null
+    var languageSpeak: Language? = null
+    var languageSpeakEnabled = false
 
     val autoLang: Language
 

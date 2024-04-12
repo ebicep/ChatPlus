@@ -21,4 +21,8 @@ object AlternatingColorBackground {
 fun main() {
     println((255 * .5f).toInt() shl 24)
     println(Color(255, 255, 255, 255).rgb)
+    println(Color(-16737281, true))
+    println(Color(2130706432, true))
+    println(Color((0xFFFFFF55).toInt(), true))
+    //00c800
 }

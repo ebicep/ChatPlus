@@ -1,7 +1,6 @@
 package com.ebicep.chatplus.features.textbarelements
 
 import com.ebicep.chatplus.hud.EDIT_BOX_HEIGHT
-import com.ebicep.chatplus.hud.PADDING
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphics
 
@@ -10,7 +9,7 @@ interface TextBarElement {
     fun getWidth(): Int
 
     fun getPaddedWidth(): Int {
-        return getWidth() + PADDING * 2
+        return getWidth() + TextBarElements.PADDING * 2
     }
 
     fun getText(): String?

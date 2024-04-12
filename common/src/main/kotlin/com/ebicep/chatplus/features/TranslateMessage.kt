@@ -6,9 +6,9 @@ import com.ebicep.chatplus.features.textbarelements.FindToggleEvent
 import com.ebicep.chatplus.features.textbarelements.TextBarElements
 import com.ebicep.chatplus.features.textbarelements.TranslateSpeakTextBarElement
 import com.ebicep.chatplus.hud.*
+import com.ebicep.chatplus.translator.LanguageManager
 import com.ebicep.chatplus.translator.SelfTranslator
 import com.ebicep.chatplus.translator.Translator
-import com.ebicep.chatplus.translator.languageTo
 import dev.architectury.event.CompoundEventResult
 import dev.architectury.event.events.client.ClientChatEvent
 import dev.architectury.event.events.client.ClientSystemMessageEvent
@@ -136,7 +136,7 @@ object TranslateMessage {
             return
         }
         val unformattedText = component.string
-        languageTo?.let {
+        LanguageManager.languageTo?.let {
             Translator(unformattedText, null, it).start()
         }
     }

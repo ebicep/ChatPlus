@@ -14,10 +14,12 @@ import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import javax.net.ssl.HttpsURLConnection
 
-const val BASE_URL = "https://translate.googleapis.com/translate_a/single"
-var accessDenied = false
-
 class GoogleRequester {
+
+    companion object {
+        const val BASE_URL = "https://translate.googleapis.com/translate_a/single"
+        var accessDenied = false
+    }
 
     fun translateAuto(message: String?, to: Language?): RequestResult {
         return translate(message, LanguageManager.autoLang, to!!)
@@ -117,7 +119,7 @@ class Timeout : Thread() {
     override fun run() {
         try {
             sleep(300000)
-            accessDenied = false
+            GoogleRequester.accessDenied = false
         } catch (ignored: InterruptedException) {
         }
     }

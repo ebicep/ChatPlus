@@ -24,7 +24,7 @@ data class ChatTabRenderEvent(val poseStack: PoseStack, val chatTab: ChatTab, va
 
 object ChatTabs {
 
-    val defaultTab: ChatTab = ChatTab("All", "(?s).*")
+    val defaultTab: ChatTab = ChatTab("All", "(?s).*", alwaysAdd = true)
     private var startRenderTabIndex = 0
 
     init {

@@ -6,10 +6,11 @@ import com.ebicep.chatplus.hud.ChatRenderPreLineAppearanceEvent
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
+import java.awt.Color
 
 object FilterHighlight {
 
-    const val DEFAULT_COLOR = -16737281
+    val DEFAULT_COLOR = Color(0, 200, 0, 50).rgb
 
     init {
         EventBus.register<ChatRenderPreLineAppearanceEvent>(5) {

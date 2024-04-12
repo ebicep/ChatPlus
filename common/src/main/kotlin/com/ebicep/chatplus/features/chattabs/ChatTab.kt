@@ -89,11 +89,12 @@ class ChatTab {
     // if true then tab loop will break if message is added to this tab, overrides alwaysAdds
     var skipOthers: Boolean = false
 
-    constructor(name: String, pattern: String, autoPrefix: String = "") {
+    constructor(name: String, pattern: String, autoPrefix: String = "", alwaysAdd: Boolean = false) {
         this.name = name
         this.pattern = pattern
         this.regex = Regex(pattern)
         this.autoPrefix = autoPrefix
+        this.alwaysAdd = alwaysAdd
     }
 
     @Transient

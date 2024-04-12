@@ -15,11 +15,10 @@ import net.minecraft.client.gui.components.PlayerFaceRenderer
 import net.minecraft.resources.ResourceLocation
 import java.util.*
 
-private const val CACHE_EXPIRATION = 1000 * 60 * 10
-private const val HEAD_WIDTH_PADDED = PlayerFaceRenderer.SKIN_HEAD_WIDTH + 2
-
 object PlayerHeadChatDisplay {
 
+    private const val CACHE_EXPIRATION = 1000 * 60 * 10
+    private const val HEAD_WIDTH_PADDED = PlayerFaceRenderer.SKIN_HEAD_WIDTH + 2
     private val NAME_REGEX = Regex("(§.)|\\W")
     private val playerNameUUIDs = mutableMapOf<String, TimedUUID>()
     private val playerHeads = mutableMapOf<UUID, ResourceLocation>()

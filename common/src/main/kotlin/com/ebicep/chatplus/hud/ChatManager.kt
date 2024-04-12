@@ -13,7 +13,6 @@ import kotlin.math.roundToInt
 const val MIN_HEIGHT = 80
 const val MIN_WIDTH = 160
 
-
 data class GetMaxWidthEvent(
     var maxWidth: Int
 ) : Event

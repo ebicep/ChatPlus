@@ -8,8 +8,8 @@ import net.minecraft.client.Minecraft
 class SelfTranslator(val toTranslate: String, val prefix: String) : Thread() {
 
     override fun run() {
-        languageSpeak?.let {
-            val translator = Translator(toTranslate, languageSelf, it)
+        LanguageManager.languageSpeak?.let {
+            val translator = Translator(toTranslate, LanguageManager.languageSelf, it)
             val translateResult = translator.translate(toTranslate) ?: return
             val messages = splitChatMessage(translateResult.translatedText)
 

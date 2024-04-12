@@ -66,7 +66,7 @@ class Translator(val message: String, val from: Language?, val to: Language) : T
         if (text.trim().isEmpty()) {
             return null
         }
-        if (!accessDenied) {
+        if (!GoogleRequester.accessDenied) {
             //Use free ones later
             val google = GoogleRequester()
             val transRequest: RequestResult = if (from == null) google.translateAuto(text, to) else google.translate(text, from, to)

@@ -35,7 +35,7 @@ class ScreenShotChatElement(private val chatPlusScreen: ChatPlusScreen) : TextBa
     override fun onRender(guiGraphics: GuiGraphics, currentX: Int, currentY: Int, mouseX: Int, mouseY: Int) {
         fill(guiGraphics, currentX, currentY)
         val onCooldown = onCooldown()
-        drawCenteredString(guiGraphics, currentX, currentY, (if (onCooldown) SCREENSHOT_COLOR else 0xFFFFFF))
+        drawCenteredString(guiGraphics, currentX, currentY, if (onCooldown) SCREENSHOT_COLOR else 0xFFFFFF)
         if (onCooldown) {
             renderOutline(guiGraphics, currentX, currentY, SCREENSHOT_COLOR)
         }

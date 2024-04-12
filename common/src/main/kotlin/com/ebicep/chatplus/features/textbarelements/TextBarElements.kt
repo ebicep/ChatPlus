@@ -7,6 +7,9 @@ import com.ebicep.chatplus.hud.*
 
 object TextBarElements {
 
+    const val PADDING = 6
+    const val SPACER = 2 // space between text box / find / translate
+
     data class AddTextBarElementEvent(
         val screen: ChatPlusScreen,
         val elements: MutableList<TextBarElement>

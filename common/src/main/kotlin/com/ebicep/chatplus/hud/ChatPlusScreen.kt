@@ -3,7 +3,7 @@ package com.ebicep.chatplus.hud
 import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.events.Event
 import com.ebicep.chatplus.events.EventBus
-import com.ebicep.chatplus.translator.languageSpeakEnabled
+import com.ebicep.chatplus.translator.LanguageManager
 import com.mojang.blaze3d.platform.InputConstants
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.Font
@@ -22,8 +22,6 @@ import net.minecraft.util.Mth
 import org.apache.commons.lang3.StringUtils
 
 const val EDIT_BOX_HEIGHT = 14
-const val PADDING = 6
-const val SPACER = 2 // space between text box / find / translate
 
 data class ChatScreenKeyPressedEvent(
     val screen: ChatPlusScreen,
@@ -390,7 +388,7 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
         pPartialTick: Float
     ) {
         guiGraphics.fill(
-            if (languageSpeakEnabled) 65 else 0,
+            if (LanguageManager.languageSpeakEnabled) 65 else 0,
             height - EDIT_BOX_HEIGHT,
             editBoxWidth,
             height,
