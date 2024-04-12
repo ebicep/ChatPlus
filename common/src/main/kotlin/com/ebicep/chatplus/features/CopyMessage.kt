@@ -15,25 +15,26 @@ object CopyMessage {
 
     init {
         var lastCopied: TimeStampedLines? = null
-        var copiedMessageCooldown = -1L
+        var copiedMessageCooldown: Long = -1
         var messageCopied = false
         EventBus.register<ChatScreenKeyPressedEvent>(1, { messageCopied }) {
-            ChatManager.selectedTab.getHoveredOverMessage()?.let { message ->
+            val hoveredOverMessage = ChatManager.selectedTab.getHoveredOverMessage()
+            val copied: MutableSet<ChatTab.ChatPlusGuiMessageLine> = mutableSetOf()
+            if (hoveredOverMessage != null && SelectChat.selectedMessages.isEmpty()) {
+                copied.add(hoveredOverMessage)
+                copyToClipboard(hoveredOverMessage)
+            } else if (SelectChat.selectedMessages.isNotEmpty()) {
+                copyToClipboard(SelectChat.selectedMessages.joinToString("\n") {
+                    copied.add(it)
+                    it.content
+                })
+            }
+            if (copied.isNotEmpty()) {
                 messageCopied = copiedMessageCooldown < Events.currentTick && Config.values.keyCopyMessageWithModifier.isDown()
                 if (!messageCopied) {
                     return@register
                 }
                 copiedMessageCooldown = Events.currentTick + 20
-                val copied: MutableSet<ChatTab.ChatPlusGuiMessageLine> = mutableSetOf()
-                if (SelectChat.selectedMessages.isEmpty()) {
-                    copied.add(message)
-                    copyToClipboard(message)
-                } else {
-                    copyToClipboard(SelectChat.selectedMessages.joinToString("\n") {
-                        copied.add(it)
-                        it.content
-                    })
-                }
                 lastCopied = TimeStampedLines(copied, Events.currentTick + 60)
                 it.returnFunction = true
             }
