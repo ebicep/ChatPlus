@@ -1,10 +1,12 @@
 package com.ebicep.chatplus.features
 
+import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.events.Events
 import com.ebicep.chatplus.features.chattabs.ChatTab
 import com.ebicep.chatplus.features.chattabs.ChatTabAddDisplayMessageEvent
 import com.ebicep.chatplus.features.textbarelements.FindTextBarElement
+import com.ebicep.chatplus.features.textbarelements.FindToggleEvent
 import com.ebicep.chatplus.features.textbarelements.TextBarElements
 import com.ebicep.chatplus.features.textbarelements.TranslateToggleEvent
 import com.ebicep.chatplus.hud.*
@@ -13,14 +15,22 @@ import java.awt.Color
 
 object FindText {
 
-    const val FIND_COLOR = 0xFFFFFF55
-    private val findBackgroundColor = Color(FIND_COLOR.toInt()).darker().rgb
+    const val FIND_COLOR = (0xFFFFFF55).toInt()
+    private val findBackgroundColor = Color(FIND_COLOR).darker().rgb
     var findEnabled: Boolean = false
 
     init {
         var lastMovedToMessage: Pair<Pair<ChatTab.ChatPlusGuiMessage, Int>, Long>? = null // <linked message, wrapped index>, tick
         EventBus.register<TextBarElements.AddTextBarElementEvent>(5) {
             it.elements.add(FindTextBarElement(it.screen))
+        }
+        var findShortcutUsed = false
+        EventBus.register<ChatScreenKeyPressedEvent>(1, { findShortcutUsed }) {
+            findShortcutUsed = Config.values.keyFindMessageWithModifier.isDown()
+            if (findShortcutUsed) {
+                toggle(it.screen)
+                it.returnFunction = true
+            }
         }
         EventBus.register<ChatScreenCloseEvent> {
             findEnabled = false
@@ -77,6 +87,18 @@ object FindText {
                 it.backgroundColor = findBackgroundColor
             }
         }
+    }
+
+    fun toggle(chatPlusScreen: ChatPlusScreen) {
+        findEnabled = !findEnabled
+        EventBus.post(FindToggleEvent(findEnabled))
+        if (findEnabled) {
+            ChatManager.selectedTab.refreshDisplayedMessage(chatPlusScreen.input?.value)
+        } else {
+            ChatManager.selectedTab.refreshDisplayedMessage()
+        }
+        chatPlusScreen.initial = chatPlusScreen.input!!.value
+        chatPlusScreen.rebuildWidgets0()
     }
 
 }

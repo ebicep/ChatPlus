@@ -3,6 +3,7 @@ package com.ebicep.chatplus.config.forge
 import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.config.TimestampMode
 import com.ebicep.chatplus.config.queueUpdateConfig
+import com.ebicep.chatplus.config.serializers.KeyWithModifier
 import com.ebicep.chatplus.features.AlignText
 import com.ebicep.chatplus.features.FilterHighlight
 import com.ebicep.chatplus.features.FilterHighlight.DEFAULT_COLOR
@@ -298,26 +299,16 @@ object ConfigScreenImpl {
             entryBuilder.keyCodeOption("key.moveChat", Config.values.keyMoveChat) { Config.values.keyMoveChat = it }
         )
         keyBinds.addEntry(
-            entryBuilder.startModifierKeyCodeField(
-                Component.translatable("key.copyMessage"),
-                ModifierKeyCode.of(
-                    Config.values.keyCopyMessageWithModifier.key,
-                    Modifier.of(Config.values.keyCopyMessageWithModifier.modifier)
-                )
+            entryBuilder.keyCodeOptionWithModifier(
+                "key.findMessage",
+                Config.values.keyFindMessageWithModifier
             )
-                .setDefaultValue(
-                    ModifierKeyCode.of(
-                        Config.values.keyCopyMessageWithModifier.key,
-                        Modifier.of(Config.values.keyCopyMessageWithModifier.modifier)
-                    )
-                )
-                .setKeySaveConsumer {
-                    Config.values.keyCopyMessageWithModifier.key = it
-                }
-                .setModifierSaveConsumer {
-                    Config.values.keyCopyMessageWithModifier.modifier = it.modifier.value
-                }
-                .build()
+        )
+        keyBinds.addEntry(
+            entryBuilder.keyCodeOptionWithModifier(
+                "key.copyMessage",
+                Config.values.keyCopyMessageWithModifier
+            )
         )
         keyBinds.addEntry(entryBuilder.booleanToggle(
             "key.copyMessage.noFormatting.toggle",
@@ -659,6 +650,33 @@ object ConfigScreenImpl {
             .setKeySaveConsumer {
                 saveConsumer.accept(it)
                 queueUpdateConfig = true
+            }
+            .build()
+    }
+
+    private fun ConfigEntryBuilder.keyCodeOptionWithModifier(
+        translatable: String,
+        variable: KeyWithModifier
+    ): KeyCodeEntry {
+        return startModifierKeyCodeField(
+            Component.translatable(translatable),
+            ModifierKeyCode.of(
+                variable.key,
+                Modifier.of(variable.modifier)
+            )
+        )
+            .setTooltip(Component.translatable("$translatable.tooltip"))
+            .setDefaultValue(
+                ModifierKeyCode.of(
+                    variable.key,
+                    Modifier.of(variable.modifier)
+                )
+            )
+            .setKeySaveConsumer {
+                variable.key = it
+            }
+            .setModifierSaveConsumer {
+                variable.modifier = it.modifier.value
             }
             .build()
     }

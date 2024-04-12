@@ -24,9 +24,9 @@ object CopyMessage {
                 copied.add(hoveredOverMessage)
                 copyToClipboard(hoveredOverMessage)
             } else if (SelectChat.selectedMessages.isNotEmpty()) {
-                copyToClipboard(SelectChat.selectedMessages.joinToString("\n") {
-                    copied.add(it)
-                    it.content
+                copyToClipboard(SelectChat.selectedMessages.joinToString("\n") { line ->
+                    copied.add(line)
+                    line.content
                 })
             }
             if (copied.isNotEmpty()) {

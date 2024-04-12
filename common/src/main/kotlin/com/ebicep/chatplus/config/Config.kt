@@ -152,6 +152,7 @@ data class ConfigVariables(
     var keyFineScroll: InputConstants.Key = InputConstants.getKey("key.keyboard.left.shift"),
     var keyLargeScroll: InputConstants.Key = InputConstants.getKey("key.keyboard.left.alt"),
     var keyMoveChat: InputConstants.Key = InputConstants.getKey("key.keyboard.right.control"),
+    var keyFindMessageWithModifier: KeyWithModifier = KeyWithModifier(InputConstants.getKey("key.keyboard.f"), 2),
     var keyCopyMessageWithModifier: KeyWithModifier = KeyWithModifier(InputConstants.getKey("key.keyboard.c"), 2),
     var copyNoFormatting: Boolean = true,
     var keyPeekChat: InputConstants.Key = InputConstants.getKey("key.keyboard.p"),

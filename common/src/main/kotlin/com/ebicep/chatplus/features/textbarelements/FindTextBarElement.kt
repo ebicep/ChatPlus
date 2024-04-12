@@ -1,10 +1,7 @@
 package com.ebicep.chatplus.features.textbarelements
 
 import com.ebicep.chatplus.events.Event
-import com.ebicep.chatplus.events.EventBus
-import com.ebicep.chatplus.features.FindText.FIND_COLOR
-import com.ebicep.chatplus.features.FindText.findEnabled
-import com.ebicep.chatplus.hud.ChatManager
+import com.ebicep.chatplus.features.FindText
 import com.ebicep.chatplus.hud.ChatPlusScreen
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphics
@@ -25,15 +22,7 @@ class FindTextBarElement(private val chatPlusScreen: ChatPlusScreen) : TextBarEl
     }
 
     override fun onClick() {
-        findEnabled = !findEnabled
-        EventBus.post(FindToggleEvent(findEnabled))
-        if (findEnabled) {
-            ChatManager.selectedTab.refreshDisplayedMessage(chatPlusScreen.input?.value)
-        } else {
-            ChatManager.selectedTab.refreshDisplayedMessage()
-        }
-        chatPlusScreen.initial = chatPlusScreen.input!!.value
-        chatPlusScreen.rebuildWidgets0()
+        FindText.toggle(chatPlusScreen)
     }
 
     override fun onHover(guiGraphics: GuiGraphics, pMouseX: Int, pMouseY: Int) {
@@ -42,9 +31,9 @@ class FindTextBarElement(private val chatPlusScreen: ChatPlusScreen) : TextBarEl
 
     override fun onRender(guiGraphics: GuiGraphics, currentX: Int, currentY: Int, mouseX: Int, mouseY: Int) {
         fill(guiGraphics, currentX, currentY)
-        drawCenteredString(guiGraphics, currentX, currentY, (if (findEnabled) FIND_COLOR else 0xFFFFFF).toInt())
-        if (findEnabled) {
-            renderOutline(guiGraphics, currentX, currentY, FIND_COLOR.toInt())
+        drawCenteredString(guiGraphics, currentX, currentY, if (FindText.findEnabled) FindText.FIND_COLOR else -1)
+        if (FindText.findEnabled) {
+            renderOutline(guiGraphics, currentX, currentY, FindText.FIND_COLOR)
         }
     }
 
