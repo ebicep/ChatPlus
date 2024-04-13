@@ -7,7 +7,6 @@ import com.ebicep.chatplus.hud.*
 import com.ebicep.chatplus.util.GraphicsUtil.createPose
 import com.ebicep.chatplus.util.GraphicsUtil.translate0
 import com.ebicep.chatplus.util.KeyUtil.isDown
-import com.mojang.blaze3d.platform.InputConstants
 import com.mojang.blaze3d.vertex.PoseStack
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphics
@@ -32,8 +31,8 @@ object MovableChat {
     private var yDisplacement = 0.0
 
     init {
-        EventBus.register<ChatScreenMouseClickedEvent> {
-            if (it.button != 0) {
+        EventBus.register<ChatScreenMouseClickedEvent>(50, { movingChat }) {
+            if (it.button != 0 || !Config.values.keyMoveChat.isDown()) {
                 return@register
             }
             val side = ChatManager.getX() + ChatManager.getWidth()
@@ -48,8 +47,7 @@ object MovableChat {
             if (mouseY < roofInner && mouseY > roof && mouseX > ChatManager.getX() && mouseX < side) {
                 movingChatY = true
             }
-            val window = Minecraft.getInstance().window.window
-            if (!movingChatX && !movingChatY && InputConstants.isKeyDown(window, Config.values.keyMoveChat.value)) {
+            if (!movingChatX && !movingChatY) {
                 if (
                     mouseX > ChatManager.getX() && mouseX < sideInner &&
                     mouseY > roofInner && mouseY < ChatManager.getY()
@@ -67,13 +65,11 @@ object MovableChat {
                 it.returnFunction = true
             }
         }
-
-        EventBus.register<ChatScreenMouseDraggedEvent> {
-            if (!ChatManager.isChatFocused() || it.button != 0) {
+        EventBus.register<ChatScreenMouseDraggedEvent>(50, { movingChat }) {
+            if (!ChatManager.isChatFocused() || it.button != 0 || !Config.values.keyMoveChat.isDown()) {
                 movingChat = false
                 return@register
             }
-
             val mouseX = it.mouseX
             val mouseY = it.mouseY
             if (movingChatX) {
@@ -143,7 +139,7 @@ object MovableChat {
             )
             it.returnFunction = true
         }
-        EventBus.register<ChatRenderPostLinesEvent> {
+        EventBus.register<ChatRenderPostLinesEvent>(50, { movingChat }) {
             if (!moving) {
                 return@register
             }
