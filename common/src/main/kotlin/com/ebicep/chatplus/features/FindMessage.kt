@@ -88,7 +88,7 @@ object FindMessage {
                     ChatManager.selectedTab.refreshDisplayedMessage()
                     it.screen.rebuildWidgets0()
                     val displayIndex =
-                        ChatManager.selectedTab.displayedMessages.indexOfFirst { line -> line.linkedMessage == linkedMessage }
+                        ChatManager.selectedTab.displayedMessages.indexOfFirst { line -> line.linkedMessage === linkedMessage }
                     val scrollTo = ChatManager.selectedTab.displayedMessages.size - displayIndex - lineOffset
                     ChatManager.selectedTab.scrollChat(scrollTo)
                 }
@@ -96,7 +96,7 @@ object FindMessage {
         }
         EventBus.register<ChatRenderPreLineAppearanceEvent>(10) {
             lastMovedToMessage?.let { message ->
-                if (message.first.first != it.chatPlusGuiMessageLine.linkedMessage ||
+                if (message.first.first !== it.chatPlusGuiMessageLine.linkedMessage ||
                     message.first.second != it.chatPlusGuiMessageLine.wrappedIndex
                 ) {
                     return@let
