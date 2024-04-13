@@ -393,17 +393,21 @@ class ChatTab {
         this.newMessageSinceScroll = false
     }
 
-    fun scrollChat(pPosInc: Int) {
-        chatScrollbarPos += pPosInc
-        val displayedMessagesSize: Int = this.displayedMessages.size
-        val maxScroll = displayedMessagesSize - ChatManager.getLinesPerPageScaled()
-        if (chatScrollbarPos > maxScroll) {
-            chatScrollbarPos = maxScroll
+    fun scrollChat(positionIncrease: Int) {
+        setScrollPos(chatScrollbarPos + positionIncrease)
+    }
+
+    fun setScrollPos(newPosition: Int) {
+        var pos = newPosition
+        val maxScroll = displayedMessages.size - ChatManager.getLinesPerPageScaled()
+        if (pos > maxScroll) {
+            pos = maxScroll
         }
-        if (chatScrollbarPos <= 0) {
-            chatScrollbarPos = 0
+        if (pos <= 0) {
+            pos = 0
             this.newMessageSinceScroll = false
         }
+        chatScrollbarPos = pos
     }
 
     fun rescaleChat() {

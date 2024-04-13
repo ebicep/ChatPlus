@@ -22,6 +22,7 @@ object FeatureManager {
         PeakChat
         PlayerHeadChatDisplay
         SelectChat
+        ScrollBar
 //        AlternatingColorBackground
     }
 
