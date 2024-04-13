@@ -22,10 +22,10 @@ object EventBus {
         }
 
         fun <E> post(data: E): E {
-            subscribers.forEach {
+            for (it in subscribers) {
                 it.callback.invoke(data as T)
                 if (it.skipOtherCallbacks()) {
-                    return@forEach
+                    break
                 }
             }
             return data
