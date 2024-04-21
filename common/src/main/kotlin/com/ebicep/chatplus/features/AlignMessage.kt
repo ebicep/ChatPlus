@@ -19,13 +19,13 @@ object AlignMessage {
 
     @Serializable
     enum class Alignment(private val key: String, val translation: (text: String) -> Double) {
-        LEFT("chatPlus.chatSettings.textAlignment.left", {
+        LEFT("chatPlus.chatSettings.messageAlignment.left", {
             0.0
         }),
-        CENTER("chatPlus.chatSettings.textAlignment.center", {
+        CENTER("chatPlus.chatSettings.messageAlignment.center", {
             ChatRenderer.rescaledWidth / 2.0 - Minecraft.getInstance().font.width(it) / 2.0
         }),
-        RIGHT("chatPlus.chatSettings.textAlignment.right", {
+        RIGHT("chatPlus.chatSettings.messageAlignment.right", {
             (ChatRenderer.rescaledWidth - Minecraft.getInstance().font.width(it)).toDouble()
         }),
 
