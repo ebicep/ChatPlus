@@ -88,13 +88,21 @@ object ConfigScreenImpl {
         )
         general.addEntry(
             entryBuilder.percentSlider(
+                "chatPlus.chatSettings.unfocusedHeight",
+                Config.values.unfocusedHeight,
+                { Config.values.unfocusedHeight = it }
+            )
+        )
+        general.addEntry(
+            entryBuilder.percentSlider(
                 "chatPlus.chatSettings.lineSpacing",
                 Config.values.lineSpacing,
                 { Config.values.lineSpacing = it }
             )
         )
-        general.addEntry(entryBuilder.startEnumSelector(
-            Component.translatable("chatPlus.chatSettings.chatTimestampMode"),
+        general.addEntry(
+            entryBuilder.startEnumSelector(
+                Component.translatable("chatPlus.chatSettings.chatTimestampMode"),
             TimestampMode::class.java,
             Config.values.chatTimestampMode
         )

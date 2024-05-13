@@ -124,6 +124,7 @@ data class ConfigVariables(
     var scale: Float = 1f,
     var textOpacity: Float = 1f,
     var backgroundOpacity: Float = .5f,
+    var unfocusedHeight: Float = .5f,
     var lineSpacing: Float = 0f,
     var maxMessages: Int = 1000,
     var maxCommandSuggestions: Int = 15,

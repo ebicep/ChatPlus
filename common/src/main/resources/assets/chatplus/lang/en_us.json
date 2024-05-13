@@ -28,6 +28,8 @@
   "chatPlus.chatSettings.textOpacity.tooltip": "Changes the opacity of the chat text.",
   "chatPlus.chatSettings.backgroundOpacity": "Background Opacity",
   "chatPlus.chatSettings.backgroundOpacity.tooltip": "Changes the opacity of the chat background.",
+  "chatPlus.chatSettings.unfocusedHeight": "Unfocused Height",
+  "chatPlus.chatSettings.unfocusedHeight.tooltip": "Changes the height of the chat when it is unfocused. Percent is based on focused height.",
   "chatPlus.chatSettings.lineSpacing": "Line Spacing",
   "chatPlus.chatSettings.lineSpacing.tooltip": "Changes the spacing between lines of text in chat.",
   "chatPlus.chatSettings.chatTimestampMode": "Timestamp Format",

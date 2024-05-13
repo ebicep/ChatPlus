@@ -119,7 +119,7 @@ object ChatRenderer {
         var displayMessageIndex = 0
         var linesPerPage = rescaledLinesPerPage
         if (!chatFocused) {
-            linesPerPage /= 2
+            linesPerPage = (linesPerPage * Config.values.unfocusedHeight).roundToInt()
         }
         while (displayMessageIndex + selectedTab.chatScrollbarPos < messagesToDisplay && displayMessageIndex < linesPerPage) {
             val messageIndex = messagesToDisplay - displayMessageIndex - selectedTab.chatScrollbarPos

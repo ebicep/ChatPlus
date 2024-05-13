@@ -20,7 +20,13 @@ object AlternatingColorBackground {
 
 fun main() {
     println((255 * .5f).toInt() shl 24)
-    println(Color(255, 255, 255, 255).rgb)
+    val rgb = Color(100, 0, 255, 255).rgb
+    println(rgb)
+    println((0 or 3) shl 16)
+    println(Color(-1677787036, true))
+    println(Color(0 or 3 shl 16).rgb)
+    println(Color(0 or 10 shl 16))
+    println(Color(0 or 3 shl 16))
     println(Color(-16737281, true))
     println(Color(2130706432, true))
     println(Color((0xFFFFFF55).toInt(), true))
