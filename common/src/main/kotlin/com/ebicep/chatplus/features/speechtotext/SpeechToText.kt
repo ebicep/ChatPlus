@@ -242,7 +242,7 @@ class MicrophoneThread : Thread("ChatPlusMicrophoneThread") {
     override fun run() {
         while (running) {
             if (disabled) {
-                sleep(10000)
+                sleep(5000)
                 continue
             }
             if (recognizer == null) {
