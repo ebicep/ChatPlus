@@ -6,6 +6,10 @@ repositories {
     maven {
         url = uri("https://maven.quiltmc.org/repository/release/")
     }
+    maven {
+        name = "Terraformers"
+        url = uri("https://maven.terraformersmc.com/")
+    }
 }
 
 architectury {
@@ -45,6 +49,8 @@ dependencies {
 
     // Fabric Kotlin
     modImplementation("net.fabricmc:fabric-language-kotlin:${rootProject.property("fabric_kotlin_version")}")
+    // Mod Menu
+    modImplementation("com.terraformersmc:modmenu:${project.property("modmenu_version")}")
 }
 
 tasks.processResources {

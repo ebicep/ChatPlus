@@ -21,6 +21,9 @@
         "adapter": "kotlin",
         "value": "com.ebicep.chatplus.fabric.ChatPlusFabric"
       }
+    ],
+    "modmenu": [
+      "com.ebicep.chatplus.config.fabric.ModMenuIntegration"
     ]
   },
   "mixins": [
