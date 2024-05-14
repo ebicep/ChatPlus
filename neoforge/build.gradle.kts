@@ -2,19 +2,9 @@ plugins {
     id("com.github.johnrengelman.shadow")
 }
 
-repositories {
-    maven {
-        url = uri("https://maven.quiltmc.org/repository/release/")
-    }
-    maven {
-        name = "Terraformers"
-        url = uri("https://maven.terraformersmc.com/")
-    }
-}
-
 architectury {
     platformSetupLoomIde()
-    fabric()
+    neoForge()
 }
 
 loom {
@@ -23,41 +13,43 @@ loom {
 
 val common: Configuration by configurations.creating
 val shadowCommon: Configuration by configurations.creating
-val developmentFabric: Configuration by configurations.getting
+val developmentNeoForge: Configuration by configurations.getting
 
 configurations {
     compileOnly.configure { extendsFrom(common) }
     runtimeOnly.configure { extendsFrom(common) }
-    developmentFabric.extendsFrom(common)
+    developmentNeoForge.extendsFrom(common)
+}
+
+repositories {
+    // KFF
+    maven {
+        name = "Kotlin for Forge"
+        setUrl("https://thedarkcolour.github.io/KotlinForForge/")
+    }
+    maven {
+        setUrl("https://maven.neoforged.net/releases/")
+    }
 }
 
 dependencies {
-    modImplementation("net.fabricmc:fabric-loader:${rootProject.property("fabric_loader_version")}")
-    modApi("net.fabricmc.fabric-api:fabric-api:${rootProject.property("fabric_api_version")}")
+    neoForge("net.neoforged:neoforge:${rootProject.property("neoforge_version")}")
     // Remove the next line if you don't want to depend on the API
-    modApi("dev.architectury:architectury-fabric:${rootProject.property("architectury_version")}")
-    modApi("me.shedaniel.cloth:cloth-config-fabric:${rootProject.property("cloth_config_version")}") {
-        exclude(group = "net.fabricmc.fabric-api")
-    }
+    modApi("dev.architectury:architectury-neoforge:${rootProject.property("architectury_version")}")
+    modApi("me.shedaniel.cloth:cloth-config-neoforge:${rootProject.property("cloth_config_version")}")
 
-    common(project(":common", "namedElements")) {
-        isTransitive = false
-    }
-    shadowCommon(project(":common", "transformProductionFabric")) {
-        isTransitive = false
-    }
+    common(project(":common", "namedElements")) { isTransitive = false }
+    shadowCommon(project(":common", "transformProductionForge")) { isTransitive = false }
 
-    // Fabric Kotlin
-    modImplementation("net.fabricmc:fabric-language-kotlin:${rootProject.property("fabric_kotlin_version")}")
-    // Mod Menu
-    modImplementation("com.terraformersmc:modmenu:${project.property("modmenu_version")}")
+    // Kotlin For Forge
+    implementation("thedarkcolour:kotlinforforge:${rootProject.property("kotlin_for_forge_version")}")
 }
 
 tasks.processResources {
     inputs.property("group", rootProject.property("maven_group"))
     inputs.property("version", project.version)
 
-    filesMatching("fabric.mod.json") {
+    filesMatching("META-INF/mods.toml") {
         expand(
             mapOf(
                 "group" to rootProject.property("maven_group"),
@@ -66,7 +58,7 @@ tasks.processResources {
                 "mod_id" to rootProject.property("mod_id"),
                 "minecraft_version" to rootProject.property("minecraft_version"),
                 "architectury_version" to rootProject.property("architectury_version"),
-                "fabric_kotlin_version" to rootProject.property("fabric_kotlin_version"),
+                "kotlin_for_forge_version" to rootProject.property("kotlin_for_forge_version"),
                 "cloth_config_version" to rootProject.property("cloth_config_version"),
 
                 "mod_name" to rootProject.property("mod_name"),
@@ -78,6 +70,7 @@ tasks.processResources {
 }
 
 tasks.shadowJar {
+    exclude("fabric.mod.json")
     exclude("architectury.common.json")
     configurations = listOf(shadowCommon)
     archiveClassifier.set("dev-shadow")
@@ -88,6 +81,7 @@ tasks.remapJar {
     inputFile.set(tasks.shadowJar.get().archiveFile)
     dependsOn(tasks.shadowJar)
     archiveClassifier.set(null as String?)
+    atAccessWideners.add(loom.accessWidenerPath.get().asFile.name)
 }
 
 tasks.jar {

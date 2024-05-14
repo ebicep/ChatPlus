@@ -23,6 +23,7 @@ fun main() {
     val rgb = Color(100, 0, 255, 255).rgb
     println(rgb)
     println((0 or 3) shl 16)
+    println(Color(0, 0, 0, 25).rgb)
     println(Color(-1677787036, true))
     println(Color(0 or 3 shl 16).rgb)
     println(Color(0 or 10 shl 16))

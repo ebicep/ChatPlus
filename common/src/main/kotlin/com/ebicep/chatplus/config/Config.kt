@@ -130,7 +130,7 @@ data class ConfigVariables(
     var maxCommandSuggestions: Int = 15,
     var chatTimestampMode: TimestampMode = TimestampMode.HR_12_SECOND,
     var hoverHighlightEnabled: Boolean = true,
-    var hoverHighlightColor: Int = 0,
+    var hoverHighlightColor: Int = 419430400,
     // tabs
     var chatTabs: MutableList<ChatTab> = mutableListOf(defaultTab),
     var selectedTab: Int = 0,
