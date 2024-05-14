@@ -239,16 +239,19 @@ class MicrophoneThread : Thread("ChatPlusMicrophoneThread") {
     }
 
     fun resetRecognizer() {
+        ChatPlus.LOGGER.info("Resetting Recognizer")
         disabled = false
         recognizer = null
     }
 
     fun resetMicrophone() {
+        ChatPlus.LOGGER.info("Resetting Microphone")
         disabled = false
         microphone = null
     }
 
     override fun run() {
+        ChatPlus.LOGGER.info("SpeechToText Thread started")
         while (running) {
             if (disabled) {
                 sleep(5000)

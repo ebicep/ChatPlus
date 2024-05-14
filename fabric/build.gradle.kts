@@ -40,17 +40,15 @@ dependencies {
         exclude(group = "net.fabricmc.fabric-api")
     }
 
-    common(project(":common", "namedElements")) {
-        isTransitive = false
-    }
-    shadowCommon(project(":common", "transformProductionFabric")) {
-        isTransitive = false
-    }
+    common(project(":common", "namedElements")) { isTransitive = false }
+    shadowCommon(project(":common", "transformProductionFabric")) { isTransitive = false }
 
     // Fabric Kotlin
     modImplementation("net.fabricmc:fabric-language-kotlin:${rootProject.property("fabric_kotlin_version")}")
     // Mod Menu
     modImplementation("com.terraformersmc:modmenu:${project.property("modmenu_version")}")
+
+//    include("com.alphacephei:vosk:0.3.45")
 }
 
 tasks.processResources {

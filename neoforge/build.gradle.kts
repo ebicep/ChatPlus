@@ -39,10 +39,15 @@ dependencies {
     modApi("me.shedaniel.cloth:cloth-config-neoforge:${rootProject.property("cloth_config_version")}")
 
     common(project(":common", "namedElements")) { isTransitive = false }
-    shadowCommon(project(":common", "transformProductionForge")) { isTransitive = false }
+    shadowCommon(project(":common", "transformProductionNeoForge")) { isTransitive = false }
 
     // Kotlin For Forge
     implementation("thedarkcolour:kotlinforforge:${rootProject.property("kotlin_for_forge_version")}")
+
+    forgeRuntimeLibrary("net.java.dev.jna:jna:5.14.0")
+    forgeRuntimeLibrary("com.alphacephei:vosk:0.3.45")
+
+    include("com.alphacephei:vosk:0.3.45")
 }
 
 tasks.processResources {

@@ -48,6 +48,11 @@ dependencies {
 
     // Kotlin For Forge
     implementation("thedarkcolour:kotlinforforge:${rootProject.property("kotlin_for_forge_version")}")
+
+    forgeRuntimeLibrary("net.java.dev.jna:jna:5.14.0")
+    forgeRuntimeLibrary("com.alphacephei:vosk:0.3.45")
+
+    include("com.alphacephei:vosk:0.3.45")
 }
 
 tasks.processResources {
