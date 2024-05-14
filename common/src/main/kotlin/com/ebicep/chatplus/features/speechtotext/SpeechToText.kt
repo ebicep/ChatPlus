@@ -134,10 +134,19 @@ object SpeechToText {
 class MicrophoneThread : Thread("ChatPlusMicrophoneThread") {
 
     private var listening = false
+
+    @Volatile
     private var running = true
+
+    @Volatile
     private var disabled = false
+
+    @Volatile
     private var microphone: Microphone? = null
+
+    @Volatile
     private var recognizer: Recognizer? = null
+
     private var lastSpokenMessage: String? = null
     private var totalData: MutableList<Short> = mutableListOf()
     private var quickSendTimer: Long = 0 // -1 = quick sended, 0 = idle
