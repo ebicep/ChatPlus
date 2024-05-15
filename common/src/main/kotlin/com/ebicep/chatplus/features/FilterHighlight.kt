@@ -13,7 +13,7 @@ object FilterHighlight {
     val DEFAULT_COLOR = Color(0, 200, 0, 50).rgb
 
     init {
-        EventBus.register<ChatRenderPreLineAppearanceEvent>(5) {
+        EventBus.register<ChatRenderPreLineAppearanceEvent>({ 5 }) {
             if (!Config.values.filterHighlightEnabled) {
                 return@register
             }

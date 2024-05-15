@@ -35,7 +35,7 @@ object ChatTabs {
                 Config.values.chatTabs.forEach { checkTabRefresh(it) }
             }
         }
-        EventBus.register<ChatRenderPreLinesEvent>(100) {
+        EventBus.register<ChatRenderPreLinesEvent>({ 100 }) {
             if (!Config.values.chatTabsEnabled) {
                 return@register
             }

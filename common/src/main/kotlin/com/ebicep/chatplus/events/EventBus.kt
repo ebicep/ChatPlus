@@ -11,10 +11,9 @@ object EventBus {
 
         private val subscribers = mutableListOf<EventData<T>>()
 
-        fun <E> register(priority: Int, skipOtherCallbacks: () -> Boolean, callback: (E) -> Unit) {
+        fun <E> register(priority: () -> Int, skipOtherCallbacks: () -> Boolean, callback: (E) -> Unit) {
             subscribers.add(EventData(priority, skipOtherCallbacks, callback as (T) -> Unit))
-            // higher priority first
-            subscribers.sortByDescending { it.priority }
+            sortSubscribers()
         }
 
         fun <E> unregister(callback: (E) -> Unit) {
@@ -31,8 +30,13 @@ object EventBus {
             return data
         }
 
+        fun sortSubscribers() {
+            // higher priority first
+            subscribers.sortByDescending { it.priority() }
+        }
+
         data class EventData<T>(
-            val priority: Int,
+            val priority: () -> Int,
             val skipOtherCallbacks: () -> Boolean = { false },
             val callback: (T) -> Unit
         )
@@ -43,7 +47,7 @@ object EventBus {
      * Allows EventBus.register<Event Class>({ })
      */
     inline fun <reified T> register(
-        priority: Int = 0,
+        noinline priority: () -> Int = { 0 },
         noinline skipOtherCallbacks: () -> Boolean = { false },
         noinline callback: (T) -> Unit
     ) = register(priority, skipOtherCallbacks, T::class.java, callback)
@@ -54,7 +58,7 @@ object EventBus {
     inline fun <reified T> post(data: T) =
         post(T::class.java, data)
 
-    fun <T> register(priority: Int, skipOtherCallbacks: () -> Boolean, clazz: Class<T>, callback: (T) -> Unit) {
+    fun <T> register(priority: () -> Int, skipOtherCallbacks: () -> Boolean, clazz: Class<T>, callback: (T) -> Unit) {
         if (!bus.containsKey(clazz.toString())) {
             bus[clazz.toString()] = Bus<T>()
         }

@@ -18,7 +18,7 @@ object BookmarkMessages {
     var showingBoomarks = false
 
     init {
-        EventBus.register<TextBarElements.AddTextBarElementEvent>(50) {
+        EventBus.register<TextBarElements.AddTextBarElementEvent>({ 50 }) {
             if (!Config.values.bookmarkEnabled) {
                 return@register
             }
@@ -39,7 +39,7 @@ object BookmarkMessages {
             }
         }
         var showBookmarkShortcutUsed = false
-        EventBus.register<ChatScreenKeyPressedEvent>(1, { showBookmarkShortcutUsed }) {
+        EventBus.register<ChatScreenKeyPressedEvent>({ 1 }, { showBookmarkShortcutUsed }) {
             var toggledBookmarkMessage = false
             if (Config.values.bookmarkKey.isDown()) {
                 val hoveredOverMessage = ChatManager.selectedTab.getHoveredOverMessage()
@@ -65,7 +65,7 @@ object BookmarkMessages {
                 it.returnFunction = true
             }
         }
-        EventBus.register<ChatRenderPreLineAppearanceEvent>(30) {
+        EventBus.register<ChatRenderPreLineAppearanceEvent>({ 30 }) {
             if (bookmarkedMessages.contains(it.chatPlusGuiMessageLine.linkedMessage)) {
                 it.backgroundColor = Config.values.bookmarkColor
             }

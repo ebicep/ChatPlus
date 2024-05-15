@@ -17,7 +17,7 @@ object CopyMessage {
         var lastCopied: TimeStampedLines? = null
         var copiedMessageCooldown: Long = -1
         var messageCopied = false
-        EventBus.register<ChatScreenKeyPressedEvent>(1, { messageCopied }) {
+        EventBus.register<ChatScreenKeyPressedEvent>({ 1 }, { messageCopied }) {
             val canCopyMessage = copiedMessageCooldown < Events.currentTick && Config.values.keyCopyMessageWithModifier.isDown()
             if (!canCopyMessage) {
                 return@register
@@ -40,7 +40,7 @@ object CopyMessage {
                 it.returnFunction = true
             }
         }
-        EventBus.register<ChatRenderPreLineAppearanceEvent>(2) {
+        EventBus.register<ChatRenderPreLineAppearanceEvent>({ 2 }) {
             if (lastCopied?.matches(it.line) == true) {
                 it.backgroundColor = 402587903
             }

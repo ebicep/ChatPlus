@@ -54,7 +54,7 @@ object ScrollBar {
                 )
             }
         }
-        EventBus.register<ChatScreenMouseClickedEvent>(25, { scrolling }) {
+        EventBus.register<ChatScreenMouseClickedEvent>({ 25 }, { scrolling }) {
             val rescaledX: Double = it.mouseX / ChatRenderer.scale
             val rescaledY: Double = it.mouseY / ChatRenderer.scale
             if (barStartX <= rescaledX && rescaledX <= barEndX &&

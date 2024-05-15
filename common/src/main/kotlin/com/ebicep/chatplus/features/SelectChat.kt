@@ -68,7 +68,7 @@ object SelectChat {
                 }
             }
         }
-        EventBus.register<ChatRenderPreLineAppearanceEvent>(3) {
+        EventBus.register<ChatRenderPreLineAppearanceEvent>({ 3 }) {
             if (selectedMessages.contains(it.chatPlusGuiMessageLine)) {
                 it.backgroundColor = SELECT_COLOR
             }

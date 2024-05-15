@@ -31,7 +31,7 @@ object MovableChat {
     private var yDisplacement = 0.0
 
     init {
-        EventBus.register<ChatScreenMouseClickedEvent>(50, { movingChat }) {
+        EventBus.register<ChatScreenMouseClickedEvent>({ 50 }, { movingChat }) {
             if (it.button != 0 || !Config.values.keyMoveChat.isDown()) {
                 return@register
             }
@@ -65,7 +65,7 @@ object MovableChat {
                 it.returnFunction = true
             }
         }
-        EventBus.register<ChatScreenMouseDraggedEvent>(50, { movingChat }) {
+        EventBus.register<ChatScreenMouseDraggedEvent>({ 50 }, { movingChat }) {
             if (!ChatManager.isChatFocused() || it.button != 0 || !Config.values.keyMoveChat.isDown()) {
                 movingChat = false
                 return@register
@@ -139,7 +139,7 @@ object MovableChat {
             )
             it.returnFunction = true
         }
-        EventBus.register<ChatRenderPostLinesEvent>(50, { movingChat }) {
+        EventBus.register<ChatRenderPostLinesEvent>({ 50 }, { movingChat }) {
             if (!moving) {
                 return@register
             }

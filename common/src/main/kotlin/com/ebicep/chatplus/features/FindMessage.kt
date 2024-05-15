@@ -21,7 +21,7 @@ object FindMessage {
 
     init {
         var lastMovedToMessage: Pair<Pair<ChatTab.ChatPlusGuiMessage, Int>, Long>? = null // <linked message, wrapped index>, tick
-        EventBus.register<TextBarElements.AddTextBarElementEvent>(100) {
+        EventBus.register<TextBarElements.AddTextBarElementEvent>({ 100 }) {
             if (!Config.values.findMessageEnabled) {
                 return@register
             }
@@ -30,7 +30,7 @@ object FindMessage {
             }
         }
         var findShortcutUsed = false
-        EventBus.register<ChatScreenKeyPressedEvent>(1, { findShortcutUsed }) {
+        EventBus.register<ChatScreenKeyPressedEvent>({ 1 }, { findShortcutUsed }) {
             if (!Config.values.findMessageEnabled) {
                 return@register
             }
@@ -90,7 +90,7 @@ object FindMessage {
                 }
             }
         }
-        EventBus.register<ChatRenderPreLineAppearanceEvent>(10) {
+        EventBus.register<ChatRenderPreLineAppearanceEvent>({ 10 }) {
             lastMovedToMessage?.let { message ->
                 if (message.first.first !== it.chatPlusGuiMessageLine.linkedMessage ||
                     message.first.second != it.chatPlusGuiMessageLine.wrappedIndex

@@ -67,7 +67,7 @@ object ScreenshotChat {
 
     init {
         // full chat screenshot
-        EventBus.register<TextBarElements.AddTextBarElementEvent>(150) {
+        EventBus.register<TextBarElements.AddTextBarElementEvent>({ 150 }) {
             if (!Config.values.screenshotChatEnabled) {
                 return@register
             }
@@ -110,7 +110,7 @@ object ScreenshotChat {
         }
         // line screenshot
         var lineScreenShotted = false
-        EventBus.register<ChatScreenKeyPressedEvent>(1, { lineScreenShotted }) {
+        EventBus.register<ChatScreenKeyPressedEvent>({ 1 }, { lineScreenShotted }) {
             if (!Config.values.screenshotChatEnabled) {
                 return@register
             }
@@ -131,7 +131,7 @@ object ScreenshotChat {
             it.returnFunction = true
         }
         var preventOtherRendering = false
-        EventBus.register<ChatRenderPreLineAppearanceEvent>(10, { preventOtherRendering }) {
+        EventBus.register<ChatRenderPreLineAppearanceEvent>({ 10 }, { preventOtherRendering }) {
             if (lastLinesScreenShotted?.matches(it.line) == true) {
                 preventOtherRendering = true
                 it.backgroundColor = SCREENSHOT_COLOR
