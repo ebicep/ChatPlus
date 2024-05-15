@@ -12,6 +12,7 @@ import com.ebicep.chatplus.translator.Translator
 import dev.architectury.event.CompoundEventResult
 import dev.architectury.event.events.client.ClientChatEvent
 import dev.architectury.event.events.client.ClientSystemMessageEvent
+import net.minecraft.ChatFormatting
 import net.minecraft.client.gui.components.EditBox
 import net.minecraft.network.chat.ChatType
 import net.minecraft.network.chat.Component
@@ -129,15 +130,33 @@ object TranslateMessage {
             handleTranslate(component)
             CompoundEventResult.pass()
         }
+
+        var translateClickCooldown = 0L
+        EventBus.register<ChatScreenMouseClickedEvent> {
+            if (!Config.values.translatorEnabled) {
+                return@register
+            }
+            if (System.currentTimeMillis() - translateClickCooldown < 2_000) {
+                return@register
+            }
+            ChatManager.selectedTab.getMessageAt(it.mouseX, it.mouseY)?.let { message ->
+                translateClickCooldown = System.currentTimeMillis()
+                val content = message.content
+                handleTranslate(ChatFormatting.stripFormatting(content)!!)
+            }
+        }
     }
 
     private fun handleTranslate(component: Component) {
         if (!Config.values.translatorEnabled) {
             return
         }
-        val unformattedText = component.string
+        handleTranslate(ChatFormatting.stripFormatting(component.string)!!)
+    }
+
+    private fun handleTranslate(str: String) {
         LanguageManager.languageTo?.let {
-            Translator(unformattedText, null, it).start()
+            Translator(str, null, it).start()
         }
     }
 
