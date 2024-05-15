@@ -8,6 +8,7 @@ import com.ebicep.chatplus.features.AlignMessage
 import com.ebicep.chatplus.features.FilterHighlight
 import com.ebicep.chatplus.features.FilterHighlight.DEFAULT_COLOR
 import com.ebicep.chatplus.features.chattabs.ChatTab
+import com.ebicep.chatplus.features.internal.MessageFilter
 import com.ebicep.chatplus.features.speechtotext.SpeechToText
 import com.ebicep.chatplus.hud.ChatManager
 import com.ebicep.chatplus.hud.ChatRenderer
@@ -41,6 +42,7 @@ object ConfigScreenImpl {
         addChatTabsOption(builder, entryBuilder)
         addFilterHighlightOption(builder, entryBuilder)
         addHoverHighlightOption(builder, entryBuilder)
+        addBookmarkOption(builder, entryBuilder)
         addFindMessageOption(builder, entryBuilder)
         addChatScreenShotOption(builder, entryBuilder)
         addPlayerHeadChatDisplayOption(builder, entryBuilder)
@@ -104,13 +106,13 @@ object ConfigScreenImpl {
             entryBuilder.startEnumSelector(
                 Component.translatable("chatPlus.chatSettings.chatTimestampMode"),
                 TimestampMode::class.java,
-            Config.values.chatTimestampMode
-        )
-            .setEnumNameProvider { (it as TimestampMode).translatable }
-            .setDefaultValue(Config.values.chatTimestampMode)
-            .setTooltip(Component.translatable("chatPlus.chatSettings.chatTimestampMode.tooltip"))
-            .setSaveConsumer { Config.values.chatTimestampMode = it }
-            .build())
+                Config.values.chatTimestampMode
+            )
+                .setEnumNameProvider { (it as TimestampMode).translatable }
+                .setDefaultValue(Config.values.chatTimestampMode)
+                .setTooltip(Component.translatable("chatPlus.chatSettings.chatTimestampMode.tooltip"))
+                .setSaveConsumer { Config.values.chatTimestampMode = it }
+                .build())
         general.addEntry(entryBuilder.startEnumSelector(
             Component.translatable("chatPlus.chatSettings.messageAlignment"),
             AlignMessage.Alignment::class.java,
@@ -154,6 +156,10 @@ object ConfigScreenImpl {
                     listOf(
                         entryBuilder.stringField("chatPlus.chatTabs.name", value.name) { value.name = it },
                         entryBuilder.stringField("chatPlus.chatTabs.pattern", value.pattern) { value.pattern = it },
+                        entryBuilder.booleanToggle(
+                            "chatPlus.messageFilter.formatted.toggle",
+                            value.formatted
+                        ) { value.formatted = it },
                         entryBuilder.stringField("chatPlus.chatTabs.autoPrefix", value.autoPrefix) { value.autoPrefix = it },
                         entryBuilder.startIntField(
                             Component.translatable("chatPlus.chatTabs.priority"),
@@ -199,11 +205,111 @@ object ConfigScreenImpl {
                             .setDefaultValue("")
                             .setSaveConsumer { value.pattern = it }
                             .build(),
+                        entryBuilder.booleanToggle(
+                            "chatPlus.messageFilter.formatted.toggle",
+                            value.formatted
+                        ) { value.formatted = it },
                         entryBuilder.startAlphaColorField(Component.translatable("chatPlus.filterHighlight.color"), value.color)
                             .setTooltip(Component.translatable("chatPlus.filterHighlight.color.tooltip"))
                             .setDefaultValue(DEFAULT_COLOR)
                             .setSaveConsumer { value.color = it }
                             .build(),
+                    )
+                }
+            )
+        )
+    }
+
+    private fun addHoverHighlightOption(builder: ConfigBuilder, entryBuilder: ConfigEntryBuilder) {
+        val hoverHighlight = builder.getOrCreateCategory(Component.translatable("chatPlus.hoverHighlight.title"))
+        hoverHighlight.addEntry(
+            entryBuilder.booleanToggle(
+                "chatPlus.hoverHighlight.toggle",
+                Config.values.hoverHighlightEnabled
+            ) { Config.values.hoverHighlightEnabled = it })
+        hoverHighlight.addEntry(
+            entryBuilder.startAlphaColorField(
+                Component.translatable("chatPlus.hoverHighlight.color"),
+                Color.ofTransparent(Config.values.hoverHighlightColor)
+            )
+                .setTooltip(Component.translatable("chatPlus.hoverHighlight.color.tooltip"))
+                .setAlphaMode(true)
+                .setDefaultValue2 {
+                    Color.ofTransparent(Config.values.hoverHighlightColor)
+                }
+                .setSaveConsumer2 {
+                    Config.values.hoverHighlightColor = it.color
+                }
+                .build()
+        )
+    }
+
+    private fun addBookmarkOption(builder: ConfigBuilder, entryBuilder: ConfigEntryBuilder) {
+        val bookmark = builder.getOrCreateCategory(Component.translatable("chatPlus.bookmark.title"))
+        bookmark.addEntry(
+            entryBuilder.booleanToggle(
+                "chatPlus.bookmark.toggle",
+                Config.values.bookmarkEnabled
+            ) { Config.values.bookmarkEnabled = it })
+        bookmark.addEntry(
+            entryBuilder.startAlphaColorField(
+                Component.translatable("chatPlus.bookmark.color"),
+                Color.ofTransparent(Config.values.bookmarkColor)
+            )
+                .setTooltip(Component.translatable("chatPlus.bookmark.color.tooltip"))
+                .setAlphaMode(true)
+                .setDefaultValue2 {
+                    Color.ofTransparent(Config.values.bookmarkColor)
+                }
+                .setSaveConsumer2 {
+                    Config.values.bookmarkColor = it.color
+                }
+                .build()
+        )
+        bookmark.addEntry(
+            entryBuilder.startModifierKeyCodeField(
+                Component.translatable("chatPlus.bookmark.key"),
+                ModifierKeyCode.of(
+                    Config.values.bookmarkKey.key,
+                    Modifier.of(Config.values.bookmarkKey.modifier)
+                )
+            )
+                .setTooltip(Component.translatable("chatPlus.bookmark.key.tooltip"))
+                .setDefaultValue(
+                    ModifierKeyCode.of(
+                        Config.values.bookmarkKey.key,
+                        Modifier.of(Config.values.bookmarkKey.modifier)
+                    )
+                )
+                .setKeySaveConsumer { Config.values.bookmarkKey.key = it }
+                .setModifierSaveConsumer { Config.values.bookmarkKey.modifier = it.modifier.value }
+                .build()
+        )
+        bookmark.addEntry(
+            entryBuilder.booleanToggle(
+                "chatPlus.bookmark.textBarElement.toggle",
+                Config.values.bookmarkTextBarElementEnabled
+            ) { Config.values.bookmarkTextBarElementEnabled = it })
+        bookmark.addEntry(
+            entryBuilder.keyCodeOptionWithModifier(
+                "chatPlus.bookmark.show.key",
+                Config.values.bookmarkTextBarElementKey
+            )
+        )
+        bookmark.addEntry(
+            getCustomListOption(
+                "chatPlus.bookmark.auto.title",
+                Config.values.autoBookMarkPatterns,
+                { Config.values.autoBookMarkPatterns = it },
+                true,
+                { MessageFilter("") },
+                { value ->
+                    listOf(
+                        entryBuilder.stringField("chatPlus.bookmark.auto.pattern", value.pattern) { value.pattern = it },
+                        entryBuilder.booleanToggle(
+                            "chatPlus.messageFilter.formatted.toggle",
+                            value.formatted
+                        ) { value.formatted = it },
                     )
                 }
 
@@ -233,30 +339,6 @@ object ConfigScreenImpl {
                 "chatPlus.findMessage.key",
                 Config.values.findMessageKey
             )
-        )
-    }
-
-    private fun addHoverHighlightOption(builder: ConfigBuilder, entryBuilder: ConfigEntryBuilder) {
-        val hoverHighlight = builder.getOrCreateCategory(Component.translatable("chatPlus.hoverHighlight.title"))
-        hoverHighlight.addEntry(
-            entryBuilder.booleanToggle(
-                "chatPlus.hoverHighlight.toggle",
-                Config.values.hoverHighlightEnabled
-            ) { Config.values.hoverHighlightEnabled = it })
-        hoverHighlight.addEntry(
-            entryBuilder.startAlphaColorField(
-                Component.translatable("chatPlus.hoverHighlight.color"),
-                Color.ofTransparent(Config.values.hoverHighlightColor)
-            )
-                .setTooltip(Component.translatable("chatPlus.hoverHighlight.color.tooltip"))
-                .setAlphaMode(true)
-                .setDefaultValue2 {
-                    Color.ofTransparent(Config.values.hoverHighlightColor)
-                }
-                .setSaveConsumer2 {
-                    Config.values.hoverHighlightColor = it.color
-                }
-                .build()
         )
     }
 
@@ -545,23 +627,23 @@ object ConfigScreenImpl {
                 Component.translatable("chatPlus.speechToText.speechToTextTranslateLang"),
                 DropdownMenuBuilder.TopCellElementBuilder.of(Config.values.speechToTextTranslateLang) { str -> str },
                 DropdownMenuBuilder.CellCreatorBuilder.of()
-        )
-            .setTooltip(Component.translatable("chatPlus.speechToText.speechToTextTranslateLang.tooltip"))
-            .setDefaultValue(Config.values.speechToTextTranslateLang)
-            .setSelections(languageNamesSpeak)
-            .setErrorSupplier { str: String ->
-                if (languageNamesSpeak.contains(str)) {
-                    Optional.empty()
-                } else {
-                    Optional.of(Component.translatable("chatPlus.translator.translateInvalid"))
+            )
+                .setTooltip(Component.translatable("chatPlus.speechToText.speechToTextTranslateLang.tooltip"))
+                .setDefaultValue(Config.values.speechToTextTranslateLang)
+                .setSelections(languageNamesSpeak)
+                .setErrorSupplier { str: String ->
+                    if (languageNamesSpeak.contains(str)) {
+                        Optional.empty()
+                    } else {
+                        Optional.of(Component.translatable("chatPlus.translator.translateInvalid"))
+                    }
                 }
-            }
-            .setSaveConsumer { str: String ->
-                Config.values.speechToTextTranslateLang = str
-                SpeechToText.updateTranslateLanguage()
-                queueUpdateConfig = true
-            }
-            .build()
+                .setSaveConsumer { str: String ->
+                    Config.values.speechToTextTranslateLang = str
+                    SpeechToText.updateTranslateLanguage()
+                    queueUpdateConfig = true
+                }
+                .build()
         )
     }
 

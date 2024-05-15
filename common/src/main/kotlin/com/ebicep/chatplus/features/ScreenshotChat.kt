@@ -67,7 +67,7 @@ object ScreenshotChat {
 
     init {
         // full chat screenshot
-        EventBus.register<TextBarElements.AddTextBarElementEvent>(6) {
+        EventBus.register<TextBarElements.AddTextBarElementEvent>(150) {
             if (!Config.values.screenshotChatEnabled) {
                 return@register
             }

@@ -6,9 +6,11 @@ import com.ebicep.chatplus.events.Event
 import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.events.Events
 import com.ebicep.chatplus.features.CompactMessages.literalIgnored
+import com.ebicep.chatplus.features.internal.MessageFilter
 import com.ebicep.chatplus.hud.ChatManager
 import com.ebicep.chatplus.hud.ChatPlusScreen
 import com.ebicep.chatplus.hud.ChatRenderer
+import com.google.common.base.Predicate
 import com.google.common.collect.Lists
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -51,8 +53,20 @@ data class ChatTabAddDisplayMessageEvent(
     var returnFunction: Boolean = false
 ) : Event
 
+data class ChatTabRemoveMessageEvent(
+    val chatTab: ChatTab,
+    val guiMessage: ChatTab.ChatPlusGuiMessage,
+    var returnFunction: Boolean = false
+) : Event
+
+data class ChatTabRemoveDisplayMessageEvent(
+    val chatTab: ChatTab,
+    val chatPlusGuiMessageLine: ChatTab.ChatPlusGuiMessageLine,
+    var returnFunction: Boolean = false
+) : Event
+
 @Serializable
-class ChatTab {
+class ChatTab : MessageFilter {
 
     data class ChatPlusGuiMessage(
         val guiMessage: GuiMessage,
@@ -67,15 +81,10 @@ class ChatTab {
         val wrappedIndex: Int,
     )
 
-    var name: String
+    var name: String = ""
         set(value) {
             field = value
             width = -1
-        }
-    var pattern: String
-        set(value) {
-            field = value
-            regex = Regex(value)
         }
     var autoPrefix: String = ""
 
@@ -89,16 +98,11 @@ class ChatTab {
     // if true then tab loop will break if message is added to this tab, overrides alwaysAdds
     var skipOthers: Boolean = false
 
-    constructor(name: String, pattern: String, autoPrefix: String = "", alwaysAdd: Boolean = false) {
+    constructor(name: String, pattern: String, autoPrefix: String = "", alwaysAdd: Boolean = false) : super(pattern) {
         this.name = name
-        this.pattern = pattern
-        this.regex = Regex(pattern)
         this.autoPrefix = autoPrefix
         this.alwaysAdd = alwaysAdd
     }
-
-    @Transient
-    var regex: Regex = Regex("")
 
     @Transient
     val messages: MutableList<ChatPlusGuiMessage> = ArrayList()
@@ -146,7 +150,7 @@ class ChatTab {
         addedTime: Int,
         tag: GuiMessageTag?
     ) {
-        if (!regex.matches(ChatFormatting.stripFormatting(component.string)!!)) {
+        if (!matches(component.string)) {
             return
         }
         val componentWithTimeStamp: MutableComponent = getTimeStampedMessage(component)
@@ -167,7 +171,7 @@ class ChatTab {
         }
         this.messages.add(chatPlusGuiMessage)
         while (this.messages.size > Config.values.maxMessages) {
-            this.messages.removeFirst()
+            EventBus.post(ChatTabRemoveMessageEvent(this, this.messages.removeFirst()))
         }
         this.addNewDisplayMessage(componentWithTimeStamp, addedTime, tag, chatPlusGuiMessage)
     }
@@ -219,7 +223,7 @@ class ChatTab {
             )
         }
         while (this.displayedMessages.isNotEmpty() && !this.messages.contains(this.displayedMessages[0].linkedMessage)) {
-            this.displayedMessages.removeFirst()
+            EventBus.post(ChatTabRemoveDisplayMessageEvent(this, this.displayedMessages.removeFirst()))
         }
     }
 
@@ -410,6 +414,17 @@ class ChatTab {
         chatScrollbarPos = pos
     }
 
+    fun moveToMessage(chatPlusScreen: ChatPlusScreen, message: ChatPlusGuiMessageLine) {
+        val linkedMessage = message.linkedMessage
+        val lineOffset = ChatManager.getLinesPerPageScaled() / 2 + 1 // center the message
+        ChatManager.selectedTab.refreshDisplayedMessage()
+        chatPlusScreen.rebuildWidgets0()
+        val displayIndex =
+            ChatManager.selectedTab.displayedMessages.indexOfFirst { line -> line.linkedMessage === linkedMessage }
+        val scrollTo = ChatManager.selectedTab.displayedMessages.size - displayIndex - lineOffset
+        ChatManager.selectedTab.scrollChat(scrollTo)
+    }
+
     fun rescaleChat() {
         resetChatScroll()
         queueRefreshDisplayedMessages()
@@ -424,13 +439,13 @@ class ChatTab {
         refreshDisplayedMessage(null)
     }
 
-    fun refreshDisplayedMessage(filter: String?) {
+    fun refreshDisplayedMessage(filter: Predicate<ChatPlusGuiMessage>?) {
         resetDisplayMessageAtTick = -1
         displayedMessages.clear()
         for (i in messages.indices) {
-            val chatPlusGuiMessage = messages[i]
+            val chatPlusGuiMessage: ChatPlusGuiMessage = messages[i]
             val guiMessage: GuiMessage = chatPlusGuiMessage.guiMessage
-            if (filter != null && !guiMessage.content.string.lowercase().contains(filter.lowercase())) {
+            if (filter != null && !filter.test(chatPlusGuiMessage)) {
                 continue
             }
             // assume all messages are mutable from adding timestamp method call

@@ -14,6 +14,7 @@ import com.ebicep.chatplus.features.PlayerHeadChatDisplay
 import com.ebicep.chatplus.features.chattabs.CHAT_TAB_HEIGHT
 import com.ebicep.chatplus.features.chattabs.ChatTab
 import com.ebicep.chatplus.features.chattabs.ChatTabs.defaultTab
+import com.ebicep.chatplus.features.internal.MessageFilter
 import com.ebicep.chatplus.features.speechtotext.SpeechToText
 import com.ebicep.chatplus.hud.ChatManager
 import com.ebicep.chatplus.hud.ChatRenderer
@@ -26,6 +27,7 @@ import kotlinx.serialization.Transient
 import kotlinx.serialization.UseSerializers
 import kotlinx.serialization.json.Json
 import net.minecraft.util.Mth
+import java.awt.Color
 import java.io.File
 
 private val json = Json {
@@ -81,6 +83,9 @@ object Config {
         values.filterHighlights.forEach {
             it.regex = Regex(it.pattern)
         }
+        values.autoBookMarkPatterns.forEach {
+            it.regex = Regex(it.pattern)
+        }
         LanguageManager.updateTranslateLanguages()
         SpeechToText.updateTranslateLanguage()
     }
@@ -129,8 +134,6 @@ data class ConfigVariables(
     var maxMessages: Int = 1000,
     var maxCommandSuggestions: Int = 15,
     var chatTimestampMode: TimestampMode = TimestampMode.HR_12_SECOND,
-    var hoverHighlightEnabled: Boolean = true,
-    var hoverHighlightColor: Int = 419430400,
     // tabs
     var chatTabs: MutableList<ChatTab> = mutableListOf(defaultTab),
     var selectedTab: Int = 0,
@@ -139,6 +142,16 @@ data class ConfigVariables(
     // filter highlight
     var filterHighlightEnabled: Boolean = true,
     var filterHighlights: MutableList<FilterHighlight.Filter> = mutableListOf(),
+    // hover highlight
+    var hoverHighlightEnabled: Boolean = true,
+    var hoverHighlightColor: Int = 419430400,
+    // bookmark
+    var bookmarkEnabled: Boolean = true,
+    var bookmarkColor: Int = Color(217, 163, 67, 200).rgb,
+    var bookmarkKey: KeyWithModifier = KeyWithModifier(InputConstants.getKey("key.keyboard.b"), 2),
+    var bookmarkTextBarElementEnabled: Boolean = true,
+    var bookmarkTextBarElementKey: KeyWithModifier = KeyWithModifier(InputConstants.getKey("key.keyboard.b"), 2),
+    var autoBookMarkPatterns: MutableList<MessageFilter> = mutableListOf(),
     // find message
     var findMessageEnabled: Boolean = true,
     var findMessageHighlightInputBox: Boolean = false,

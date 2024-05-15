@@ -25,7 +25,7 @@ object TranslateMessage {
     var inputTranslatePrefix: EditBox? = null
 
     init {
-        EventBus.register<TextBarElements.AddTextBarElementEvent>(4) {
+        EventBus.register<TextBarElements.AddTextBarElementEvent>(0) {
             if (Config.values.translatorEnabled) {
                 it.elements.add(TranslateSpeakTextBarElement(it.screen))
             }

@@ -23,6 +23,7 @@ object FeatureManager {
         PlayerHeadChatDisplay
         SelectChat
         ScrollBar
+        BookmarkMessages
 //        AlternatingColorBackground
     }
 

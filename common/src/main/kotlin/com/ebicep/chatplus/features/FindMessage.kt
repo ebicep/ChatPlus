@@ -21,7 +21,7 @@ object FindMessage {
 
     init {
         var lastMovedToMessage: Pair<Pair<ChatTab.ChatPlusGuiMessage, Int>, Long>? = null // <linked message, wrapped index>, tick
-        EventBus.register<TextBarElements.AddTextBarElementEvent>(5) {
+        EventBus.register<TextBarElements.AddTextBarElementEvent>(100) {
             if (!Config.values.findMessageEnabled) {
                 return@register
             }
@@ -45,7 +45,9 @@ object FindMessage {
         }
         EventBus.register<ChatScreenInputBoxEditEvent> {
             if (findEnabled) {
-                ChatManager.selectedTab.refreshDisplayedMessage(it.str)
+                ChatManager.selectedTab.refreshDisplayedMessage { guiMessage ->
+                    guiMessage.guiMessage.content.string.contains(it.str, ignoreCase = true)
+                }
                 it.returnFunction = true
             }
         }
@@ -70,7 +72,7 @@ object FindMessage {
             val screen = Minecraft.getInstance().screen
             if (findEnabled && screen is ChatPlusScreen) {
                 val filter = screen.input?.value
-                if (filter != null && !it.component.string.lowercase().contains(filter.lowercase())) {
+                if (filter != null && !it.component.string.contains(filter, ignoreCase = true)) {
                     it.returnFunction = true
                 }
             }
@@ -83,14 +85,8 @@ object FindMessage {
                 ChatManager.selectedTab.getMessageAt(it.mouseX, it.mouseY)?.let { message ->
                     val linkedMessage = message.linkedMessage
                     lastMovedToMessage = Pair(Pair(linkedMessage, message.wrappedIndex), Events.currentTick + 60)
-                    val lineOffset = ChatManager.getLinesPerPageScaled() / 2 + 1 // center the message
                     findEnabled = false
-                    ChatManager.selectedTab.refreshDisplayedMessage()
-                    it.screen.rebuildWidgets0()
-                    val displayIndex =
-                        ChatManager.selectedTab.displayedMessages.indexOfFirst { line -> line.linkedMessage === linkedMessage }
-                    val scrollTo = ChatManager.selectedTab.displayedMessages.size - displayIndex - lineOffset
-                    ChatManager.selectedTab.scrollChat(scrollTo)
+                    ChatManager.selectedTab.moveToMessage(it.screen, message)
                 }
             }
         }
@@ -113,7 +109,10 @@ object FindMessage {
         findEnabled = !findEnabled
         EventBus.post(FindToggleEvent(findEnabled))
         if (findEnabled) {
-            ChatManager.selectedTab.refreshDisplayedMessage(chatPlusScreen.input?.value)
+            ChatManager.selectedTab.refreshDisplayedMessage { guiMessage ->
+                val value = chatPlusScreen.input?.value ?: return@refreshDisplayedMessage false
+                guiMessage.guiMessage.content.string.contains(value, ignoreCase = true)
+            }
         } else {
             ChatManager.selectedTab.refreshDisplayedMessage()
         }

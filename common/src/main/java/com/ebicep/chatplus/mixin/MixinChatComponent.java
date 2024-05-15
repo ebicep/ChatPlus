@@ -5,8 +5,6 @@ import com.ebicep.chatplus.config.Config;
 import com.ebicep.chatplus.features.chattabs.ChatTab;
 import com.ebicep.chatplus.features.chattabs.ChatTabs;
 import com.ebicep.chatplus.hud.ChatRenderer;
-import kotlin.text.Regex;
-import net.minecraft.ChatFormatting;
 import net.minecraft.client.GuiMessageTag;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.ChatComponent;
@@ -42,9 +40,7 @@ public class MixinChatComponent {
                 if (lastPriority != null && lastPriority > priority && !alwaysAdd) {
                     continue;
                 }
-                Regex regex = chatTab.getRegex();
-                String rawText = ChatFormatting.stripFormatting(component.getString());
-                if (rawText != null && regex.matches(rawText)) {
+                if (chatTab.matches(component.getString())) {
                     chatTab.addNewMessage(component, messageSignature, i, guiMessageTag);
                     if (chatTab.getSkipOthers()) {
                         break;
