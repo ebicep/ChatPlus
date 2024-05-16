@@ -1,7 +1,7 @@
 {
+  "chatPlus.translator.sameMessage": "That message is already translated.",
   "chatPlus.messageFilter.formatted.toggle": "Formatted",
   "chatPlus.messageFilter.formatted.toggle.tooltip": "Whether to use the formatted message or the raw message.",
-
   "key.noScroll": "No Scroll",
   "key.fineScroll": "Fine Scroll",
   "key.largeScroll": "Large Scroll",
@@ -142,6 +142,8 @@
   "chatPlus.translator.translateSpeak.tooltip": "Language your messages are translated to.",
   "chatPlus.translator.translateSpeak.chat.tooltip": "Language your messages are translated to. Click to toggle.",
   "chatPlus.translator.translateSpeakPrefix.tooltip": "Text to prepend that will not get translated.",
+  "chatPlus.translator.translateClick.toggle": "Click to Translate",
+  "chatPlus.translator.translateClick.toggle.tooltip": "Enables/Disables control left clicking on messages to translate them. This will translate the whole message (unwrapped).",
   "chatPlus.speechToText": "Speech to Text",
   "chatPlus.speechToText.tooltip": "Convert speech to text.",
   "chatPlus.speechToText.toggle": "Enabled",

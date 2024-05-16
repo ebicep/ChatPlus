@@ -11,6 +11,7 @@ import com.ebicep.chatplus.hud.ChatScreenCloseEvent
 import com.ebicep.chatplus.hud.ChatScreenInitPreEvent
 import com.ebicep.chatplus.translator.Language
 import com.ebicep.chatplus.translator.LanguageManager
+import com.ebicep.chatplus.translator.TranslateResult
 import com.ebicep.chatplus.translator.Translator
 import com.ebicep.chatplus.util.GraphicsUtil.createPose
 import com.ebicep.chatplus.util.GraphicsUtil.translate0
@@ -225,11 +226,9 @@ class MicrophoneThread : Thread("ChatPlusMicrophoneThread") {
         lastSpokenMessage?.let {
             val speechToTextLang = SpeechToText.speechToTextLang
             if (Config.values.speechToTextTranslateEnabled && speechToTextLang != null) {
-                object : Thread() {
-                    override fun run() {
-                        val translator = Translator(it, LanguageManager.autoLang, speechToTextLang)
-                        val translateResult = translator.translate(it) ?: return
-                        toRun(ChatPlusScreen.splitChatMessage(translateResult.translatedText))
+                object : Translator(it, LanguageManager.autoLang, speechToTextLang, false) {
+                    override fun onTranslate(matchedRegex: String?, translatedMessage: TranslateResult, fromLanguage: String?) {
+                        toRun(ChatPlusScreen.splitChatMessage(translatedMessage.translatedText))
                     }
                 }.start()
             } else {
@@ -358,6 +357,5 @@ class MicrophoneThread : Thread("ChatPlusMicrophoneThread") {
         }
         return microphone
     }
-
 
 }

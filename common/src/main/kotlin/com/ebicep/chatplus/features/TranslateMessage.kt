@@ -1,21 +1,25 @@
 package com.ebicep.chatplus.features
 
+import com.ebicep.chatplus.ChatPlus
 import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.events.EventBus
+import com.ebicep.chatplus.features.chattabs.ChatTab
 import com.ebicep.chatplus.features.textbarelements.FindToggleEvent
 import com.ebicep.chatplus.features.textbarelements.TextBarElements
 import com.ebicep.chatplus.features.textbarelements.TranslateSpeakTextBarElement
 import com.ebicep.chatplus.hud.*
-import com.ebicep.chatplus.translator.LanguageManager
-import com.ebicep.chatplus.translator.SelfTranslator
-import com.ebicep.chatplus.translator.Translator
+import com.ebicep.chatplus.translator.*
+import com.ebicep.chatplus.util.ComponentUtil
 import dev.architectury.event.CompoundEventResult
 import dev.architectury.event.events.client.ClientChatEvent
 import dev.architectury.event.events.client.ClientSystemMessageEvent
 import net.minecraft.ChatFormatting
+import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.components.EditBox
+import net.minecraft.client.gui.screens.Screen
 import net.minecraft.network.chat.ChatType
 import net.minecraft.network.chat.Component
+import net.minecraft.network.chat.HoverEvent
 
 
 object TranslateMessage {
@@ -132,8 +136,11 @@ object TranslateMessage {
         }
 
         var translateClickCooldown = 0L
-        EventBus.register<ChatScreenMouseClickedEvent> {
-            if (!Config.values.translatorEnabled) {
+        EventBus.register<ChatScreenMouseClickedEvent>({ 100 }) {
+            if (!Config.values.translatorEnabled || !Config.values.translateClickEnabled) {
+                return@register
+            }
+            if (it.button != 0 || !Screen.hasControlDown()) {
                 return@register
             }
             if (System.currentTimeMillis() - translateClickCooldown < 2_000) {
@@ -141,8 +148,22 @@ object TranslateMessage {
             }
             ChatManager.selectedTab.getMessageAt(it.mouseX, it.mouseY)?.let { message ->
                 translateClickCooldown = System.currentTimeMillis()
-                val content = message.content
-                handleTranslate(ChatFormatting.stripFormatting(content)!!)
+                // selected message compatibility, sends one translate request with all selected messages split by § then sends the
+                // translated messages unsplit
+                val selectedMessages = SelectChat.selectedMessages
+                val messages: List<ChatTab.ChatPlusGuiMessage> = if (selectedMessages.contains(message)) {
+                    SelectChat.selectedMessages.map { it.linkedMessage }
+                } else {
+                    listOf(message.linkedMessage)
+                }
+                LanguageManager.languageTo?.let { to ->
+                    it.returnFunction = true
+                    ClickTranslator(
+                        messages,
+                        messages.joinToString("§") { ChatFormatting.stripFormatting(it.guiMessage.content.string)!! },
+                        to
+                    ).start()
+                }
             }
         }
     }
@@ -151,14 +172,43 @@ object TranslateMessage {
         if (!Config.values.translatorEnabled) {
             return
         }
-        handleTranslate(ChatFormatting.stripFormatting(component.string)!!)
-    }
-
-    private fun handleTranslate(str: String) {
         LanguageManager.languageTo?.let {
-            Translator(str, null, it).start()
+            Translator(ChatFormatting.stripFormatting(component.string)!!, null, it).start()
         }
     }
 
+    class ClickTranslator(val line: List<ChatTab.ChatPlusGuiMessage>, message: String, to: Language) :
+        Translator(message, null, to, false) {
+
+        override fun onTranslateSameMessage() {
+            val component = Component.literal("")
+            line.forEachIndexed { index, it ->
+                component.append(it.guiMessage.content)
+                if (index != line.size - 1) {
+                    component.append(Component.literal("\n"))
+                }
+            }
+            ChatPlus.sendMessage(
+                ComponentUtil.translatable(
+                    "chatPlus.translator.sameMessage",
+                    ChatFormatting.RED,
+                    HoverEvent(HoverEvent.Action.SHOW_TEXT, component)
+                )
+            )
+        }
+
+        override fun onTranslate(matchedRegex: String?, translatedMessage: TranslateResult, fromLanguage: String?) {
+            translatedMessage.translatedText.split("§").forEachIndexed { index, it ->
+                Minecraft.getInstance().player?.sendSystemMessage(
+                    ComponentUtil.literal(
+                        (matchedRegex ?: "") + it.trim() + " (" + (fromLanguage ?: "Unknown") + ")",
+                        ChatFormatting.GREEN,
+                        HoverEvent(HoverEvent.Action.SHOW_TEXT, line[index].guiMessage.content.copy())
+                    )
+                )
+            }
+        }
+
+    }
 
 }

@@ -180,6 +180,7 @@ data class ConfigVariables(
     var translateTo: String = "Auto Detect",
     var translateSelf: String = "Auto Detect",
     var translateSpeak: String = "English",
+    var translateClickEnabled: Boolean = true,
     // speech to text
     var speechToTextEnabled: Boolean = true,
     var speechToTextMicrophoneKey: InputConstants.Key = InputConstants.getKey("key.keyboard.b"),

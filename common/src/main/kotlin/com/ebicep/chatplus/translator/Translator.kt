@@ -2,60 +2,74 @@ package com.ebicep.chatplus.translator
 
 import com.ebicep.chatplus.ChatPlus
 import com.ebicep.chatplus.config.Config
+import com.ebicep.chatplus.util.ComponentUtil
 import kotlinx.serialization.Serializable
 import net.minecraft.ChatFormatting
 import net.minecraft.client.Minecraft
-import net.minecraft.network.chat.Component
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 
-
-class Translator(val message: String, val from: Language?, val to: Language) : Thread() {
+open class Translator(val message: String, val from: Language?, val to: Language, val filtered: Boolean = true) : Thread() {
 
     override fun run() {
+        ChatPlus.LOGGER.info("Translating message: $message | $from -> $to | filtered: $filtered")
+
         var matchedRegex: String? = null
         var senderName: String? = null
         var text = message
 
-        for (regexMatch in Config.values.translatorRegexes) {
-            var regexFixed: String = regexMatch.match
-            if (regexFixed.isEmpty()) {
-                continue
-            }
-            if (!regexFixed.contains("^")) {
-                regexFixed = "^$regexFixed"
-            }
-            val matcher: Matcher = Pattern.compile(regexFixed).matcher(text)
-            if (matcher.find()) {
-                if (matchedRegex == null) {
-                    matchedRegex = matcher.group(0)
-                    senderName = matcher.group(regexMatch.senderNameGroupIndex)
-                } else if (matchedRegex.length < matcher.group(0).length) {
-                    matchedRegex = matcher.group(0)
+        if (filtered) {
+            for (regexMatch in Config.values.translatorRegexes) {
+                var regexFixed: String = regexMatch.match
+                if (regexFixed.isEmpty()) {
+                    continue
+                }
+                if (!regexFixed.contains("^")) {
+                    regexFixed = "^$regexFixed"
+                }
+                val matcher: Matcher = Pattern.compile(regexFixed).matcher(text)
+                if (matcher.find()) {
+                    if (matchedRegex == null) {
+                        matchedRegex = matcher.group(0)
+                        senderName = matcher.group(regexMatch.senderNameGroupIndex)
+                    } else if (matchedRegex.length < matcher.group(0).length) {
+                        matchedRegex = matcher.group(0)
+                    }
                 }
             }
+            if (matchedRegex == null) {
+                return
+            }
+            if (senderName == null) {
+                return
+            }
+            text = text.replace(matchedRegex, "").trim()
         }
-        if (matchedRegex == null) {
-            return
-        }
-        if (senderName == null) {
-            return
-        }
-        text = text.replace(matchedRegex, "").trim()
+
         val translatedMessage: TranslateResult = translate(text) ?: return
         if (translatedMessage.translatedText.trim().equals(text, ignoreCase = true)) {
+            ChatPlus.LOGGER.info("$message is the same after translation")
+            onTranslateSameMessage()
             return
         }
-        var fromStr: String? = null
+        var fromLanguage: String? = null
         if (translatedMessage.from != null) {
-            fromStr = translatedMessage.from.name
+            fromLanguage = translatedMessage.from.name
         }
+        ChatPlus.LOGGER.info("Translated message: ${translatedMessage.translatedText}")
+        onTranslate(matchedRegex, translatedMessage, fromLanguage)
+    }
+
+    open fun onTranslateSameMessage() {
+
+    }
+
+    open fun onTranslate(matchedRegex: String?, translatedMessage: TranslateResult, fromLanguage: String?) {
         Minecraft.getInstance().player?.sendSystemMessage(
-            Component.literal(
-                matchedRegex + translatedMessage.translatedText + " (" + (fromStr ?: "Unknown") + ")"
-            ).withStyle {
-                it.withColor(ChatFormatting.GREEN)
-            }
+            ComponentUtil.literal(
+                (matchedRegex ?: "") + translatedMessage.translatedText + " (" + (fromLanguage ?: "Unknown") + ")",
+                ChatFormatting.GREEN
+            )
         )
     }
 

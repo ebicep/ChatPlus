@@ -47,7 +47,7 @@ object ConfigScreenImpl {
         addChatScreenShotOption(builder, entryBuilder)
         addPlayerHeadChatDisplayOption(builder, entryBuilder)
         addKeyBindOptions(builder, entryBuilder)
-        addTranslatorRegexOptions(builder, entryBuilder)
+        addTranslatorOptions(builder, entryBuilder)
         addSpeechToTextOptions(builder, entryBuilder)
         return builder.build()
     }
@@ -428,9 +428,9 @@ object ConfigScreenImpl {
         )
     }
 
-    private fun addTranslatorRegexOptions(builder: ConfigBuilder, entryBuilder: ConfigEntryBuilder) {
-        val chatTabs = builder.getOrCreateCategory(Component.translatable("chatPlus.translator.title"))
-        chatTabs.addEntry(
+    private fun addTranslatorOptions(builder: ConfigBuilder, entryBuilder: ConfigEntryBuilder) {
+        val translator = builder.getOrCreateCategory(Component.translatable("chatPlus.translator.title"))
+        translator.addEntry(
             entryBuilder.booleanToggle(
                 "chatPlus.translator.translatorToggle",
                 Config.values.translatorEnabled
@@ -443,74 +443,76 @@ object ConfigScreenImpl {
             }
             name
         }
-        chatTabs.addEntry(entryBuilder.startDropdownMenu(
-            Component.translatable("chatPlus.translator.translateTo"),
-            DropdownMenuBuilder.TopCellElementBuilder.of(Config.values.translateTo) { str -> str },
-            DropdownMenuBuilder.CellCreatorBuilder.of()
-        )
-            .setTooltip(Component.translatable("chatPlus.translator.translateTo.tooltip"))
-            .setDefaultValue(Config.values.translateTo)
-            .setSelections(languageNames)
-            .setErrorSupplier { str: String ->
-                if (languageNames.contains(str)) {
-                    Optional.empty()
-                } else {
-                    Optional.of(Component.translatable("chatPlus.translator.translateInvalid"))
+        translator.addEntry(
+            entryBuilder.startDropdownMenu(
+                Component.translatable("chatPlus.translator.translateTo"),
+                DropdownMenuBuilder.TopCellElementBuilder.of(Config.values.translateTo) { str -> str },
+                DropdownMenuBuilder.CellCreatorBuilder.of()
+            )
+                .setTooltip(Component.translatable("chatPlus.translator.translateTo.tooltip"))
+                .setDefaultValue(Config.values.translateTo)
+                .setSelections(languageNames)
+                .setErrorSupplier { str: String ->
+                    if (languageNames.contains(str)) {
+                        Optional.empty()
+                    } else {
+                        Optional.of(Component.translatable("chatPlus.translator.translateInvalid"))
+                    }
                 }
-            }
-            .setSaveConsumer { str: String ->
-                Config.values.translateTo = str
-                LanguageManager.updateTranslateLanguages()
-                queueUpdateConfig = true
-            }
-            .build()
-        )
-        chatTabs.addEntry(entryBuilder.startDropdownMenu(
-            Component.translatable("chatPlus.translator.translateSelf"),
-            DropdownMenuBuilder.TopCellElementBuilder.of(Config.values.translateSelf) { str -> str },
-            DropdownMenuBuilder.CellCreatorBuilder.of()
-        )
-            .setTooltip(Component.translatable("chatPlus.translator.translateSelf.tooltip"))
-            .setDefaultValue(Config.values.translateSelf)
-            .setSelections(languageNames)
-            .setErrorSupplier { str: String ->
-                if (languageNames.contains(str)) {
-                    Optional.empty()
-                } else {
-                    Optional.of(Component.translatable("chatPlus.translator.translateInvalid"))
+                .setSaveConsumer { str: String ->
+                    Config.values.translateTo = str
+                    LanguageManager.updateTranslateLanguages()
+                    queueUpdateConfig = true
                 }
-            }
-            .setSaveConsumer { str: String ->
-                Config.values.translateSelf = str
-                LanguageManager.updateTranslateLanguages()
-                queueUpdateConfig = true
-            }
-            .build()
+                .build()
         )
-        chatTabs.addEntry(entryBuilder.startDropdownMenu(
-            Component.translatable("chatPlus.translator.translateSpeak"),
-            DropdownMenuBuilder.TopCellElementBuilder.of(Config.values.translateSpeak) { str -> str },
-            DropdownMenuBuilder.CellCreatorBuilder.of()
-        )
-            .setTooltip(Component.translatable("chatPlus.translator.translateSpeak.tooltip"))
-            .setDefaultValue(Config.values.translateSpeak)
-            .setSelections(languageNamesSpeak)
-            .setErrorSupplier { str: String ->
-                if (languageNamesSpeak.contains(str)) {
-                    Optional.empty()
-                } else {
-                    Optional.of(Component.translatable("chatPlus.translator.translateInvalid"))
+        translator.addEntry(
+            entryBuilder.startDropdownMenu(
+                Component.translatable("chatPlus.translator.translateSelf"),
+                DropdownMenuBuilder.TopCellElementBuilder.of(Config.values.translateSelf) { str -> str },
+                DropdownMenuBuilder.CellCreatorBuilder.of()
+            )
+                .setTooltip(Component.translatable("chatPlus.translator.translateSelf.tooltip"))
+                .setDefaultValue(Config.values.translateSelf)
+                .setSelections(languageNames)
+                .setErrorSupplier { str: String ->
+                    if (languageNames.contains(str)) {
+                        Optional.empty()
+                    } else {
+                        Optional.of(Component.translatable("chatPlus.translator.translateInvalid"))
+                    }
                 }
-            }
-            .setSaveConsumer { str: String ->
-                Config.values.translateSpeak = str
-                LanguageManager.updateTranslateLanguages()
-                queueUpdateConfig = true
-            }
-            .build()
+                .setSaveConsumer { str: String ->
+                    Config.values.translateSelf = str
+                    LanguageManager.updateTranslateLanguages()
+                    queueUpdateConfig = true
+                }
+                .build()
         )
-
-        chatTabs.addEntry(
+        translator.addEntry(
+            entryBuilder.startDropdownMenu(
+                Component.translatable("chatPlus.translator.translateSpeak"),
+                DropdownMenuBuilder.TopCellElementBuilder.of(Config.values.translateSpeak) { str -> str },
+                DropdownMenuBuilder.CellCreatorBuilder.of()
+            )
+                .setTooltip(Component.translatable("chatPlus.translator.translateSpeak.tooltip"))
+                .setDefaultValue(Config.values.translateSpeak)
+                .setSelections(languageNamesSpeak)
+                .setErrorSupplier { str: String ->
+                    if (languageNamesSpeak.contains(str)) {
+                        Optional.empty()
+                    } else {
+                        Optional.of(Component.translatable("chatPlus.translator.translateInvalid"))
+                    }
+                }
+                .setSaveConsumer { str: String ->
+                    Config.values.translateSpeak = str
+                    LanguageManager.updateTranslateLanguages()
+                    queueUpdateConfig = true
+                }
+                .build()
+        )
+        translator.addEntry(
             getCustomListOption(
                 "chatPlus.translator.regexes",
                 Config.values.translatorRegexes,
@@ -537,6 +539,11 @@ object ConfigScreenImpl {
 
             )
         )
+        translator.addEntry(
+            entryBuilder.booleanToggle(
+                "chatPlus.translator.translateClick.toggle",
+                Config.values.translateClickEnabled
+            ) { Config.values.translateClickEnabled = it })
     }
 
     private fun addSpeechToTextOptions(builder: ConfigBuilder, entryBuilder: ConfigEntryBuilder) {
