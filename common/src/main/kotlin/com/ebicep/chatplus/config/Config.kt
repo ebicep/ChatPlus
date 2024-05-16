@@ -183,9 +183,11 @@ data class ConfigVariables(
     var translateClickEnabled: Boolean = true,
     // speech to text
     var speechToTextEnabled: Boolean = true,
+    var speechToTextToInputBox: Boolean = true,
     var speechToTextMicrophoneKey: InputConstants.Key = InputConstants.getKey("key.keyboard.b"),
     var speechToTextQuickSendKey: InputConstants.Key = InputConstants.getKey("key.keyboard.enter"),
     var speechToTextTranslateEnabled: Boolean = false,
+    var speechToTextTranslateToInputBox: Boolean = true,
     var speechToTextTranslateLang: String = "English",
 ) {
     // internal

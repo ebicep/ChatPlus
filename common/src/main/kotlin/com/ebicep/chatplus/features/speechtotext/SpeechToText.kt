@@ -161,7 +161,13 @@ class MicrophoneThread : Thread("ChatPlusMicrophoneThread") {
             if (quickSendTimer <= 0) {
                 return@register
             }
-            doWithMessage { messages ->
+            doWithMessage { messages, translated ->
+                if (
+                    !Config.values.speechToTextToInputBox && !translated ||
+                    !Config.values.speechToTextTranslateToInputBox && translated
+                ) {
+                    return@doWithMessage
+                }
                 val text = messages.joinToString(" ")
                 ChatPlus.LOGGER.info("Quick Send: $text")
                 // for if translating messages enabled, takes time so input might already be initialized
@@ -212,7 +218,7 @@ class MicrophoneThread : Thread("ChatPlusMicrophoneThread") {
             val quickSend = keyCode == Config.values.speechToTextQuickSendKey.value && Minecraft.getInstance().screen !is ChatPlusScreen
             if (canQuickSend && quickSend) {
                 quickSendTimer = -1
-                doWithMessage { messages ->
+                doWithMessage { messages, _ ->
                     ChatManager.addSentMessage(messages[0])
                     Minecraft.getInstance().player?.connection?.sendChat(messages[0])
                     ChatPlusScreen.messagesToSend.addAll(messages.subList(1, messages.size))
@@ -222,17 +228,17 @@ class MicrophoneThread : Thread("ChatPlusMicrophoneThread") {
         }
     }
 
-    private fun doWithMessage(toRun: (List<String>) -> Unit) {
+    private fun doWithMessage(toRun: (List<String>, Boolean) -> Unit) {
         lastSpokenMessage?.let {
             val speechToTextLang = SpeechToText.speechToTextLang
             if (Config.values.speechToTextTranslateEnabled && speechToTextLang != null) {
                 object : Translator(it, LanguageManager.autoLang, speechToTextLang, false) {
                     override fun onTranslate(matchedRegex: String?, translatedMessage: TranslateResult, fromLanguage: String?) {
-                        toRun(ChatPlusScreen.splitChatMessage(translatedMessage.translatedText))
+                        toRun(ChatPlusScreen.splitChatMessage(translatedMessage.translatedText), true)
                     }
                 }.start()
             } else {
-                toRun(ChatPlusScreen.splitChatMessage(it))
+                toRun(ChatPlusScreen.splitChatMessage(it), false)
             }
         }
     }
@@ -298,7 +304,13 @@ class MicrophoneThread : Thread("ChatPlusMicrophoneThread") {
                     }
                     val screen = Minecraft.getInstance().screen
                     if (screen is ChatPlusScreen) {
-                        doWithMessage { messages ->
+                        doWithMessage { messages, translated ->
+                            if (
+                                Config.values.speechToTextToInputBox && !translated ||
+                                Config.values.speechToTextTranslateToInputBox && translated
+                            ) {
+                                return@doWithMessage
+                            }
                             screen.input?.insertText(messages.joinToString(" "))
                         }
                     }

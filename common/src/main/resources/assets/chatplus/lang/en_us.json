@@ -148,6 +148,8 @@
   "chatPlus.speechToText.tooltip": "Convert speech to text.",
   "chatPlus.speechToText.toggle": "Enabled",
   "chatPlus.speechToText.toggle.tooltip": "Enables/Disables speech to text.",
+  "chatPlus.speechToText.toInputBox.toggle": "Auto Add Message to Input Box",
+  "chatPlus.speechToText.toInputBox.toggle.tooltip": "Enables/Disables automatically adding non quick sent speech to text messages to the input box.",
   "chatPlus.speechToText.speechToTextSampleRate": "Sample Rate",
   "chatPlus.speechToText.speechToTextSampleRate.tooltip": "Sample rate of the audio. Must match the sample rate of your microphone.",
   "chatPlus.speechToText.microphone": "Microphone",
@@ -158,6 +160,8 @@
   "chatPlus.speechToText.selectedAudioModel.invalid": "Invalid Audio Model",
   "chatPlus.speechToText.speechToTextTranslateEnabled.toggle": "Auto Translate Message",
   "chatPlus.speechToText.speechToTextTranslateEnabled.toggle.tooltip": "Enables/Disables auto translating speech to text messages.",
+  "chatPlus.speechToText.speechToTextTranslateToInputBox.toggle": "Auto Add Translated Message to Input Box",
+  "chatPlus.speechToText.speechToTextTranslateToInputBox.toggle.tooltip": "Enables/Disables automatically adding non quick sent translated speech to text messages to the input box.",
   "chatPlus.speechToText.speechToTextTranslateLang": "Translate To",
   "chatPlus.speechToText.speechToTextTranslateLang.tooltip": "Language to translate speech to text messages to."
 }

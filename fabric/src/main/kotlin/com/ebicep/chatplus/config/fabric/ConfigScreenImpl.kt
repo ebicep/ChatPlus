@@ -552,6 +552,10 @@ object ConfigScreenImpl {
             "chatPlus.speechToText.toggle",
             Config.values.speechToTextEnabled
         ) { Config.values.speechToTextEnabled = it })
+        speechToText.addEntry(entryBuilder.booleanToggle(
+            "chatPlus.speechToText.toInputBox.toggle",
+            Config.values.speechToTextToInputBox
+        ) { Config.values.speechToTextToInputBox = it })
         speechToText.addEntry(entryBuilder.startIntField(
             Component.translatable("chatPlus.speechToText.speechToTextSampleRate"),
             Config.values.speechToTextSampleRate
@@ -621,6 +625,10 @@ object ConfigScreenImpl {
             "chatPlus.speechToText.speechToTextTranslateEnabled.toggle",
             Config.values.speechToTextTranslateEnabled
         ) { Config.values.speechToTextTranslateEnabled = it })
+        speechToText.addEntry(entryBuilder.booleanToggle(
+            "chatPlus.speechToText.speechToTextTranslateToInputBox.toggle",
+            Config.values.speechToTextTranslateToInputBox
+        ) { Config.values.speechToTextTranslateToInputBox = it })
         val languageNamesSpeak: MutableList<String> = mutableListOf()
         LanguageManager.languages.map {
             val name = it.name

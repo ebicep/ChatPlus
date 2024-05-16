@@ -12,7 +12,7 @@ import java.util.regex.Pattern
 open class Translator(val message: String, val from: Language?, val to: Language, val filtered: Boolean = true) : Thread() {
 
     override fun run() {
-        ChatPlus.LOGGER.info("Translating message: $message | $from -> $to | filtered: $filtered")
+        ChatPlus.LOGGER.debug("Translating message: $message | $from -> $to | filtered: $filtered")
 
         var matchedRegex: String? = null
         var senderName: String? = null
@@ -48,7 +48,7 @@ open class Translator(val message: String, val from: Language?, val to: Language
 
         val translatedMessage: TranslateResult = translate(text) ?: return
         if (translatedMessage.translatedText.trim().equals(text, ignoreCase = true)) {
-            ChatPlus.LOGGER.info("$message is the same after translation")
+            ChatPlus.LOGGER.debug("$message is the same after translation")
             onTranslateSameMessage()
             return
         }
@@ -56,7 +56,7 @@ open class Translator(val message: String, val from: Language?, val to: Language
         if (translatedMessage.from != null) {
             fromLanguage = translatedMessage.from.name
         }
-        ChatPlus.LOGGER.info("Translated message: ${translatedMessage.translatedText}")
+        ChatPlus.LOGGER.debug("Translated message: ${translatedMessage.translatedText}")
         onTranslate(matchedRegex, translatedMessage, fromLanguage)
     }
 
