@@ -15,6 +15,15 @@ data class TranslateToggleEvent(
 
 class TranslateSpeakTextBarElement(private val chatPlusScreen: ChatPlusScreen) : TextBarElement {
 
+    companion object {
+        fun toggleTranslateSpeak(chatPlusScreen: ChatPlusScreen) {
+            languageSpeakEnabled = !languageSpeakEnabled
+            EventBus.post(TranslateToggleEvent(languageSpeakEnabled))
+            chatPlusScreen.initial = chatPlusScreen.input!!.value
+            chatPlusScreen.rebuildWidgets0()
+        }
+    }
+
     override fun getWidth(): Int {
         return Minecraft.getInstance().font.width(Config.values.translateSpeak)
     }
@@ -24,10 +33,7 @@ class TranslateSpeakTextBarElement(private val chatPlusScreen: ChatPlusScreen) :
     }
 
     override fun onClick() {
-        languageSpeakEnabled = !languageSpeakEnabled
-        EventBus.post(TranslateToggleEvent(languageSpeakEnabled))
-        chatPlusScreen.initial = chatPlusScreen.input!!.value
-        chatPlusScreen.rebuildWidgets0()
+        toggleTranslateSpeak(chatPlusScreen)
     }
 
     override fun onHover(guiGraphics: GuiGraphics, pMouseX: Int, pMouseY: Int) {

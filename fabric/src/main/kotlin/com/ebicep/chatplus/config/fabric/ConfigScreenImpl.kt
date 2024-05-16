@@ -541,6 +541,23 @@ object ConfigScreenImpl {
         )
         translator.addEntry(
             entryBuilder.booleanToggle(
+                "chatPlus.translator.keepOnAfterChatClose.toggle",
+                Config.values.translateKeepOnAfterChatClose
+            ) { Config.values.translateKeepOnAfterChatClose = it })
+        translator.addEntry(
+            entryBuilder.keyCodeOptionWithModifier(
+                "chatPlus.translator.translateKey",
+                Config.values.translateKey
+            )
+        )
+        translator.addEntry(
+            entryBuilder.keyCodeOptionWithModifier(
+                "chatPlus.translator.translateToggleKey",
+                Config.values.translateToggleKey
+            )
+        )
+        translator.addEntry(
+            entryBuilder.booleanToggle(
                 "chatPlus.translator.translateClick.toggle",
                 Config.values.translateClickEnabled
             ) { Config.values.translateClickEnabled = it })

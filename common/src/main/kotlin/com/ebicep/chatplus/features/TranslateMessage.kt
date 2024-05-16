@@ -11,7 +11,9 @@ import com.ebicep.chatplus.hud.*
 import com.ebicep.chatplus.translator.*
 import com.ebicep.chatplus.util.ComponentUtil
 import dev.architectury.event.CompoundEventResult
+import dev.architectury.event.EventResult
 import dev.architectury.event.events.client.ClientChatEvent
+import dev.architectury.event.events.client.ClientRawInputEvent
 import dev.architectury.event.events.client.ClientSystemMessageEvent
 import net.minecraft.ChatFormatting
 import net.minecraft.client.Minecraft
@@ -55,6 +57,14 @@ object TranslateMessage {
                 val editBox = inputTranslatePrefix as EditBox
                 screen.initializeBaseEditBox(editBox)
                 screen.addWidget0(editBox)
+            }
+        }
+        EventBus.register<ChatScreenCloseEvent> {
+            if (!Config.values.translatorEnabled) {
+                return@register
+            }
+            if (languageSpeakEnabled && !Config.values.translateKeepOnAfterChatClose) {
+                languageSpeakEnabled = false
             }
         }
         EventBus.register<FindToggleEvent> {
@@ -122,6 +132,12 @@ object TranslateMessage {
             if (!languageSpeakEnabled) {
                 return@register
             }
+            if (inputTranslatePrefix != null && inputTranslatePrefix!!.value.startsWith("/")) {
+                return@register
+            }
+            if (it.messageToSend.startsWith("/")) {
+                return@register
+            }
             it.dontSendMessage = true
             SelfTranslator(it.normalizeChatMessage, if (inputTranslatePrefix == null) "" else inputTranslatePrefix!!.value).start()
         }
@@ -133,6 +149,24 @@ object TranslateMessage {
         ClientSystemMessageEvent.RECEIVED.register { component: Component ->
             handleTranslate(component)
             CompoundEventResult.pass()
+        }
+        ClientRawInputEvent.KEY_PRESSED.register { _, keyCode, _, _, modifiers ->
+            if (Minecraft.getInstance().screen is ChatPlusScreen) {
+                return@register EventResult.pass()
+            }
+            if (keyCode != Config.values.translateKey.key.value || modifiers != Config.values.translateKey.modifier.toInt()) {
+                return@register EventResult.pass()
+            }
+            languageSpeakEnabled = true
+            if (!Minecraft.getInstance().options.keyChat.isDown) { // check overlapping chat open
+                Minecraft.getInstance().setScreen(ChatPlusScreen(""))
+            }
+            EventResult.interruptTrue()
+        }
+        EventBus.register<ChatScreenKeyPressedEvent> {
+            if (Config.values.translateToggleKey.isDown()) {
+                TranslateSpeakTextBarElement.toggleTranslateSpeak(it.screen)
+            }
         }
 
         var translateClickCooldown = 0L

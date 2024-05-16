@@ -180,6 +180,9 @@ data class ConfigVariables(
     var translateTo: String = "Auto Detect",
     var translateSelf: String = "Auto Detect",
     var translateSpeak: String = "English",
+    var translateKeepOnAfterChatClose: Boolean = true,
+    var translateKey: KeyWithModifier = KeyWithModifier(InputConstants.getKey("key.keyboard.t"), 2),
+    var translateToggleKey: KeyWithModifier = KeyWithModifier(InputConstants.getKey("key.keyboard.t"), 2),
     var translateClickEnabled: Boolean = true,
     // speech to text
     var speechToTextEnabled: Boolean = true,
