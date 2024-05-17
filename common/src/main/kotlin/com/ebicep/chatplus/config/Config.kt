@@ -10,6 +10,7 @@ import com.ebicep.chatplus.config.serializers.KeySerializer
 import com.ebicep.chatplus.config.serializers.KeyWithModifier
 import com.ebicep.chatplus.features.AlignMessage
 import com.ebicep.chatplus.features.FilterHighlight
+import com.ebicep.chatplus.features.HoverHighlight
 import com.ebicep.chatplus.features.PlayerHeadChatDisplay
 import com.ebicep.chatplus.features.chattabs.CHAT_TAB_HEIGHT
 import com.ebicep.chatplus.features.chattabs.ChatTab
@@ -144,6 +145,7 @@ data class ConfigVariables(
     var filterHighlights: MutableList<FilterHighlight.Filter> = mutableListOf(),
     // hover highlight
     var hoverHighlightEnabled: Boolean = true,
+    var hoverHighlightMode: HoverHighlight.HighlightMode = HoverHighlight.HighlightMode.BRIGHTER,
     var hoverHighlightColor: Int = 419430400,
     // bookmark
     var bookmarkEnabled: Boolean = true,

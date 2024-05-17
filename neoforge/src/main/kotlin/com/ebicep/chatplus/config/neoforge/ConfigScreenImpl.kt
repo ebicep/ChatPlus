@@ -7,6 +7,7 @@ import com.ebicep.chatplus.config.serializers.KeyWithModifier
 import com.ebicep.chatplus.features.AlignMessage
 import com.ebicep.chatplus.features.FilterHighlight
 import com.ebicep.chatplus.features.FilterHighlight.DEFAULT_COLOR
+import com.ebicep.chatplus.features.HoverHighlight
 import com.ebicep.chatplus.features.chattabs.ChatTab
 import com.ebicep.chatplus.features.internal.MessageFilter
 import com.ebicep.chatplus.features.speechtotext.SpeechToText
@@ -112,17 +113,20 @@ object ConfigScreenImpl {
                 .setDefaultValue(Config.values.chatTimestampMode)
                 .setTooltip(Component.translatable("chatPlus.chatSettings.chatTimestampMode.tooltip"))
                 .setSaveConsumer { Config.values.chatTimestampMode = it }
-                .build())
-        general.addEntry(entryBuilder.startEnumSelector(
-            Component.translatable("chatPlus.chatSettings.messageAlignment"),
-            AlignMessage.Alignment::class.java,
-            Config.values.messageAlignment
+                .build()
         )
-            .setEnumNameProvider { (it as AlignMessage.Alignment).translatable }
-            .setDefaultValue(Config.values.messageAlignment)
-            .setTooltip(Component.translatable("chatPlus.chatSettings.messageAlignment.tooltip"))
-            .setSaveConsumer { Config.values.messageAlignment = it }
-            .build())
+        general.addEntry(
+            entryBuilder.startEnumSelector(
+                Component.translatable("chatPlus.chatSettings.messageAlignment"),
+                AlignMessage.Alignment::class.java,
+                Config.values.messageAlignment
+            )
+                .setEnumNameProvider { (it as AlignMessage.Alignment).translatable }
+                .setDefaultValue(Config.values.messageAlignment)
+                .setTooltip(Component.translatable("chatPlus.chatSettings.messageAlignment.tooltip"))
+                .setSaveConsumer { Config.values.messageAlignment = it }
+                .build()
+        )
     }
 
     private fun addChatTabsOption(builder: ConfigBuilder, entryBuilder: ConfigEntryBuilder) {
@@ -227,6 +231,18 @@ object ConfigScreenImpl {
                 "chatPlus.hoverHighlight.toggle",
                 Config.values.hoverHighlightEnabled
             ) { Config.values.hoverHighlightEnabled = it })
+        hoverHighlight.addEntry(
+            entryBuilder.startEnumSelector(
+                Component.translatable("chatPlus.hoverHighlight.mode"),
+                HoverHighlight.HighlightMode::class.java,
+                Config.values.hoverHighlightMode
+            )
+                .setEnumNameProvider { (it as HoverHighlight.HighlightMode).translatable }
+                .setDefaultValue(Config.values.hoverHighlightMode)
+                .setTooltip(Component.translatable("chatPlus.hoverHighlight.mode.tooltip"))
+                .setSaveConsumer { Config.values.hoverHighlightMode = it }
+                .build()
+        )
         hoverHighlight.addEntry(
             entryBuilder.startAlphaColorField(
                 Component.translatable("chatPlus.hoverHighlight.color"),

@@ -7,6 +7,7 @@ import com.ebicep.chatplus.config.serializers.KeyWithModifier
 import com.ebicep.chatplus.features.AlignMessage
 import com.ebicep.chatplus.features.FilterHighlight
 import com.ebicep.chatplus.features.FilterHighlight.DEFAULT_COLOR
+import com.ebicep.chatplus.features.HoverHighlight
 import com.ebicep.chatplus.features.chattabs.ChatTab
 import com.ebicep.chatplus.features.internal.MessageFilter
 import com.ebicep.chatplus.features.speechtotext.SpeechToText
@@ -105,24 +106,27 @@ object ConfigScreenImpl {
         general.addEntry(
             entryBuilder.startEnumSelector(
                 Component.translatable("chatPlus.chatSettings.chatTimestampMode"),
-            TimestampMode::class.java,
-            Config.values.chatTimestampMode
+                TimestampMode::class.java,
+                Config.values.chatTimestampMode
+            )
+                .setEnumNameProvider { (it as TimestampMode).translatable }
+                .setDefaultValue(Config.values.chatTimestampMode)
+                .setTooltip(Component.translatable("chatPlus.chatSettings.chatTimestampMode.tooltip"))
+                .setSaveConsumer { Config.values.chatTimestampMode = it }
+                .build()
         )
-            .setEnumNameProvider { (it as TimestampMode).translatable }
-            .setDefaultValue(Config.values.chatTimestampMode)
-            .setTooltip(Component.translatable("chatPlus.chatSettings.chatTimestampMode.tooltip"))
-            .setSaveConsumer { Config.values.chatTimestampMode = it }
-            .build())
-        general.addEntry(entryBuilder.startEnumSelector(
-            Component.translatable("chatPlus.chatSettings.messageAlignment"),
-            AlignMessage.Alignment::class.java,
-            Config.values.messageAlignment
+        general.addEntry(
+            entryBuilder.startEnumSelector(
+                Component.translatable("chatPlus.chatSettings.messageAlignment"),
+                AlignMessage.Alignment::class.java,
+                Config.values.messageAlignment
+            )
+                .setEnumNameProvider { (it as AlignMessage.Alignment).translatable }
+                .setDefaultValue(Config.values.messageAlignment)
+                .setTooltip(Component.translatable("chatPlus.chatSettings.messageAlignment.tooltip"))
+                .setSaveConsumer { Config.values.messageAlignment = it }
+                .build()
         )
-            .setEnumNameProvider { (it as AlignMessage.Alignment).translatable }
-            .setDefaultValue(Config.values.messageAlignment)
-            .setTooltip(Component.translatable("chatPlus.chatSettings.messageAlignment.tooltip"))
-            .setSaveConsumer { Config.values.messageAlignment = it }
-            .build())
     }
 
     private fun addChatTabsOption(builder: ConfigBuilder, entryBuilder: ConfigEntryBuilder) {
@@ -227,6 +231,18 @@ object ConfigScreenImpl {
                 "chatPlus.hoverHighlight.toggle",
                 Config.values.hoverHighlightEnabled
             ) { Config.values.hoverHighlightEnabled = it })
+        hoverHighlight.addEntry(
+            entryBuilder.startEnumSelector(
+                Component.translatable("chatPlus.hoverHighlight.mode"),
+                HoverHighlight.HighlightMode::class.java,
+                Config.values.hoverHighlightMode
+            )
+                .setEnumNameProvider { (it as HoverHighlight.HighlightMode).translatable }
+                .setDefaultValue(Config.values.hoverHighlightMode)
+                .setTooltip(Component.translatable("chatPlus.hoverHighlight.mode.tooltip"))
+                .setSaveConsumer { Config.values.hoverHighlightMode = it }
+                .build()
+        )
         hoverHighlight.addEntry(
             entryBuilder.startAlphaColorField(
                 Component.translatable("chatPlus.hoverHighlight.color"),
@@ -445,72 +461,72 @@ object ConfigScreenImpl {
         }
         translator.addEntry(
             entryBuilder.startDropdownMenu(
-            Component.translatable("chatPlus.translator.translateTo"),
-            DropdownMenuBuilder.TopCellElementBuilder.of(Config.values.translateTo) { str -> str },
-            DropdownMenuBuilder.CellCreatorBuilder.of()
-        )
-            .setTooltip(Component.translatable("chatPlus.translator.translateTo.tooltip"))
-            .setDefaultValue(Config.values.translateTo)
-            .setSelections(languageNames)
-            .setErrorSupplier { str: String ->
-                if (languageNames.contains(str)) {
-                    Optional.empty()
-                } else {
-                    Optional.of(Component.translatable("chatPlus.translator.translateInvalid"))
+                Component.translatable("chatPlus.translator.translateTo"),
+                DropdownMenuBuilder.TopCellElementBuilder.of(Config.values.translateTo) { str -> str },
+                DropdownMenuBuilder.CellCreatorBuilder.of()
+            )
+                .setTooltip(Component.translatable("chatPlus.translator.translateTo.tooltip"))
+                .setDefaultValue(Config.values.translateTo)
+                .setSelections(languageNames)
+                .setErrorSupplier { str: String ->
+                    if (languageNames.contains(str)) {
+                        Optional.empty()
+                    } else {
+                        Optional.of(Component.translatable("chatPlus.translator.translateInvalid"))
+                    }
                 }
-            }
-            .setSaveConsumer { str: String ->
-                Config.values.translateTo = str
-                LanguageManager.updateTranslateLanguages()
-                queueUpdateConfig = true
-            }
-            .build()
+                .setSaveConsumer { str: String ->
+                    Config.values.translateTo = str
+                    LanguageManager.updateTranslateLanguages()
+                    queueUpdateConfig = true
+                }
+                .build()
         )
         translator.addEntry(
             entryBuilder.startDropdownMenu(
-            Component.translatable("chatPlus.translator.translateSelf"),
-            DropdownMenuBuilder.TopCellElementBuilder.of(Config.values.translateSelf) { str -> str },
-            DropdownMenuBuilder.CellCreatorBuilder.of()
-        )
-            .setTooltip(Component.translatable("chatPlus.translator.translateSelf.tooltip"))
-            .setDefaultValue(Config.values.translateSelf)
-            .setSelections(languageNames)
-            .setErrorSupplier { str: String ->
-                if (languageNames.contains(str)) {
-                    Optional.empty()
-                } else {
-                    Optional.of(Component.translatable("chatPlus.translator.translateInvalid"))
+                Component.translatable("chatPlus.translator.translateSelf"),
+                DropdownMenuBuilder.TopCellElementBuilder.of(Config.values.translateSelf) { str -> str },
+                DropdownMenuBuilder.CellCreatorBuilder.of()
+            )
+                .setTooltip(Component.translatable("chatPlus.translator.translateSelf.tooltip"))
+                .setDefaultValue(Config.values.translateSelf)
+                .setSelections(languageNames)
+                .setErrorSupplier { str: String ->
+                    if (languageNames.contains(str)) {
+                        Optional.empty()
+                    } else {
+                        Optional.of(Component.translatable("chatPlus.translator.translateInvalid"))
+                    }
                 }
-            }
-            .setSaveConsumer { str: String ->
-                Config.values.translateSelf = str
-                LanguageManager.updateTranslateLanguages()
-                queueUpdateConfig = true
-            }
-            .build()
+                .setSaveConsumer { str: String ->
+                    Config.values.translateSelf = str
+                    LanguageManager.updateTranslateLanguages()
+                    queueUpdateConfig = true
+                }
+                .build()
         )
         translator.addEntry(
             entryBuilder.startDropdownMenu(
-            Component.translatable("chatPlus.translator.translateSpeak"),
-            DropdownMenuBuilder.TopCellElementBuilder.of(Config.values.translateSpeak) { str -> str },
-            DropdownMenuBuilder.CellCreatorBuilder.of()
-        )
-            .setTooltip(Component.translatable("chatPlus.translator.translateSpeak.tooltip"))
-            .setDefaultValue(Config.values.translateSpeak)
-            .setSelections(languageNamesSpeak)
-            .setErrorSupplier { str: String ->
-                if (languageNamesSpeak.contains(str)) {
-                    Optional.empty()
-                } else {
-                    Optional.of(Component.translatable("chatPlus.translator.translateInvalid"))
+                Component.translatable("chatPlus.translator.translateSpeak"),
+                DropdownMenuBuilder.TopCellElementBuilder.of(Config.values.translateSpeak) { str -> str },
+                DropdownMenuBuilder.CellCreatorBuilder.of()
+            )
+                .setTooltip(Component.translatable("chatPlus.translator.translateSpeak.tooltip"))
+                .setDefaultValue(Config.values.translateSpeak)
+                .setSelections(languageNamesSpeak)
+                .setErrorSupplier { str: String ->
+                    if (languageNamesSpeak.contains(str)) {
+                        Optional.empty()
+                    } else {
+                        Optional.of(Component.translatable("chatPlus.translator.translateInvalid"))
+                    }
                 }
-            }
-            .setSaveConsumer { str: String ->
-                Config.values.translateSpeak = str
-                LanguageManager.updateTranslateLanguages()
-                queueUpdateConfig = true
-            }
-            .build()
+                .setSaveConsumer { str: String ->
+                    Config.values.translateSpeak = str
+                    LanguageManager.updateTranslateLanguages()
+                    queueUpdateConfig = true
+                }
+                .build()
         )
         translator.addEntry(
             getCustomListOption(
@@ -659,23 +675,23 @@ object ConfigScreenImpl {
                 Component.translatable("chatPlus.speechToText.speechToTextTranslateLang"),
                 DropdownMenuBuilder.TopCellElementBuilder.of(Config.values.speechToTextTranslateLang) { str -> str },
                 DropdownMenuBuilder.CellCreatorBuilder.of()
-        )
-            .setTooltip(Component.translatable("chatPlus.speechToText.speechToTextTranslateLang.tooltip"))
-            .setDefaultValue(Config.values.speechToTextTranslateLang)
-            .setSelections(languageNamesSpeak)
-            .setErrorSupplier { str: String ->
-                if (languageNamesSpeak.contains(str)) {
-                    Optional.empty()
-                } else {
-                    Optional.of(Component.translatable("chatPlus.translator.translateInvalid"))
+            )
+                .setTooltip(Component.translatable("chatPlus.speechToText.speechToTextTranslateLang.tooltip"))
+                .setDefaultValue(Config.values.speechToTextTranslateLang)
+                .setSelections(languageNamesSpeak)
+                .setErrorSupplier { str: String ->
+                    if (languageNamesSpeak.contains(str)) {
+                        Optional.empty()
+                    } else {
+                        Optional.of(Component.translatable("chatPlus.translator.translateInvalid"))
+                    }
                 }
-            }
-            .setSaveConsumer { str: String ->
-                Config.values.speechToTextTranslateLang = str
-                SpeechToText.updateTranslateLanguage()
-                queueUpdateConfig = true
-            }
-            .build()
+                .setSaveConsumer { str: String ->
+                    Config.values.speechToTextTranslateLang = str
+                    SpeechToText.updateTranslateLanguage()
+                    queueUpdateConfig = true
+                }
+                .build()
         )
     }
 

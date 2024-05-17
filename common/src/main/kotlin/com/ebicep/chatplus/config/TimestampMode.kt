@@ -4,7 +4,7 @@ import kotlinx.serialization.Serializable
 import net.minecraft.network.chat.Component
 
 @Serializable
-enum class TimestampMode(private val key: String, val format: String) {
+enum class TimestampMode(key: String, val format: String) {
     NONE("chatPlus.chatSettings.chatTimestampMode.off", ""),
     HR_12("chatPlus.chatSettings.chatTimestampMode.hr_12", "[hh:mm a]"),
     HR_12_SECOND("chatPlus.chatSettings.chatTimestampMode.hr_12_second", "[hh:mm:ss a]"),

@@ -24,6 +24,7 @@ fun main() {
     println(rgb)
     println((0 or 3) shl 16)
     println(Color(0, 0, 0, 25).rgb)
+    println(Color(247, 193, 97, 250).rgb)
     println(Color(-1677787036, true))
     println(Color(0 or 3 shl 16).rgb)
     println(Color(0 or 10 shl 16))
