@@ -11,10 +11,11 @@ import com.ebicep.chatplus.features.textbarelements.ShowBookmarksToggleEvent
 import com.ebicep.chatplus.features.textbarelements.TextBarElements
 import com.ebicep.chatplus.hud.*
 import net.minecraft.client.Minecraft
+import java.util.*
 
 object BookmarkMessages {
 
-    private val bookmarkedMessages: MutableSet<ChatTab.ChatPlusGuiMessage> = mutableSetOf()
+    private val bookmarkedMessages: MutableSet<ChatTab.ChatPlusGuiMessage> = Collections.newSetFromMap(IdentityHashMap())
     var showingBoomarks = false
 
     init {
