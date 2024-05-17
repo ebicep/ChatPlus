@@ -90,7 +90,7 @@ object FindMessage {
                 }
             }
         }
-        EventBus.register<ChatRenderPreLineAppearanceEvent>({ 10 }) {
+        EventBus.register<ChatRenderPreLineAppearanceEvent>({ Config.values.findMessageLinePriority }) {
             lastMovedToMessage?.let { message ->
                 if (message.first.first !== it.chatPlusGuiMessageLine.linkedMessage ||
                     message.first.second != it.chatPlusGuiMessageLine.wrappedIndex

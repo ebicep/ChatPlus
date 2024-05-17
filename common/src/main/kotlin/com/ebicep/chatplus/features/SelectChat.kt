@@ -1,5 +1,6 @@
 package com.ebicep.chatplus.features
 
+import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.features.chattabs.ChatTab
 import com.ebicep.chatplus.hud.*
@@ -68,7 +69,7 @@ object SelectChat {
                 }
             }
         }
-        EventBus.register<ChatRenderPreLineAppearanceEvent>({ 3 }) {
+        EventBus.register<ChatRenderPreLineAppearanceEvent>({ Config.values.selectChatLinePriority }) {
             if (selectedMessages.contains(it.chatPlusGuiMessageLine)) {
                 it.backgroundColor = SELECT_COLOR
             }

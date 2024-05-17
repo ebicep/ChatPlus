@@ -81,7 +81,7 @@ object Config {
             it.regex = Regex(it.pattern)
         }
         resetSortedChatTabs()
-        values.filterHighlights.forEach {
+        values.filterHighlightPatterns.forEach {
             it.regex = Regex(it.pattern)
         }
         values.autoBookMarkPatterns.forEach {
@@ -135,6 +135,7 @@ data class ConfigVariables(
     var maxMessages: Int = 1000,
     var maxCommandSuggestions: Int = 15,
     var chatTimestampMode: TimestampMode = TimestampMode.HR_12_SECOND,
+    var selectChatLinePriority: Int = 100,
     // tabs
     var chatTabs: MutableList<ChatTab> = mutableListOf(defaultTab),
     var selectedTab: Int = 0,
@@ -142,13 +143,16 @@ data class ConfigVariables(
     var arrowCycleTabEnabled: Boolean = true,
     // filter highlight
     var filterHighlightEnabled: Boolean = true,
-    var filterHighlights: MutableList<FilterHighlight.Filter> = mutableListOf(),
+    var filterHighlightLinePriority: Int = 150,
+    var filterHighlightPatterns: MutableList<FilterHighlight.Filter> = mutableListOf(),
     // hover highlight
     var hoverHighlightEnabled: Boolean = true,
+    var hoverHighlightLinePriority: Int = 0,
     var hoverHighlightMode: HoverHighlight.HighlightMode = HoverHighlight.HighlightMode.BRIGHTER,
     var hoverHighlightColor: Int = 419430400,
     // bookmark
     var bookmarkEnabled: Boolean = true,
+    var bookmarkLinePriority: Int = 30,
     var bookmarkColor: Int = Color(217, 163, 67, 200).rgb,
     var bookmarkKey: KeyWithModifier = KeyWithModifier(InputConstants.getKey("key.keyboard.b"), 2),
     var bookmarkTextBarElementEnabled: Boolean = true,
@@ -156,11 +160,17 @@ data class ConfigVariables(
     var autoBookMarkPatterns: MutableList<MessageFilter> = mutableListOf(),
     // find message
     var findMessageEnabled: Boolean = true,
+    var findMessageLinePriority: Int = 250,
     var findMessageHighlightInputBox: Boolean = false,
     var findMessageTextBarElementEnabled: Boolean = true,
     var findMessageKey: KeyWithModifier = KeyWithModifier(InputConstants.getKey("key.keyboard.f"), 2),
+    // copy message
+    var copyMessageKey: KeyWithModifier = KeyWithModifier(InputConstants.getKey("key.keyboard.c"), 2),
+    var copyMessageLinePriority: Int = 50,
+    var copyNoFormatting: Boolean = true,
     // screen shot chat
     var screenshotChatEnabled: Boolean = true,
+    var screenshotChatLinePriority: Int = 200,
     var screenshotChatLine: KeyWithModifier = KeyWithModifier(InputConstants.getKey("key.keyboard.s"), 2),
     var screenshotChatAutoUpload: Boolean = true,
     // player head chat display
@@ -173,8 +183,6 @@ data class ConfigVariables(
     var keyFineScroll: InputConstants.Key = InputConstants.getKey("key.keyboard.left.shift"),
     var keyLargeScroll: InputConstants.Key = InputConstants.getKey("key.keyboard.left.alt"),
     var keyMoveChat: InputConstants.Key = InputConstants.getKey("key.keyboard.right.control"),
-    var keyCopyMessageWithModifier: KeyWithModifier = KeyWithModifier(InputConstants.getKey("key.keyboard.c"), 2),
-    var copyNoFormatting: Boolean = true,
     var keyPeekChat: InputConstants.Key = InputConstants.getKey("key.keyboard.p"),
     // translator
     var translatorEnabled: Boolean = true,

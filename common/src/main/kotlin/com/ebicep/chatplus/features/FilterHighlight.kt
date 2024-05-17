@@ -13,12 +13,12 @@ object FilterHighlight {
     val DEFAULT_COLOR = Color(0, 200, 0, 50).rgb
 
     init {
-        EventBus.register<ChatRenderPreLineAppearanceEvent>({ 5 }) {
+        EventBus.register<ChatRenderPreLineAppearanceEvent>({ Config.values.filterHighlightLinePriority }) {
             if (!Config.values.filterHighlightEnabled) {
                 return@register
             }
             val message = it.chatPlusGuiMessageLine.content
-            for (filterHighlight in Config.values.filterHighlights) {
+            for (filterHighlight in Config.values.filterHighlightPatterns) {
                 if (filterHighlight.matches(message)) {
                     it.backgroundColor = filterHighlight.color
                 }

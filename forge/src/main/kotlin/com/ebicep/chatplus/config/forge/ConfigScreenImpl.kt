@@ -45,6 +45,7 @@ object ConfigScreenImpl {
         addHoverHighlightOption(builder, entryBuilder)
         addBookmarkOption(builder, entryBuilder)
         addFindMessageOption(builder, entryBuilder)
+        addCopyMessageOption(builder, entryBuilder)
         addChatScreenShotOption(builder, entryBuilder)
         addPlayerHeadChatDisplayOption(builder, entryBuilder)
         addKeyBindOptions(builder, entryBuilder)
@@ -127,6 +128,10 @@ object ConfigScreenImpl {
                 .setSaveConsumer { Config.values.messageAlignment = it }
                 .build()
         )
+        general.addEntry(
+            entryBuilder.linePriorityField("chatPlus.linePriority.selectChat", Config.values.selectChatLinePriority)
+            { Config.values.selectChatLinePriority = it }
+        )
     }
 
     private fun addChatTabsOption(builder: ConfigBuilder, entryBuilder: ConfigEntryBuilder) {
@@ -196,10 +201,14 @@ object ConfigScreenImpl {
                 Config.values.filterHighlightEnabled
             ) { Config.values.filterHighlightEnabled = it })
         filterHighlight.addEntry(
+            entryBuilder.linePriorityField("chatPlus.linePriority.filterHighlight", Config.values.filterHighlightLinePriority)
+            { Config.values.filterHighlightLinePriority = it }
+        )
+        filterHighlight.addEntry(
             getCustomListOption(
                 "chatPlus.filterHighlight.title",
-                Config.values.filterHighlights,
-                { Config.values.filterHighlights = it },
+                Config.values.filterHighlightPatterns,
+                { Config.values.filterHighlightPatterns = it },
                 true,
                 { FilterHighlight.Filter("", DEFAULT_COLOR) },
                 { value ->
@@ -231,6 +240,10 @@ object ConfigScreenImpl {
                 "chatPlus.hoverHighlight.toggle",
                 Config.values.hoverHighlightEnabled
             ) { Config.values.hoverHighlightEnabled = it })
+        hoverHighlight.addEntry(
+            entryBuilder.linePriorityField("chatPlus.linePriority.hoverHighlight", Config.values.hoverHighlightLinePriority)
+            { Config.values.hoverHighlightLinePriority = it }
+        )
         hoverHighlight.addEntry(
             entryBuilder.startEnumSelector(
                 Component.translatable("chatPlus.hoverHighlight.mode"),
@@ -268,6 +281,10 @@ object ConfigScreenImpl {
                 Config.values.bookmarkEnabled
             ) { Config.values.bookmarkEnabled = it })
         bookmark.addEntry(
+            entryBuilder.linePriorityField("chatPlus.linePriority.bookmark", Config.values.bookmarkLinePriority)
+            { Config.values.bookmarkLinePriority = it }
+        )
+        bookmark.addEntry(
             entryBuilder.startAlphaColorField(
                 Component.translatable("chatPlus.bookmark.color"),
                 Color.ofTransparent(Config.values.bookmarkColor)
@@ -283,23 +300,10 @@ object ConfigScreenImpl {
                 .build()
         )
         bookmark.addEntry(
-            entryBuilder.startModifierKeyCodeField(
-                Component.translatable("chatPlus.bookmark.key"),
-                ModifierKeyCode.of(
-                    Config.values.bookmarkKey.key,
-                    Modifier.of(Config.values.bookmarkKey.modifier)
-                )
+            entryBuilder.keyCodeOptionWithModifier(
+                "chatPlus.bookmark.key",
+                Config.values.bookmarkKey
             )
-                .setTooltip(Component.translatable("chatPlus.bookmark.key.tooltip"))
-                .setDefaultValue(
-                    ModifierKeyCode.of(
-                        Config.values.bookmarkKey.key,
-                        Modifier.of(Config.values.bookmarkKey.modifier)
-                    )
-                )
-                .setKeySaveConsumer { Config.values.bookmarkKey.key = it }
-                .setModifierSaveConsumer { Config.values.bookmarkKey.modifier = it.modifier.value }
-                .build()
         )
         bookmark.addEntry(
             entryBuilder.booleanToggle(
@@ -341,6 +345,10 @@ object ConfigScreenImpl {
                 Config.values.findMessageEnabled
             ) { Config.values.findMessageEnabled = it })
         findMessage.addEntry(
+            entryBuilder.linePriorityField("chatPlus.linePriority.findMessage", Config.values.findMessageLinePriority)
+            { Config.values.findMessageLinePriority = it }
+        )
+        findMessage.addEntry(
             entryBuilder.booleanToggle(
                 "chatPlus.findMessage.highlightInputBox.toggle",
                 Config.values.findMessageHighlightInputBox
@@ -358,6 +366,25 @@ object ConfigScreenImpl {
         )
     }
 
+    private fun addCopyMessageOption(builder: ConfigBuilder, entryBuilder: ConfigEntryBuilder) {
+        val copyMessage = builder.getOrCreateCategory(Component.translatable("chatPlus.copyMessage.title"))
+        copyMessage.addEntry(
+            entryBuilder.booleanToggle(
+                "chatPlus.copyMessage.noFormatting.toggle",
+                Config.values.copyNoFormatting
+            ) { Config.values.copyNoFormatting = it })
+        copyMessage.addEntry(
+            entryBuilder.linePriorityField("chatPlus.linePriority.copyMessage", Config.values.copyMessageLinePriority)
+            { Config.values.copyMessageLinePriority = it }
+        )
+        copyMessage.addEntry(
+            entryBuilder.keyCodeOptionWithModifier(
+                "chatPlus.copyMessage.key",
+                Config.values.copyMessageKey
+            )
+        )
+    }
+
     private fun addChatScreenShotOption(builder: ConfigBuilder, entryBuilder: ConfigEntryBuilder) {
         val screenshot = builder.getOrCreateCategory(Component.translatable("chatPlus.screenshotChat.title"))
         screenshot.addEntry(
@@ -366,22 +393,11 @@ object ConfigScreenImpl {
                 Config.values.screenshotChatEnabled
             ) { Config.values.screenshotChatEnabled = it })
         screenshot.addEntry(
-            entryBuilder.startModifierKeyCodeField(
-                Component.translatable("chatPlus.screenshotChat.line.key"),
-                ModifierKeyCode.of(
-                    Config.values.screenshotChatLine.key,
-                    Modifier.of(Config.values.screenshotChatLine.modifier)
-                )
-            )
-                .setDefaultValue(
-                    ModifierKeyCode.of(
-                        Config.values.screenshotChatLine.key,
-                        Modifier.of(Config.values.screenshotChatLine.modifier)
-                    )
-                )
-                .setKeySaveConsumer { Config.values.screenshotChatLine.key = it }
-                .setModifierSaveConsumer { Config.values.screenshotChatLine.modifier = it.modifier.value }
-                .build()
+            entryBuilder.linePriorityField("chatPlus.linePriority.screenshotChat", Config.values.screenshotChatLinePriority)
+            { Config.values.screenshotChatLinePriority = it }
+        )
+        screenshot.addEntry(
+            entryBuilder.keyCodeOptionWithModifier("chatPlus.screenshotChat.line.key", Config.values.screenshotChatLine)
         )
         screenshot.addEntry(
             entryBuilder.booleanToggle(
@@ -429,16 +445,6 @@ object ConfigScreenImpl {
         keyBinds.addEntry(
             entryBuilder.keyCodeOption("key.moveChat", Config.values.keyMoveChat) { Config.values.keyMoveChat = it }
         )
-        keyBinds.addEntry(
-            entryBuilder.keyCodeOptionWithModifier(
-                "key.copyMessage",
-                Config.values.keyCopyMessageWithModifier
-            )
-        )
-        keyBinds.addEntry(entryBuilder.booleanToggle(
-            "key.copyMessage.noFormatting.toggle",
-            Config.values.copyNoFormatting
-        ) { Config.values.copyNoFormatting = it })
         keyBinds.addEntry(
             entryBuilder.keyCodeOption("key.peekChat", Config.values.keyPeekChat) { Config.values.keyPeekChat = it }
         )
@@ -765,6 +771,21 @@ object ConfigScreenImpl {
         return startIntSlider(Component.translatable(translatable), variable, min, max)
             .setDefaultValue(variable)
             .setTooltip(Component.translatable("$translatable.tooltip"))
+            .setSaveConsumer {
+                saveConsumer.accept(it)
+                queueUpdateConfig = true
+            }
+            .build()
+    }
+
+    private fun ConfigEntryBuilder.linePriorityField(
+        translatable: String,
+        variable: Int,
+        saveConsumer: Consumer<Int>
+    ): IntegerListEntry {
+        return startIntField(Component.translatable(translatable), variable)
+            .setDefaultValue(variable)
+            .setTooltip(Component.translatable("chatPlus.linePriority.tooltip"))
             .setSaveConsumer {
                 saveConsumer.accept(it)
                 queueUpdateConfig = true

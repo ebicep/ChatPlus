@@ -66,7 +66,7 @@ object BookmarkMessages {
                 it.returnFunction = true
             }
         }
-        EventBus.register<ChatRenderPreLineAppearanceEvent>({ 30 }) {
+        EventBus.register<ChatRenderPreLineAppearanceEvent>({ Config.values.bookmarkLinePriority }) {
             if (bookmarkedMessages.contains(it.chatPlusGuiMessageLine.linkedMessage)) {
                 it.backgroundColor = Config.values.bookmarkColor
             }
