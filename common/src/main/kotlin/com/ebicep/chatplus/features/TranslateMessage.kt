@@ -132,12 +132,6 @@ object TranslateMessage {
             if (!languageSpeakEnabled) {
                 return@register
             }
-            if (inputTranslatePrefix != null && inputTranslatePrefix!!.value.startsWith("/")) {
-                return@register
-            }
-            if (it.messageToSend.startsWith("/")) {
-                return@register
-            }
             it.dontSendMessage = true
             SelfTranslator(it.normalizeChatMessage, if (inputTranslatePrefix == null) "" else inputTranslatePrefix!!.value).start()
         }
