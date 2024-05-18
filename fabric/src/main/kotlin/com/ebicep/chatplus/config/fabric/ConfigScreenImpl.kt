@@ -40,6 +40,7 @@ object ConfigScreenImpl {
             .transparentBackground()
         val entryBuilder: ConfigEntryBuilder = builder.entryBuilder()
         addGeneralOptions(builder, entryBuilder)
+        addScrollbarOption(builder, entryBuilder)
         addChatTabsOption(builder, entryBuilder)
         addFilterHighlightOption(builder, entryBuilder)
         addHoverHighlightOption(builder, entryBuilder)
@@ -131,6 +132,25 @@ object ConfigScreenImpl {
         general.addEntry(
             entryBuilder.linePriorityField("chatPlus.linePriority.selectChat", Config.values.selectChatLinePriority)
             { Config.values.selectChatLinePriority = it }
+        )
+    }
+
+    private fun addScrollbarOption(builder: ConfigBuilder, entryBuilder: ConfigEntryBuilder) {
+        val scrollbar = builder.getOrCreateCategory(Component.translatable("chatPlus.scrollbar.title"))
+        scrollbar.addEntry(
+            entryBuilder.booleanToggle(
+                "chatPlus.scrollbar.toggle",
+                Config.values.scrollbarEnabled
+            ) { Config.values.scrollbarEnabled = it })
+        scrollbar.addEntry(
+            entryBuilder.startAlphaColorField(Component.translatable("chatPlus.scrollbar.color"), Config.values.scrollbarColor)
+                .setTooltip(Component.translatable("chatPlus.scrollbar.color.tooltip"))
+                .setDefaultValue(Config.values.scrollbarColor)
+                .setSaveConsumer { Config.values.scrollbarColor = it }
+                .build()
+        )
+        scrollbar.addEntry(
+            entryBuilder.intField("chatPlus.scrollbar.width", Config.values.scrollbarWidth) { Config.values.scrollbarWidth = it }
         )
     }
 
@@ -783,13 +803,19 @@ object ConfigScreenImpl {
         variable: Int,
         saveConsumer: Consumer<Int>
     ): IntegerListEntry {
+        return intField(translatable, variable, "chatPlus.linePriority.tooltip", saveConsumer)
+    }
+
+    private fun ConfigEntryBuilder.intField(
+        translatable: String,
+        variable: Int,
+        tooltip: String = "$translatable.tooltip",
+        saveConsumer: Consumer<Int>
+    ): IntegerListEntry {
         return startIntField(Component.translatable(translatable), variable)
             .setDefaultValue(variable)
-            .setTooltip(Component.translatable("chatPlus.linePriority.tooltip"))
-            .setSaveConsumer {
-                saveConsumer.accept(it)
-                queueUpdateConfig = true
-            }
+            .setTooltip(Component.translatable(tooltip))
+            .setSaveConsumer { saveConsumer.accept(it) }
             .build()
     }
 

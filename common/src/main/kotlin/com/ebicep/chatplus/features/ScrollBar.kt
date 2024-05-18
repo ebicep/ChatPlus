@@ -1,15 +1,16 @@
 package com.ebicep.chatplus.features
 
+import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.features.chattabs.ChatTabAddDisplayMessageEvent
 import com.ebicep.chatplus.hud.*
 import com.ebicep.chatplus.util.GraphicsUtil.createPose
-import java.awt.Color
 import kotlin.math.roundToInt
 
 object ScrollBar {
 
-    private const val BAR_WIDTH = 6
+    private val barWidth: Int
+        get() = Config.values.scrollbarWidth
     private var barStartX: Int = 0
     private var barEndX: Int = 0
     private var barBottomY: Int = 0
@@ -21,9 +22,15 @@ object ScrollBar {
 
     init {
         EventBus.register<ChatTabAddDisplayMessageEvent> {
-            it.maxWidth -= BAR_WIDTH
+            if (!Config.values.scrollbarEnabled) {
+                return@register
+            }
+            it.maxWidth -= barWidth
         }
         EventBus.register<ChatRenderPostLinesEvent> {
+            if (!Config.values.scrollbarEnabled) {
+                return@register
+            }
             if (!ChatManager.isChatFocused()) {
                 return@register
             }
@@ -38,8 +45,8 @@ object ScrollBar {
                 val chatScrollbarPos = ChatManager.selectedTab.chatScrollbarPos
                 val lineHeight = ChatRenderer.lineHeight
                 val displayHeight = linesPerPage * lineHeight
-                barStartX = ChatRenderer.rescaledEndX - BAR_WIDTH
-                barEndX = barStartX + BAR_WIDTH
+                barStartX = ChatRenderer.rescaledEndX - barWidth
+                barEndX = barStartX + barWidth
                 barBottomY = -(chatScrollbarPos * displayHeight / messageCount - ChatRenderer.rescaledY)
                 val barHeight = (displayHeight * displayHeight / (messageCount * lineHeight.toDouble())).roundToInt()
                 barTopY = barBottomY - barHeight
@@ -50,14 +57,19 @@ object ScrollBar {
                     barEndX,
                     barTopY,
                     200, // z
-                    Color(128, 134, 139, 255).rgb
+                    Config.values.scrollbarColor
                 )
             }
         }
         EventBus.register<ChatScreenMouseClickedEvent>({ 25 }, { scrolling }) {
+            if (!Config.values.scrollbarEnabled) {
+                return@register
+            }
             val rescaledX: Double = it.mouseX / ChatRenderer.scale
             val rescaledY: Double = it.mouseY / ChatRenderer.scale
-            if (barStartX <= rescaledX && rescaledX <= barEndX &&
+            val min: Double = minOf(barStartX, barEndX).toDouble()
+            val max: Double = maxOf(barStartX, barEndX).toDouble()
+            if (rescaledX in min..max &&
                 barTopY <= rescaledY && rescaledY <= barBottomY
             ) {
                 scrolling = true

@@ -92,16 +92,13 @@ object Config {
     }
 
     private fun correctValues() {
-        if (values.maxMessages < MIN_MAX_MESSAGES) {
-            values.maxMessages = MIN_MAX_MESSAGES
-        } else if (values.maxMessages > MAX_MAX_MESSAGES) {
-            values.maxMessages = MAX_MAX_MESSAGES
-        }
-        if (values.maxCommandSuggestions < MIN_MAX_COMMAND_SUGGESTIONS) {
-            values.maxCommandSuggestions = MIN_MAX_COMMAND_SUGGESTIONS
-        } else if (values.maxCommandSuggestions > MAX_MAX_COMMAND_SUGGESTIONS) {
-            values.maxCommandSuggestions = MAX_MAX_COMMAND_SUGGESTIONS
-        }
+        values.scale = Mth.clamp(values.scale, 0f, 1f)
+        values.textOpacity = Mth.clamp(values.textOpacity, 0f, 1f)
+        values.backgroundOpacity = Mth.clamp(values.backgroundOpacity, 0f, 1f)
+        values.unfocusedHeight = Mth.clamp(values.unfocusedHeight, 0f, 1f)
+        values.lineSpacing = Mth.clamp(values.lineSpacing, 0f, 1f)
+        values.maxMessages = Mth.clamp(values.maxMessages, 1000, 10_000_000)
+        values.maxCommandSuggestions = Mth.clamp(values.maxCommandSuggestions, 10, 30)
         if (values.chatTabs.isEmpty()) {
             values.chatTabs.add(defaultTab)
         }
@@ -115,11 +112,6 @@ object Config {
     }
 
 }
-
-const val MIN_MAX_MESSAGES = 1000
-const val MAX_MAX_MESSAGES = 10_000_000
-const val MIN_MAX_COMMAND_SUGGESTIONS = 10
-const val MAX_MAX_COMMAND_SUGGESTIONS = 30
 
 @Serializable
 data class ConfigVariables(
@@ -136,6 +128,10 @@ data class ConfigVariables(
     var maxCommandSuggestions: Int = 15,
     var chatTimestampMode: TimestampMode = TimestampMode.HR_12_SECOND,
     var selectChatLinePriority: Int = 100,
+    // scrollbar
+    var scrollbarEnabled: Boolean = true,
+    var scrollbarColor: Int = Color(128, 134, 139, 255).rgb,
+    var scrollbarWidth: Int = 6,
     // tabs
     var chatTabs: MutableList<ChatTab> = mutableListOf(defaultTab),
     var selectedTab: Int = 0,
