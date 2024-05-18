@@ -9,7 +9,7 @@ version = "${version}"
 displayName = "${mod_name}"
 authors = "${mod_authors}"
 description = "${mod_description}"
-logoFile = "assets/chatplus/icon.png"
+logoFile = "icon.png"
 
 [[dependencies.${ mod_id }]]
 modId = "forge"
