@@ -163,11 +163,6 @@ object ConfigScreenImpl {
             ) { Config.values.chatTabsEnabled = it })
         chatTabs.addEntry(
             entryBuilder.booleanToggle(
-                "chatPlus.chatTabs.scrollCycleTabEnabled.toggle",
-                Config.values.scrollCycleTabEnabled
-            ) { Config.values.scrollCycleTabEnabled = it })
-        chatTabs.addEntry(
-            entryBuilder.booleanToggle(
                 "chatPlus.chatTabs.arrowCycleTabEnabled.toggle",
                 Config.values.arrowCycleTabEnabled
             ) { Config.values.arrowCycleTabEnabled = it })

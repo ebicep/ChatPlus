@@ -43,7 +43,7 @@ object ChatManager {
         }
 
     init {
-        sentMessages.addAll(Minecraft.getInstance().commandHistory().history())
+//        sentMessages.addAll(Minecraft.getInstance().commandHistory().history())
     }
 
     fun getDefaultY(): Int {
@@ -87,9 +87,9 @@ object ChatManager {
         if (this.sentMessages.isEmpty() || this.sentMessages[this.sentMessages.size - 1] != pMessage) {
             this.sentMessages.add(pMessage)
         }
-        if (pMessage.startsWith("/")) {
-            Minecraft.getInstance().commandHistory().addCommand(pMessage)
-        }
+//        if (pMessage.startsWith("/")) {
+//            Minecraft.getInstance().commandHistory().addCommand(pMessage)
+//        }
     }
 
     fun isChatFocused(): Boolean {

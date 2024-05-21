@@ -55,21 +55,6 @@ object ChatTabs {
                 startRenderTabIndex++
             }
         }
-        EventBus.register<ChatScreenMouseScrolledEvent> {
-            if (!Config.values.chatTabsEnabled || !Config.values.scrollCycleTabEnabled) {
-                return@register
-            }
-            val amountX = it.amountX
-            if (amountX == 0.0) {
-                return@register
-            }
-            // negative = scroll right , positive = scroll left
-            if (amountX > 0 && startRenderTabIndex > 0) {
-                startRenderTabIndex--
-            } else if (amountX < 0 && startRenderTabIndex < Config.values.chatTabs.size - 1) {
-                startRenderTabIndex++
-            }
-        }
         EventBus.register<ChatScreenMouseClickedEvent> {
             if (!Config.values.chatTabsEnabled) {
                 return@register

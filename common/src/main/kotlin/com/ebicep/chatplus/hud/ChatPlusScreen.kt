@@ -43,8 +43,7 @@ data class ChatScreenMouseScrolledEvent(
     val screen: ChatPlusScreen,
     val mouseX: Double,
     val mouseY: Double,
-    val amountX: Double,
-    val amountY: Double,
+    val amount: Double,
     var returnFunction: Boolean = false
 ) : Event
 
@@ -165,7 +164,7 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
             true,
             -805306368
         )
-        commandSuggestions!!.setAllowHiding(false)
+        commandSuggestions!!.setAllowSuggestions(false)
         commandSuggestions!!.updateCommandInfo()
 
         EventBus.post(ChatScreenInitPostEvent(this))
@@ -182,7 +181,7 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
 
     fun initializeBaseEditBox(editBox: EditBox) {
         editBox.setMaxLength(256 * 5) // default 256
-        editBox.isBordered = false
+        editBox.setBordered(false)
         editBox.setCanLoseFocus(true)
     }
 
@@ -263,12 +262,12 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
         }
     }
 
-    override fun mouseScrolled(mouseX: Double, mouseY: Double, amountX: Double, amountY: Double): Boolean {
-        var delta = Mth.clamp(amountY, -1.0, 1.0)
+    override fun mouseScrolled(mouseX: Double, mouseY: Double, amount: Double): Boolean {
+        var delta = Mth.clamp(amount, -1.0, 1.0)
         return if (commandSuggestions!!.mouseScrolled(delta)) {
             true
         } else {
-            if (EventBus.post(ChatScreenMouseScrolledEvent(this, mouseX, mouseY, amountX, amountY)).returnFunction) {
+            if (EventBus.post(ChatScreenMouseScrolledEvent(this, mouseX, mouseY, amount)).returnFunction) {
                 return true
             }
             // control = no scroll
@@ -397,7 +396,7 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
         input!!.render(guiGraphics, pMouseX, pMouseY, pPartialTick)
     }
 
-    override fun renderBackground(guiGraphics: GuiGraphics, i: Int, j: Int, f: Float) {
+    override fun renderBackground(guiGraphics: GuiGraphics) {
     }
 
     override fun isPauseScreen(): Boolean {

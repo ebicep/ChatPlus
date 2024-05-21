@@ -54,7 +54,7 @@ object PlayerHeadChatDisplay {
                 if (playerInfo != null) {
                     val uuid = playerInfo.profile.id
                     playerNameUUIDs[word] = TimedUUID(uuid, System.currentTimeMillis())
-                    playerHeads[uuid] = playerInfo.skin.texture
+                    playerHeads[uuid] = playerInfo.skinLocation
                     it.guiMessage.senderUUID = uuid
                     return@register
                 }
