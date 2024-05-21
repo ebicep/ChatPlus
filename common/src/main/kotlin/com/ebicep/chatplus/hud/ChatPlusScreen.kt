@@ -164,7 +164,6 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
             true,
             -805306368
         )
-        commandSuggestions!!.setAllowSuggestions(false)
         commandSuggestions!!.updateCommandInfo()
 
         EventBus.post(ChatScreenInitPostEvent(this))
