@@ -51,6 +51,8 @@
   "chatPlus.chatSettings.messageAlignment.left": "Left",
   "chatPlus.chatSettings.messageAlignment.center": "Center",
   "chatPlus.chatSettings.messageAlignment.right": "Right",
+  "chatPlus.chatSettings.compactMessages.toggle": "Compact Messages",
+  "chatPlus.chatSettings.compactMessages.toggle.tooltip": "Enables/Disables compacting consecutive chat messages.",
   "chatPlus.scrollbar.title": "Scrollbar",
   "chatPlus.scrollbar.toggle": "Enabled",
   "chatPlus.scrollbar.toggle.tooltip": "Enables/Disables the scrollbar.",

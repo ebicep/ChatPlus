@@ -1,5 +1,6 @@
 package com.ebicep.chatplus.features
 
+import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.features.chattabs.ChatTabAddNewMessageEvent
 import net.minecraft.ChatFormatting
@@ -18,6 +19,9 @@ object CompactMessages {
 
     init {
         EventBus.register<ChatTabAddNewMessageEvent> {
+            if (!Config.values.compactMessagesEnabled) {
+                return@register
+            }
             val chatTab = it.chatTab
             val messages = chatTab.messages
             val displayedMessages = chatTab.displayedMessages
