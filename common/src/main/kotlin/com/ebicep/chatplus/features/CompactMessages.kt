@@ -5,6 +5,7 @@ import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.features.chattabs.ChatTabAddNewMessageEvent
 import net.minecraft.ChatFormatting
 import net.minecraft.network.chat.*
+import net.minecraft.network.chat.contents.PlainTextContents
 import java.util.*
 
 object CompactMessages {
@@ -59,6 +60,10 @@ object CompactMessages {
 
         override fun <T> visit(arg: FormattedText.ContentConsumer<T>): Optional<T> {
             return arg.accept(this.text)
+        }
+
+        override fun type(): ComponentContents.Type<*> {
+            return PlainTextContents.TYPE
         }
 
         override fun <T> visit(arg: FormattedText.StyledContentConsumer<T>, arg2: Style): Optional<T> {
