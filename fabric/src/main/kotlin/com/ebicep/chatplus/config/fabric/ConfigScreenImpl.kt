@@ -133,6 +133,10 @@ object ConfigScreenImpl {
             entryBuilder.linePriorityField("chatPlus.linePriority.selectChat", Config.values.selectChatLinePriority)
             { Config.values.selectChatLinePriority = it }
         )
+        general.addEntry(
+            entryBuilder.booleanToggle("chatPlus.chatSettings.compactMessages.toggle", Config.values.compactMessagesEnabled)
+            { Config.values.compactMessagesEnabled = it }
+        )
     }
 
     private fun addScrollbarOption(builder: ConfigBuilder, entryBuilder: ConfigEntryBuilder) {

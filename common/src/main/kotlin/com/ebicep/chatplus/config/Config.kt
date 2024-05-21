@@ -128,6 +128,7 @@ data class ConfigVariables(
     var maxCommandSuggestions: Int = 15,
     var chatTimestampMode: TimestampMode = TimestampMode.HR_12_SECOND,
     var selectChatLinePriority: Int = 100,
+    var compactMessagesEnabled: Boolean = true,
     // scrollbar
     var scrollbarEnabled: Boolean = true,
     var scrollbarColor: Int = Color(128, 134, 139, 255).rgb,
