@@ -118,7 +118,7 @@ object ScreenshotChat {
             if (!lineScreenShotted) {
                 return@register
             }
-            val hoveredOverMessage = ChatManager.selectedTab.getHoveredOverMessage()
+            val hoveredOverMessage = ChatManager.selectedTab.getHoveredOverMessageLine()
             if (hoveredOverMessage != null) {
                 resetScreenShotTick()
                 screenshotMode = ScreenshotMode.LINE

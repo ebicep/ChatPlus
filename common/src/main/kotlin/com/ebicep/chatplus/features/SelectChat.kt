@@ -35,7 +35,7 @@ object SelectChat {
                 selectedMessages.clear()
                 return@register
             }
-            ChatManager.selectedTab.getHoveredOverMessage()?.let { message ->
+            ChatManager.selectedTab.getHoveredOverMessageLine()?.let { message ->
                 if (Screen.hasShiftDown() && lastSelected != null) {
                     val displayedMessages = ChatManager.selectedTab.displayedMessages
                     val lastSelectedIndex = displayedMessages.indexOf(lastSelected)
@@ -63,7 +63,7 @@ object SelectChat {
             if (!rightClicking) {
                 return@register
             }
-            ChatManager.selectedTab.getHoveredOverMessage()?.let { message ->
+            ChatManager.selectedTab.getHoveredOverMessageLine()?.let { message ->
                 if (!selectedMessages.contains(message)) {
                     selectedMessages += message
                 }

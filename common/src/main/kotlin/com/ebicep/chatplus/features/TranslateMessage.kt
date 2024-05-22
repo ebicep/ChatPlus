@@ -174,7 +174,7 @@ object TranslateMessage {
             if (System.currentTimeMillis() - translateClickCooldown < 2_000) {
                 return@register
             }
-            ChatManager.selectedTab.getMessageAt(it.mouseX, it.mouseY)?.let { message ->
+            ChatManager.selectedTab.getMessageLineAt(it.mouseX, it.mouseY)?.let { message ->
                 translateClickCooldown = System.currentTimeMillis()
                 // selected message compatibility, sends one translate request with all selected messages split by § then sends the
                 // translated messages unsplit
