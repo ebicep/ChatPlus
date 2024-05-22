@@ -18,28 +18,28 @@ config = "chatplus.mixins.json"
 
 [[dependencies.${ mod_id }]]
 modId = "neoforge"
-type = "required"
+mandatory = true
 versionRange = "[20,)"
 ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.${ mod_id }]]
 modId = "minecraft"
-type = "required"
+mandatory = true
 versionRange = "[${minecraft_version},)"
 ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.${ mod_id }]]
 modId = "architectury"
-type = "required"
+mandatory = true
 versionRange = "[${architectury_version},)"
 ordering = "AFTER"
 side = "BOTH"
 
 [[dependencies.${ mod_id }]]
 modId = "kotlinforforge"
-type = "required"
+mandatory = true
 versionRange = "[${kotlin_for_forge_version}]"
 ordering = "AFTER"
 side = "BOTH"
