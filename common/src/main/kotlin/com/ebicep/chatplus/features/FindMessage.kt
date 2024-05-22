@@ -82,7 +82,7 @@ object FindMessage {
                 return@register
             }
             if (findEnabled) {
-                ChatManager.selectedTab.getMessageAt(it.mouseX, it.mouseY)?.let { message ->
+                ChatManager.selectedTab.getMessageLineAt(it.mouseX, it.mouseY)?.let { message ->
                     val linkedMessage = message.linkedMessage
                     lastMovedToMessage = Pair(Pair(linkedMessage, message.wrappedIndex), Events.currentTick + 60)
                     findEnabled = false
