@@ -17,6 +17,7 @@ import net.minecraft.client.gui.narration.NarrationElementOutput
 import net.minecraft.client.gui.screens.Screen
 import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.MutableComponent
+import net.minecraft.network.chat.Style
 import net.minecraft.util.Mth
 import org.apache.commons.lang3.StringUtils
 
@@ -299,7 +300,7 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
                 if (ChatManager.selectedTab.handleChatQueueClicked(mouseX, mouseY)) {
                     return true
                 }
-                val style = ChatManager.selectedTab.getComponentStyleAt(mouseX, mouseY)
+                val style = getComponentStyleAt(mouseX, mouseY)
                 if (style != null && handleComponentClicked(style)) {
                     initial = input!!.value
                     return true
@@ -372,7 +373,7 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
         commandSuggestions!!.render(guiGraphics, mouseX, mouseY)
 
         // hoverables
-        val style = ChatManager.selectedTab.getComponentStyleAt(mouseX.toDouble(), mouseY.toDouble())
+        val style = getComponentStyleAt(mouseX.toDouble(), mouseY.toDouble())
         if (style?.hoverEvent != null) {
             guiGraphics.renderComponentHoverEffect(font, style, mouseX, mouseY)
         }
@@ -414,6 +415,10 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
         if (s.isNotEmpty()) {
             pOutput.nest().add(NarratedElementType.TITLE, Component.translatable("chat_plus_screen.message", s))
         }
+    }
+
+    private fun getComponentStyleAt(pMouseX: Double, pMouseY: Double): Style? {
+        return ChatManager.selectedTab.getClickedComponentStyleAt(pMouseX, pMouseY)
     }
 
     fun handleChatInput(rawMessage: String): Boolean {

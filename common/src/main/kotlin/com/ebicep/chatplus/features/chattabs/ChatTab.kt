@@ -65,12 +65,6 @@ data class ChatTabRemoveDisplayMessageEvent(
     var returnFunction: Boolean = false
 ) : Event
 
-data class ChatTabGetMessageAtEvent(
-    val chatTab: ChatTab,
-    var chatX: Double,
-    var chatY: Double,
-) : Event
-
 @Serializable
 class ChatTab : MessageFilter {
 
@@ -295,17 +289,13 @@ class ChatTab : MessageFilter {
         displayedMessages.clear()
     }
 
-    fun getHoveredOverMessageLine(): ChatPlusGuiMessageLine? {
-        return getMessageLineAt(ChatPlusScreen.lastMouseX.toDouble(), ChatPlusScreen.lastMouseY.toDouble())
+    fun getHoveredOverMessage(): ChatPlusGuiMessageLine? {
+        return getMessageAt(ChatPlusScreen.lastMouseX.toDouble(), ChatPlusScreen.lastMouseY.toDouble())
     }
 
-    fun getMessageLineAt(pMouseX: Double, pMouseY: Double): ChatPlusGuiMessageLine? {
+    fun getMessageAt(pMouseX: Double, pMouseY: Double): ChatPlusGuiMessageLine? {
         val x = screenToChatX(pMouseX)
         val y = screenToChatY(pMouseY)
-        return getMessageAtLineRelative(x, y)
-    }
-
-    fun getMessageAtLineRelative(x: Double, y: Double): ChatPlusGuiMessageLine? {
         val i = getMessageLineIndexAt(x, y)
         val size = this.displayedMessages.size
         return if (i in 0 until size) {
@@ -340,21 +330,22 @@ class ChatTab : MessageFilter {
     }
 
     private fun getMessageLineIndexAt(pMouseX: Double, pMouseY: Double): Int {
-        if (!ChatManager.isChatFocused() || Minecraft.getInstance().options.hideGui) {
-            return -1
+        return if (ChatManager.isChatFocused() && !Minecraft.getInstance().options.hideGui) {
+            if (pMouseX >= 0 && pMouseX <= Mth.floor(ChatRenderer.rescaledWidth.toDouble())) {
+                val i = min(ChatRenderer.rescaledLinesPerPage, this.displayedMessages.size)
+                if (pMouseY >= 0.0 && pMouseY < i.toDouble()) {
+                    val j = Mth.floor(pMouseY + chatScrollbarPos.toDouble())
+                    if (j >= 0 && j < this.displayedMessages.size) {
+                        return j
+                    }
+                }
+                -1
+            } else {
+                -1
+            }
+        } else {
+            -1
         }
-        if (!(0.0 <= pMouseX && pMouseX <= Mth.floor(ChatRenderer.backgroundWidthEndX.toDouble()))) {
-            return -1
-        }
-        val i = min(ChatRenderer.rescaledLinesPerPage, this.displayedMessages.size)
-        if (!(0.0 <= pMouseY && pMouseY < i.toDouble())) {
-            return -1
-        }
-        val j = Mth.floor(pMouseY + chatScrollbarPos.toDouble())
-        if (j < 0 || j >= this.displayedMessages.size) {
-            return -1
-        }
-        return j
     }
 
     private fun hasSelectedMessageTag(chatX: Double, pLine: GuiMessage.Line, pTag: GuiMessageTag): Boolean {
@@ -470,16 +461,9 @@ class ChatTab : MessageFilter {
         }
     }
 
-    fun getComponentStyleAt(pMouseX: Double, pMouseY: Double): Style? {
-        val messageAtEvent = EventBus.post(
-            ChatTabGetMessageAtEvent(
-                this,
-                screenToChatX(pMouseX),
-                screenToChatY(pMouseY)
-            )
-        )
-        val x = messageAtEvent.chatX
-        val y = messageAtEvent.chatY
+    fun getClickedComponentStyleAt(pMouseX: Double, pMouseY: Double): Style? {
+        val x = screenToChatX(pMouseX)
+        val y = screenToChatY(pMouseY)
         val i = getMessageLineIndexAt(x, y)
         val size = this.displayedMessages.size
         return if (i in 0 until size) {

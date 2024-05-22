@@ -5,7 +5,6 @@ import com.ebicep.chatplus.events.ChatPlusMinuteEvent
 import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.features.chattabs.ChatTabAddDisplayMessageEvent
 import com.ebicep.chatplus.features.chattabs.ChatTabAddNewMessageEvent
-import com.ebicep.chatplus.features.chattabs.ChatTabGetMessageAtEvent
 import com.ebicep.chatplus.hud.ChatRenderLineTextEvent
 import com.ebicep.chatplus.hud.ChatRenderer
 import com.ebicep.chatplus.util.GraphicsUtil.createPose
@@ -107,24 +106,6 @@ object PlayerHeadChatDisplay {
                 return@register
             }
             it.maxWidth -= HEAD_WIDTH_PADDED
-        }
-        EventBus.register<ChatTabGetMessageAtEvent> {
-            if (!Config.values.playerHeadChatDisplayEnabled) {
-                return@register
-            }
-            val messageLine = it.chatTab.getMessageAtLineRelative(it.chatX, it.chatY) ?: return@register
-            val senderUUID = messageLine.linkedMessage.senderUUID
-            // -------
-            // XXXXXXX
-            if (senderUUID == null && !Config.values.playerHeadChatDisplayOffsetNonHeadMessages) {
-                return@register
-            }
-            // XXXXXXX
-            // _------
-            if (messageLine.wrappedIndex != 0 && !Config.values.playerHeadChatDisplayOffsetNonHeadMessagesShowOnWrapped) {
-                return@register
-            }
-            it.chatX -= messageOffset
         }
     }
 

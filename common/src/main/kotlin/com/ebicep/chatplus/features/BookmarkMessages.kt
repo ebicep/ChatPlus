@@ -43,7 +43,7 @@ object BookmarkMessages {
         EventBus.register<ChatScreenKeyPressedEvent>({ 1 }, { showBookmarkShortcutUsed }) {
             var toggledBookmarkMessage = false
             if (Config.values.bookmarkKey.isDown()) {
-                val hoveredOverMessage = ChatManager.selectedTab.getHoveredOverMessageLine()
+                val hoveredOverMessage = ChatManager.selectedTab.getHoveredOverMessage()
                 if (hoveredOverMessage != null && SelectChat.selectedMessages.isEmpty()) {
                     toggleMessageBookmark(hoveredOverMessage.linkedMessage)
                     toggledBookmarkMessage = true
@@ -76,7 +76,7 @@ object BookmarkMessages {
                 return@register
             }
             if (showingBoomarks) {
-                ChatManager.selectedTab.getMessageLineAt(it.mouseX, it.mouseY)?.let { message ->
+                ChatManager.selectedTab.getMessageAt(it.mouseX, it.mouseY)?.let { message ->
                     showingBoomarks = false
                     ChatManager.selectedTab.moveToMessage(it.screen, message)
                 }
