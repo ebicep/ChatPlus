@@ -48,7 +48,7 @@ dependencies {
     // Mod Menu
     modImplementation("com.terraformersmc:modmenu:${project.property("modmenu_version")}")
 
-//    include("com.alphacephei:vosk:0.3.45")
+    include("com.alphacephei:vosk:0.3.45")
 }
 
 tasks.processResources {
