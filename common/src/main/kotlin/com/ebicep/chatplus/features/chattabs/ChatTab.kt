@@ -241,8 +241,11 @@ class ChatTab : MessageFilter {
         if (previousHover != null) {
             when (previousHover.action) {
                 HoverEvent.Action.SHOW_TEXT -> {
-                    val component: Component = previousHover.getValue(HoverEvent.Action.SHOW_TEXT)!!
-                    component.siblings.add(getTimestamp(true))
+                    val component: MutableComponent = (previousHover.getValue(HoverEvent.Action.SHOW_TEXT) as MutableComponent?)!!
+                    if (component.siblings.javaClass.getName().contains("Immutable")) {
+                        component.siblings = ArrayList(component.siblings)
+                    }
+                    component.append(getTimestamp(true))
                 }
             }
         } else if (depth < 3) {
