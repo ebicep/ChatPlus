@@ -29,7 +29,7 @@ object HoverHighlight {
             if (!Config.values.hoverHighlightEnabled) {
                 return@register
             }
-            hoveredOverMessage = ChatManager.selectedTab.getHoveredOverMessage()?.line
+            hoveredOverMessage = ChatManager.selectedTab.getHoveredOverMessageLine()?.line
         }
         EventBus.register<ChatRenderPreLineAppearanceEvent>({ Config.values.hoverHighlightLinePriority }) {
             if (it.line !== hoveredOverMessage) {
