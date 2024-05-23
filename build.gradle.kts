@@ -17,6 +17,7 @@ plugins {
     id("architectury-plugin") version "3.4-SNAPSHOT"
     id("dev.architectury.loom") version "1.6-SNAPSHOT" apply false
     id("com.github.johnrengelman.shadow") version "8.1.1" apply false
+    id("me.shedaniel.unified-publishing") version "0.1.+" apply false
 }
 
 architectury {
@@ -26,6 +27,7 @@ architectury {
 subprojects {
     apply(plugin = "dev.architectury.loom")
     apply(plugin = "org.jetbrains.kotlin.plugin.serialization")
+    apply(plugin = "me.shedaniel.unified-publishing")
 
     val loom = project.extensions.getByName<LoomGradleExtensionAPI>("loom")
     loom.silentMojangMappingsLicense()

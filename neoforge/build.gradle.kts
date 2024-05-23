@@ -105,3 +105,43 @@ components.getByName("java") {
         skip()
     }
 }
+
+unifiedPublishing {
+    project {
+        gameVersions.set(listOf("${rootProject.property("minecraft_version")}"))
+        gameLoaders.set(listOf(project.name))
+        releaseType.set("release")
+
+        mainPublication.set(tasks.remapJar.get().archiveFile) // Declares the publicated jar
+
+        relations {
+            depends { // Mark as a required dependency
+                // architectury
+                curseforge = "419699"
+                modrinth = "lhGA9TYQ"
+                // cloth config
+                curseforge = "348521"
+                modrinth = "9s6osm5g"
+                // kotlin for forge
+                curseforge = "351264"
+                modrinth = "ordsPcFz"
+            }
+        }
+
+        val cfToken = System.getenv("CF_TOKEN")
+        if (cfToken != null) {
+            curseforge {
+                token = cfToken
+                id = "1023333" // Required, must be a string, ID of CurseForge project
+            }
+        }
+
+        val mrToken = System.getenv("MODRINTH_TOKEN")
+        if (mrToken != null) {
+            modrinth {
+                token = mrToken
+                id = "cJlZ132G" // Required, must be a string, ID of Modrinth project
+            }
+        }
+    }
+}
