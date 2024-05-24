@@ -1,3 +1,5 @@
+import org.gradle.kotlin.dsl.support.uppercaseFirstChar
+
 plugins {
     id("com.github.johnrengelman.shadow")
 }
@@ -108,6 +110,8 @@ components.getByName("java") {
 
 unifiedPublishing {
     project {
+        println("(${project.name}) Publishing | ${rootProject.property("minecraft_version")} | ${project.name}")
+        displayName.set("${rootProject.property("mod_name")} ${project.name.uppercaseFirstChar()} v${project.version}")
         gameVersions.set(listOf("${rootProject.property("minecraft_version")}"))
         gameLoaders.set(listOf(project.name))
         releaseType.set("release")
@@ -117,31 +121,41 @@ unifiedPublishing {
         relations {
             depends { // Mark as a required dependency
                 // architectury
-                curseforge = "419699"
+                curseforge = "architectury-api"
                 modrinth = "lhGA9TYQ"
+            }
+            depends { // Mark as a required dependency
                 // cloth config
-                curseforge = "348521"
+                curseforge = "cloth-config"
                 modrinth = "9s6osm5g"
+            }
+            depends { // Mark as a required dependency
                 // kotlin for forge
-                curseforge = "351264"
+                curseforge = "kotlin-for-forge"
                 modrinth = "ordsPcFz"
             }
         }
 
         val cfToken = System.getenv("CF_TOKEN")
         if (cfToken != null) {
+            println("(${project.name}) CF_TOKEN found, publishing to CurseForge")
             curseforge {
                 token = cfToken
                 id = "1023333" // Required, must be a string, ID of CurseForge project
             }
+        } else {
+            println("(${project.name}) CF_TOKEN not found, not publishing to CurseForge")
         }
 
         val mrToken = System.getenv("MODRINTH_TOKEN")
         if (mrToken != null) {
+            println("(${project.name}) MODRINTH_TOKEN found, publishing to Modrinth")
             modrinth {
                 token = mrToken
                 id = "cJlZ132G" // Required, must be a string, ID of Modrinth project
             }
+        } else {
+            println("(${project.name}) CF_TOKEN not found, not publishing to CurseForge")
         }
     }
 }
