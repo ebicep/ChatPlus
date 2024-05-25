@@ -340,7 +340,7 @@ class ChatTab : MessageFilter {
         if (!ChatManager.isChatFocused() || Minecraft.getInstance().options.hideGui) {
             return -1
         }
-        if (!(0.0 <= pMouseX && pMouseX <= Mth.floor(ChatRenderer.backgroundWidthEndX.toDouble()))) {
+        if (!(0.0 <= pMouseX && pMouseX <= Mth.floor(ChatRenderer.rescaledWidth.toDouble()))) {
             return -1
         }
         val i = min(ChatRenderer.rescaledLinesPerPage, this.displayedMessages.size)
