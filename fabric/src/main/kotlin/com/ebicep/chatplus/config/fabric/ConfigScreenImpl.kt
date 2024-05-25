@@ -880,6 +880,7 @@ object ConfigScreenImpl {
                 variable.key = it
             }
             .setModifierSaveConsumer {
+                variable.key = it.keyCode
                 variable.modifier = it.modifier.value
             }
             .build()
