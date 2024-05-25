@@ -17,8 +17,6 @@ import net.minecraft.util.Mth
 object ChatPlusScreenAdapter {
 
     fun handleInitPre(chatScreen: ChatScreen) {
-        chatScreen as IMixinChatScreen
-        chatScreen.historyPos = sentMessages.size
         chatScreen as IChatScreen
         chatScreen.chatPlusWidth = chatScreen.width
         EventBus.post(ChatScreenInitPreEvent(chatScreen))
@@ -86,7 +84,7 @@ object ChatPlusScreenAdapter {
     fun handleMoveInHistory(chatScreen: ChatScreen, pMsgPos: Int) {
         chatScreen as IMixinChatScreen
         var i = chatScreen.historyPos + pMsgPos
-        val j = ChatManager.sentMessages.size
+        val j = sentMessages.size
         i = Mth.clamp(i, 0, j)
         if (i != chatScreen.historyPos) {
             val input = chatScreen.input
@@ -97,7 +95,7 @@ object ChatPlusScreenAdapter {
                 if (chatScreen.historyPos == j) {
                     chatScreen.historyBuffer = input.value
                 }
-                input.value = ChatManager.sentMessages[i]
+                input.value = sentMessages[i]
                 chatScreen.commandSuggestions.setAllowSuggestions(false)
                 chatScreen.historyPos = i
             }
