@@ -6,11 +6,15 @@ import com.ebicep.chatplus.features.chattabs.ChatTab;
 import com.ebicep.chatplus.features.chattabs.ChatTabs;
 import com.ebicep.chatplus.hud.ChatRenderer;
 import net.minecraft.client.GuiMessageTag;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.ChatComponent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MessageSignature;
+import net.minecraft.world.entity.player.Player;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -18,8 +22,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(ChatComponent.class)
 public class MixinChatComponent {
 
+    @Final
+    @Shadow
+    private Minecraft minecraft;
+
     @Inject(method = "render", at = @At("HEAD"), cancellable = true)
-    public void render(GuiGraphics guiGraphics, int i, int j, int k, CallbackInfo ci) {
+    public void render(GuiGraphics guiGraphics, int i, int j, int k, boolean bl, CallbackInfo ci) {
         if (!ChatPlus.INSTANCE.isEnabled()) {
             return;
         }
@@ -27,8 +35,8 @@ public class MixinChatComponent {
         ci.cancel();
     }
 
-    @Inject(method = "addMessage(Lnet/minecraft/network/chat/Component;Lnet/minecraft/network/chat/MessageSignature;ILnet/minecraft/client/GuiMessageTag;Z)V", at = @At("RETURN"))
-    public void addMessage(Component component, MessageSignature messageSignature, int i, GuiMessageTag guiMessageTag, boolean bl, CallbackInfo ci) {
+    @Inject(method = "addMessage(Lnet/minecraft/network/chat/Component;Lnet/minecraft/network/chat/MessageSignature;Lnet/minecraft/client/GuiMessageTag;)V", at = @At("RETURN"))
+    public void addMessage(Component component, MessageSignature messageSignature, GuiMessageTag guiMessageTag, CallbackInfo ci) {
         if (!ChatPlus.INSTANCE.isEnabled()) {
             return;
         }
@@ -41,7 +49,7 @@ public class MixinChatComponent {
                     continue;
                 }
                 if (chatTab.matches(component.getString())) {
-                    chatTab.addNewMessage(component, messageSignature, i, guiMessageTag);
+                    chatTab.addNewMessage(component, messageSignature, this.minecraft.gui.getGuiTicks(), guiMessageTag);
                     if (chatTab.getSkipOthers()) {
                         break;
                     }
@@ -51,7 +59,7 @@ public class MixinChatComponent {
                 }
             }
         } else {
-            ChatTabs.INSTANCE.getDefaultTab().addNewMessage(component, messageSignature, i, guiMessageTag);
+            ChatTabs.INSTANCE.getDefaultTab().addNewMessage(component, messageSignature, this.minecraft.gui.getGuiTicks(), guiMessageTag);
         }
     }
 

@@ -1,5 +1,7 @@
 package com.ebicep.chatplus.events
 
+import com.ebicep.chatplus.ChatPlus
+
 interface Event
 
 object EventBus {
@@ -22,9 +24,14 @@ object EventBus {
 
         fun <E> post(data: E): E {
             for (it in subscribers) {
-                it.callback.invoke(data as T)
-                if (it.skipOtherCallbacks()) {
-                    break
+                try {
+                    it.callback.invoke(data as T)
+                    if (it.skipOtherCallbacks()) {
+                        break
+                    }
+                } catch (e: Exception) {
+                    ChatPlus.LOGGER.error("Error while posting event", e)
+                    e.printStackTrace()
                 }
             }
             return data

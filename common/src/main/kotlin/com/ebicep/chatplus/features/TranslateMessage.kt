@@ -144,7 +144,7 @@ object TranslateMessage {
             SelfTranslator(it.normalizeChatMessage, if (inputTranslatePrefix == null) "" else inputTranslatePrefix!!.value).start()
         }
 
-        ClientChatEvent.RECEIVED.register { type: ChatType.Bound, component: Component ->
+        ClientChatEvent.RECEIVED.register { _: ChatType.Bound?, component: Component ->
             handleTranslate(component)
             CompoundEventResult.pass()
         }

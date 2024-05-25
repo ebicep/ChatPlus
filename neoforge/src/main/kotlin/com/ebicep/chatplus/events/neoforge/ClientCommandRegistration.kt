@@ -4,11 +4,12 @@ import com.ebicep.chatplus.config.ConfigScreen
 import com.mojang.brigadier.Command
 import net.minecraft.commands.Commands
 import net.neoforged.bus.api.SubscribeEvent
+import net.neoforged.fml.common.EventBusSubscriber
 import net.neoforged.fml.common.Mod
 import net.neoforged.neoforge.client.event.RegisterClientCommandsEvent
 
 
-@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE)
+@EventBusSubscriber(bus = EventBusSubscriber.Bus.GAME)
 object ClientCommandRegistration {
 
     @SubscribeEvent
