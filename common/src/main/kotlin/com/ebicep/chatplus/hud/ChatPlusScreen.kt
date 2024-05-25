@@ -8,6 +8,7 @@ import com.mojang.blaze3d.platform.InputConstants
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.Font
 import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.gui.components.Button
 import net.minecraft.client.gui.components.CommandSuggestions
 import net.minecraft.client.gui.components.EditBox
 import net.minecraft.client.gui.components.events.GuiEventListener
@@ -17,6 +18,7 @@ import net.minecraft.client.gui.narration.NarrationElementOutput
 import net.minecraft.client.gui.screens.Screen
 import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.MutableComponent
+import net.minecraft.network.protocol.game.ServerboundPlayerCommandPacket
 import net.minecraft.util.Mth
 import org.apache.commons.lang3.StringUtils
 
@@ -107,7 +109,7 @@ data class ChatScreenSendMessagePostEvent(
 ) : Event
 
 
-class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plus_screen.title")) {
+class ChatPlusScreen(pInitial: String, val bedScreen: Boolean = false) : Screen(Component.translatable("chat_plus_screen.title")) {
 
     private val USAGE_TEXT: Component = Component.translatable("chat_plus_screen.usage")
     private var historyBuffer = ""
@@ -125,6 +127,8 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
     var initial: String = pInitial
     var editBoxWidth: Int = 0
     var commandSuggestions: CommandSuggestions? = null
+
+    private var leaveBedButton: Button? = null
 
     override fun init() {
         historyPos = ChatManager.sentMessages.size
@@ -167,8 +171,16 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
         commandSuggestions!!.setAllowHiding(false)
         commandSuggestions!!.updateCommandInfo()
 
-        EventBus.post(ChatScreenInitPostEvent(this))
+        if (bedScreen) {
+            this.leaveBedButton = Button.builder(
+                Component.translatable("multiplayer.stopSleeping")
+            ) { button: Button? ->
+                this.sendWakeUp()
+            }.bounds(this.width / 2 - 100, this.height - 40, 200, 20).build()
+            this.addRenderableWidget(this.leaveBedButton)
+        }
 
+        EventBus.post(ChatScreenInitPostEvent(this))
     }
 
     fun <T> addWidget0(guiEventListener: T & Any): T where T : GuiEventListener?, T : NarratableEntry? {
@@ -210,6 +222,11 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
     override fun keyPressed(pKeyCode: Int, pScanCode: Int, pModifiers: Int): Boolean {
         //input!!.setEditable(true)
         return when {
+            pKeyCode == 256 && bedScreen -> {
+                sendWakeUp()
+                true
+            }
+
             commandSuggestions!!.keyPressed(pKeyCode, pScanCode, pModifiers) -> {
                 true
             }
@@ -364,6 +381,10 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
         lastMouseX = mouseX
         lastMouseY = mouseY
 
+        if (bedScreen && leaveBedButton != null) {
+            leaveBedButton!!.render(guiGraphics, mouseX, mouseY, partialTick)
+        }
+
         renderInputBox(guiGraphics, mouseX, mouseY, partialTick)
 
         super.render(guiGraphics, mouseX, mouseY, partialTick)
@@ -466,6 +487,19 @@ class ChatPlusScreen(pInitial: String) : Screen(Component.translatable("chat_plu
 
     fun font(): Font {
         return font
+    }
+
+    private fun sendWakeUp() {
+        val clientPacketListener = minecraft!!.player!!.connection
+        clientPacketListener.send(ServerboundPlayerCommandPacket(minecraft!!.player, ServerboundPlayerCommandPacket.Action.STOP_SLEEPING))
+    }
+
+    fun onPlayerWokeUp() {
+        if (input!!.value.isEmpty()) {
+            minecraft!!.setScreen(null as Screen?)
+        } else {
+            minecraft!!.setScreen(ChatPlusScreen(input!!.value))
+        }
     }
 
     companion object {
