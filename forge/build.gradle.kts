@@ -131,9 +131,13 @@ unifiedPublishing {
                 // architectury
                 curseforge = "architectury-api"
                 modrinth = "lhGA9TYQ"
+            }
+            depends { // Mark as a required dependency
                 // cloth config
                 curseforge = "cloth-config"
                 modrinth = "9s6osm5g"
+            }
+            depends { // Mark as a required dependency
                 // kotlin for forge
                 curseforge = "kotlin-for-forge"
                 modrinth = "ordsPcFz"
