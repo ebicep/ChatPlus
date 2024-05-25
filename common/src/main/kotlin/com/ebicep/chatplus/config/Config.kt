@@ -18,8 +18,8 @@ import com.ebicep.chatplus.features.chattabs.ChatTabs.defaultTab
 import com.ebicep.chatplus.features.internal.MessageFilter
 import com.ebicep.chatplus.features.speechtotext.SpeechToText
 import com.ebicep.chatplus.hud.ChatManager
+import com.ebicep.chatplus.hud.ChatPlusScreen
 import com.ebicep.chatplus.hud.ChatRenderer
-import com.ebicep.chatplus.hud.EDIT_BOX_HEIGHT
 import com.ebicep.chatplus.translator.LanguageManager
 import com.ebicep.chatplus.translator.RegexMatch
 import com.mojang.blaze3d.platform.InputConstants
@@ -116,7 +116,7 @@ object Config {
 @Serializable
 data class ConfigVariables(
     var x: Int = 0,
-    var y: Int = -CHAT_TAB_HEIGHT - EDIT_BOX_HEIGHT,
+    var y: Int = -CHAT_TAB_HEIGHT - ChatPlusScreen.EDIT_BOX_HEIGHT,
     // general
     var enabled: Boolean = true,
     var scale: Float = 1f,

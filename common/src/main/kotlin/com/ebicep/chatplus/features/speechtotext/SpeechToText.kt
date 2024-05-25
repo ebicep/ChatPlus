@@ -9,6 +9,7 @@ import com.ebicep.chatplus.hud.ChatManager
 import com.ebicep.chatplus.hud.ChatPlusScreen
 import com.ebicep.chatplus.hud.ChatScreenCloseEvent
 import com.ebicep.chatplus.hud.ChatScreenInitPreEvent
+import com.ebicep.chatplus.mixin.IMixinChatScreen
 import com.ebicep.chatplus.translator.Language
 import com.ebicep.chatplus.translator.LanguageManager
 import com.ebicep.chatplus.translator.TranslateResult
@@ -23,6 +24,7 @@ import dev.architectury.event.events.client.ClientRawInputEvent
 import net.minecraft.ChatFormatting
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.gui.screens.ChatScreen
 import net.minecraft.network.chat.Component
 import org.lwjgl.openal.ALC11
 import org.vosk.Model
@@ -80,7 +82,7 @@ object SpeechToText {
     init {
         microphoneThread.start()
         EventBus.register<ChatPlusTickEvent> {
-            recordMic = Config.values.speechToTextMicrophoneKey.isDown() && Minecraft.getInstance().screen !is ChatPlusScreen
+            recordMic = Config.values.speechToTextMicrophoneKey.isDown() && Minecraft.getInstance().screen !is ChatScreen
         }
     }
 
@@ -171,6 +173,7 @@ class MicrophoneThread : Thread("ChatPlusMicrophoneThread") {
                 val text = messages.joinToString(" ")
                 ChatPlus.LOGGER.info("Quick Send: $text")
                 // for if translating messages enabled, takes time so input might already be initialized
+                it.screen as IMixinChatScreen
                 if (it.screen.input != null) {
                     it.screen.input?.insertText(text)
                 } else {
@@ -215,7 +218,7 @@ class MicrophoneThread : Thread("ChatPlusMicrophoneThread") {
             }
         }
         ClientRawInputEvent.KEY_PRESSED.register { _, keyCode, _, _, _ ->
-            val quickSend = keyCode == Config.values.speechToTextQuickSendKey.value && Minecraft.getInstance().screen !is ChatPlusScreen
+            val quickSend = keyCode == Config.values.speechToTextQuickSendKey.value && Minecraft.getInstance().screen !is ChatScreen
             if (canQuickSend && quickSend) {
                 quickSendTimer = -1
                 doWithMessage { messages, _ ->
@@ -303,7 +306,7 @@ class MicrophoneThread : Thread("ChatPlusMicrophoneThread") {
                         continue
                     }
                     val screen = Minecraft.getInstance().screen
-                    if (screen is ChatPlusScreen) {
+                    if (screen is ChatScreen) {
                         doWithMessage { messages, translated ->
                             if (
                                 Config.values.speechToTextToInputBox && !translated ||
@@ -311,6 +314,7 @@ class MicrophoneThread : Thread("ChatPlusMicrophoneThread") {
                             ) {
                                 return@doWithMessage
                             }
+                            screen as IMixinChatScreen
                             screen.input?.insertText(messages.joinToString(" "))
                         }
                     }

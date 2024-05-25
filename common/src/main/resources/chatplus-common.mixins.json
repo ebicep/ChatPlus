@@ -5,9 +5,11 @@
   "minVersion": "0.8",
   "client": [
     "AWTHackMixin",
+    "IMixinChatScreen",
+    "IMixinScreen",
     "MixinChatComponent",
     "MixinChatScreen",
-    "MixinMinecraft",
+    "MixinScreen",
     "NativeImagePointerAccessor"
   ],
   "mixins": [

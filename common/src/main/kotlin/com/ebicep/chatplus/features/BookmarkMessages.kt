@@ -9,8 +9,14 @@ import com.ebicep.chatplus.features.chattabs.ChatTabRemoveMessageEvent
 import com.ebicep.chatplus.features.textbarelements.ShowBookmarksBarElement
 import com.ebicep.chatplus.features.textbarelements.ShowBookmarksToggleEvent
 import com.ebicep.chatplus.features.textbarelements.TextBarElements
-import com.ebicep.chatplus.hud.*
+import com.ebicep.chatplus.hud.ChatManager
+import com.ebicep.chatplus.hud.ChatRenderPreLineAppearanceEvent
+import com.ebicep.chatplus.hud.ChatScreenKeyPressedEvent
+import com.ebicep.chatplus.hud.ChatScreenMouseClickedEvent
+import com.ebicep.chatplus.mixin.IMixinChatScreen
+import com.ebicep.chatplus.mixin.IMixinScreen
 import net.minecraft.client.Minecraft
+import net.minecraft.client.gui.screens.ChatScreen
 import java.util.*
 
 object BookmarkMessages {
@@ -62,7 +68,7 @@ object BookmarkMessages {
         }
         EventBus.register<ChatTabAddDisplayMessageEvent> {
             val screen = Minecraft.getInstance().screen
-            if (showingBoomarks && screen is ChatPlusScreen && !bookmarkedMessages.contains(it.linkedMessage)) {
+            if (showingBoomarks && screen is ChatScreen && !bookmarkedMessages.contains(it.linkedMessage)) {
                 it.returnFunction = true
             }
         }
@@ -92,7 +98,7 @@ object BookmarkMessages {
         }
     }
 
-    fun toggle(chatPlusScreen: ChatPlusScreen) {
+    fun toggle(chatScreen: ChatScreen) {
         showingBoomarks = !showingBoomarks
         EventBus.post(ShowBookmarksToggleEvent(!showingBoomarks))
         if (showingBoomarks) {
@@ -102,8 +108,10 @@ object BookmarkMessages {
         } else {
             ChatManager.selectedTab.refreshDisplayedMessage()
         }
-        chatPlusScreen.initial = chatPlusScreen.input!!.value
-        chatPlusScreen.rebuildWidgets0()
+        chatScreen as IMixinChatScreen
+        chatScreen.initial = chatScreen.input!!.value
+        chatScreen as IMixinScreen
+        chatScreen.callRebuildWidgets()
     }
 
 }

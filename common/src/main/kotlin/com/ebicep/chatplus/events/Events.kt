@@ -75,7 +75,7 @@ object Events {
         }
         ClientGuiEvent.SET_SCREEN.register {
             if (isEnabled() && it is ChatScreen) {
-                return@register CompoundEventResult.interruptTrue(ChatPlusScreen(latestDefaultText))
+//                return@register CompoundEventResult.interruptTrue(ChatPlusScreen(latestDefaultText, it is InBedChatScreen))
             }
             return@register CompoundEventResult.pass()
         }

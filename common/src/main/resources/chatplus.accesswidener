@@ -1,4 +1,4 @@
-accessWidener   v1  named
+accessWidener   v2  named
 
 
-accessible    field    net/minecraft/client/gui/screens/Screen   minecraft     Lnet/minecraft/client/Minecraft;
+accessible    field    net/minecraft/client/gui/screens/Screen       minecraft              Lnet/minecraft/client/Minecraft;

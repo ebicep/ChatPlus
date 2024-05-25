@@ -10,6 +10,7 @@ import com.ebicep.chatplus.features.internal.MessageFilter
 import com.ebicep.chatplus.hud.ChatManager
 import com.ebicep.chatplus.hud.ChatPlusScreen
 import com.ebicep.chatplus.hud.ChatRenderer
+import com.ebicep.chatplus.mixin.IMixinScreen
 import com.google.common.base.Predicate
 import com.google.common.collect.Lists
 import kotlinx.serialization.Serializable
@@ -21,6 +22,7 @@ import net.minecraft.client.GuiMessageTag
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.Font
 import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.gui.screens.ChatScreen
 import net.minecraft.client.multiplayer.chat.ChatListener
 import net.minecraft.locale.Language
 import net.minecraft.network.chat.*
@@ -340,7 +342,7 @@ class ChatTab : MessageFilter {
         if (!ChatManager.isChatFocused() || Minecraft.getInstance().options.hideGui) {
             return -1
         }
-        if (!(0.0 <= pMouseX && pMouseX <= Mth.floor(ChatRenderer.backgroundWidthEndX.toDouble()))) {
+        if (!(0.0 <= pMouseX && pMouseX <= Mth.floor(ChatRenderer.rescaledWidth.toDouble()))) {
             return -1
         }
         val i = min(ChatRenderer.rescaledLinesPerPage, this.displayedMessages.size)
@@ -423,11 +425,11 @@ class ChatTab : MessageFilter {
         chatScrollbarPos = pos
     }
 
-    fun moveToMessage(chatPlusScreen: ChatPlusScreen, message: ChatPlusGuiMessageLine) {
+    fun moveToMessage(chatScreen: ChatScreen, message: ChatPlusGuiMessageLine) {
         val linkedMessage = message.linkedMessage
         val lineOffset = ChatManager.getLinesPerPageScaled() / 2 + 1 // center the message
         ChatManager.selectedTab.refreshDisplayedMessage()
-        chatPlusScreen.rebuildWidgets0()
+        (chatScreen as IMixinScreen).callRebuildWidgets()
         val displayIndex =
             ChatManager.selectedTab.displayedMessages.indexOfFirst { line -> line.linkedMessage === linkedMessage }
         val scrollTo = ChatManager.selectedTab.displayedMessages.size - displayIndex - lineOffset

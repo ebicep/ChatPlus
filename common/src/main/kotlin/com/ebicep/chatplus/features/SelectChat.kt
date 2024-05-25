@@ -6,13 +6,14 @@ import com.ebicep.chatplus.features.chattabs.ChatTab
 import com.ebicep.chatplus.hud.*
 import net.minecraft.client.gui.screens.Screen
 import java.awt.Color
+import java.util.*
 
 object SelectChat {
 
     private val SELECT_COLOR = Color(186, 211, 252, 255).rgb
     private var rightClicking = false
     private var lastSelected: ChatTab.ChatPlusGuiMessageLine? = null
-    var selectedMessages: MutableSet<ChatTab.ChatPlusGuiMessageLine> = mutableSetOf()
+    var selectedMessages: MutableSet<ChatTab.ChatPlusGuiMessageLine> = Collections.newSetFromMap(IdentityHashMap())
 
     fun getSelectedMessagesOrdered(): List<ChatTab.ChatPlusGuiMessageLine> {
         return selectedMessages.sortedWith(

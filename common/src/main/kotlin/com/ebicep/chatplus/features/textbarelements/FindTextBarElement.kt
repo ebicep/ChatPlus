@@ -2,16 +2,17 @@ package com.ebicep.chatplus.features.textbarelements
 
 import com.ebicep.chatplus.events.Event
 import com.ebicep.chatplus.features.FindMessage
-import com.ebicep.chatplus.hud.ChatPlusScreen
+import com.ebicep.chatplus.mixin.IMixinScreen
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.gui.screens.ChatScreen
 import net.minecraft.network.chat.Component
 
 data class FindToggleEvent(
     val enabled: Boolean
 ) : Event
 
-class FindTextBarElement(private val chatPlusScreen: ChatPlusScreen) : TextBarElement {
+class FindTextBarElement(private val chatPlusScreen: ChatScreen) : TextBarElement {
 
     override fun getWidth(): Int {
         return Minecraft.getInstance().font.width("F")
@@ -27,7 +28,7 @@ class FindTextBarElement(private val chatPlusScreen: ChatPlusScreen) : TextBarEl
 
     override fun onHover(guiGraphics: GuiGraphics, pMouseX: Int, pMouseY: Int) {
         guiGraphics.renderTooltip(
-            chatPlusScreen.font(),
+            (chatPlusScreen as IMixinScreen).font,
             Component.translatable("chatPlus.findMessage.highlightInputBox.tooltip"),
             pMouseX,
             pMouseY

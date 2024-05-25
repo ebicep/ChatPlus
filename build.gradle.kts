@@ -15,7 +15,7 @@ plugins {
     kotlin("jvm") version "1.9.22"
     kotlin("plugin.serialization") version "1.9.22" apply false
     id("architectury-plugin") version "3.4-SNAPSHOT"
-    id("dev.architectury.loom") version "1.5-SNAPSHOT" apply false
+    id("dev.architectury.loom") version "1.6-SNAPSHOT" apply false
     id("com.github.johnrengelman.shadow") version "8.1.1" apply false
     id("me.shedaniel.unified-publishing") version "0.1.+" apply false
 }
@@ -65,6 +65,7 @@ allprojects {
         implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
         implementation("net.java.dev.jna:jna:5.14.0")
         implementation("com.alphacephei:vosk:0.3.45")
+        compileOnly("io.github.llamalad7:mixinextras-common:0.3.6")
     }
 
     tasks.withType<JavaCompile> {

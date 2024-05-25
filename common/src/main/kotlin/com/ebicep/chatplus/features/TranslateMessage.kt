@@ -8,6 +8,9 @@ import com.ebicep.chatplus.features.textbarelements.FindToggleEvent
 import com.ebicep.chatplus.features.textbarelements.TextBarElements
 import com.ebicep.chatplus.features.textbarelements.TranslateSpeakTextBarElement
 import com.ebicep.chatplus.hud.*
+import com.ebicep.chatplus.hud.ChatPlusScreen.EDIT_BOX_HEIGHT
+import com.ebicep.chatplus.mixin.IMixinChatScreen
+import com.ebicep.chatplus.mixin.IMixinScreen
 import com.ebicep.chatplus.translator.*
 import com.ebicep.chatplus.util.ComponentUtil
 import dev.architectury.event.CompoundEventResult
@@ -18,6 +21,7 @@ import dev.architectury.event.events.client.ClientSystemMessageEvent
 import net.minecraft.ChatFormatting
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.components.EditBox
+import net.minecraft.client.gui.screens.ChatScreen
 import net.minecraft.client.gui.screens.Screen
 import net.minecraft.network.chat.ChatType
 import net.minecraft.network.chat.Component
@@ -45,6 +49,7 @@ object TranslateMessage {
 
             inputTranslatePrefix = null
             if (languageSpeakEnabled) {
+                screen as IMixinChatScreen
                 screen.input?.x = 68
                 inputTranslatePrefix = EditBox(
                     screen.minecraft!!.fontFilterFishy,
@@ -55,8 +60,11 @@ object TranslateMessage {
                     Component.translatable("chatPlus.editBox")
                 )
                 val editBox = inputTranslatePrefix as EditBox
-                screen.initializeBaseEditBox(editBox)
-                screen.addWidget0(editBox)
+                editBox.setMaxLength(256 * 5) // default 256
+                editBox.isBordered = false
+                editBox.setCanLoseFocus(true)
+                screen as IMixinScreen
+                screen.callAddWidget(editBox)
             }
         }
         EventBus.register<ChatScreenCloseEvent> {
@@ -145,16 +153,13 @@ object TranslateMessage {
             CompoundEventResult.pass()
         }
         ClientRawInputEvent.KEY_PRESSED.register { _, keyCode, _, _, modifiers ->
-            if (Minecraft.getInstance().screen is ChatPlusScreen) {
+            if (Minecraft.getInstance().screen is ChatScreen) {
                 return@register EventResult.pass()
             }
             if (keyCode != Config.values.translateKey.key.value || modifiers != Config.values.translateKey.modifier.toInt()) {
                 return@register EventResult.pass()
             }
             languageSpeakEnabled = true
-            if (!Minecraft.getInstance().options.keyChat.isDown) { // check overlapping chat open
-                Minecraft.getInstance().setScreen(ChatPlusScreen(""))
-            }
             EventResult.interruptTrue()
         }
         EventBus.register<ChatScreenKeyPressedEvent> {

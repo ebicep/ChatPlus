@@ -10,7 +10,10 @@ import com.ebicep.chatplus.features.textbarelements.FindToggleEvent
 import com.ebicep.chatplus.features.textbarelements.TextBarElements
 import com.ebicep.chatplus.features.textbarelements.TranslateToggleEvent
 import com.ebicep.chatplus.hud.*
+import com.ebicep.chatplus.mixin.IMixinChatScreen
+import com.ebicep.chatplus.mixin.IMixinScreen
 import net.minecraft.client.Minecraft
+import net.minecraft.client.gui.screens.ChatScreen
 import java.awt.Color
 
 object FindMessage {
@@ -53,6 +56,7 @@ object FindMessage {
         }
         EventBus.register<ChatScreenRenderEvent> {
             if (findEnabled && Config.values.findMessageHighlightInputBox) {
+                it.screen as IMixinChatScreen
                 val editBox = it.screen.input ?: return@register
                 it.guiGraphics.renderOutline(
                     editBox.x - 2,
@@ -70,7 +74,7 @@ object FindMessage {
         }
         EventBus.register<ChatTabAddDisplayMessageEvent> {
             val screen = Minecraft.getInstance().screen
-            if (findEnabled && screen is ChatPlusScreen) {
+            if (findEnabled && screen is IMixinChatScreen) {
                 val filter = screen.input?.value
                 if (filter != null && !it.component.string.contains(filter, ignoreCase = true)) {
                     it.returnFunction = true
@@ -105,7 +109,8 @@ object FindMessage {
         }
     }
 
-    fun toggle(chatPlusScreen: ChatPlusScreen) {
+    fun toggle(chatPlusScreen: ChatScreen) {
+        chatPlusScreen as IMixinChatScreen
         findEnabled = !findEnabled
         EventBus.post(FindToggleEvent(findEnabled))
         if (findEnabled) {
@@ -117,7 +122,8 @@ object FindMessage {
             ChatManager.selectedTab.refreshDisplayedMessage()
         }
         chatPlusScreen.initial = chatPlusScreen.input!!.value
-        chatPlusScreen.rebuildWidgets0()
+        chatPlusScreen as IMixinScreen
+        chatPlusScreen.callRebuildWidgets()
     }
 
 }
