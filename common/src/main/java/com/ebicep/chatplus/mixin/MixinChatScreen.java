@@ -215,9 +215,9 @@ public abstract class MixinChatScreen extends Screen implements IMixinChatScreen
     }
 
     @Inject(method = "handleChatInput", at = @At("HEAD"), cancellable = true)
-    public void handleChatInput(String string, boolean bl, CallbackInfoReturnable<Boolean> cir) {
-        cir.setReturnValue(ChatPlusScreenAdapter.INSTANCE.handleChatInput(thisScreen(), string));
-        cir.cancel();
+    public void handleChatInput(String string, boolean bl, CallbackInfo ci) {
+        ChatPlusScreenAdapter.INSTANCE.handleChatInput(thisScreen(), string);
+        ci.cancel();
     }
 
 }
