@@ -20,6 +20,7 @@ object CopyMessage {
         EventBus.register<ChatScreenKeyPressedEvent>({ 1 }, { messageCopied }) {
             val canCopyMessage = copiedMessageCooldown < Events.currentTick && Config.values.copyMessageKey.isDown()
             if (!canCopyMessage) {
+                messageCopied = false
                 return@register
             }
             val copied: MutableSet<ChatTab.ChatPlusGuiMessageLine> = mutableSetOf()

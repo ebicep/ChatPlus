@@ -1,6 +1,6 @@
 package com.ebicep.chatplus.features.textbarelements
 
-import com.ebicep.chatplus.hud.EDIT_BOX_HEIGHT
+import com.ebicep.chatplus.hud.ChatPlusScreen.EDIT_BOX_HEIGHT
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphics
 

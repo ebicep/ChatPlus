@@ -2,7 +2,7 @@ package com.ebicep.chatplus.translator
 
 import com.ebicep.chatplus.hud.ChatManager
 import com.ebicep.chatplus.hud.ChatPlusScreen
-import com.ebicep.chatplus.hud.ChatPlusScreen.Companion.splitChatMessage
+import com.ebicep.chatplus.hud.ChatPlusScreen.splitChatMessage
 import net.minecraft.client.Minecraft
 
 class SelfTranslator(val toTranslate: String, val prefix: String) : Thread() {

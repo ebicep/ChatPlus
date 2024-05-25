@@ -1,9 +1,15 @@
 package com.ebicep.chatplus.features.textbarelements
 
+import com.ebicep.chatplus.IChatScreen
 import com.ebicep.chatplus.events.Event
 import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.features.FindMessage
-import com.ebicep.chatplus.hud.*
+import com.ebicep.chatplus.hud.ChatPlusScreen.EDIT_BOX_HEIGHT
+import com.ebicep.chatplus.hud.ChatScreenCloseEvent
+import com.ebicep.chatplus.hud.ChatScreenInitPreEvent
+import com.ebicep.chatplus.hud.ChatScreenMouseClickedEvent
+import com.ebicep.chatplus.hud.ChatScreenRenderEvent
+import net.minecraft.client.gui.screens.ChatScreen
 
 object TextBarElements {
 
@@ -11,11 +17,11 @@ object TextBarElements {
     const val SPACER = 2 // space between text box / find / translate
 
     data class AddTextBarElementEvent(
-        val screen: ChatPlusScreen,
+        val screen: ChatScreen,
         val elements: MutableList<TextBarElement>
     ) : Event
 
-    private lateinit var chatPlusScreen: ChatPlusScreen
+    private lateinit var chatPlusScreen: ChatScreen
     private var textBarElements: MutableList<TextBarElement> = mutableListOf()
     private var textBarElementsStartX: MutableMap<TextBarElement, Int> = mutableMapOf()
 
@@ -29,7 +35,7 @@ object TextBarElements {
             //____TEXTBOX_____-FIND--TRANSLATE-
             textBarElements.forEach { element ->
                 val calculatedWidth = element.getPaddedWidth() + SPACER
-                chatPlusScreen.editBoxWidth -= calculatedWidth
+                (chatPlusScreen as IChatScreen).chatPlusWidth -= calculatedWidth
             }
             cacheTextBarElementXs()
         }
@@ -77,7 +83,7 @@ object TextBarElements {
     }
 
     private fun cacheTextBarElementXs() {
-        var currentX = chatPlusScreen.editBoxWidth + SPACER
+        var currentX = (chatPlusScreen as IChatScreen).chatPlusWidth + SPACER
         textBarElements.forEach {
             textBarElementsStartX[it] = currentX
             currentX += it.getPaddedWidth() + SPACER

@@ -3,16 +3,17 @@ package com.ebicep.chatplus.features.textbarelements
 import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.events.Event
 import com.ebicep.chatplus.features.BookmarkMessages
-import com.ebicep.chatplus.hud.ChatPlusScreen
+import com.ebicep.chatplus.mixin.IMixinScreen
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.gui.screens.ChatScreen
 import net.minecraft.network.chat.Component
 
 data class ShowBookmarksToggleEvent(
     val enabled: Boolean
 ) : Event
 
-class ShowBookmarksBarElement(private val chatPlusScreen: ChatPlusScreen) : TextBarElement {
+class ShowBookmarksBarElement(private val chatPlusScreen: ChatScreen) : TextBarElement {
 
     override fun getWidth(): Int {
         return Minecraft.getInstance().font.width("B")
@@ -28,7 +29,7 @@ class ShowBookmarksBarElement(private val chatPlusScreen: ChatPlusScreen) : Text
 
     override fun onHover(guiGraphics: GuiGraphics, pMouseX: Int, pMouseY: Int) {
         guiGraphics.renderTooltip(
-            chatPlusScreen.font(),
+            (chatPlusScreen as IMixinScreen).font,
             Component.translatable("chatPlus.bookmark.textBarElement"),
             pMouseX,
             pMouseY
