@@ -55,6 +55,12 @@ dependencies {
     forgeRuntimeLibrary("com.alphacephei:vosk:0.3.45")
 
     include("com.alphacephei:vosk:0.3.45")
+
+    // mixin extras
+    annotationProcessor("io.github.llamalad7:mixinextras-common:0.3.6")
+    compileOnly("io.github.llamalad7:mixinextras-common:0.3.6")
+    implementation("io.github.llamalad7:mixinextras-common:0.3.6")
+    include("io.github.llamalad7:mixinextras-forge:0.3.6")
 }
 
 tasks.processResources {

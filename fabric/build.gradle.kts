@@ -41,9 +41,6 @@ dependencies {
     modApi("me.shedaniel.cloth:cloth-config-fabric:${rootProject.property("cloth_config_version")}") {
         exclude(group = "net.fabricmc.fabric-api")
     }
-    implementation("io.github.llamalad7:mixinextras-fabric:0.3.6")
-    annotationProcessor("io.github.llamalad7:mixinextras-fabric:0.3.6")
-    include("io.github.llamalad7:mixinextras-fabric:0.3.6")
 
     common(project(":common", "namedElements")) { isTransitive = false }
     shadowCommon(project(":common", "transformProductionFabric")) { isTransitive = false }
@@ -54,6 +51,10 @@ dependencies {
     modImplementation("com.terraformersmc:modmenu:${project.property("modmenu_version")}")
 
     include("com.alphacephei:vosk:0.3.45")
+
+//    annotationProcessor("io.github.llamalad7:mixinextras-fabric:0.3.6")
+//    implementation("io.github.llamalad7:mixinextras-fabric:0.3.6")
+//    include("io.github.llamalad7:mixinextras-fabric:0.3.6")
 }
 
 tasks.processResources {
