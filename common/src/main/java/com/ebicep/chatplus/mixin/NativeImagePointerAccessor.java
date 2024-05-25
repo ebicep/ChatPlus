@@ -10,6 +10,7 @@ import org.spongepowered.asm.mixin.gen.Accessor;
  */
 @Mixin(NativeImage.class)
 public interface NativeImagePointerAccessor {
+
     @Accessor("size")
     long size();
 

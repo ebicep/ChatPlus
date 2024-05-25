@@ -7,7 +7,9 @@ import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.events.Events
 import com.ebicep.chatplus.features.chattabs.ChatTab
 import com.ebicep.chatplus.features.chattabs.ChatTabs.defaultTab
+import com.ebicep.chatplus.hud.ChatPlusScreen.EDIT_BOX_HEIGHT
 import net.minecraft.client.Minecraft
+import net.minecraft.client.gui.screens.ChatScreen
 import kotlin.math.roundToInt
 
 const val MIN_HEIGHT = 80
@@ -93,7 +95,7 @@ object ChatManager {
     }
 
     fun isChatFocused(): Boolean {
-        return Minecraft.getInstance().screen is ChatPlusScreen
+        return Minecraft.getInstance().screen is ChatScreen
     }
 
     fun getScale(): Float {

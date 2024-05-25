@@ -4,14 +4,15 @@ import com.ebicep.chatplus.events.Event
 import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.features.ScreenshotChat.SCREENSHOT_COLOR
 import com.ebicep.chatplus.features.ScreenshotChat.onCooldown
-import com.ebicep.chatplus.hud.ChatPlusScreen
+import com.ebicep.chatplus.mixin.IMixinScreen
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.gui.screens.ChatScreen
 import net.minecraft.network.chat.Component
 
 class ScreenShotChatEvent : Event
 
-class ScreenShotChatElement(private val chatPlusScreen: ChatPlusScreen) : TextBarElement {
+class ScreenShotChatElement(private val chatPlusScreen: ChatScreen) : TextBarElement {
 
     override fun getWidth(): Int {
         return Minecraft.getInstance().font.width("S")
@@ -29,7 +30,12 @@ class ScreenShotChatElement(private val chatPlusScreen: ChatPlusScreen) : TextBa
     }
 
     override fun onHover(guiGraphics: GuiGraphics, pMouseX: Int, pMouseY: Int) {
-        guiGraphics.renderTooltip(chatPlusScreen.font(), Component.translatable("chatPlus.screenshotChat.tooltip"), pMouseX, pMouseY)
+        guiGraphics.renderTooltip(
+            (chatPlusScreen as IMixinScreen).font,
+            Component.translatable("chatPlus.screenshotChat.tooltip"),
+            pMouseX,
+            pMouseY
+        )
     }
 
     override fun onRender(guiGraphics: GuiGraphics, currentX: Int, currentY: Int, mouseX: Int, mouseY: Int) {

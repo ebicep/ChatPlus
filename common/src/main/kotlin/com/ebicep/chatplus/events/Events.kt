@@ -14,7 +14,6 @@ import dev.architectury.event.events.client.ClientLifecycleEvent
 import dev.architectury.event.events.client.ClientTickEvent
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.screens.ChatScreen
-import net.minecraft.client.gui.screens.InBedChatScreen
 
 data class ChatPlusTickEvent(
     val tick: Long
@@ -76,7 +75,7 @@ object Events {
         }
         ClientGuiEvent.SET_SCREEN.register {
             if (isEnabled() && it is ChatScreen) {
-                return@register CompoundEventResult.interruptTrue(ChatPlusScreen(latestDefaultText, it is InBedChatScreen))
+//                return@register CompoundEventResult.interruptTrue(ChatPlusScreen(latestDefaultText, it is InBedChatScreen))
             }
             return@register CompoundEventResult.pass()
         }
