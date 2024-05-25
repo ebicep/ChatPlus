@@ -51,7 +51,7 @@ object ChatPlusScreenAdapter {
     }
 
     fun handleMouseScrolled(chatScreen: ChatScreen, mouseX: Double, mouseY: Double, amountX: Double, amountY: Double): Boolean {
-        if (EventBus.post(ChatScreenMouseScrolledEvent(chatScreen, mouseX, mouseY, amountX, amountY)).returnFunction) {
+        if (EventBus.post(ChatScreenMouseScrolledEvent(chatScreen, mouseX, mouseY, amountX)).returnFunction) {
             return true
         }
         // control = no scroll

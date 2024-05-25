@@ -61,7 +61,7 @@ object TranslateMessage {
                 )
                 val editBox = inputTranslatePrefix as EditBox
                 editBox.setMaxLength(256 * 5) // default 256
-                editBox.isBordered = false
+                editBox.setBordered(false)
                 editBox.setCanLoseFocus(true)
                 screen as IMixinScreen
                 screen.callAddWidget(editBox)
