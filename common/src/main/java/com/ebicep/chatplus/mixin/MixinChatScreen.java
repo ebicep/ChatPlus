@@ -54,7 +54,7 @@ public abstract class MixinChatScreen extends Screen implements IMixinChatScreen
         ChatPlusScreenAdapter.INSTANCE.handleInitPre(thisScreen());
     }
 
-    @ModifyExpressionValue(method = "init", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/ArrayListDeque;size()I"))
+    @ModifyExpressionValue(method = "init", at = @At(value = "INVOKE", target = "Ljava/util/List;size()I"))
     public int initModifyVariable(int original) {
         return ChatManager.INSTANCE.getSentMessages().size();
     }
