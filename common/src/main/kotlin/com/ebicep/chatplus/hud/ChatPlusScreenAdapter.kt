@@ -29,7 +29,7 @@ object ChatPlusScreenAdapter {
     fun handleRemoved(chatScreen: ChatScreen) {
         EventBus.post(ChatScreenCloseEvent(chatScreen))
         ChatManager.selectedTab.resetChatScroll()
-        ChatManager.selectedTab.refreshDisplayedMessage()
+//        ChatManager.selectedTab.refreshDisplayedMessage()
     }
 
     fun handleOnEdited(chatScreen: ChatScreen, str: String): Boolean {
