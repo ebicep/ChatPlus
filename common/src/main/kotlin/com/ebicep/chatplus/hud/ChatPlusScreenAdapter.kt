@@ -59,7 +59,7 @@ object ChatPlusScreenAdapter {
         if (InputConstants.isKeyDown(window, Config.values.keyNoScroll.value)) {
             return true
         }
-        var delta = Mth.clamp(amountY, -1.0, 1.0)
+        var delta = Mth.clamp(amountX, -1.0, 1.0)
         if (InputConstants.isKeyDown(window, Config.values.keyLargeScroll.value)) {
             delta *= 21.0
         } else if (!InputConstants.isKeyDown(window, Config.values.keyFineScroll.value)) {
