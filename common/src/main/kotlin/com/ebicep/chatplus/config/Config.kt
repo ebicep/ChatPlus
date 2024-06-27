@@ -222,7 +222,7 @@ data class ConfigVariables(
             }
             field = newHeight
             queueUpdateConfig = true
-            ChatManager.selectedTab.rescaleChat()
+            ChatRenderer.updateCachedDimension()
         }
 
     // general

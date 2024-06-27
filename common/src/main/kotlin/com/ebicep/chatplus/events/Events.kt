@@ -1,7 +1,6 @@
 package com.ebicep.chatplus.events
 
 import com.ebicep.chatplus.ChatPlus
-import com.ebicep.chatplus.ChatPlus.isEnabled
 import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.config.ConfigScreen
 import com.ebicep.chatplus.config.queueUpdateConfig
@@ -13,7 +12,6 @@ import dev.architectury.event.events.client.ClientGuiEvent
 import dev.architectury.event.events.client.ClientLifecycleEvent
 import dev.architectury.event.events.client.ClientTickEvent
 import net.minecraft.client.Minecraft
-import net.minecraft.client.gui.screens.ChatScreen
 
 data class ChatPlusTickEvent(
     val tick: Long
@@ -29,7 +27,6 @@ data class ChatPlusMinuteEvent(
 
 object Events {
 
-    var latestDefaultText = ""
     var currentTick = 1L
 
     init {
@@ -74,9 +71,6 @@ object Events {
             Config.save()
         }
         ClientGuiEvent.SET_SCREEN.register {
-            if (isEnabled() && it is ChatScreen) {
-//                return@register CompoundEventResult.interruptTrue(ChatPlusScreen(latestDefaultText, it is InBedChatScreen))
-            }
             return@register CompoundEventResult.pass()
         }
     }
