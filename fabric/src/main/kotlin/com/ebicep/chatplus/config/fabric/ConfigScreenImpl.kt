@@ -1,6 +1,7 @@
 package com.ebicep.chatplus.config.fabric
 
 import com.ebicep.chatplus.config.Config
+import com.ebicep.chatplus.config.JumpToMessageMode
 import com.ebicep.chatplus.config.TimestampMode
 import com.ebicep.chatplus.config.queueUpdateConfig
 import com.ebicep.chatplus.config.serializers.KeyWithModifier
@@ -115,6 +116,18 @@ object ConfigScreenImpl {
                 .setDefaultValue(Config.values.chatTimestampMode)
                 .setTooltip(Component.translatable("chatPlus.chatSettings.chatTimestampMode.tooltip"))
                 .setSaveConsumer { Config.values.chatTimestampMode = it }
+                .build()
+        )
+        general.addEntry(
+            entryBuilder.startEnumSelector(
+                Component.translatable("chatPlus.chatSettings.jumpToMessageMode"),
+                JumpToMessageMode::class.java,
+                Config.values.jumpToMessageMode
+            )
+                .setEnumNameProvider { (it as JumpToMessageMode).translatable }
+                .setDefaultValue(Config.values.jumpToMessageMode)
+                .setTooltip(Component.translatable("chatPlus.chatSettings.jumpToMessageMode.tooltip"))
+                .setSaveConsumer { Config.values.jumpToMessageMode = it }
                 .build()
         )
         general.addEntry(

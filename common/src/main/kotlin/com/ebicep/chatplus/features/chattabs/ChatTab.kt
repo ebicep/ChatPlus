@@ -2,6 +2,7 @@ package com.ebicep.chatplus.features.chattabs
 
 import com.ebicep.chatplus.ChatPlus
 import com.ebicep.chatplus.config.Config
+import com.ebicep.chatplus.config.JumpToMessageMode
 import com.ebicep.chatplus.config.TimestampMode
 import com.ebicep.chatplus.events.Event
 import com.ebicep.chatplus.events.EventBus
@@ -335,7 +336,7 @@ class ChatTab : MessageFilter {
     }
 
     fun getMessageAtLineRelative(x: Double, y: Double): ChatPlusGuiMessageLine? {
-        val i = getMessageLineIndexAt(x, y)
+        val i = getMessageLineIndexAtRelative(x, y)
         val size = this.displayedMessages.size
         return if (i in 0 until size) {
             return this.displayedMessages[size - i - 1]
@@ -354,6 +355,10 @@ class ChatTab : MessageFilter {
     }
 
     private fun getMessageLineIndexAt(pMouseX: Double, pMouseY: Double): Int {
+        return getMessageLineIndexAtRelative(screenToChatX(pMouseX), screenToChatY(pMouseY))
+    }
+
+    private fun getMessageLineIndexAtRelative(pMouseX: Double, pMouseY: Double): Int {
         if (!ChatManager.isChatFocused() || Minecraft.getInstance().options.hideGui) {
             return -1
         }
@@ -395,14 +400,22 @@ class ChatTab : MessageFilter {
 
     fun moveToMessage(chatScreen: ChatScreen, message: ChatPlusGuiMessageLine) {
         val linkedMessage = message.linkedMessage
-        val lineOffset = ChatManager.getLinesPerPageScaled() / 2 + 1 // center the message
+        val moveIndex = when (Config.values.jumpToMessageMode) {
+            JumpToMessageMode.TOP -> ChatRenderer.rescaledLinesPerPage
+            JumpToMessageMode.MIDDLE -> ChatManager.getLinesPerPageScaled() / 2 + 1
+            JumpToMessageMode.BOTTOM -> 1
+            JumpToMessageMode.CURSOR -> getMessageLineIndexAt(
+                ChatPlusScreen.lastMouseX.toDouble(),
+                ChatPlusScreen.lastMouseY.toDouble()
+            ) - chatScrollbarPos + 1
+        }
         rescaleChat = false
         filterChat = true
         refreshDisplayMessages()
         (chatScreen as IMixinScreen).callRebuildWidgets()
         val displayIndex =
             ChatManager.selectedTab.displayedMessages.indexOfFirst { line -> line.linkedMessage === linkedMessage }
-        val scrollTo = ChatManager.selectedTab.displayedMessages.size - displayIndex - lineOffset
+        val scrollTo = ChatManager.selectedTab.displayedMessages.size - displayIndex - moveIndex
         ChatManager.selectedTab.scrollChat(scrollTo)
     }
 
@@ -528,90 +541,6 @@ class ChatTab : MessageFilter {
         }
     }
 
-//    fun refreshDisplayedMessage(filter: Predicate<ChatPlusGuiMessage>?) {
-//        if (refreshing) {
-//            queueRefreshDisplayedMessages()
-//            return
-//        }
-//        refreshing = true
-//        val start = System.currentTimeMillis()
-//        resetDisplayMessageAtTick = -1
-//        if (filter == null) {
-//            ChatPlus.LOGGER.info("Reset Filter")
-//            if (wasFiltered) {
-//                displayedMessages = unfilteredDisplayedMessages.toMutableList()
-//                unfilteredDisplayedMessages.clear()
-//            }
-//            wasFiltered = false
-//        } else {
-//            ChatPlus.LOGGER.info("Filtering - $wasFiltered")
-//            if (!wasFiltered) {
-//                unfilteredDisplayedMessages = displayedMessages.toMutableList()
-//            } else {
-//                displayedMessages = unfilteredDisplayedMessages.toMutableList()
-//            }
-//            wasFiltered = true
-//            val oldDisplayedMessageSize = displayedMessages.size
-//            val numberOfThreads = Runtime.getRuntime().availableProcessors()
-//            val chunked = displayedMessages.chunked((displayedMessages.size / numberOfThreads) + 1)
-//            ChatPlus.LOGGER.info("Chunked into ${chunked.size} chunks")
-//            val threads = arrayOfNulls<Thread>(numberOfThreads)
-//            val threadMessages: MutableMap<Int, MutableList<ChatPlusGuiMessageLine>> = mutableMapOf()
-//            val matchedMessages: KeySetView<ChatPlusGuiMessage, Boolean> = ConcurrentHashMap.newKeySet()
-//            chunked.forEachIndexed { index, chatPlusGuiMessageLines ->
-//                threads[index] = Thread {
-//                    val localFiltered: MutableList<ChatPlusGuiMessageLine> = mutableListOf()
-//                    chatPlusGuiMessageLines.forEach {
-//                        val chatPlusGuiMessage: ChatPlusGuiMessage = it.linkedMessage
-//                        if (matchedMessages.contains(chatPlusGuiMessage) || filter.test(chatPlusGuiMessage)) {
-//                            matchedMessages.add(chatPlusGuiMessage)
-//                            localFiltered.add(it)
-//                        }
-//                    }
-//                    synchronized(threadMessages) {
-//                        threadMessages[index] = localFiltered
-//                    }
-//                }
-//                threads[index]!!.start()
-//            }
-//            threads.forEach {
-//                it?.join()
-//            }
-//            val newMessages = displayedMessages.subList(oldDisplayedMessageSize, displayedMessages.size)
-//            ChatPlus.LOGGER.info("New messages: ${newMessages.size}")
-//            displayedMessages.clear()
-//            threadMessages.toSortedMap().forEach { (_, value) ->
-//                displayedMessages.addAll(value)
-//            }
-//        }
-//        resetChatScroll()
-//        ChatPlus.LOGGER.info("Time taken: ${System.currentTimeMillis() - start}ms")
-//    }
-//
-//    fun refreshDisplayedMessageForce() {
-//        if (refreshing) {
-//            queueRefreshDisplayedMessages()
-//            return
-//        }
-//        refreshing = true
-//        wasFiltered = false
-//        resetDisplayMessageAtTick = -1
-//        displayedMessages.clear()
-//        unfilteredDisplayedMessages.clear()
-//        for (i in messages.indices) {
-//            val chatPlusGuiMessage: ChatPlusGuiMessage = messages[i]
-//            val guiMessage: GuiMessage = chatPlusGuiMessage.guiMessage
-//            // assume all messages are mutable from adding timestamp method call
-//            this.addNewDisplayMessage(
-//                guiMessage.content() as MutableComponent,
-//                guiMessage.addedTime(),
-//                guiMessage.tag(),
-//                chatPlusGuiMessage
-//            )
-//        }
-//        refreshing = false
-//    }
-
     fun getComponentStyleAt(pMouseX: Double, pMouseY: Double): Style? {
         val messageAtEvent = EventBus.post(
             ChatTabGetMessageAtEvent(
@@ -622,7 +551,7 @@ class ChatTab : MessageFilter {
         )
         val x = messageAtEvent.chatX
         val y = messageAtEvent.chatY
-        val i = getMessageLineIndexAt(x, y)
+        val i = getMessageLineIndexAtRelative(x, y)
         val size = this.displayedMessages.size
         return if (i in 0 until size) {
             val guiMessageLine: GuiMessage.Line = this.displayedMessages[size - i - 1].line
