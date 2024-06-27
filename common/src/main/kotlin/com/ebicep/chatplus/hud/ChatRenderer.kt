@@ -102,6 +102,9 @@ object ChatRenderer {
     }
 
     fun render(guiGraphics: GuiGraphics, guiTicks: Int, mouseX: Int, mouseY: Int) {
+        if (y != ChatManager.getY()) {
+            updateCachedDimension()
+        }
         handleScreenResize()
 
         val poseStack: PoseStack = guiGraphics.pose()
