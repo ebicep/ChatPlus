@@ -114,6 +114,9 @@ object BookmarkMessages {
     }
 
     fun toggle(chatScreen: ChatScreen) {
+        if (!showingBoomarks && bookmarkedMessages.isEmpty()) {
+            return
+        }
         showingBoomarks = !showingBoomarks
         EventBus.post(ShowBookmarksToggleEvent(!showingBoomarks))
         if (!showingBoomarks) {
