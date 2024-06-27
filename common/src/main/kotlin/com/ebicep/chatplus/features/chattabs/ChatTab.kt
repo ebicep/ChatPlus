@@ -413,8 +413,7 @@ class ChatTab : MessageFilter {
         filterChat = true
         refreshDisplayMessages()
         (chatScreen as IMixinScreen).callRebuildWidgets()
-        val displayIndex =
-            ChatManager.selectedTab.displayedMessages.indexOfFirst { line -> line.linkedMessage === linkedMessage }
+        val displayIndex = ChatManager.selectedTab.displayedMessages.indexOfFirst { line -> line.linkedMessage === linkedMessage }
         val scrollTo = ChatManager.selectedTab.displayedMessages.size - displayIndex - moveIndex
         ChatManager.selectedTab.scrollChat(scrollTo)
     }
