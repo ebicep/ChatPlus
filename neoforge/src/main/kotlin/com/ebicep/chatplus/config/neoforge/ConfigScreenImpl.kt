@@ -12,7 +12,6 @@ import com.ebicep.chatplus.features.HoverHighlight
 import com.ebicep.chatplus.features.chattabs.ChatTab
 import com.ebicep.chatplus.features.internal.MessageFilter
 import com.ebicep.chatplus.features.speechtotext.SpeechToText
-import com.ebicep.chatplus.hud.ChatManager
 import com.ebicep.chatplus.hud.ChatRenderer
 import com.ebicep.chatplus.translator.LanguageManager
 import com.ebicep.chatplus.translator.RegexMatch
@@ -36,7 +35,6 @@ object ConfigScreenImpl {
             .setTitle(Component.translatable("chatPlus.title"))
             .setSavingRunnable {
                 Config.save()
-                ChatManager.selectedTab.rescaleChat()
             }
             .transparentBackground()
         val entryBuilder: ConfigEntryBuilder = builder.entryBuilder()
