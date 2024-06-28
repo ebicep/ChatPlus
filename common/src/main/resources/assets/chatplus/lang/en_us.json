@@ -65,6 +65,8 @@
   "chatPlus.chatSettings.compactMessages.toggle.tooltip": "Enables/Disables compacting consecutive chat messages.",
   "chatPlus.scrollbar.title": "Scrollbar",
   "chatPlus.scrollbar.toggle": "Enabled",
+  "chatPlus.scrollbar.invertedScrolling": "Inverted Scrolling",
+  "chatPlus.scrollbar.invertedScrolling.tooltip": "Inverts the scrolling direction of the scrollbar.",
   "chatPlus.scrollbar.toggle.tooltip": "Enables/Disables the scrollbar.",
   "chatPlus.scrollbar.color": "Color",
   "chatPlus.scrollbar.color.tooltip": "Color of the scrollbar.",

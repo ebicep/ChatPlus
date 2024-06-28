@@ -167,6 +167,11 @@ object ConfigScreenImpl {
                 Config.values.scrollbarEnabled
             ) { Config.values.scrollbarEnabled = it })
         scrollbar.addEntry(
+            entryBuilder.booleanToggle(
+                "chatPlus.scrollbar.invertedScrolling",
+                Config.values.invertedScrolling
+            ) { Config.values.invertedScrolling = it })
+        scrollbar.addEntry(
             entryBuilder.startAlphaColorField(Component.translatable("chatPlus.scrollbar.color"), Config.values.scrollbarColor)
                 .setTooltip(Component.translatable("chatPlus.scrollbar.color.tooltip"))
                 .setDefaultValue(Config.values.scrollbarColor)

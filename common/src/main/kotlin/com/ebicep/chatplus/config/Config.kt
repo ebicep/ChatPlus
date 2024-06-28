@@ -133,6 +133,7 @@ data class ConfigVariables(
     var compactMessagesEnabled: Boolean = true,
     // scrollbar
     var scrollbarEnabled: Boolean = true,
+    var invertedScrolling: Boolean = false,
     var scrollbarColor: Int = Color(128, 134, 139, 255).rgb,
     var scrollbarWidth: Int = 6,
     // tabs
