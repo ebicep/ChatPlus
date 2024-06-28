@@ -29,7 +29,7 @@ object ChatPlusScreenAdapter {
     fun handleRemoved(chatScreen: ChatScreen) {
         EventBus.post(ChatScreenCloseEvent(chatScreen))
         ChatManager.selectedTab.resetChatScroll()
-        ChatManager.selectedTab.refreshDisplayedMessage()
+//        ChatManager.selectedTab.refreshDisplayedMessage()
     }
 
     fun handleOnEdited(chatScreen: ChatScreen, str: String): Boolean {
@@ -59,7 +59,8 @@ object ChatPlusScreenAdapter {
         if (InputConstants.isKeyDown(window, Config.values.keyNoScroll.value)) {
             return true
         }
-        var delta = Mth.clamp(amountY, -1.0, 1.0)
+        val scrollAmount = if (Config.values.invertedScrolling) -amountY else amountY
+        var delta = Mth.clamp(scrollAmount, -1.0, 1.0)
         if (InputConstants.isKeyDown(window, Config.values.keyLargeScroll.value)) {
             delta *= 21.0
         } else if (!InputConstants.isKeyDown(window, Config.values.keyFineScroll.value)) {

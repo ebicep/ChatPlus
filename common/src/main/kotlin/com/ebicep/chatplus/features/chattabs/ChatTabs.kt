@@ -22,6 +22,8 @@ data class ChatTabClickedEvent(val chatTab: ChatTab, val mouseX: Double, val tab
 
 data class ChatTabRenderEvent(val poseStack: PoseStack, val chatTab: ChatTab, val tabWidth: Int, var xStart: Double)
 
+data class ChatTabSwitchEvent(val oldTab: ChatTab, val newTab: ChatTab)
+
 object ChatTabs {
 
     val defaultTab: ChatTab = ChatTab("All", "(?s).*", alwaysAdd = true)
@@ -100,7 +102,7 @@ object ChatTabs {
 
     private fun checkTabRefresh(it: ChatTab) {
         if (it.resetDisplayMessageAtTick == Events.currentTick) {
-            it.refreshDisplayedMessage()
+            it.refreshDisplayMessages()
         }
     }
 
@@ -117,9 +119,12 @@ object ChatTabs {
             if (insideTabX) {
                 EventBus.post(ChatTabClickedEvent(it, x, it.xStart))
                 if (it != ChatManager.selectedTab) {
+                    val oldTab = ChatManager.selectedTab
+                    oldTab.resetFilter()
                     Config.values.selectedTab = index
                     queueUpdateConfig = true
-                    ChatManager.selectedTab.refreshDisplayedMessage()
+                    ChatManager.selectedTab.queueRefreshDisplayedMessages(false)
+                    EventBus.post(ChatTabSwitchEvent(oldTab, it))
                     return
                 }
             }

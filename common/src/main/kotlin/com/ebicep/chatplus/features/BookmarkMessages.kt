@@ -2,17 +2,11 @@ package com.ebicep.chatplus.features
 
 import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.events.EventBus
-import com.ebicep.chatplus.features.chattabs.ChatTab
-import com.ebicep.chatplus.features.chattabs.ChatTabAddDisplayMessageEvent
-import com.ebicep.chatplus.features.chattabs.ChatTabAddNewMessageEvent
-import com.ebicep.chatplus.features.chattabs.ChatTabRemoveMessageEvent
+import com.ebicep.chatplus.features.chattabs.*
 import com.ebicep.chatplus.features.textbarelements.ShowBookmarksBarElement
 import com.ebicep.chatplus.features.textbarelements.ShowBookmarksToggleEvent
 import com.ebicep.chatplus.features.textbarelements.TextBarElements
-import com.ebicep.chatplus.hud.ChatManager
-import com.ebicep.chatplus.hud.ChatRenderPreLineAppearanceEvent
-import com.ebicep.chatplus.hud.ChatScreenKeyPressedEvent
-import com.ebicep.chatplus.hud.ChatScreenMouseClickedEvent
+import com.ebicep.chatplus.hud.*
 import com.ebicep.chatplus.mixin.IMixinChatScreen
 import com.ebicep.chatplus.mixin.IMixinScreen
 import net.minecraft.client.Minecraft
@@ -66,10 +60,31 @@ object BookmarkMessages {
                 it.returnFunction = true
             }
         }
+        EventBus.register<ChatScreenCloseEvent> {
+            if (showingBoomarks) {
+                showingBoomarks = false
+                ChatManager.selectedTab.resetFilter()
+            }
+        }
+        EventBus.register<ChatTabRewrapDisplayMessages> {
+            showingBoomarks = false
+            ChatManager.selectedTab.resetFilter()
+        }
+        EventBus.register<ChatTabRefreshDisplayMessages> {
+            if (showingBoomarks && bookmarkedMessages.isNotEmpty()) {
+                it.predicates.add { guiMessage -> bookmarkedMessages.contains(guiMessage) }
+            }
+        }
+        EventBus.register<ChatTabSwitchEvent> {
+            if (showingBoomarks) {
+                ChatManager.selectedTab.queueRefreshDisplayedMessages(false)
+            }
+        }
         EventBus.register<ChatTabAddDisplayMessageEvent> {
             val screen = Minecraft.getInstance().screen
-            if (showingBoomarks && screen is ChatScreen && !bookmarkedMessages.contains(it.linkedMessage)) {
-                it.returnFunction = true
+            if (showingBoomarks && screen is ChatScreen) {
+                it.filtered = true
+                it.addMessage = bookmarkedMessages.contains(it.linkedMessage)
             }
         }
         EventBus.register<ChatRenderPreLineAppearanceEvent>({ Config.values.bookmarkLinePriority }) {
@@ -99,14 +114,15 @@ object BookmarkMessages {
     }
 
     fun toggle(chatScreen: ChatScreen) {
+        if (!showingBoomarks && bookmarkedMessages.isEmpty()) {
+            return
+        }
         showingBoomarks = !showingBoomarks
         EventBus.post(ShowBookmarksToggleEvent(!showingBoomarks))
-        if (showingBoomarks) {
-            ChatManager.selectedTab.refreshDisplayedMessage { guiMessage ->
-                bookmarkedMessages.contains(guiMessage)
-            }
+        if (!showingBoomarks) {
+            ChatManager.selectedTab.resetFilter()
         } else {
-            ChatManager.selectedTab.refreshDisplayedMessage()
+            ChatManager.selectedTab.queueRefreshDisplayedMessages(false)
         }
         chatScreen as IMixinChatScreen
         chatScreen.initial = chatScreen.input!!.value

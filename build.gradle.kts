@@ -37,6 +37,10 @@ subprojects {
         "minecraft"("com.mojang:minecraft:${project.property("minecraft_version")}")
         "mappings"(loom.officialMojangMappings())
     }
+
+    project.ext.set("releaseChangeLog", {
+        file("../docs/changelogs/${rootProject.version}.md").readText().trim()
+    })
 }
 
 allprojects {

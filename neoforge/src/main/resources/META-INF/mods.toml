@@ -40,6 +40,6 @@ side = "BOTH"
 [[dependencies.${ mod_id }]]
 modId = "kotlinforforge"
 type = "required"
-versionRange = "[${kotlin_for_forge_version}]"
+versionRange = "[${kotlin_for_forge_version},)"
 ordering = "AFTER"
 side = "BOTH"

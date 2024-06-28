@@ -1,8 +1,6 @@
 package com.ebicep.chatplus.config.neoforge
 
-import com.ebicep.chatplus.config.Config
-import com.ebicep.chatplus.config.TimestampMode
-import com.ebicep.chatplus.config.queueUpdateConfig
+import com.ebicep.chatplus.config.*
 import com.ebicep.chatplus.config.serializers.KeyWithModifier
 import com.ebicep.chatplus.features.AlignMessage
 import com.ebicep.chatplus.features.FilterHighlight
@@ -11,7 +9,6 @@ import com.ebicep.chatplus.features.HoverHighlight
 import com.ebicep.chatplus.features.chattabs.ChatTab
 import com.ebicep.chatplus.features.internal.MessageFilter
 import com.ebicep.chatplus.features.speechtotext.SpeechToText
-import com.ebicep.chatplus.hud.ChatManager
 import com.ebicep.chatplus.hud.ChatRenderer
 import com.ebicep.chatplus.translator.LanguageManager
 import com.ebicep.chatplus.translator.RegexMatch
@@ -35,7 +32,6 @@ object ConfigScreenImpl {
             .setTitle(Component.translatable("chatPlus.title"))
             .setSavingRunnable {
                 Config.save()
-                ChatManager.selectedTab.rescaleChat()
             }
             .transparentBackground()
         val entryBuilder: ConfigEntryBuilder = builder.entryBuilder()
@@ -119,6 +115,30 @@ object ConfigScreenImpl {
         )
         general.addEntry(
             entryBuilder.startEnumSelector(
+                Component.translatable("chatPlus.chatSettings.jumpToMessageMode"),
+                JumpToMessageMode::class.java,
+                Config.values.jumpToMessageMode
+            )
+                .setEnumNameProvider { (it as JumpToMessageMode).translatable }
+                .setDefaultValue(Config.values.jumpToMessageMode)
+                .setTooltip(Component.translatable("chatPlus.chatSettings.jumpToMessageMode.tooltip"))
+                .setSaveConsumer { Config.values.jumpToMessageMode = it }
+                .build()
+        )
+        general.addEntry(
+            entryBuilder.startEnumSelector(
+                Component.translatable("chatPlus.chatSettings.messageDirection"),
+                MessageDirection::class.java,
+                Config.values.messageDirection
+            )
+                .setEnumNameProvider { (it as MessageDirection).translatable }
+                .setDefaultValue(Config.values.messageDirection)
+                .setTooltip(Component.translatable("chatPlus.chatSettings.messageDirection.tooltip"))
+                .setSaveConsumer { Config.values.messageDirection = it }
+                .build()
+        )
+        general.addEntry(
+            entryBuilder.startEnumSelector(
                 Component.translatable("chatPlus.chatSettings.messageAlignment"),
                 AlignMessage.Alignment::class.java,
                 Config.values.messageAlignment
@@ -146,6 +166,11 @@ object ConfigScreenImpl {
                 "chatPlus.scrollbar.toggle",
                 Config.values.scrollbarEnabled
             ) { Config.values.scrollbarEnabled = it })
+        scrollbar.addEntry(
+            entryBuilder.booleanToggle(
+                "chatPlus.scrollbar.invertedScrolling",
+                Config.values.invertedScrolling
+            ) { Config.values.invertedScrolling = it })
         scrollbar.addEntry(
             entryBuilder.startAlphaColorField(Component.translatable("chatPlus.scrollbar.color"), Config.values.scrollbarColor)
                 .setTooltip(Component.translatable("chatPlus.scrollbar.color.tooltip"))
