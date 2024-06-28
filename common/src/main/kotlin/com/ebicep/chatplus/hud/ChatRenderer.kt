@@ -1,6 +1,7 @@
 package com.ebicep.chatplus.hud
 
 import com.ebicep.chatplus.config.Config
+import com.ebicep.chatplus.config.MessageDirection
 import com.ebicep.chatplus.events.Event
 import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.features.chattabs.ChatTab
@@ -141,7 +142,10 @@ object ChatRenderer {
                 continue
             }
             // how high chat is from input bar, if changed need to change queue offset
-            val verticalChatOffset: Int = rescaledY - displayMessageIndex * lineHeight
+            val verticalChatOffset: Int = when (Config.values.messageDirection) {
+                MessageDirection.TOP_DOWN -> (rescaledY - rescaledLinesPerPage * lineHeight + lineHeight) + displayMessageIndex * lineHeight
+                MessageDirection.BOTTOM_UP -> rescaledY - displayMessageIndex * lineHeight
+            }
             val verticalTextOffset: Int = verticalChatOffset + l1 // align text with background
             val lineAppearanceEvent = ChatRenderPreLineAppearanceEvent(
                 guiGraphics,

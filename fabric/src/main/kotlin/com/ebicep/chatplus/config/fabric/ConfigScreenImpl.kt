@@ -1,9 +1,6 @@
 package com.ebicep.chatplus.config.fabric
 
-import com.ebicep.chatplus.config.Config
-import com.ebicep.chatplus.config.JumpToMessageMode
-import com.ebicep.chatplus.config.TimestampMode
-import com.ebicep.chatplus.config.queueUpdateConfig
+import com.ebicep.chatplus.config.*
 import com.ebicep.chatplus.config.serializers.KeyWithModifier
 import com.ebicep.chatplus.features.AlignMessage
 import com.ebicep.chatplus.features.FilterHighlight
@@ -126,6 +123,18 @@ object ConfigScreenImpl {
                 .setDefaultValue(Config.values.jumpToMessageMode)
                 .setTooltip(Component.translatable("chatPlus.chatSettings.jumpToMessageMode.tooltip"))
                 .setSaveConsumer { Config.values.jumpToMessageMode = it }
+                .build()
+        )
+        general.addEntry(
+            entryBuilder.startEnumSelector(
+                Component.translatable("chatPlus.chatSettings.messageDirection"),
+                MessageDirection::class.java,
+                Config.values.messageDirection
+            )
+                .setEnumNameProvider { (it as MessageDirection).translatable }
+                .setDefaultValue(Config.values.messageDirection)
+                .setTooltip(Component.translatable("chatPlus.chatSettings.messageDirection.tooltip"))
+                .setSaveConsumer { Config.values.messageDirection = it }
                 .build()
         )
         general.addEntry(

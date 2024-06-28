@@ -128,6 +128,7 @@ data class ConfigVariables(
     var maxCommandSuggestions: Int = 15,
     var chatTimestampMode: TimestampMode = TimestampMode.HR_12_SECOND,
     var jumpToMessageMode: JumpToMessageMode = JumpToMessageMode.CURSOR,
+    var messageDirection: MessageDirection = MessageDirection.BOTTOM_UP,
     var selectChatLinePriority: Int = 100,
     var compactMessagesEnabled: Boolean = true,
     // scrollbar

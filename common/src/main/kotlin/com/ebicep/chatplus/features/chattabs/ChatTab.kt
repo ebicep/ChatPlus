@@ -3,6 +3,7 @@ package com.ebicep.chatplus.features.chattabs
 import com.ebicep.chatplus.ChatPlus
 import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.config.JumpToMessageMode
+import com.ebicep.chatplus.config.MessageDirection
 import com.ebicep.chatplus.config.TimestampMode
 import com.ebicep.chatplus.events.Event
 import com.ebicep.chatplus.events.EventBus
@@ -12,6 +13,8 @@ import com.ebicep.chatplus.features.internal.MessageFilter
 import com.ebicep.chatplus.hud.ChatManager
 import com.ebicep.chatplus.hud.ChatPlusScreen
 import com.ebicep.chatplus.hud.ChatRenderer
+import com.ebicep.chatplus.hud.ChatRenderer.lineHeight
+import com.ebicep.chatplus.hud.ChatRenderer.rescaledLinesPerPage
 import com.ebicep.chatplus.mixin.IMixinScreen
 import com.google.common.base.Predicate
 import com.google.common.collect.Lists
@@ -351,7 +354,10 @@ class ChatTab : MessageFilter {
 
     private fun screenToChatY(pY: Double): Double {
         val yDiff: Double = ChatRenderer.y - pY
-        return yDiff / (ChatRenderer.scale * ChatRenderer.lineHeight.toDouble())
+        return when (Config.values.messageDirection) {
+            MessageDirection.TOP_DOWN -> rescaledLinesPerPage - yDiff / (ChatRenderer.scale * lineHeight.toDouble())
+            MessageDirection.BOTTOM_UP -> yDiff / (ChatRenderer.scale * lineHeight.toDouble())
+        }
     }
 
     private fun getMessageLineIndexAt(pMouseX: Double, pMouseY: Double): Int {
@@ -365,7 +371,7 @@ class ChatTab : MessageFilter {
         if (!(0.0 <= pMouseX && pMouseX <= Mth.floor(ChatRenderer.rescaledWidth.toDouble()))) {
             return -1
         }
-        val i = min(ChatRenderer.rescaledLinesPerPage, this.displayedMessages.size)
+        val i = min(rescaledLinesPerPage, this.displayedMessages.size)
         if (!(0.0 <= pMouseY && pMouseY < i.toDouble())) {
             return -1
         }
@@ -401,7 +407,7 @@ class ChatTab : MessageFilter {
     fun moveToMessage(chatScreen: ChatScreen, message: ChatPlusGuiMessageLine) {
         val linkedMessage = message.linkedMessage
         val moveIndex = when (Config.values.jumpToMessageMode) {
-            JumpToMessageMode.TOP -> ChatRenderer.rescaledLinesPerPage
+            JumpToMessageMode.TOP -> rescaledLinesPerPage
             JumpToMessageMode.MIDDLE -> ChatManager.getLinesPerPageScaled() / 2 + 1
             JumpToMessageMode.BOTTOM -> 1
             JumpToMessageMode.CURSOR -> getMessageLineIndexAt(
