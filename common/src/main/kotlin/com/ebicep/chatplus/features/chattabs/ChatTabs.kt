@@ -120,6 +120,7 @@ object ChatTabs {
                 EventBus.post(ChatTabClickedEvent(it, x, it.xStart))
                 if (it != ChatManager.selectedTab) {
                     val oldTab = ChatManager.selectedTab
+                    oldTab.resetFilter()
                     Config.values.selectedTab = index
                     queueUpdateConfig = true
                     ChatManager.selectedTab.queueRefreshDisplayedMessages(false)
