@@ -185,7 +185,7 @@ object TranslateMessage {
                 // translated messages unsplit
                 val selectedMessages = SelectChat.selectedMessages
                 val messages: List<ChatTab.ChatPlusGuiMessage> = if (selectedMessages.contains(message)) {
-                    SelectChat.selectedMessages.map { it.linkedMessage }
+                    SelectChat.getSelectedMessagesOrdered().map { it.linkedMessage }
                 } else {
                     listOf(message.linkedMessage)
                 }

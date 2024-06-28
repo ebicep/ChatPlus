@@ -11,6 +11,7 @@ import com.ebicep.chatplus.hud.ChatRenderer
 import com.ebicep.chatplus.util.GraphicsUtil.createPose
 import com.ebicep.chatplus.util.GraphicsUtil.guiForward
 import com.ebicep.chatplus.util.GraphicsUtil.translate0
+import com.mojang.blaze3d.systems.RenderSystem
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.components.PlayerFaceRenderer
 import net.minecraft.resources.ResourceLocation
@@ -93,6 +94,8 @@ object PlayerHeadChatDisplay {
             poseStack.createPose {
                 poseStack.guiForward()
                 poseStack.translate0(x = -HEAD_WIDTH_PADDED.toDouble())
+                RenderSystem.enableBlend()
+                RenderSystem.setShaderColor(1f, 1f, 1f, it.fadeOpacity.toFloat())
                 PlayerFaceRenderer.draw(
                     guiGraphics,
                     resourceLocation,
@@ -100,6 +103,8 @@ object PlayerHeadChatDisplay {
                     it.verticalTextOffset,
                     PlayerFaceRenderer.SKIN_HEAD_WIDTH
                 )
+                RenderSystem.setShaderColor(1f, 1f, 1f, 1f)
+                RenderSystem.disableBlend()
             }
         }
         EventBus.register<ChatTabAddDisplayMessageEvent> {

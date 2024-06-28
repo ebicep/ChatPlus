@@ -143,7 +143,6 @@ object ChatManager {
         val hasSpace = y - 1 >= MIN_HEIGHT
         if (lowerThanMin && hasSpace) {
             height = MIN_HEIGHT
-            selectedTab.rescaleChat()
         }
         if (y - Config.values.height <= 0) {
             height = y - 1

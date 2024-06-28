@@ -127,10 +127,13 @@ data class ConfigVariables(
     var maxMessages: Int = 1000,
     var maxCommandSuggestions: Int = 15,
     var chatTimestampMode: TimestampMode = TimestampMode.HR_12_SECOND,
+    var jumpToMessageMode: JumpToMessageMode = JumpToMessageMode.CURSOR,
+    var messageDirection: MessageDirection = MessageDirection.BOTTOM_UP,
     var selectChatLinePriority: Int = 100,
     var compactMessagesEnabled: Boolean = true,
     // scrollbar
     var scrollbarEnabled: Boolean = true,
+    var invertedScrolling: Boolean = false,
     var scrollbarColor: Int = Color(128, 134, 139, 255).rgb,
     var scrollbarWidth: Int = 6,
     // tabs
@@ -222,7 +225,7 @@ data class ConfigVariables(
             }
             field = newHeight
             queueUpdateConfig = true
-            ChatManager.selectedTab.rescaleChat()
+            ChatRenderer.updateCachedDimension()
         }
 
     // general

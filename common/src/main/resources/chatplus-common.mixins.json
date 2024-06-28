@@ -6,9 +6,11 @@
   "client": [
     "AWTHackMixin",
     "IMixinChatScreen",
+    "IMixinGuiGraphics",
     "IMixinScreen",
     "MixinChatComponent",
     "MixinChatScreen",
+    "MixinGuiGraphics",
     "MixinScreen",
     "NativeImagePointerAccessor"
   ],
