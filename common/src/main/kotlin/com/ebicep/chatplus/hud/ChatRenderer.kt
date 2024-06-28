@@ -30,6 +30,9 @@ abstract class ChatRenderLineEvent(
 class ChatRenderLineTextEvent(
     guiGraphics: GuiGraphics,
     chatPlusGuiMessageLine: ChatTab.ChatPlusGuiMessageLine,
+    val fadeOpacity: Double,
+    val textColor: Int,
+    val backgroundColor: Int,
     verticalChatOffset: Int,
     verticalTextOffset: Int,
     val text: String,
@@ -176,6 +179,9 @@ object ChatRenderer {
                     ChatRenderLineTextEvent(
                         guiGraphics,
                         chatPlusGuiMessageLine,
+                        fadeOpacity,
+                        textColor,
+                        backgroundColor,
                         verticalChatOffset,
                         verticalTextOffset,
                         chatPlusGuiMessageLine.content
