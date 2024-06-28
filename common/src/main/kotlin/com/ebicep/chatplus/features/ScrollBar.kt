@@ -5,16 +5,19 @@ import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.features.chattabs.ChatTabAddDisplayMessageEvent
 import com.ebicep.chatplus.hud.*
 import com.ebicep.chatplus.util.GraphicsUtil.createPose
+import com.ebicep.chatplus.util.GraphicsUtil.fill0
 import kotlin.math.roundToInt
 
 object ScrollBar {
 
+    private const val MIN_HEIGHT = 10f
+    private const val HALF_MIN_HEIGHT = MIN_HEIGHT / 2f
     private val barWidth: Int
         get() = Config.values.scrollbarWidth
-    private var barStartX: Int = 0
-    private var barEndX: Int = 0
-    private var barBottomY: Int = 0
-    private var barTopY: Int = 0
+    private var barStartX: Float = 0f
+    private var barEndX: Float = 0f
+    private var barBottomY: Float = 0f
+    private var barTopY: Float = 0f
     private var scrolling: Boolean = false
     private var lastMouseY = 0.0
     private var lastScrollPos = 0
@@ -45,13 +48,22 @@ object ScrollBar {
                 val chatScrollbarPos = ChatManager.selectedTab.chatScrollbarPos
                 val lineHeight = ChatRenderer.lineHeight
                 val displayHeight = linesPerPage * lineHeight
-                barStartX = ChatRenderer.rescaledEndX - barWidth
+                barStartX = (ChatRenderer.rescaledEndX - barWidth).toFloat()
                 barEndX = barStartX + barWidth
-                barBottomY = -(chatScrollbarPos * displayHeight / messageCount - ChatRenderer.rescaledY)
-                val barHeight = (displayHeight * displayHeight / (messageCount * lineHeight.toDouble())).roundToInt()
+                barBottomY = -(chatScrollbarPos * displayHeight / messageCount.toFloat() - ChatRenderer.rescaledY)
+                var barHeight = (displayHeight * displayHeight / (messageCount * lineHeight.toFloat()))
                 barTopY = barBottomY - barHeight
                 scrollPerY = -(displayHeight.toDouble() / messageCount - ChatRenderer.rescaledY) - ChatRenderer.rescaledY
-                guiGraphics.fill(
+
+                if (barHeight < HALF_MIN_HEIGHT) {
+                    barHeight = MIN_HEIGHT
+                    barBottomY += HALF_MIN_HEIGHT
+                    barTopY = barBottomY - barHeight
+                    barBottomY = barBottomY.coerceAtMost(ChatRenderer.rescaledY.toFloat())
+                    barTopY = barTopY.coerceAtLeast((ChatRenderer.rescaledY - displayHeight).toFloat())
+                }
+
+                guiGraphics.fill0(
                     barStartX,
                     barBottomY,
                     barEndX,

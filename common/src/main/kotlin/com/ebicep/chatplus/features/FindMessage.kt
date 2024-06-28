@@ -3,8 +3,7 @@ package com.ebicep.chatplus.features
 import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.events.Events
-import com.ebicep.chatplus.features.chattabs.ChatTab
-import com.ebicep.chatplus.features.chattabs.ChatTabAddDisplayMessageEvent
+import com.ebicep.chatplus.features.chattabs.*
 import com.ebicep.chatplus.features.textbarelements.FindTextBarElement
 import com.ebicep.chatplus.features.textbarelements.FindToggleEvent
 import com.ebicep.chatplus.features.textbarelements.TextBarElements
@@ -21,6 +20,7 @@ object FindMessage {
     val FIND_COLOR = Color(255, 255, 85, 255).rgb
     private val findBackgroundColor = Color(FIND_COLOR).darker().rgb
     var findEnabled: Boolean = false
+    private var lastInput = ""
 
     init {
         var lastMovedToMessage: Pair<Pair<ChatTab.ChatPlusGuiMessage, Int>, Long>? = null // <linked message, wrapped index>, tick
@@ -44,13 +44,41 @@ object FindMessage {
             }
         }
         EventBus.register<ChatScreenCloseEvent> {
+            if (findEnabled) {
+                findEnabled = false
+                ChatManager.selectedTab.resetFilter()
+            }
+        }
+        EventBus.register<ChatTabRewrapDisplayMessages> {
             findEnabled = false
+            ChatManager.selectedTab.resetFilter()
+        }
+        EventBus.register<ChatTabRefreshDisplayMessages> {
+            if (findEnabled && lastInput.isNotEmpty()) {
+                it.predicates.add { guiMessage ->
+                    guiMessage.guiMessage.content.string.contains(lastInput, ignoreCase = true)
+                }
+            }
+        }
+        EventBus.register<ChatTabSwitchEvent> {
+            if (findEnabled) {
+                ChatManager.selectedTab.queueRefreshDisplayedMessages(false)
+            }
+        }
+        EventBus.register<ChatTabAddDisplayMessageEvent> {
+            val screen = Minecraft.getInstance().screen
+            if (findEnabled && screen is IMixinChatScreen) {
+                it.filtered = true
+                val filter = screen.input?.value
+                if (filter != null && !it.component.string.contains(filter, ignoreCase = true)) {
+                    it.addMessage = false
+                }
+            }
         }
         EventBus.register<ChatScreenInputBoxEditEvent> {
             if (findEnabled) {
-                ChatManager.selectedTab.refreshDisplayedMessage { guiMessage ->
-                    guiMessage.guiMessage.content.string.contains(it.str, ignoreCase = true)
-                }
+                lastInput = it.str
+                ChatManager.selectedTab.queueRefreshDisplayedMessages(false)
                 it.returnFunction = true
             }
         }
@@ -70,15 +98,7 @@ object FindMessage {
         EventBus.register<TranslateToggleEvent> {
             if (findEnabled) {
                 findEnabled = false
-            }
-        }
-        EventBus.register<ChatTabAddDisplayMessageEvent> {
-            val screen = Minecraft.getInstance().screen
-            if (findEnabled && screen is IMixinChatScreen) {
-                val filter = screen.input?.value
-                if (filter != null && !it.component.string.contains(filter, ignoreCase = true)) {
-                    it.returnFunction = true
-                }
+                ChatManager.selectedTab.resetFilter()
             }
         }
         EventBus.register<ChatScreenMouseClickedEvent> {
@@ -113,15 +133,13 @@ object FindMessage {
         chatPlusScreen as IMixinChatScreen
         findEnabled = !findEnabled
         EventBus.post(FindToggleEvent(findEnabled))
-        if (findEnabled) {
-            ChatManager.selectedTab.refreshDisplayedMessage { guiMessage ->
-                val value = chatPlusScreen.input?.value ?: return@refreshDisplayedMessage false
-                guiMessage.guiMessage.content.string.contains(value, ignoreCase = true)
-            }
-        } else {
-            ChatManager.selectedTab.refreshDisplayedMessage()
-        }
         chatPlusScreen.initial = chatPlusScreen.input!!.value
+        lastInput = chatPlusScreen.input?.value ?: ""
+        if (!findEnabled) {
+            ChatManager.selectedTab.resetFilter()
+        } else {
+            ChatManager.selectedTab.queueRefreshDisplayedMessages(false)
+        }
         chatPlusScreen as IMixinScreen
         chatPlusScreen.callRebuildWidgets()
     }

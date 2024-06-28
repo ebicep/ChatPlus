@@ -1,7 +1,10 @@
 package com.ebicep.chatplus.events.neoforge
 
 import com.ebicep.chatplus.config.ConfigScreen
+import com.ebicep.chatplus.hud.ChatManager
 import com.mojang.brigadier.Command
+import com.mojang.brigadier.builder.LiteralArgumentBuilder
+import net.minecraft.commands.CommandSourceStack
 import net.minecraft.commands.Commands
 import net.neoforged.bus.api.SubscribeEvent
 import net.neoforged.fml.common.EventBusSubscriber
@@ -14,14 +17,21 @@ object ClientCommandRegistration {
 
     @SubscribeEvent
     fun registerCommands(event: RegisterClientCommandsEvent) {
-        val commandNode = event.dispatcher.register(
-            Commands.literal("chatplus")
+        event.dispatcher.register(createCommand("chatplus"))
+        event.dispatcher.register(createCommand("cp"))
+    }
+
+    private fun createCommand(commandName: String): LiteralArgumentBuilder<CommandSourceStack>? =
+        Commands.literal(commandName)
+            .then(Commands.literal("clear")
                 .executes {
-                    ConfigScreen.open = true
+                    ChatManager.selectedTab.clear()
                     Command.SINGLE_SUCCESS
                 }
-        )
-        event.dispatcher.register(Commands.literal("cp").redirect(commandNode))
-    }
+            )
+            .executes {
+                ConfigScreen.open = true
+                Command.SINGLE_SUCCESS
+            }
 
 }
