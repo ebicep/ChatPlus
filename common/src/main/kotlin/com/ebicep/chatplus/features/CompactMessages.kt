@@ -32,22 +32,23 @@ object CompactMessages {
             val guiMessage = lastMessage.guiMessage
             val content = guiMessage.content.copy()
             content.siblings.removeIf { component -> component.contents is LiteralContentsIgnored }
-            if (content.equals(it.componentWithTimeStamp)) {
-                lastMessage.timesRepeated++
-                guiMessage.content.siblings.removeIf { component -> component.contents is LiteralContentsIgnored }
-                guiMessage.content.siblings.add(literalIgnored(" (${lastMessage.timesRepeated})").withStyle(COMPACT_STYLE))
-                // remove previous displayed message and update it
-                for (i in displayedMessages.size - 1 downTo 0) {
-                    val displayedMessage = displayedMessages[i]
-                    if (messages[messages.size - 1] == displayedMessage.linkedMessage) {
-                        displayedMessages.removeLast()
-                    } else {
-                        break
-                    }
-                }
-                chatTab.addNewDisplayMessage(guiMessage.content as MutableComponent, it.addedTime, it.tag, it.guiMessage)
-                it.returnFunction = true
+            if (!content.equals(it.componentWithTimeStamp)) {
+                return@register
             }
+            lastMessage.timesRepeated++
+            guiMessage.content.siblings.removeIf { component -> component.contents is LiteralContentsIgnored }
+            guiMessage.content.siblings.add(literalIgnored(" (${lastMessage.timesRepeated})").withStyle(COMPACT_STYLE))
+            // remove previous displayed message and update it
+            for (i in displayedMessages.size - 1 downTo 0) {
+                val displayedMessage = displayedMessages[i]
+                if (messages[messages.size - 1] === displayedMessage.linkedMessage) {
+                    displayedMessages.removeLast()
+                } else {
+                    break
+                }
+            }
+            chatTab.addNewDisplayMessage(guiMessage.content as MutableComponent, it.addedTime, it.tag, lastMessage)
+            it.returnFunction = true
         }
     }
 
