@@ -2,10 +2,15 @@ package com.ebicep.chatplus.features
 
 import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.events.EventBus
+import com.ebicep.chatplus.features.chattabs.ChatTab
+import com.ebicep.chatplus.features.chattabs.ChatTabAddDisplayMessageEvent
 import com.ebicep.chatplus.features.chattabs.ChatTabAddNewMessageEvent
+import com.ebicep.chatplus.hud.ChatManager
 import net.minecraft.ChatFormatting
 import net.minecraft.network.chat.*
+import net.minecraft.util.Mth
 import java.util.*
+import kotlin.math.max
 
 object CompactMessages {
 
@@ -28,25 +33,65 @@ object CompactMessages {
             if (messages.isEmpty()) {
                 return@register
             }
-            val lastMessage = messages[messages.size - 1]
-            val guiMessage = lastMessage.guiMessage
-            val content = guiMessage.content.copy()
-            content.siblings.removeIf { component -> component.contents is LiteralContentsIgnored }
-            if (content.equals(it.componentWithTimeStamp)) {
-                lastMessage.timesRepeated++
-                guiMessage.content.siblings.removeIf { component -> component.contents is LiteralContentsIgnored }
-                guiMessage.content.siblings.add(literalIgnored(" (${lastMessage.timesRepeated})").withStyle(COMPACT_STYLE))
-                // remove previous displayed message and update it
-                for (i in displayedMessages.size - 1 downTo 0) {
-                    val displayedMessage = displayedMessages[i]
-                    if (messages[messages.size - 1] == displayedMessage.linkedMessage) {
-                        displayedMessages.removeLast()
-                    } else {
-                        break
+            for (i in messages.size - 1 downTo max(0, messages.size - Config.values.compactMessagesSearchAmount)) {
+                val message = messages[i]
+                val guiMessage = message.guiMessage
+                if (Config.values.compactMessagesIgnoreTimestamps) {
+                    if (message.rawComponent != it.component) {
+                        continue
+                    }
+                } else {
+                    val content = guiMessage.content.copy()
+                    content.siblings.removeIf { component -> component.contents is LiteralContentsIgnored } // remove repeated component
+                    if (!content.equals(it.componentWithTimeStamp)) {
+                        continue
                     }
                 }
-                chatTab.addNewDisplayMessage(guiMessage.content as MutableComponent, it.addedTime, it.tag, it.guiMessage)
+                message.timesRepeated++
+                // remove previous displayed message and update it
+                var addIndex = -1
+                var oldDisplayMessage: ChatTab.ChatPlusGuiMessageLine? = null
+                for (j in displayedMessages.size - 1 downTo 0) {
+                    val displayedMessage = displayedMessages[j]
+                    if (messages[i] === displayedMessage.linkedMessage) {
+                        displayedMessages.removeAt(j)
+                        if (displayedMessage.wrappedIndex == 0) {
+                            addIndex = j
+                            oldDisplayMessage = displayedMessage
+                            break
+                        }
+                    }
+                }
+                if (addIndex == -1 || oldDisplayMessage == null) {
+                    break
+                }
+                it.componentWithTimeStamp.siblings.add(literalIgnored(" (${message.timesRepeated})").withStyle(COMPACT_STYLE))
+                val addedTime = if (Config.values.compactMessagesRefreshAddedTime) it.addedTime else oldDisplayMessage.line.addedTime
+                val displayMessageEvent = EventBus.post(
+                    ChatTabAddDisplayMessageEvent(
+                        chatTab,
+                        it.componentWithTimeStamp,
+                        addedTime,
+                        oldDisplayMessage.line.tag,
+                        message,
+                        Mth.floor(ChatManager.getBackgroundWidth())
+                    )
+                )
+                chatTab.addWrappedComponents(
+                    it.componentWithTimeStamp,
+                    displayMessageEvent,
+                    addedTime,
+                    oldDisplayMessage.line.tag,
+                    message,
+                    addIndex
+                )
                 it.returnFunction = true
+                break
+            }
+            // save memory, remove raw component if it's not needed
+            val removeRawComponentStartIndex = max(0, messages.size - Config.values.compactMessagesSearchAmount - 1)
+            for (i in removeRawComponentStartIndex downTo max(0, removeRawComponentStartIndex - 25)) {
+                messages[i].rawComponent = null
             }
         }
     }

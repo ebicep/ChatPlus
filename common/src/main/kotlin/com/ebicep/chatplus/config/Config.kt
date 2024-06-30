@@ -130,7 +130,11 @@ data class ConfigVariables(
     var jumpToMessageMode: JumpToMessageMode = JumpToMessageMode.CURSOR,
     var messageDirection: MessageDirection = MessageDirection.BOTTOM_UP,
     var selectChatLinePriority: Int = 100,
+    // compact messages
     var compactMessagesEnabled: Boolean = true,
+    var compactMessagesRefreshAddedTime: Boolean = false,
+    var compactMessagesIgnoreTimestamps: Boolean = false,
+    var compactMessagesSearchAmount: Int = 1,
     // scrollbar
     var scrollbarEnabled: Boolean = true,
     var invertedScrolling: Boolean = false,
