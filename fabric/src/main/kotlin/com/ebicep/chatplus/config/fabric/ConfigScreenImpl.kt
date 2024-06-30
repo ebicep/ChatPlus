@@ -36,6 +36,7 @@ object ConfigScreenImpl {
             .transparentBackground()
         val entryBuilder: ConfigEntryBuilder = builder.entryBuilder()
         addGeneralOptions(builder, entryBuilder)
+        addCompactMessagesOptions(builder, entryBuilder)
         addScrollbarOption(builder, entryBuilder)
         addChatTabsOption(builder, entryBuilder)
         addFilterHighlightOption(builder, entryBuilder)
@@ -153,10 +154,29 @@ object ConfigScreenImpl {
             entryBuilder.linePriorityField("chatPlus.linePriority.selectChat", Config.values.selectChatLinePriority)
             { Config.values.selectChatLinePriority = it }
         )
-        general.addEntry(
-            entryBuilder.booleanToggle("chatPlus.chatSettings.compactMessages.toggle", Config.values.compactMessagesEnabled)
-            { Config.values.compactMessagesEnabled = it }
+    }
+
+    private fun addCompactMessagesOptions(builder: ConfigBuilder, entryBuilder: ConfigEntryBuilder) {
+        val compactChat = builder.getOrCreateCategory(Component.translatable("chatPlus.compactMessages.title"))
+        compactChat.addEntry(entryBuilder.booleanToggle("chatPlus.compactMessages.toggle", Config.values.compactMessagesEnabled)
+        { Config.values.compactMessagesEnabled = it })
+        compactChat.addEntry(entryBuilder.booleanToggle(
+            "chatPlus.compactMessages.refreshFadeTime.toggle",
+            Config.values.compactMessagesRefreshAddedTime
         )
+        { Config.values.compactMessagesRefreshAddedTime = it })
+        compactChat.addEntry(entryBuilder.booleanToggle(
+            "chatPlus.compactMessages.ignoreTimestamps.toggle",
+            Config.values.compactMessagesIgnoreTimestamps
+        )
+        { Config.values.compactMessagesIgnoreTimestamps = it })
+        compactChat.addEntry(
+            entryBuilder.intSlider(
+                "chatPlus.compactMessages.searchAmount",
+                Config.values.compactMessagesSearchAmount,
+                1,
+                25
+            ) { Config.values.compactMessagesSearchAmount = it })
     }
 
     private fun addScrollbarOption(builder: ConfigBuilder, entryBuilder: ConfigEntryBuilder) {

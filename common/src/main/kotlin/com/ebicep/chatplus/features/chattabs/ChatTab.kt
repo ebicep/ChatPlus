@@ -98,6 +98,7 @@ data class ChatTabRefreshDisplayMessages(
 class ChatTab : MessageFilter {
 
     data class ChatPlusGuiMessage(
+        var rawComponent: Component?,
         val guiMessage: GuiMessage,
         var timesRepeated: Int = 1,
         var senderUUID: UUID? = null
@@ -199,7 +200,10 @@ class ChatTab : MessageFilter {
             return
         }
         val componentWithTimeStamp: MutableComponent = getTimeStampedMessage(component)
-        val chatPlusGuiMessage = ChatPlusGuiMessage(GuiMessage(addedTime, componentWithTimeStamp, signature, tag))
+        val chatPlusGuiMessage = ChatPlusGuiMessage(
+            if (Config.values.compactMessagesIgnoreTimestamps) component else null,
+            GuiMessage(addedTime, componentWithTimeStamp, signature, tag)
+        )
         if (EventBus.post(
                 ChatTabAddNewMessageEvent(
                     this,
@@ -222,9 +226,24 @@ class ChatTab : MessageFilter {
     }
 
     private fun getTimeStampedMessage(component: Component): MutableComponent {
-        val componentWithTimeStamp: MutableComponent = component.copy()
-        if (Config.values.chatTimestampMode != TimestampMode.NONE) {
-            addTimestampToComponent(componentWithTimeStamp, 0)
+        if (Config.values.chatTimestampMode == TimestampMode.NONE) {
+            return component.copy() as MutableComponent
+        }
+        val componentWithTimeStamp: MutableComponent = Component.empty()
+        component.toFlatList().forEach {
+            val flatComponent = it as MutableComponent
+            if (flatComponent.style.hoverEvent == null) {
+                flatComponent.withStyle {
+                    it.withHoverEvent(HoverEvent(HoverEvent.Action.SHOW_TEXT, getTimestamp(false)))
+                }
+            } else {
+                val hoverComponent: MutableComponent = (flatComponent.style.hoverEvent?.getValue(HoverEvent.Action.SHOW_TEXT) as MutableComponent?)!!
+                if (hoverComponent.siblings.javaClass.getName().contains("Immutable")) {
+                    hoverComponent.siblings = ArrayList(hoverComponent.siblings)
+                }
+                hoverComponent.siblings.add(getTimestamp(true))
+            }
+            componentWithTimeStamp.append(flatComponent)
         }
         return componentWithTimeStamp
     }
@@ -237,35 +256,7 @@ class ChatTab : MessageFilter {
     ) {
         val maxWidth = Mth.floor(ChatManager.getBackgroundWidth())
         val displayMessageEvent = EventBus.post(ChatTabAddDisplayMessageEvent(this, component, addedTime, tag, linkedMessage, maxWidth))
-//        val timesRepeated = messages[linkedMessageIndex].timesRepeated
-//        if (timesRepeated > 0) {
-//            component.append(Component.literal(" ($timesRepeated)").withStyle { it.withColor(ChatFormatting.GRAY) })
-//        }
-        val list: List<Pair<FormattedCharSequence, String>> = wrapComponents(
-            component,
-            displayMessageEvent.maxWidth,
-            Minecraft.getInstance().font
-        )
-        for (j in list.indices) {
-            val chatPlusLine = list[j]
-            val formattedCharSequence = chatPlusLine.first
-            val content = chatPlusLine.second
-            if (ChatManager.isChatFocused() && chatScrollbarPos > 0) {
-                newMessageSinceScroll = true
-                scrollChat(1)
-            }
-            val lastComponent = j == list.size - 1
-            val line = ChatPlusGuiMessageLine(
-                GuiMessage.Line(addedTime, formattedCharSequence, tag, lastComponent),
-                content,
-                linkedMessage,
-                j
-            )
-            if (displayMessageEvent.addMessage) {
-                this.displayedMessages.add(line)
-            }
-            this.unfilteredDisplayedMessages.add(line)
-        }
+        addWrappedComponents(component, displayMessageEvent, addedTime, tag, linkedMessage, -1)
         while (
             !displayMessageEvent.filtered &&
             displayMessageEvent.addMessage &&
@@ -282,29 +273,46 @@ class ChatTab : MessageFilter {
         }
     }
 
-    /**
-     * Adds timestamp to bottom of chat message, works for most chat formats
-     */
-    private fun addTimestampToComponent(pChatComponent: MutableComponent, depth: Int) {
-        val previousHover = pChatComponent.style.hoverEvent
-        if (previousHover != null) {
-            when (previousHover.action) {
-                HoverEvent.Action.SHOW_TEXT -> {
-                    val component: MutableComponent = (previousHover.getValue(HoverEvent.Action.SHOW_TEXT) as MutableComponent?)!!
-                    if (component.siblings.javaClass.getName().contains("Immutable")) {
-                        component.siblings = ArrayList(component.siblings)
-                    }
-                    component.append(getTimestamp(true))
-                }
+    fun addWrappedComponents(
+        component: MutableComponent,
+        displayMessageEvent: ChatTabAddDisplayMessageEvent,
+        addedTime: Int,
+        tag: GuiMessageTag?,
+        linkedMessage: ChatPlusGuiMessage,
+        index: Int
+    ) {
+        val list: List<Pair<FormattedCharSequence, String>> = wrapComponents(
+            component,
+            displayMessageEvent.maxWidth,
+            Minecraft.getInstance().font
+        )
+        var wrappedIndex = index
+        for (j in list.indices) {
+            val chatPlusLine = list[j]
+            val formattedCharSequence = chatPlusLine.first
+            val content = chatPlusLine.second
+            if (ChatManager.isChatFocused() && chatScrollbarPos > 0) {
+                newMessageSinceScroll = true
+                scrollChat(1)
             }
-        } else if (depth < 3) {
-            pChatComponent.withStyle {
-                it.withHoverEvent(HoverEvent(HoverEvent.Action.SHOW_TEXT, getTimestamp(false)))
-            }
-            pChatComponent.siblings.forEach {
-                if (it is MutableComponent) {
-                    addTimestampToComponent(it, depth + 1)
+            val lastComponent = j == list.size - 1
+            val line = ChatPlusGuiMessageLine(
+                GuiMessage.Line(addedTime, formattedCharSequence, tag, lastComponent),
+                content,
+                linkedMessage,
+                j
+            )
+            if (index == -1) {
+                if (displayMessageEvent.addMessage) {
+                    this.displayedMessages.add(line)
                 }
+                this.unfilteredDisplayedMessages.add(line)
+            } else {
+                if (displayMessageEvent.addMessage) {
+                    this.displayedMessages.add(wrappedIndex, line)
+                }
+                this.unfilteredDisplayedMessages.add(wrappedIndex, line)
+                wrappedIndex++
             }
         }
     }

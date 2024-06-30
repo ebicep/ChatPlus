@@ -61,19 +61,21 @@ object Config {
         ChatPlus.LOGGER.info("Config Directory: ${ConfigDirectory.getConfigDirectory().toAbsolutePath().normalize()}\\chatplus")
         val configDirectory = File(configDirectoryPath)
         if (!configDirectory.exists()) {
-            return
+            configDirectory.mkdir()
         }
         val configFile = File(configDirectory, "$MOD_ID.json")
-        if (configFile.exists()) {
-            val json = Json {
-                prettyPrint = true
-                ignoreUnknownKeys = true
-                encodeDefaults = true
-            }
-            values = json.decodeFromString(ConfigVariables.serializer(), configFile.readText())
-            correctValues()
-            loadValues()
+        if (!configFile.exists()) {
+            configFile.createNewFile()
+            configFile.writeText(json.encodeToString(ConfigVariables.serializer(), values))
         }
+        val json = Json {
+            prettyPrint = true
+            ignoreUnknownKeys = true
+            encodeDefaults = true
+        }
+        values = json.decodeFromString(ConfigVariables.serializer(), configFile.readText())
+        correctValues()
+        loadValues()
     }
 
     private fun loadValues() {
@@ -130,7 +132,11 @@ data class ConfigVariables(
     var jumpToMessageMode: JumpToMessageMode = JumpToMessageMode.CURSOR,
     var messageDirection: MessageDirection = MessageDirection.BOTTOM_UP,
     var selectChatLinePriority: Int = 100,
+    // compact messages
     var compactMessagesEnabled: Boolean = true,
+    var compactMessagesRefreshAddedTime: Boolean = false,
+    var compactMessagesIgnoreTimestamps: Boolean = false,
+    var compactMessagesSearchAmount: Int = 1,
     // scrollbar
     var scrollbarEnabled: Boolean = true,
     var invertedScrolling: Boolean = false,
