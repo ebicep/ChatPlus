@@ -4,7 +4,6 @@ import com.ebicep.chatplus.ChatPlus
 import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.config.JumpToMessageMode
 import com.ebicep.chatplus.config.MessageDirection
-import com.ebicep.chatplus.config.TimestampMode
 import com.ebicep.chatplus.events.Event
 import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.events.Events
@@ -222,9 +221,17 @@ class ChatTab : MessageFilter {
     }
 
     private fun getTimeStampedMessage(component: Component): MutableComponent {
-        val componentWithTimeStamp: MutableComponent = component.copy()
-        if (Config.values.chatTimestampMode != TimestampMode.NONE) {
-            addTimestampToComponent(componentWithTimeStamp, 0)
+        val componentWithTimeStamp: MutableComponent = Component.empty()
+        component.toFlatList().forEach {
+            val flatComponent = it as MutableComponent
+            if (flatComponent.style.hoverEvent == null) {
+                flatComponent.withStyle {
+                    it.withHoverEvent(HoverEvent(HoverEvent.Action.SHOW_TEXT, getTimestamp(false)))
+                }
+            } else {
+                flatComponent.style.hoverEvent?.getValue(HoverEvent.Action.SHOW_TEXT)?.siblings?.add(getTimestamp(true))
+            }
+            componentWithTimeStamp.append(flatComponent)
         }
         return componentWithTimeStamp
     }
@@ -279,30 +286,6 @@ class ChatTab : MessageFilter {
         }
         while (this.unfilteredDisplayedMessages.isNotEmpty() && this.messages[0] !== this.unfilteredDisplayedMessages[0].linkedMessage) {
             unfilteredDisplayedMessages.removeFirst()
-        }
-    }
-
-    /**
-     * Adds timestamp to bottom of chat message, works for most chat formats
-     */
-    private fun addTimestampToComponent(pChatComponent: MutableComponent, depth: Int) {
-        val previousHover = pChatComponent.style.hoverEvent
-        if (previousHover != null) {
-            when (previousHover.action) {
-                HoverEvent.Action.SHOW_TEXT -> {
-                    val component: Component = previousHover.getValue(HoverEvent.Action.SHOW_TEXT)!!
-                    component.siblings.add(getTimestamp(true))
-                }
-            }
-        } else if (depth < 3) {
-            pChatComponent.withStyle {
-                it.withHoverEvent(HoverEvent(HoverEvent.Action.SHOW_TEXT, getTimestamp(false)))
-            }
-            pChatComponent.siblings.forEach {
-                if (it is MutableComponent) {
-                    addTimestampToComponent(it, depth + 1)
-                }
-            }
         }
     }
 
