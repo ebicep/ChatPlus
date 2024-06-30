@@ -98,6 +98,7 @@ data class ChatTabRefreshDisplayMessages(
 class ChatTab : MessageFilter {
 
     data class ChatPlusGuiMessage(
+        var rawComponent: Component?,
         val guiMessage: GuiMessage,
         var timesRepeated: Int = 1,
         var senderUUID: UUID? = null
@@ -199,7 +200,10 @@ class ChatTab : MessageFilter {
             return
         }
         val componentWithTimeStamp: MutableComponent = getTimeStampedMessage(component)
-        val chatPlusGuiMessage = ChatPlusGuiMessage(GuiMessage(addedTime, componentWithTimeStamp, signature, tag))
+        val chatPlusGuiMessage = ChatPlusGuiMessage(
+            if (Config.values.compactMessagesIgnoreTimestamps) component else null,
+            GuiMessage(addedTime, componentWithTimeStamp, signature, tag)
+        )
         if (EventBus.post(
                 ChatTabAddNewMessageEvent(
                     this,
@@ -248,15 +252,37 @@ class ChatTab : MessageFilter {
     ) {
         val maxWidth = Mth.floor(ChatManager.getBackgroundWidth())
         val displayMessageEvent = EventBus.post(ChatTabAddDisplayMessageEvent(this, component, addedTime, tag, linkedMessage, maxWidth))
-//        val timesRepeated = messages[linkedMessageIndex].timesRepeated
-//        if (timesRepeated > 0) {
-//            component.append(Component.literal(" ($timesRepeated)").withStyle { it.withColor(ChatFormatting.GRAY) })
-//        }
+        addWrappedComponents(component, displayMessageEvent, addedTime, tag, linkedMessage, -1)
+        while (
+            !displayMessageEvent.filtered &&
+            displayMessageEvent.addMessage &&
+            this.displayedMessages.isNotEmpty() &&
+            this.messages[0] !== this.displayedMessages[0].linkedMessage
+        ) {
+            EventBus.post(ChatTabRemoveDisplayMessageEvent(this, this.displayedMessages.removeFirst()))
+            if (wasFiltered) {
+                unfilteredDisplayedMessages.removeFirst()
+            }
+        }
+        while (this.unfilteredDisplayedMessages.isNotEmpty() && this.messages[0] !== this.unfilteredDisplayedMessages[0].linkedMessage) {
+            unfilteredDisplayedMessages.removeFirst()
+        }
+    }
+
+    fun addWrappedComponents(
+        component: MutableComponent,
+        displayMessageEvent: ChatTabAddDisplayMessageEvent,
+        addedTime: Int,
+        tag: GuiMessageTag?,
+        linkedMessage: ChatPlusGuiMessage,
+        index: Int
+    ) {
         val list: List<Pair<FormattedCharSequence, String>> = wrapComponents(
             component,
             displayMessageEvent.maxWidth,
             Minecraft.getInstance().font
         )
+        var wrappedIndex = index
         for (j in list.indices) {
             val chatPlusLine = list[j]
             val formattedCharSequence = chatPlusLine.first
@@ -272,24 +298,18 @@ class ChatTab : MessageFilter {
                 linkedMessage,
                 j
             )
-            if (displayMessageEvent.addMessage) {
-                this.displayedMessages.add(line)
+            if (index == -1) {
+                if (displayMessageEvent.addMessage) {
+                    this.displayedMessages.add(line)
+                }
+                this.unfilteredDisplayedMessages.add(line)
+            } else {
+                if (displayMessageEvent.addMessage) {
+                    this.displayedMessages.add(wrappedIndex, line)
+                }
+                this.unfilteredDisplayedMessages.add(wrappedIndex, line)
+                wrappedIndex++
             }
-            this.unfilteredDisplayedMessages.add(line)
-        }
-        while (
-            !displayMessageEvent.filtered &&
-            displayMessageEvent.addMessage &&
-            this.displayedMessages.isNotEmpty() &&
-            this.messages[0] !== this.displayedMessages[0].linkedMessage
-        ) {
-            EventBus.post(ChatTabRemoveDisplayMessageEvent(this, this.displayedMessages.removeFirst()))
-            if (wasFiltered) {
-                unfilteredDisplayedMessages.removeFirst()
-            }
-        }
-        while (this.unfilteredDisplayedMessages.isNotEmpty() && this.messages[0] !== this.unfilteredDisplayedMessages[0].linkedMessage) {
-            unfilteredDisplayedMessages.removeFirst()
         }
     }
 
