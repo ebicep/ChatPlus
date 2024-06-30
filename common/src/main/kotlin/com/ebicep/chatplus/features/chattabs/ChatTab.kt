@@ -4,6 +4,7 @@ import com.ebicep.chatplus.ChatPlus
 import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.config.JumpToMessageMode
 import com.ebicep.chatplus.config.MessageDirection
+import com.ebicep.chatplus.config.TimestampMode
 import com.ebicep.chatplus.events.Event
 import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.events.Events
@@ -221,6 +222,9 @@ class ChatTab : MessageFilter {
     }
 
     private fun getTimeStampedMessage(component: Component): MutableComponent {
+        if (Config.values.chatTimestampMode == TimestampMode.NONE) {
+            return component.copy() as MutableComponent
+        }
         val componentWithTimeStamp: MutableComponent = Component.empty()
         component.toFlatList().forEach {
             val flatComponent = it as MutableComponent
