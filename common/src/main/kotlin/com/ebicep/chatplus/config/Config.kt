@@ -61,19 +61,21 @@ object Config {
         ChatPlus.LOGGER.info("Config Directory: ${ConfigDirectory.getConfigDirectory().toAbsolutePath().normalize()}\\chatplus")
         val configDirectory = File(configDirectoryPath)
         if (!configDirectory.exists()) {
-            return
+            configDirectory.mkdir()
         }
         val configFile = File(configDirectory, "$MOD_ID.json")
-        if (configFile.exists()) {
-            val json = Json {
-                prettyPrint = true
-                ignoreUnknownKeys = true
-                encodeDefaults = true
-            }
-            values = json.decodeFromString(ConfigVariables.serializer(), configFile.readText())
-            correctValues()
-            loadValues()
+        if (!configFile.exists()) {
+            configFile.createNewFile()
+            configFile.writeText(json.encodeToString(ConfigVariables.serializer(), values))
         }
+        val json = Json {
+            prettyPrint = true
+            ignoreUnknownKeys = true
+            encodeDefaults = true
+        }
+        values = json.decodeFromString(ConfigVariables.serializer(), configFile.readText())
+        correctValues()
+        loadValues()
     }
 
     private fun loadValues() {
