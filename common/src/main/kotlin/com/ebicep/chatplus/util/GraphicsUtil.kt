@@ -60,10 +60,10 @@ object GraphicsUtil {
         val h = FastColor.ARGB32.green(n) / 255.0f
         val p = FastColor.ARGB32.blue(n) / 255.0f
         val vertexConsumer = this.bufferSource.getBuffer(renderType)
-        vertexConsumer.addVertex(matrix4f, i, j, m.toFloat()).setColor(g, h, p, f)
-        vertexConsumer.addVertex(matrix4f, i, l, m.toFloat()).setColor(g, h, p, f)
-        vertexConsumer.addVertex(matrix4f, k, l, m.toFloat()).setColor(g, h, p, f)
-        vertexConsumer.addVertex(matrix4f, k, j, m.toFloat()).setColor(g, h, p, f)
+        vertexConsumer.vertex(matrix4f, i, j, m.toFloat()).color(g, h, p, f).endVertex()
+        vertexConsumer.vertex(matrix4f, i, l, m.toFloat()).color(g, h, p, f).endVertex()
+        vertexConsumer.vertex(matrix4f, k, l, m.toFloat()).color(g, h, p, f).endVertex()
+        vertexConsumer.vertex(matrix4f, k, j, m.toFloat()).color(g, h, p, f).endVertex()
         this.`chatPlus$flushIfUnmanaged`()
     }
 
