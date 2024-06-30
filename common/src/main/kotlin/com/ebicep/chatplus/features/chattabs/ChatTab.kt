@@ -237,7 +237,11 @@ class ChatTab : MessageFilter {
                     it.withHoverEvent(HoverEvent(HoverEvent.Action.SHOW_TEXT, getTimestamp(false)))
                 }
             } else {
-                flatComponent.style.hoverEvent?.getValue(HoverEvent.Action.SHOW_TEXT)?.siblings?.add(getTimestamp(true))
+                val hoverComponent: MutableComponent = (flatComponent.style.hoverEvent?.getValue(HoverEvent.Action.SHOW_TEXT) as MutableComponent?)!!
+                if (hoverComponent.siblings.javaClass.getName().contains("Immutable")) {
+                    hoverComponent.siblings = ArrayList(hoverComponent.siblings)
+                }
+                hoverComponent.siblings.add(getTimestamp(true))
             }
             componentWithTimeStamp.append(flatComponent)
         }
