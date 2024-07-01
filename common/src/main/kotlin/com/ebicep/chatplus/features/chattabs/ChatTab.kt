@@ -16,6 +16,7 @@ import com.ebicep.chatplus.hud.ChatRenderer
 import com.ebicep.chatplus.hud.ChatRenderer.lineHeight
 import com.ebicep.chatplus.hud.ChatRenderer.rescaledLinesPerPage
 import com.ebicep.chatplus.mixin.IMixinScreen
+import com.ebicep.chatplus.util.KotlinUtil.containsReference
 import com.google.common.base.Predicate
 import com.google.common.collect.Lists
 import kotlinx.serialization.Serializable
@@ -230,6 +231,7 @@ class ChatTab : MessageFilter {
             return component.copy() as MutableComponent
         }
         val componentWithTimeStamp: MutableComponent = Component.empty()
+        val timestampedHoverComponents = HashSet<Component>()
         component.toFlatList().forEach {
             val flatComponent = it as MutableComponent
             if (flatComponent.style.hoverEvent == null) {
@@ -237,7 +239,11 @@ class ChatTab : MessageFilter {
                     it.withHoverEvent(HoverEvent(HoverEvent.Action.SHOW_TEXT, getTimestamp(false)))
                 }
             } else {
-                flatComponent.style.hoverEvent?.getValue(HoverEvent.Action.SHOW_TEXT)?.siblings?.add(getTimestamp(true))
+                val hoverValue = flatComponent.style.hoverEvent?.getValue(HoverEvent.Action.SHOW_TEXT)
+                if (hoverValue != null && !timestampedHoverComponents.containsReference(hoverValue)) {
+                    hoverValue.siblings.add(getTimestamp(true))
+                    timestampedHoverComponents.add(hoverValue)
+                }
             }
             componentWithTimeStamp.append(flatComponent)
         }
