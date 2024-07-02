@@ -236,7 +236,9 @@ class ChatTab : MessageFilter {
             val flatComponent = it as MutableComponent
             if (flatComponent.style.hoverEvent == null) {
                 flatComponent.withStyle {
-                    it.withHoverEvent(HoverEvent(HoverEvent.Action.SHOW_TEXT, getTimestamp(false)))
+                    val hoverValue = getTimestamp(false)
+                    timestampedHoverComponents.add(hoverValue)
+                    it.withHoverEvent(HoverEvent(HoverEvent.Action.SHOW_TEXT, hoverValue))
                 }
             } else {
                 val hoverValue = flatComponent.style.hoverEvent?.getValue(HoverEvent.Action.SHOW_TEXT)
