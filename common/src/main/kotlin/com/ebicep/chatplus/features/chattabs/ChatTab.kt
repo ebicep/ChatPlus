@@ -16,6 +16,7 @@ import com.ebicep.chatplus.hud.ChatRenderer
 import com.ebicep.chatplus.hud.ChatRenderer.lineHeight
 import com.ebicep.chatplus.hud.ChatRenderer.rescaledLinesPerPage
 import com.ebicep.chatplus.mixin.IMixinScreen
+import com.ebicep.chatplus.util.KotlinUtil.containsReference
 import com.google.common.base.Predicate
 import com.google.common.collect.Lists
 import kotlinx.serialization.Serializable
@@ -230,18 +231,24 @@ class ChatTab : MessageFilter {
             return component.copy() as MutableComponent
         }
         val componentWithTimeStamp: MutableComponent = Component.empty()
+        val timestampedHoverComponents = HashSet<Component>()
         component.toFlatList().forEach {
             val flatComponent = it as MutableComponent
             if (flatComponent.style.hoverEvent == null) {
                 flatComponent.withStyle {
-                    it.withHoverEvent(HoverEvent(HoverEvent.Action.SHOW_TEXT, getTimestamp(false)))
+                    val hoverValue = getTimestamp(false)
+                    timestampedHoverComponents.add(hoverValue)
+                    it.withHoverEvent(HoverEvent(HoverEvent.Action.SHOW_TEXT, hoverValue))
                 }
             } else {
-                val hoverComponent: MutableComponent = (flatComponent.style.hoverEvent?.getValue(HoverEvent.Action.SHOW_TEXT) as MutableComponent?)!!
-                if (hoverComponent.siblings.javaClass.getName().contains("Immutable")) {
-                    hoverComponent.siblings = ArrayList(hoverComponent.siblings)
+                val hoverValue = (flatComponent.style.hoverEvent?.getValue(HoverEvent.Action.SHOW_TEXT) as MutableComponent?)
+                if (hoverValue != null && !timestampedHoverComponents.containsReference(hoverValue)) {
+                    if (hoverValue.siblings.javaClass.getName().contains("Immutable")) {
+                        hoverValue.siblings = ArrayList(hoverValue.siblings)
+                    }
+                    hoverValue.siblings.add(getTimestamp(true))
+                    timestampedHoverComponents.add(hoverValue)
                 }
-                hoverComponent.siblings.add(getTimestamp(true))
             }
             componentWithTimeStamp.append(flatComponent)
         }
