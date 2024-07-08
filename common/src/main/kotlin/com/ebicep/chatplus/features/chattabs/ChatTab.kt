@@ -16,6 +16,7 @@ import com.ebicep.chatplus.hud.ChatRenderer
 import com.ebicep.chatplus.hud.ChatRenderer.lineHeight
 import com.ebicep.chatplus.hud.ChatRenderer.rescaledLinesPerPage
 import com.ebicep.chatplus.mixin.IMixinScreen
+import com.ebicep.chatplus.util.KotlinUtil.containsReference
 import com.google.common.base.Predicate
 import com.google.common.collect.Lists
 import kotlinx.serialization.Serializable
@@ -230,14 +231,34 @@ class ChatTab : MessageFilter {
             return component.copy() as MutableComponent
         }
         val componentWithTimeStamp: MutableComponent = Component.empty()
+        val timestampedHoverComponents = HashSet<Any>()
         component.toFlatList().forEach {
             val flatComponent = it as MutableComponent
             if (flatComponent.style.hoverEvent == null) {
                 flatComponent.withStyle {
-                    it.withHoverEvent(HoverEvent(HoverEvent.Action.SHOW_TEXT, getTimestamp(false)))
+                    val hoverValue = getTimestamp(false)
+                    timestampedHoverComponents.add(hoverValue)
+                    it.withHoverEvent(HoverEvent(HoverEvent.Action.SHOW_TEXT, hoverValue))
                 }
             } else {
-                flatComponent.style.hoverEvent?.getValue(HoverEvent.Action.SHOW_TEXT)?.siblings?.add(getTimestamp(true))
+                when (flatComponent.style.hoverEvent?.action) {
+                    HoverEvent.Action.SHOW_TEXT -> {
+                        val hoverValue = flatComponent.style.hoverEvent?.getValue(HoverEvent.Action.SHOW_TEXT)
+                        if (hoverValue != null && !timestampedHoverComponents.containsReference(hoverValue)) {
+                            hoverValue.siblings.add(getTimestamp(true))
+                            timestampedHoverComponents.add(hoverValue)
+                        }
+                    }
+
+                    HoverEvent.Action.SHOW_ENTITY -> {
+                        val hoverValue = flatComponent.style.hoverEvent?.getValue(HoverEvent.Action.SHOW_ENTITY)
+                        if (hoverValue != null && !timestampedHoverComponents.containsReference(hoverValue.tooltipLines)) {
+                            hoverValue.tooltipLines.add(getTimestamp(false))
+                            timestampedHoverComponents.add(hoverValue.tooltipLines)
+                        }
+                    }
+                }
+
             }
             componentWithTimeStamp.append(flatComponent)
         }
