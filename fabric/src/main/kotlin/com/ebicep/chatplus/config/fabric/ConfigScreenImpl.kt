@@ -470,6 +470,11 @@ object ConfigScreenImpl {
         )
         screenshot.addEntry(
             entryBuilder.booleanToggle(
+                "chatPlus.screenshotChatTextBarElement.toggle",
+                Config.values.screenshotChatTextBarElementEnabled
+            ) { Config.values.screenshotChatTextBarElementEnabled = it })
+        screenshot.addEntry(
+            entryBuilder.booleanToggle(
                 "chatPlus.screenshotChatAutoUpload.toggle",
                 Config.values.screenshotChatAutoUpload
             ) { Config.values.screenshotChatAutoUpload = it })
@@ -526,6 +531,11 @@ object ConfigScreenImpl {
                 "chatPlus.translator.translatorToggle",
                 Config.values.translatorEnabled
             ) { Config.values.translatorEnabled = it })
+        translator.addEntry(
+            entryBuilder.booleanToggle(
+                "chatPlus.translatorTextBarElement.toggle",
+                Config.values.translatorTextBarElementEnabled
+            ) { Config.values.translatorTextBarElementEnabled = it })
         val languageNamesSpeak: MutableList<String> = mutableListOf()
         val languageNames = LanguageManager.languages.map {
             val name = it.name

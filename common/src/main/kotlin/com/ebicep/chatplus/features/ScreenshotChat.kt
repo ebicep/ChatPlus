@@ -71,6 +71,9 @@ object ScreenshotChat {
             if (!Config.values.screenshotChatEnabled) {
                 return@register
             }
+            if (!Config.values.screenshotChatTextBarElementEnabled) {
+                return@register
+            }
             it.elements.add(ScreenShotChatElement(it.screen))
         }
         EventBus.register<ScreenShotChatEvent> {
@@ -127,6 +130,8 @@ object ScreenshotChat {
                 resetScreenShotTick()
                 screenshotMode = ScreenshotMode.SELECTED
                 lastLinesScreenShotted = TimeStampedLines(SelectChat.getSelectedMessagesOrdered().toMutableList(), Events.currentTick + 60)
+            } else {
+                EventBus.post(ScreenShotChatEvent())
             }
             it.returnFunction = true
         }
@@ -332,6 +337,7 @@ object ScreenshotChat {
             val transferable = getTransferableImage(bufferedImage)
             val clipboard = Toolkit.getDefaultToolkit().systemClipboard
             clipboard.setContents(transferable, null)
+            ChatPlus.sendMessage(Component.literal("Screenshot Taken").withStyle { it.withColor(ChatFormatting.GRAY) })
             if (Config.values.screenshotChatAutoUpload) {
                 upload(bufferedImage)
             }

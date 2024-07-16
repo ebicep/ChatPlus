@@ -176,6 +176,7 @@ data class ConfigVariables(
     var copyNoFormatting: Boolean = true,
     // screen shot chat
     var screenshotChatEnabled: Boolean = true,
+    var screenshotChatTextBarElementEnabled: Boolean = true,
     var screenshotChatLinePriority: Int = 200,
     var screenshotChatLine: KeyWithModifier = KeyWithModifier(InputConstants.getKey("key.keyboard.s"), 2),
     var screenshotChatAutoUpload: Boolean = true,
@@ -192,6 +193,7 @@ data class ConfigVariables(
     var keyPeekChat: InputConstants.Key = InputConstants.getKey("key.keyboard.p"),
     // translator
     var translatorEnabled: Boolean = true,
+    var translatorTextBarElementEnabled: Boolean = true,
     var translatorRegexes: MutableList<RegexMatch> = mutableListOf(),
     var translateTo: String = "Auto Detect",
     var translateSelf: String = "Auto Detect",
