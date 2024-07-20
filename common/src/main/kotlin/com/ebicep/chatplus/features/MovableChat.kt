@@ -5,7 +5,7 @@ import com.ebicep.chatplus.config.queueUpdateConfig
 import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.hud.*
 import com.ebicep.chatplus.util.GraphicsUtil.createPose
-import com.ebicep.chatplus.util.GraphicsUtil.translate0
+import com.ebicep.chatplus.util.GraphicsUtil.fill0
 import com.ebicep.chatplus.util.KeyUtil.isDown
 import com.mojang.blaze3d.vertex.PoseStack
 import net.minecraft.client.Minecraft
@@ -15,7 +15,7 @@ import kotlin.math.roundToInt
 
 object MovableChat {
 
-    private const val RENDER_MOVING_SIZE = 3 // width/length of box when rendering moving chat
+    private const val RENDER_MOVING_SIZE = 4f // width/length of box when rendering moving chat
     private var movingChat: Boolean
         get() = movingChatX || movingChatY || movingChatBox
         set(value) {
@@ -182,22 +182,23 @@ object MovableChat {
         backgroundWidth: Int
     ) {
         poseStack.createPose {
-            poseStack.translate0(z = 200f)
             if (movingChatX) {
-                guiGraphics.fill(
+                guiGraphics.fill0(
                     x + backgroundWidth - RENDER_MOVING_SIZE,
-                    y - height,
-                    x + backgroundWidth,
-                    y,
+                    y - height.toFloat(),
+                    x + backgroundWidth.toFloat(),
+                    y.toFloat(),
+                    200,
                     0xFFFFFFFF.toInt()
                 )
             }
             if (movingChatY) {
-                guiGraphics.fill(
-                    x,
-                    y - height,
-                    x + backgroundWidth,
+                guiGraphics.fill0(
+                    x.toFloat(),
+                    y - height.toFloat(),
+                    x + backgroundWidth.toFloat(),
                     y - height + RENDER_MOVING_SIZE,
+                    200,
                     0xFFFFFFFF.toInt()
                 )
             }
