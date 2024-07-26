@@ -90,7 +90,7 @@
   "chatPlus.chatTabs.name": "Name",
   "chatPlus.chatTabs.name.tooltip": "Name of the tab.",
   "chatPlus.chatTabs.pattern": "Pattern",
-  "chatPlus.chatTabs.pattern.tooltip": "Regex Pattern (Based on Raw Text, No style/formatting)",
+  "chatPlus.chatTabs.pattern.tooltip": "Regex Pattern",
   "chatPlus.chatTabs.formatted.toggle": "Formatted",
   "chatPlus.chatTabs.formatted.toggle.tooltip": "Whether to use the formatted message or the raw message.",
   "chatPlus.chatTabs.autoPrefix": "Auto Prefix",
