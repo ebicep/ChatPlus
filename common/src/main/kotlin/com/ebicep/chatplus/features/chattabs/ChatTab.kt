@@ -197,9 +197,6 @@ class ChatTab : MessageFilter {
         addedTime: Int,
         tag: GuiMessageTag?
     ) {
-        if (!matches(component.string)) {
-            return
-        }
         val componentWithTimeStamp: MutableComponent = getTimeStampedMessage(component)
         val chatPlusGuiMessage = ChatPlusGuiMessage(
             if (Config.values.compactMessagesIgnoreTimestamps) component else null,
