@@ -221,6 +221,11 @@ object ConfigScreenImpl {
                 Config.values.arrowCycleTabEnabled
             ) { Config.values.arrowCycleTabEnabled = it })
         chatTabs.addEntry(
+            entryBuilder.booleanToggle(
+                "chatPlus.chatTabs.moveToTabWhenCycling.toggle",
+                Config.values.moveToTabWhenCycling
+            ) { Config.values.moveToTabWhenCycling = it })
+        chatTabs.addEntry(
             getCustomListOption(
                 "chatPlus.chatTabs.title",
                 Config.values.chatTabs,

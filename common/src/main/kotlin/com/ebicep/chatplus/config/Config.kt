@@ -147,6 +147,7 @@ data class ConfigVariables(
     var selectedTab: Int = 0,
     var scrollCycleTabEnabled: Boolean = true,
     var arrowCycleTabEnabled: Boolean = true,
+    var moveToTabWhenCycling: Boolean = true,
     // filter highlight
     var filterHighlightEnabled: Boolean = true,
     var filterHighlightLinePriority: Int = 150,

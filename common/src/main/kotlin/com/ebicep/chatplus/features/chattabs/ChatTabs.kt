@@ -12,6 +12,7 @@ import com.ebicep.chatplus.util.GraphicsUtil.translate0
 import com.mojang.blaze3d.vertex.PoseStack
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.util.Mth
 
 
 const val CHAT_TAB_HEIGHT = 15
@@ -51,10 +52,10 @@ object ChatTabs {
                 return@register
             }
             val keyCode = it.keyCode
-            if (keyCode == 263 && startRenderTabIndex > 0) { // left arrow
-                startRenderTabIndex--
-            } else if (keyCode == 262 && startRenderTabIndex < Config.values.chatTabs.size - 1) { // right arrow
-                startRenderTabIndex++
+            if (keyCode == 263) { // left arrow
+                scrollTab(-1)
+            } else if (keyCode == 262) { // right arrow
+                scrollTab(1)
             }
         }
         EventBus.register<ChatScreenMouseScrolledEvent> {
@@ -65,12 +66,7 @@ object ChatTabs {
             if (amountX == 0.0) {
                 return@register
             }
-            // negative = scroll right , positive = scroll left
-            if (amountX > 0 && startRenderTabIndex > 0) {
-                startRenderTabIndex--
-            } else if (amountX < 0 && startRenderTabIndex < Config.values.chatTabs.size - 1) {
-                startRenderTabIndex++
-            }
+            scrollTab(Mth.clamp(-amountX.toInt(), -1, 1))
         }
         EventBus.register<ChatScreenMouseClickedEvent> {
             if (!Config.values.chatTabsEnabled) {
@@ -98,6 +94,28 @@ object ChatTabs {
         }
         // moving tabs
         ChatTabsMover
+    }
+
+    // negative = scroll left , positive = scroll right
+    private fun scrollTab(amount: Int) {
+        if (amount < 0 && startRenderTabIndex > 0) {
+            startRenderTabIndex--
+        } else if (amount > 0 && startRenderTabIndex < Config.values.chatTabs.size - 1) {
+            // check if last tab is visible
+            var totalWidth = 0
+            Config.values.chatTabs.forEachIndexed { index, it ->
+                if (index < startRenderTabIndex) {
+                    return@forEachIndexed
+                }
+                totalWidth += it.width + CHAT_TAB_X_SPACE
+            }
+            if (totalWidth >= Minecraft.getInstance().window.guiScaledWidth) {
+                startRenderTabIndex++
+            }
+        }
+        if (Config.values.moveToTabWhenCycling) {
+            Config.values.selectedTab = Mth.clamp(Config.values.selectedTab + amount, 0, Config.values.chatTabs.size - 1)
+        }
     }
 
     private fun checkTabRefresh(it: ChatTab) {

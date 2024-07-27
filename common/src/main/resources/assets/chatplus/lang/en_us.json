@@ -87,6 +87,8 @@
   "chatPlus.chatTabs.scrollCycleTabEnabled.toggle.tooltip": "Enables/Disables scrolling left/right to cycle through tabs.",
   "chatPlus.chatTabs.arrowCycleTabEnabled.toggle": "Arrow Through Tabs Enabled",
   "chatPlus.chatTabs.arrowCycleTabEnabled.toggle.tooltip": "Enables/Disables using the left/right arrow keys to cycle through tabs.",
+  "chatPlus.chatTabs.moveToTabWhenCycling.toggle": "Move to Tab",
+  "chatPlus.chatTabs.moveToTabWhenCycling.toggle.tooltip": "Enables/Disables moving to the next tab when cycling through tabs.",
   "chatPlus.chatTabs.name": "Name",
   "chatPlus.chatTabs.name.tooltip": "Name of the tab.",
   "chatPlus.chatTabs.pattern": "Pattern",
