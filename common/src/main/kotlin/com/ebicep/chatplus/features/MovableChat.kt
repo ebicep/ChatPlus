@@ -186,8 +186,8 @@ object MovableChat {
                 guiGraphics.fill0(
                     x + backgroundWidth - RENDER_MOVING_SIZE,
                     y - height.toFloat(),
-                    x + backgroundWidth.toFloat(),
-                    y.toFloat(),
+                    x + backgroundWidth.toFloat() + .75f,
+                    y.toFloat() + .5f,
                     200,
                     0xFFFFFFFF.toInt()
                 )
@@ -195,7 +195,7 @@ object MovableChat {
             if (movingChatY) {
                 guiGraphics.fill0(
                     x.toFloat(),
-                    y - height.toFloat(),
+                    y - height.toFloat() - .25f,
                     x + backgroundWidth.toFloat(),
                     y - height + RENDER_MOVING_SIZE,
                     200,
