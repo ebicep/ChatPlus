@@ -6,6 +6,7 @@ import com.ebicep.chatplus.events.ChatPlusTickEvent
 import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.events.Events
 import com.ebicep.chatplus.hud.*
+import com.ebicep.chatplus.mixin.IMixinChatScreen
 import com.ebicep.chatplus.util.GraphicsUtil.createPose
 import com.ebicep.chatplus.util.GraphicsUtil.guiForward
 import com.ebicep.chatplus.util.GraphicsUtil.translate0
@@ -49,6 +50,10 @@ object ChatTabs {
         }
         EventBus.register<ChatScreenKeyPressedEvent> {
             if (!Config.values.chatTabsEnabled || !Config.values.arrowCycleTabEnabled) {
+                return@register
+            }
+            it.screen as IMixinChatScreen
+            if (it.screen.input.value.isNotEmpty()) {
                 return@register
             }
             val keyCode = it.keyCode
