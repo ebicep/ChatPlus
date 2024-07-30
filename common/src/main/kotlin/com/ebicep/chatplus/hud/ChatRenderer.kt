@@ -53,6 +53,10 @@ data class ChatRenderPreLinesEvent(
     var returnFunction: Boolean = false
 ) : Event
 
+data class ChatRenderPreLinesRenderEvent(
+    val guiGraphics: GuiGraphics
+) : Event
+
 data class ChatRenderPostLinesEvent(
     val guiGraphics: GuiGraphics,
     var displayMessageIndex: Int,
@@ -64,7 +68,6 @@ object ChatRenderer {
 
     private var previousScreenWidth = -1
     private var previousScreenHeight = -1
-
 
     // cached values since render is called every tick they only need to be calculated once/on change
     var textOpacity: Double = 0.0
@@ -128,6 +131,7 @@ object ChatRenderer {
         if (!chatFocused) {
             linesPerPage = (linesPerPage * Config.values.unfocusedHeight).roundToInt()
         }
+        EventBus.post(ChatRenderPreLinesRenderEvent(guiGraphics))
         while (displayMessageIndex + selectedTab.chatScrollbarPos < messagesToDisplay && displayMessageIndex < linesPerPage) {
             val messageIndex = messagesToDisplay - displayMessageIndex - selectedTab.chatScrollbarPos
             val chatPlusGuiMessageLine: ChatTab.ChatPlusGuiMessageLine = selectedTab.displayedMessages[messageIndex - 1]
@@ -161,7 +165,6 @@ object ChatRenderer {
             EventBus.post(lineAppearanceEvent)
             textColor = lineAppearanceEvent.textColor
             backgroundColor = lineAppearanceEvent.backgroundColor
-
             poseStack.createPose {
                 poseStack.guiForward(amount = 50.0)
                 //background

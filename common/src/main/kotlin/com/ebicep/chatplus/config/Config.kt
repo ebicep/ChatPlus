@@ -142,6 +142,9 @@ data class ConfigVariables(
     var invertedScrolling: Boolean = false,
     var scrollbarColor: Int = Color(128, 134, 139, 255).rgb,
     var scrollbarWidth: Int = 6,
+    // animation
+    var animationEnabled: Boolean = true,
+    var animationNewMessageTransitionTime: Int = 200,
     // tabs
     var chatTabs: MutableList<ChatTab> = mutableListOf(defaultTab),
     var selectedTab: Int = 0,

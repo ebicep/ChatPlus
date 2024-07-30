@@ -38,6 +38,7 @@ object ConfigScreenImpl {
         addGeneralOptions(builder, entryBuilder)
         addCompactMessagesOptions(builder, entryBuilder)
         addScrollbarOption(builder, entryBuilder)
+        addAnimationOption(builder, entryBuilder)
         addChatTabsOption(builder, entryBuilder)
         addFilterHighlightOption(builder, entryBuilder)
         addHoverHighlightOption(builder, entryBuilder)
@@ -201,6 +202,22 @@ object ConfigScreenImpl {
         scrollbar.addEntry(
             entryBuilder.intField("chatPlus.scrollbar.width", Config.values.scrollbarWidth) { Config.values.scrollbarWidth = it }
         )
+    }
+
+    private fun addAnimationOption(builder: ConfigBuilder, entryBuilder: ConfigEntryBuilder) {
+        val animation = builder.getOrCreateCategory(Component.translatable("chatPlus.animation.title"))
+        animation.addEntry(
+            entryBuilder.booleanToggle(
+                "chatPlus.animation.toggle",
+                Config.values.animationEnabled
+            ) { Config.values.animationEnabled = it })
+        animation.addEntry(
+            entryBuilder.intSlider(
+                "chatPlus.animation.newMessageTransitionTime",
+                Config.values.animationNewMessageTransitionTime,
+                0,
+                500
+            ) { Config.values.animationNewMessageTransitionTime = it })
     }
 
     private fun addChatTabsOption(builder: ConfigBuilder, entryBuilder: ConfigEntryBuilder) {

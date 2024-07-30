@@ -24,6 +24,7 @@ object FeatureManager {
         SelectChat
         ScrollBar
         BookmarkMessages
+        Animations
 //        AlternatingColorBackground
     }
 
