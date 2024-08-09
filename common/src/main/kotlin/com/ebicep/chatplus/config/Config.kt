@@ -79,6 +79,8 @@ object Config {
     }
 
     private fun loadValues() {
+        values.internalX = values.x
+        values.internalY = values.y
         values.chatTabs.forEach {
             it.regex = Regex(it.pattern)
         }
@@ -218,6 +220,9 @@ data class ConfigVariables(
     // internal
     @Transient
     var sortedChatTabs: List<ChatTab> = listOf()
+    var internalX: Int = 0
+    var internalY: Int = -CHAT_TAB_HEIGHT - ChatPlusScreen.EDIT_BOX_HEIGHT
+
     var width: Int = 180
         set(newWidth) {
             if (field == newWidth) {
@@ -229,6 +234,23 @@ data class ConfigVariables(
         }
 
     // variables here for custom setters
+
+    var x: Int = 0
+        set(newX) {
+            if (field == newX) {
+                return
+            }
+            field = newX
+            internalX = newX
+        }
+    var y: Int = -CHAT_TAB_HEIGHT - ChatPlusScreen.EDIT_BOX_HEIGHT
+        set(newY) {
+            if (field == newY) {
+                return
+            }
+            field = newY
+            internalY = newY
+        }
 
     var height: Int = 320
         set(newHeight) {

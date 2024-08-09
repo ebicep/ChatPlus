@@ -1,12 +1,10 @@
 package com.ebicep.chatplus.hud
 
-import com.ebicep.chatplus.config.Config
+import com.ebicep.chatplus.config.Config.values
 import com.ebicep.chatplus.config.MessageDirection
 import com.ebicep.chatplus.events.Event
 import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.features.chattabs.ChatTab
-import com.ebicep.chatplus.hud.ChatManager.getDefaultY
-import com.ebicep.chatplus.hud.ChatManager.getMaxHeightScaled
 import com.ebicep.chatplus.hud.ChatManager.selectedTab
 import com.ebicep.chatplus.util.GraphicsUtil.createPose
 import com.ebicep.chatplus.util.GraphicsUtil.guiForward
@@ -129,7 +127,7 @@ object ChatRenderer {
         var displayMessageIndex = 0
         var linesPerPage = rescaledLinesPerPage
         if (!chatFocused) {
-            linesPerPage = (linesPerPage * Config.values.unfocusedHeight).roundToInt()
+            linesPerPage = (linesPerPage * values.unfocusedHeight).roundToInt()
         }
         EventBus.post(ChatRenderPreLinesRenderEvent(guiGraphics))
         while (displayMessageIndex + selectedTab.chatScrollbarPos < messagesToDisplay && displayMessageIndex < linesPerPage) {
@@ -149,7 +147,7 @@ object ChatRenderer {
                 continue
             }
             // how high chat is from input bar, if changed need to change queue offset
-            val verticalChatOffset: Int = when (Config.values.messageDirection) {
+            val verticalChatOffset: Int = when (values.messageDirection) {
                 MessageDirection.TOP_DOWN -> (rescaledY - rescaledLinesPerPage * lineHeight + lineHeight) + displayMessageIndex * lineHeight
                 MessageDirection.BOTTOM_UP -> rescaledY - displayMessageIndex * lineHeight
             }
@@ -215,31 +213,15 @@ object ChatRenderer {
         val heightChanged = screenHeight != previousScreenHeight && previousScreenHeight != -1
 
         if (widthChanged) {
-            Config.values.x = (screenWidth * Config.values.x / previousScreenWidth.toDouble()).roundToInt()
+            values.internalX = values.x
+            ChatManager.getX()
+            if (screenWidth < previousScreenWidth) {
+                values.internalX = (screenWidth * values.internalX / previousScreenWidth.toDouble()).roundToInt()
+            }
         }
         if (heightChanged) {
-            val oldY = Config.values.y
-            val defaultY = getDefaultY()
-            if (oldY <= 0) {
-                Config.values.y = defaultY
-            } else {
-                if (oldY >= getMaxHeightScaled(previousScreenHeight)) {
-                    Config.values.y = getMaxHeightScaled()
-                } else {
-                    val oldRatio = oldY / previousScreenHeight.toDouble()
-                    var newY = (screenHeight * oldRatio).roundToInt()
-                    if (newY >= getMaxHeightScaled()) {
-                        newY = defaultY
-                    }
-                    Config.values.y = newY
-                }
-            }
-            val oldHeight = Config.values.height
-            if ((oldY > 0 && oldHeight >= oldY - 1) ||
-                (oldY == defaultY && oldHeight >= getMaxHeightScaled(previousScreenHeight) - 1)
-            ) {
-                Config.values.height = getMaxHeightScaled() - 1
-            }
+            values.internalY = values.y
+            ChatManager.getY()
         }
         previousScreenWidth = screenWidth
         previousScreenHeight = screenHeight
