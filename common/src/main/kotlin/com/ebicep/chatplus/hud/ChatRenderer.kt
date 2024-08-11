@@ -163,6 +163,9 @@ object ChatRenderer {
             EventBus.post(lineAppearanceEvent)
             textColor = lineAppearanceEvent.textColor
             backgroundColor = lineAppearanceEvent.backgroundColor
+            val oldAlpha = (backgroundColor shr 24) and 0xff
+            val newAlpha = oldAlpha * fadeOpacity
+            backgroundColor = (backgroundColor and 0x00ffffff) or (newAlpha.toInt() shl 24)
             poseStack.createPose {
                 poseStack.guiForward(amount = 50.0)
                 //background
