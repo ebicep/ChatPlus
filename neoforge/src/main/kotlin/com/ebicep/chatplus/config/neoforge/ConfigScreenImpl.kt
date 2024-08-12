@@ -354,7 +354,6 @@ object ConfigScreenImpl {
                             "chatPlus.messageFilter.changeColor.toggle",
                             value.changeColor
                         ) { value.changeColor = it },
-
                         entryBuilder.startAlphaColorField(Component.translatable("chatPlus.messageFilter.color"), value.color)
                             .setTooltip(Component.translatable("chatPlus.messageFilter.color.tooltip"))
                             .setDefaultValue(DEFAULT_COLOR)
@@ -364,12 +363,7 @@ object ConfigScreenImpl {
                             "chatPlus.messageFilter.playSound.toggle",
                             value.playSound
                         ) { value.playSound = it },
-
                         soundCategory.build()
-
-//                        entryBuilder.startDropdownMenu(
-//                            Component.translatable("chatPlus.messageFilter.playSound.toggle")
-//                        )
                     )
                 },
                 { Component.literal(it.regex.toString()) }
