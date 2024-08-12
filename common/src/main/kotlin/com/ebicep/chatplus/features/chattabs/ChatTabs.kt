@@ -1,17 +1,20 @@
 package com.ebicep.chatplus.features.chattabs
 
+import com.ebicep.chatplus.ChatPlus
 import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.config.queueUpdateConfig
 import com.ebicep.chatplus.events.ChatPlusTickEvent
 import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.events.Events
 import com.ebicep.chatplus.hud.*
+import com.ebicep.chatplus.mixin.IMixinChatScreen
 import com.ebicep.chatplus.util.GraphicsUtil.createPose
 import com.ebicep.chatplus.util.GraphicsUtil.guiForward
 import com.ebicep.chatplus.util.GraphicsUtil.translate0
 import com.mojang.blaze3d.vertex.PoseStack
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.util.Mth
 
 
 const val CHAT_TAB_HEIGHT = 15
@@ -50,11 +53,15 @@ object ChatTabs {
             if (!Config.values.chatTabsEnabled || !Config.values.arrowCycleTabEnabled) {
                 return@register
             }
+            it.screen as IMixinChatScreen
+            if (it.screen.input.value.isNotEmpty()) {
+                return@register
+            }
             val keyCode = it.keyCode
-            if (keyCode == 263 && startRenderTabIndex > 0) { // left arrow
-                startRenderTabIndex--
-            } else if (keyCode == 262 && startRenderTabIndex < Config.values.chatTabs.size - 1) { // right arrow
-                startRenderTabIndex++
+            if (keyCode == 263) { // left arrow
+                scrollTab(-1)
+            } else if (keyCode == 262) { // right arrow
+                scrollTab(1)
             }
         }
         EventBus.register<ChatScreenMouseScrolledEvent> {
@@ -65,12 +72,7 @@ object ChatTabs {
             if (amountX == 0.0) {
                 return@register
             }
-            // negative = scroll right , positive = scroll left
-            if (amountX > 0 && startRenderTabIndex > 0) {
-                startRenderTabIndex--
-            } else if (amountX < 0 && startRenderTabIndex < Config.values.chatTabs.size - 1) {
-                startRenderTabIndex++
-            }
+            scrollTab(Mth.clamp(-amountX.toInt(), -1, 1))
         }
         EventBus.register<ChatScreenMouseClickedEvent> {
             if (!Config.values.chatTabsEnabled) {
@@ -100,6 +102,28 @@ object ChatTabs {
         ChatTabsMover
     }
 
+    // negative = scroll left , positive = scroll right
+    private fun scrollTab(amount: Int) {
+        if (amount < 0 && startRenderTabIndex > 0) {
+            startRenderTabIndex--
+        } else if (amount > 0 && startRenderTabIndex < Config.values.chatTabs.size - 1) {
+            // check if last tab is visible
+            var totalWidth = 0
+            Config.values.chatTabs.forEachIndexed { index, it ->
+                if (index < startRenderTabIndex) {
+                    return@forEachIndexed
+                }
+                totalWidth += it.width + CHAT_TAB_X_SPACE
+            }
+            if (totalWidth >= Minecraft.getInstance().window.guiScaledWidth) {
+                startRenderTabIndex++
+            }
+        }
+        if (Config.values.moveToTabWhenCycling) {
+            Config.values.selectedTab = Mth.clamp(Config.values.selectedTab + amount, 0, Config.values.chatTabs.size - 1)
+        }
+    }
+
     private fun checkTabRefresh(it: ChatTab) {
         if (it.resetDisplayMessageAtTick == Events.currentTick) {
             it.refreshDisplayMessages()
@@ -108,7 +132,8 @@ object ChatTabs {
 
     private fun handleClickedTab(x: Double, y: Double) {
         val translatedY = ChatManager.getY() - y
-        if (translatedY > CHAT_TAB_Y_OFFSET || translatedY < -(9 + ChatTab.PADDING + ChatTab.PADDING)) {
+        ChatPlus.LOGGER.info("translatedY: $translatedY")
+        if (translatedY > CHAT_TAB_Y_OFFSET - 4 || translatedY < -(9 + ChatTab.PADDING + ChatTab.PADDING)) {
             return
         }
         Config.values.chatTabs.forEachIndexed { index, it ->
