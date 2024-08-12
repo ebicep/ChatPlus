@@ -109,7 +109,7 @@ class ChatTab : MessageFilter {
         val line: GuiMessage.Line,
         val content: String,
         val linkedMessage: ChatPlusGuiMessage,
-        val wrappedIndex: Int,
+        val wrappedIndex: Int
     )
 
     var name: String = ""
@@ -190,6 +190,9 @@ class ChatTab : MessageFilter {
     @Transient
     var y: Double = 0.0
 
+    @Transient
+    var lastMessageTime: Long = 0
+
 
     fun addNewMessage(
         component: Component,
@@ -197,9 +200,6 @@ class ChatTab : MessageFilter {
         addedTime: Int,
         tag: GuiMessageTag?
     ) {
-        if (!matches(component.string)) {
-            return
-        }
         val componentWithTimeStamp: MutableComponent = getTimeStampedMessage(component)
         val chatPlusGuiMessage = ChatPlusGuiMessage(
             if (Config.values.compactMessagesIgnoreTimestamps) component else null,
@@ -220,6 +220,7 @@ class ChatTab : MessageFilter {
             return
         }
         this.messages.add(chatPlusGuiMessage)
+        this.lastMessageTime = System.currentTimeMillis()
         while (this.messages.size > Config.values.maxMessages) {
             EventBus.post(ChatTabRemoveMessageEvent(this, this.messages.removeFirst()))
         }

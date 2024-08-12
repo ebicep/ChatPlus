@@ -82,6 +82,9 @@ object SpeechToText {
     init {
         microphoneThread.start()
         EventBus.register<ChatPlusTickEvent> {
+            if (!Config.values.speechToTextEnabled) {
+                return@register
+            }
             recordMic = Config.values.speechToTextMicrophoneKey.isDown() && Minecraft.getInstance().screen !is ChatScreen
         }
     }
@@ -159,6 +162,9 @@ class MicrophoneThread : Thread("ChatPlusMicrophoneThread") {
     init {
         ChatPlus.LOGGER.info("SpeechToText initialized")
         EventBus.register<ChatScreenInitPreEvent> {
+            if (!Config.values.speechToTextEnabled) {
+                return@register
+            }
             SpeechToText.recordMic = false
             if (quickSendTimer <= 0) {
                 return@register
@@ -185,6 +191,9 @@ class MicrophoneThread : Thread("ChatPlusMicrophoneThread") {
             lastSpokenMessage = null
         }
         ClientGuiEvent.RENDER_HUD.register { guiGraphics, tickDelta ->
+            if (!Config.values.speechToTextEnabled) {
+                return@register
+            }
             if (listening) {
                 SpeechToText.renderBoxAndText(guiGraphics, "Listening", SpeechToText.LISTENING_COLOR)
             }
@@ -218,6 +227,9 @@ class MicrophoneThread : Thread("ChatPlusMicrophoneThread") {
             }
         }
         ClientRawInputEvent.KEY_PRESSED.register { _, keyCode, _, _, _ ->
+            if (!Config.values.speechToTextEnabled) {
+                return@register EventResult.pass()
+            }
             val quickSend = keyCode == Config.values.speechToTextQuickSendKey.value && Minecraft.getInstance().screen !is ChatScreen
             if (canQuickSend && quickSend) {
                 quickSendTimer = -1
@@ -261,8 +273,8 @@ class MicrophoneThread : Thread("ChatPlusMicrophoneThread") {
     override fun run() {
         ChatPlus.LOGGER.info("SpeechToText Thread started")
         while (running) {
-            if (disabled) {
-                sleep(5000)
+            if (!Config.values.speechToTextEnabled || disabled) {
+                sleep(5_000)
                 continue
             }
             if (recognizer == null) {

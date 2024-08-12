@@ -37,9 +37,13 @@ object TranslateMessage {
 
     init {
         EventBus.register<TextBarElements.AddTextBarElementEvent>({ 0 }) {
-            if (Config.values.translatorEnabled) {
-                it.elements.add(TranslateSpeakTextBarElement(it.screen))
+            if (!Config.values.translatorEnabled) {
+                return@register
             }
+            if (!Config.values.translatorTextBarElementEnabled) {
+                return@register
+            }
+            it.elements.add(TranslateSpeakTextBarElement(it.screen))
         }
         EventBus.register<ChatScreenInitPostEvent> {
             if (!Config.values.translatorEnabled) {

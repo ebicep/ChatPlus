@@ -13,7 +13,7 @@ object FeatureManager {
         HoverHighlight
         TextBarElements
         CompactMessages
-        FilterHighlight
+        FilterMessages
         ChatTabs
         TranslateMessage
         AlignMessage
@@ -24,6 +24,7 @@ object FeatureManager {
         SelectChat
         ScrollBar
         BookmarkMessages
+        Animations
 //        AlternatingColorBackground
     }
 
