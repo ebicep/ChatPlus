@@ -1,7 +1,7 @@
 {
   "chatPlus.translator.sameMessage": "That message is already translated.",
   "chatPlus.messageFilter.formatted.toggle": "Formatted",
-  "chatPlus.messageFilter.formatted.toggle.tooltip": "Whether to use the formatted message or the raw message.",
+  "chatPlus.messageFilter.formatted.toggle.tooltip": "Whether to use the formatted message or the raw message. Use & for color codes.",
   "chatPlus.linePriority.selectChat": "Select Chat Line Priority",
   "chatPlus.linePriority.messageFilter": "Filter Line Priority",
   "chatPlus.linePriority.hoverHighlight": "Hover Highlight Line Priority",
