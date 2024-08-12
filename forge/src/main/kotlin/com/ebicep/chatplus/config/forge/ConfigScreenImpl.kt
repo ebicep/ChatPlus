@@ -3,8 +3,8 @@ package com.ebicep.chatplus.config.forge
 import com.ebicep.chatplus.config.*
 import com.ebicep.chatplus.config.serializers.KeyWithModifier
 import com.ebicep.chatplus.features.AlignMessage
-import com.ebicep.chatplus.features.FilterHighlight
-import com.ebicep.chatplus.features.FilterHighlight.DEFAULT_COLOR
+import com.ebicep.chatplus.features.FilterMessages
+import com.ebicep.chatplus.features.FilterMessages.DEFAULT_COLOR
 import com.ebicep.chatplus.features.HoverHighlight
 import com.ebicep.chatplus.features.chattabs.ChatTab
 import com.ebicep.chatplus.features.internal.MessageFilter
@@ -19,6 +19,8 @@ import me.shedaniel.clothconfig2.impl.builders.DropdownMenuBuilder
 import me.shedaniel.math.Color
 import net.minecraft.client.gui.screens.Screen
 import net.minecraft.network.chat.Component
+import net.minecraft.sounds.SoundSource
+import net.minecraft.util.Mth
 import java.util.*
 import java.util.function.Consumer
 
@@ -34,13 +36,15 @@ object ConfigScreenImpl {
                 Config.save()
             }
             .transparentBackground()
+        builder.setGlobalized(true)
+        builder.setGlobalizedExpanded(true)
         val entryBuilder: ConfigEntryBuilder = builder.entryBuilder()
         addGeneralOptions(builder, entryBuilder)
         addCompactMessagesOptions(builder, entryBuilder)
         addScrollbarOption(builder, entryBuilder)
         addAnimationOption(builder, entryBuilder)
         addChatTabsOption(builder, entryBuilder)
-        addFilterHighlightOption(builder, entryBuilder)
+        addMessageFilterOption(builder, entryBuilder)
         addHoverHighlightOption(builder, entryBuilder)
         addBookmarkOption(builder, entryBuilder)
         addFindMessageOption(builder, entryBuilder)
@@ -278,34 +282,67 @@ object ConfigScreenImpl {
                             value.skipOthers
                         ) { value.skipOthers = it },
                     )
-                }
-
+                },
+                { Component.literal(it.name) }
             )
         )
     }
 
-    private fun addFilterHighlightOption(builder: ConfigBuilder, entryBuilder: ConfigEntryBuilder) {
-        val filterHighlight = builder.getOrCreateCategory(Component.translatable("chatPlus.filterHighlight.title"))
-        filterHighlight.addEntry(
+    private fun addMessageFilterOption(builder: ConfigBuilder, entryBuilder: ConfigEntryBuilder) {
+        val messageFilter = builder.getOrCreateCategory(Component.translatable("chatPlus.messageFilter.title"))
+        messageFilter.addEntry(
             entryBuilder.booleanToggle(
-                "chatPlus.filterHighlight.toggle",
-                Config.values.filterHighlightEnabled
-            ) { Config.values.filterHighlightEnabled = it })
-        filterHighlight.addEntry(
-            entryBuilder.linePriorityField("chatPlus.linePriority.filterHighlight", Config.values.filterHighlightLinePriority)
-            { Config.values.filterHighlightLinePriority = it }
+                "chatPlus.messageFilter.toggle",
+                Config.values.filterMessagesEnabled
+            ) { Config.values.filterMessagesEnabled = it })
+        messageFilter.addEntry(
+            entryBuilder.linePriorityField("chatPlus.linePriority.messageFilter", Config.values.filterMessagesLinePriority)
+            { Config.values.filterMessagesLinePriority = it }
         )
-        filterHighlight.addEntry(
+        messageFilter.addEntry(
             getCustomListOption(
-                "chatPlus.filterHighlight.title",
-                Config.values.filterHighlightPatterns,
-                { Config.values.filterHighlightPatterns = it },
+                "chatPlus.messageFilter.title",
+                Config.values.filterMessagesPatterns,
+                { Config.values.filterMessagesPatterns = it },
                 true,
-                { FilterHighlight.Filter("", DEFAULT_COLOR) },
+                { FilterMessages.Filter("", DEFAULT_COLOR) },
                 { value ->
+                    val soundCategory = entryBuilder.startSubCategory(Component.translatable("chatPlus.messageFilter.sound"))
+                    soundCategory.add(
+                        entryBuilder.stringField(
+                            "chatPlus.messageFilter.sound.sound",
+                            value.sound.sound
+                        ) { value.sound.sound = it }
+                    )
+                    soundCategory.add(
+                        entryBuilder.startEnumSelector(
+                            Component.translatable("chatPlus.messageFilter.sound.source"),
+                            SoundSource::class.java,
+                            value.sound.source
+                        )
+                            .setEnumNameProvider { Component.literal((it as SoundSource).name) }
+                            .setDefaultValue(value.sound.source)
+                            .setTooltip(Component.translatable("chatPlus.messageFilter.sound.source.tooltip"))
+                            .setSaveConsumer { value.sound.source = it }
+                            .build()
+                    )
+                    soundCategory.add(
+                        entryBuilder.percentSlider(
+                            "chatPlus.messageFilter.sound.volume",
+                            value.sound.volume,
+                            { value.sound.volume = it }
+                        )
+                    )
+                    soundCategory.add(
+                        entryBuilder.percentSlider(
+                            "chatPlus.messageFilter.sound.pitch",
+                            (value.sound.pitch - .5f) / (2f - .5f),
+                            { value.sound.pitch = Mth.lerp(it, .5f, 2f) }
+                        )
+                    )
                     listOf(
-                        entryBuilder.startStrField(Component.translatable("chatPlus.filterHighlight.pattern"), value.pattern)
-                            .setTooltip(Component.translatable("chatPlus.filterHighlight.pattern.tooltip"))
+                        entryBuilder.startStrField(Component.translatable("chatPlus.messageFilter.pattern"), value.pattern)
+                            .setTooltip(Component.translatable("chatPlus.messageFilter.pattern.tooltip"))
                             .setDefaultValue("")
                             .setSaveConsumer { value.pattern = it }
                             .build(),
@@ -313,13 +350,29 @@ object ConfigScreenImpl {
                             "chatPlus.messageFilter.formatted.toggle",
                             value.formatted
                         ) { value.formatted = it },
-                        entryBuilder.startAlphaColorField(Component.translatable("chatPlus.filterHighlight.color"), value.color)
-                            .setTooltip(Component.translatable("chatPlus.filterHighlight.color.tooltip"))
+                        entryBuilder.booleanToggle(
+                            "chatPlus.messageFilter.changeColor.toggle",
+                            value.changeColor
+                        ) { value.changeColor = it },
+
+                        entryBuilder.startAlphaColorField(Component.translatable("chatPlus.messageFilter.color"), value.color)
+                            .setTooltip(Component.translatable("chatPlus.messageFilter.color.tooltip"))
                             .setDefaultValue(DEFAULT_COLOR)
                             .setSaveConsumer { value.color = it }
                             .build(),
+                        entryBuilder.booleanToggle(
+                            "chatPlus.messageFilter.playSound.toggle",
+                            value.playSound
+                        ) { value.playSound = it },
+
+                        soundCategory.build()
+
+//                        entryBuilder.startDropdownMenu(
+//                            Component.translatable("chatPlus.messageFilter.playSound.toggle")
+//                        )
                     )
-                }
+                },
+                { Component.literal(it.regex.toString()) }
             )
         )
     }
@@ -422,8 +475,8 @@ object ConfigScreenImpl {
                             value.formatted
                         ) { value.formatted = it },
                     )
-                }
-
+                },
+                { Component.literal(it.regex.toString()) }
             )
         )
     }
@@ -658,8 +711,8 @@ object ConfigScreenImpl {
                             .setSaveConsumer { value.senderNameGroupIndex = it }
                             .build(),
                     )
-                }
-
+                },
+                { Component.literal(it.match) }
             )
         )
         translator.addEntry(
@@ -845,8 +898,7 @@ object ConfigScreenImpl {
         max: Int,
         saveConsumer: Consumer<Float>,
         updateDimensions: Boolean = true
-    ):
-            IntegerSliderEntry {
+    ): IntegerSliderEntry {
         val intValue = (variable * 100).toInt()
         return startIntSlider(Component.translatable(translatable), intValue, min * 100, max * 100)
             .setDefaultValue(intValue)
@@ -906,7 +958,8 @@ object ConfigScreenImpl {
         saveConsumer: Consumer<MutableList<T>>,
         canDelete: Boolean,
         create: () -> T,
-        render: (T) -> List<AbstractConfigListEntry<*>>
+        render: (T) -> List<AbstractConfigListEntry<*>>,
+        entryNameFunction: (T) -> Component
     ): NestedListListEntry<T, MultiElementListEntry<T>> {
         return NestedListListEntry(
             Component.translatable(translatable),
@@ -920,7 +973,7 @@ object ConfigScreenImpl {
             false,
             { value, entry ->
                 val v = value ?: create()
-                MultiElementListEntry(Component.empty(), v, render(v), true)
+                MultiElementListEntry(entryNameFunction.invoke(value), v, render(v), true)
             }
         )
     }

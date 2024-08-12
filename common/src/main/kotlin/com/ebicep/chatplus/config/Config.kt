@@ -9,7 +9,7 @@ import com.ebicep.chatplus.MOD_ID
 import com.ebicep.chatplus.config.serializers.KeySerializer
 import com.ebicep.chatplus.config.serializers.KeyWithModifier
 import com.ebicep.chatplus.features.AlignMessage
-import com.ebicep.chatplus.features.FilterHighlight
+import com.ebicep.chatplus.features.FilterMessages
 import com.ebicep.chatplus.features.HoverHighlight
 import com.ebicep.chatplus.features.PlayerHeadChatDisplay
 import com.ebicep.chatplus.features.chattabs.CHAT_TAB_HEIGHT
@@ -85,7 +85,7 @@ object Config {
             it.regex = Regex(it.pattern)
         }
         resetSortedChatTabs()
-        values.filterHighlightPatterns.forEach {
+        values.filterMessagesPatterns.forEach {
             it.regex = Regex(it.pattern)
         }
         values.autoBookMarkPatterns.forEach {
@@ -119,8 +119,6 @@ object Config {
 
 @Serializable
 data class ConfigVariables(
-    var x: Int = 0,
-    var y: Int = -CHAT_TAB_HEIGHT - ChatPlusScreen.EDIT_BOX_HEIGHT,
     // general
     var enabled: Boolean = true,
     var scale: Float = 1f,
@@ -154,9 +152,9 @@ data class ConfigVariables(
     var arrowCycleTabEnabled: Boolean = true,
     var moveToTabWhenCycling: Boolean = true,
     // filter highlight
-    var filterHighlightEnabled: Boolean = true,
-    var filterHighlightLinePriority: Int = 150,
-    var filterHighlightPatterns: MutableList<FilterHighlight.Filter> = mutableListOf(),
+    var filterMessagesEnabled: Boolean = true,
+    var filterMessagesLinePriority: Int = 150,
+    var filterMessagesPatterns: MutableList<FilterMessages.Filter> = mutableListOf(),
     // hover highlight
     var hoverHighlightEnabled: Boolean = true,
     var hoverHighlightLinePriority: Int = 0,

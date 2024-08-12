@@ -13,7 +13,7 @@ object FeatureManager {
         HoverHighlight
         TextBarElements
         CompactMessages
-        FilterHighlight
+        FilterMessages
         ChatTabs
         TranslateMessage
         AlignMessage
