@@ -9,7 +9,7 @@ import com.ebicep.chatplus.MOD_ID
 import com.ebicep.chatplus.config.serializers.KeySerializer
 import com.ebicep.chatplus.config.serializers.KeyWithModifier
 import com.ebicep.chatplus.features.AlignMessage
-import com.ebicep.chatplus.features.FilterHighlight
+import com.ebicep.chatplus.features.FilterMessages
 import com.ebicep.chatplus.features.HoverHighlight
 import com.ebicep.chatplus.features.PlayerHeadChatDisplay
 import com.ebicep.chatplus.features.chattabs.CHAT_TAB_HEIGHT
@@ -79,11 +79,13 @@ object Config {
     }
 
     private fun loadValues() {
+        values.internalX = values.x
+        values.internalY = values.y
         values.chatTabs.forEach {
             it.regex = Regex(it.pattern)
         }
         resetSortedChatTabs()
-        values.filterHighlightPatterns.forEach {
+        values.filterMessagesPatterns.forEach {
             it.regex = Regex(it.pattern)
         }
         values.autoBookMarkPatterns.forEach {
@@ -117,8 +119,6 @@ object Config {
 
 @Serializable
 data class ConfigVariables(
-    var x: Int = 0,
-    var y: Int = -CHAT_TAB_HEIGHT - ChatPlusScreen.EDIT_BOX_HEIGHT,
     // general
     var enabled: Boolean = true,
     var scale: Float = 1f,
@@ -142,15 +142,19 @@ data class ConfigVariables(
     var invertedScrolling: Boolean = false,
     var scrollbarColor: Int = Color(128, 134, 139, 255).rgb,
     var scrollbarWidth: Int = 6,
+    // animation
+    var animationEnabled: Boolean = true,
+    var animationNewMessageTransitionTime: Int = 200,
     // tabs
     var chatTabs: MutableList<ChatTab> = mutableListOf(defaultTab),
     var selectedTab: Int = 0,
     var scrollCycleTabEnabled: Boolean = true,
     var arrowCycleTabEnabled: Boolean = true,
+    var moveToTabWhenCycling: Boolean = true,
     // filter highlight
-    var filterHighlightEnabled: Boolean = true,
-    var filterHighlightLinePriority: Int = 150,
-    var filterHighlightPatterns: MutableList<FilterHighlight.Filter> = mutableListOf(),
+    var filterMessagesEnabled: Boolean = true,
+    var filterMessagesLinePriority: Int = 150,
+    var filterMessagesPatterns: MutableList<FilterMessages.Filter> = mutableListOf(),
     // hover highlight
     var hoverHighlightEnabled: Boolean = true,
     var hoverHighlightLinePriority: Int = 0,
@@ -176,6 +180,7 @@ data class ConfigVariables(
     var copyNoFormatting: Boolean = true,
     // screen shot chat
     var screenshotChatEnabled: Boolean = true,
+    var screenshotChatTextBarElementEnabled: Boolean = true,
     var screenshotChatLinePriority: Int = 200,
     var screenshotChatLine: KeyWithModifier = KeyWithModifier(InputConstants.getKey("key.keyboard.s"), 2),
     var screenshotChatAutoUpload: Boolean = true,
@@ -192,6 +197,7 @@ data class ConfigVariables(
     var keyPeekChat: InputConstants.Key = InputConstants.getKey("key.keyboard.p"),
     // translator
     var translatorEnabled: Boolean = true,
+    var translatorTextBarElementEnabled: Boolean = true,
     var translatorRegexes: MutableList<RegexMatch> = mutableListOf(),
     var translateTo: String = "Auto Detect",
     var translateSelf: String = "Auto Detect",
@@ -212,6 +218,9 @@ data class ConfigVariables(
     // internal
     @Transient
     var sortedChatTabs: List<ChatTab> = listOf()
+    var internalX: Int = 0
+    var internalY: Int = -CHAT_TAB_HEIGHT - ChatPlusScreen.EDIT_BOX_HEIGHT
+
     var width: Int = 180
         set(newWidth) {
             if (field == newWidth) {
@@ -223,6 +232,23 @@ data class ConfigVariables(
         }
 
     // variables here for custom setters
+
+    var x: Int = 0
+        set(newX) {
+            if (field == newX) {
+                return
+            }
+            field = newX
+            internalX = newX
+        }
+    var y: Int = -CHAT_TAB_HEIGHT - ChatPlusScreen.EDIT_BOX_HEIGHT
+        set(newY) {
+            if (field == newY) {
+                return
+            }
+            field = newY
+            internalY = newY
+        }
 
     var height: Int = 320
         set(newHeight) {
