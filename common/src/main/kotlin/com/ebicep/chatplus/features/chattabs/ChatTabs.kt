@@ -1,5 +1,6 @@
 package com.ebicep.chatplus.features.chattabs
 
+import com.ebicep.chatplus.ChatPlus
 import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.config.queueUpdateConfig
 import com.ebicep.chatplus.events.ChatPlusTickEvent
@@ -131,7 +132,8 @@ object ChatTabs {
 
     private fun handleClickedTab(x: Double, y: Double) {
         val translatedY = ChatManager.getY() - y
-        if (translatedY > CHAT_TAB_Y_OFFSET || translatedY < -(9 + ChatTab.PADDING + ChatTab.PADDING)) {
+        ChatPlus.LOGGER.info("translatedY: $translatedY")
+        if (translatedY > CHAT_TAB_Y_OFFSET - 4 || translatedY < -(9 + ChatTab.PADDING + ChatTab.PADDING)) {
             return
         }
         Config.values.chatTabs.forEachIndexed { index, it ->
