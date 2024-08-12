@@ -27,7 +27,7 @@ open class MessageFilter {
 
     fun matches(message: String): Boolean {
         return if (formatted) {
-            regex.matches(message)
+            regex.matches(message.replace("§", "&"))
         } else {
             regex.matches(ChatFormatting.stripFormatting(message)!!)
         }

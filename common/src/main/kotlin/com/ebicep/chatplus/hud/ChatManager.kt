@@ -154,26 +154,26 @@ object ChatManager {
     }
 
     fun getX(): Int {
-        var x = Config.values.x
+        var x = Config.values.internalX
+        if (x + Config.values.width >= Minecraft.getInstance().window.guiScaledWidth) {
+            x = Minecraft.getInstance().window.guiScaledWidth - Config.values.width - 1
+            Config.values.internalX = x
+        }
         if (x < 0) {
             x = 0
-            Config.values.x = x
-        }
-        if (x >= Minecraft.getInstance().window.guiScaledWidth) {
-            x = Minecraft.getInstance().window.guiScaledWidth - 1
-            Config.values.x = x
+            Config.values.internalX = x
         }
         return x
     }
 
     fun getY(): Int {
-        var y = Config.values.y
+        var y = Config.values.internalY
         if (y < 0) {
             y += Minecraft.getInstance().window.guiScaledHeight
         }
         if (y >= Minecraft.getInstance().window.guiScaledHeight - EDIT_BOX_HEIGHT) {
             y = getMaxHeightScaled()
-            Config.values.y = getDefaultY()
+            Config.values.internalY = getDefaultY()
         }
         return y
     }
