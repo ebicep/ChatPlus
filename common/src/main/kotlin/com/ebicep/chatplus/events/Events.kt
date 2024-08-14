@@ -4,6 +4,7 @@ import com.ebicep.chatplus.ChatPlus
 import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.config.ConfigScreen
 import com.ebicep.chatplus.config.queueUpdateConfig
+import com.ebicep.chatplus.features.chatwindows.ChatWindows
 import com.ebicep.chatplus.hud.ChatManager
 import com.ebicep.chatplus.hud.ChatPlusScreen
 import com.ebicep.chatplus.hud.ChatRenderer
@@ -62,10 +63,10 @@ object Events {
         }
         // scuffed fix for joining a server with a diff window dimension than before
         ClientLifecycleEvent.CLIENT_LEVEL_LOAD.register {
-            ChatRenderer.updateCachedDimension()
+            Config.values.chatWindows.forEach { it.renderer.updateCachedDimension() }
         }
         ClientLifecycleEvent.CLIENT_STARTED.register {
-            ChatRenderer.updateCachedDimension()
+            Config.values.chatWindows.forEach { it.renderer.updateCachedDimension() }
         }
         ClientLifecycleEvent.CLIENT_STOPPING.register {
             Config.save()

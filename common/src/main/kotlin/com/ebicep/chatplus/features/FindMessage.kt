@@ -46,12 +46,12 @@ object FindMessage {
         EventBus.register<ChatScreenCloseEvent> {
             if (findEnabled) {
                 findEnabled = false
-                ChatManager.selectedTab.resetFilter()
+                ChatManager.globalSelectedTab.resetFilter()
             }
         }
         EventBus.register<ChatTabRewrapDisplayMessages> {
             findEnabled = false
-            ChatManager.selectedTab.resetFilter()
+            ChatManager.globalSelectedTab.resetFilter()
         }
         EventBus.register<ChatTabRefreshDisplayMessages> {
             if (findEnabled && lastInput.isNotEmpty()) {
@@ -62,7 +62,7 @@ object FindMessage {
         }
         EventBus.register<ChatTabSwitchEvent> {
             if (findEnabled) {
-                ChatManager.selectedTab.queueRefreshDisplayedMessages(false)
+                ChatManager.globalSelectedTab.queueRefreshDisplayedMessages(false)
             }
         }
         EventBus.register<ChatTabAddDisplayMessageEvent> {
@@ -78,7 +78,7 @@ object FindMessage {
         EventBus.register<ChatScreenInputBoxEditEvent> {
             if (findEnabled) {
                 lastInput = it.str
-                ChatManager.selectedTab.queueRefreshDisplayedMessages(false)
+                ChatManager.globalSelectedTab.queueRefreshDisplayedMessages(false)
                 it.returnFunction = true
             }
         }
@@ -98,7 +98,7 @@ object FindMessage {
         EventBus.register<TranslateToggleEvent> {
             if (findEnabled) {
                 findEnabled = false
-                ChatManager.selectedTab.resetFilter()
+                ChatManager.globalSelectedTab.resetFilter()
             }
         }
         EventBus.register<ChatScreenMouseClickedEvent> {
@@ -106,11 +106,11 @@ object FindMessage {
                 return@register
             }
             if (findEnabled) {
-                ChatManager.selectedTab.getMessageLineAt(it.mouseX, it.mouseY)?.let { message ->
+                ChatManager.globalSelectedTab.getMessageLineAt(it.mouseX, it.mouseY)?.let { message ->
                     val linkedMessage = message.linkedMessage
                     lastMovedToMessage = Pair(Pair(linkedMessage, message.wrappedIndex), Events.currentTick + 60)
                     findEnabled = false
-                    ChatManager.selectedTab.moveToMessage(it.screen, message)
+                    ChatManager.globalSelectedTab.moveToMessage(it.screen, message)
                 }
             }
         }
@@ -136,9 +136,9 @@ object FindMessage {
         chatPlusScreen.initial = chatPlusScreen.input!!.value
         lastInput = chatPlusScreen.input?.value ?: ""
         if (!findEnabled) {
-            ChatManager.selectedTab.resetFilter()
+            ChatManager.globalSelectedTab.resetFilter()
         } else {
-            ChatManager.selectedTab.queueRefreshDisplayedMessages(false)
+            ChatManager.globalSelectedTab.queueRefreshDisplayedMessages(false)
         }
         chatPlusScreen as IMixinScreen
         chatPlusScreen.callRebuildWidgets()

@@ -43,7 +43,7 @@ object BookmarkMessages {
         EventBus.register<ChatScreenKeyPressedEvent>({ 1 }, { showBookmarkShortcutUsed }) {
             var toggledBookmarkMessage = false
             if (Config.values.bookmarkKey.isDown()) {
-                val hoveredOverMessage = ChatManager.selectedTab.getHoveredOverMessageLine()
+                val hoveredOverMessage = ChatManager.globalSelectedTab.getHoveredOverMessageLine()
                 if (hoveredOverMessage != null && SelectChat.selectedMessages.isEmpty()) {
                     toggleMessageBookmark(hoveredOverMessage.linkedMessage)
                     toggledBookmarkMessage = true
@@ -63,12 +63,12 @@ object BookmarkMessages {
         EventBus.register<ChatScreenCloseEvent> {
             if (showingBoomarks) {
                 showingBoomarks = false
-                ChatManager.selectedTab.resetFilter()
+                ChatManager.globalSelectedTab.resetFilter()
             }
         }
         EventBus.register<ChatTabRewrapDisplayMessages> {
             showingBoomarks = false
-            ChatManager.selectedTab.resetFilter()
+            ChatManager.globalSelectedTab.resetFilter()
         }
         EventBus.register<ChatTabRefreshDisplayMessages> {
             if (showingBoomarks && bookmarkedMessages.isNotEmpty()) {
@@ -77,7 +77,7 @@ object BookmarkMessages {
         }
         EventBus.register<ChatTabSwitchEvent> {
             if (showingBoomarks) {
-                ChatManager.selectedTab.queueRefreshDisplayedMessages(false)
+                ChatManager.globalSelectedTab.queueRefreshDisplayedMessages(false)
             }
         }
         EventBus.register<ChatTabAddDisplayMessageEvent> {
@@ -97,9 +97,9 @@ object BookmarkMessages {
                 return@register
             }
             if (showingBoomarks) {
-                ChatManager.selectedTab.getMessageLineAt(it.mouseX, it.mouseY)?.let { message ->
+                ChatManager.globalSelectedTab.getMessageLineAt(it.mouseX, it.mouseY)?.let { message ->
                     showingBoomarks = false
-                    ChatManager.selectedTab.moveToMessage(it.screen, message)
+                    ChatManager.globalSelectedTab.moveToMessage(it.screen, message)
                 }
             }
         }
@@ -120,9 +120,9 @@ object BookmarkMessages {
         showingBoomarks = !showingBoomarks
         EventBus.post(ShowBookmarksToggleEvent(!showingBoomarks))
         if (!showingBoomarks) {
-            ChatManager.selectedTab.resetFilter()
+            ChatManager.globalSelectedTab.resetFilter()
         } else {
-            ChatManager.selectedTab.queueRefreshDisplayedMessages(false)
+            ChatManager.globalSelectedTab.queueRefreshDisplayedMessages(false)
         }
         chatScreen as IMixinChatScreen
         chatScreen.initial = chatScreen.input!!.value

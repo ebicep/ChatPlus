@@ -9,12 +9,10 @@ import com.ebicep.chatplus.events.Event
 import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.events.Events
 import com.ebicep.chatplus.features.CompactMessages.literalIgnored
+import com.ebicep.chatplus.features.chatwindows.ChatWindow
 import com.ebicep.chatplus.features.internal.MessageFilter
 import com.ebicep.chatplus.hud.ChatManager
 import com.ebicep.chatplus.hud.ChatPlusScreen
-import com.ebicep.chatplus.hud.ChatRenderer
-import com.ebicep.chatplus.hud.ChatRenderer.lineHeight
-import com.ebicep.chatplus.hud.ChatRenderer.rescaledLinesPerPage
 import com.ebicep.chatplus.mixin.IMixinScreen
 import com.ebicep.chatplus.util.KotlinUtil.containsReference
 import com.google.common.base.Predicate
@@ -41,6 +39,7 @@ import kotlin.math.min
 
 
 data class ChatTabAddNewMessageEvent(
+    val chatWindow: ChatWindow,
     val chatTab: ChatTab,
     val guiMessage: ChatTab.ChatPlusGuiMessage,
     val componentWithTimeStamp: MutableComponent,
@@ -53,6 +52,7 @@ data class ChatTabAddNewMessageEvent(
 
 
 data class ChatTabAddDisplayMessageEvent(
+    val chatWindow: ChatWindow,
     val chatTab: ChatTab,
     val component: Component,
     val addedTime: Int,
@@ -64,32 +64,38 @@ data class ChatTabAddDisplayMessageEvent(
 ) : Event
 
 data class ChatTabRemoveMessageEvent(
+    val chatWindow: ChatWindow,
     val chatTab: ChatTab,
     val guiMessage: ChatTab.ChatPlusGuiMessage,
     var returnFunction: Boolean = false
 ) : Event
 
 data class ChatTabRemoveDisplayMessageEvent(
+    val chatWindow: ChatWindow,
     val chatTab: ChatTab,
     val chatPlusGuiMessageLine: ChatTab.ChatPlusGuiMessageLine,
     var returnFunction: Boolean = false
 ) : Event
 
 data class ChatTabGetMessageAtEvent(
+    val chatWindow: ChatWindow,
     val chatTab: ChatTab,
     var chatX: Double,
     var chatY: Double,
 ) : Event
 
 data class ChatTabRescale(
+    val chatWindow: ChatWindow,
     val chatTab: ChatTab
 ) : Event
 
 data class ChatTabRewrapDisplayMessages(
+    val chatWindow: ChatWindow,
     val chatTab: ChatTab,
 ) : Event
 
 data class ChatTabRefreshDisplayMessages(
+    val chatWindow: ChatWindow,
     val chatTab: ChatTab,
     val rescale: Boolean,
     val predicates: MutableList<Predicate<ChatTab.ChatPlusGuiMessage>> = mutableListOf(),
@@ -193,6 +199,9 @@ class ChatTab : MessageFilter {
     @Transient
     var lastMessageTime: Long = 0
 
+    @Transient
+    lateinit var chatWindow: ChatWindow
+
 
     fun addNewMessage(
         component: Component,
@@ -207,6 +216,7 @@ class ChatTab : MessageFilter {
         )
         if (EventBus.post(
                 ChatTabAddNewMessageEvent(
+                    chatWindow,
                     this,
                     chatPlusGuiMessage,
                     componentWithTimeStamp,
@@ -222,7 +232,7 @@ class ChatTab : MessageFilter {
         this.messages.add(chatPlusGuiMessage)
         this.lastMessageTime = System.currentTimeMillis()
         while (this.messages.size > Config.values.maxMessages) {
-            EventBus.post(ChatTabRemoveMessageEvent(this, this.messages.removeFirst()))
+            EventBus.post(ChatTabRemoveMessageEvent(chatWindow, this, this.messages.removeFirst()))
         }
         this.addNewDisplayMessage(componentWithTimeStamp, addedTime, tag, chatPlusGuiMessage)
     }
@@ -272,8 +282,9 @@ class ChatTab : MessageFilter {
         tag: GuiMessageTag?,
         linkedMessage: ChatPlusGuiMessage
     ) {
-        val maxWidth = Mth.floor(ChatManager.getBackgroundWidth())
-        val displayMessageEvent = EventBus.post(ChatTabAddDisplayMessageEvent(this, component, addedTime, tag, linkedMessage, maxWidth))
+        val maxWidth = Mth.floor(this.chatWindow.renderer.getBackgroundWidth())
+        val displayMessageEvent =
+            EventBus.post(ChatTabAddDisplayMessageEvent(chatWindow, this, component, addedTime, tag, linkedMessage, maxWidth))
         addWrappedComponents(component, displayMessageEvent, addedTime, tag, linkedMessage, -1)
         while (
             !displayMessageEvent.filtered &&
@@ -281,7 +292,7 @@ class ChatTab : MessageFilter {
             this.displayedMessages.isNotEmpty() &&
             this.messages[0] !== this.displayedMessages[0].linkedMessage
         ) {
-            EventBus.post(ChatTabRemoveDisplayMessageEvent(this, this.displayedMessages.removeFirst()))
+            EventBus.post(ChatTabRemoveDisplayMessageEvent(chatWindow, this, this.displayedMessages.removeFirst()))
             if (wasFiltered) {
                 unfilteredDisplayedMessages.removeFirst()
             }
@@ -361,9 +372,9 @@ class ChatTab : MessageFilter {
         return getMessageLineAt(ChatPlusScreen.lastMouseX.toDouble(), ChatPlusScreen.lastMouseY.toDouble())
     }
 
-    fun getMessageLineAt(pMouseX: Double, pMouseY: Double): ChatPlusGuiMessageLine? {
-        val x = screenToChatX(pMouseX)
-        val y = screenToChatY(pMouseY)
+    fun getMessageLineAt(mouseX: Double, mouseY: Double): ChatPlusGuiMessageLine? {
+        val x = screenToChatX(mouseX)
+        val y = screenToChatY(mouseY)
         return getMessageAtLineRelative(x, y)
     }
 
@@ -378,14 +389,14 @@ class ChatTab : MessageFilter {
     }
 
     private fun screenToChatX(pX: Double): Double {
-        return (pX - ChatRenderer.x) / ChatRenderer.scale
+        return (pX - chatWindow.renderer.internalX) / chatWindow.renderer.scale
     }
 
     private fun screenToChatY(pY: Double): Double {
-        val yDiff: Double = ChatRenderer.y - pY
+        val yDiff: Double = chatWindow.renderer.internalY - pY
         return when (Config.values.messageDirection) {
-            MessageDirection.TOP_DOWN -> rescaledLinesPerPage - yDiff / (ChatRenderer.scale * lineHeight.toDouble())
-            MessageDirection.BOTTOM_UP -> yDiff / (ChatRenderer.scale * lineHeight.toDouble())
+            MessageDirection.TOP_DOWN -> chatWindow.renderer.rescaledLinesPerPage - yDiff / (chatWindow.renderer.scale * chatWindow.renderer.lineHeight.toDouble())
+            MessageDirection.BOTTOM_UP -> yDiff / (chatWindow.renderer.scale * chatWindow.renderer.lineHeight.toDouble())
         }
     }
 
@@ -397,10 +408,10 @@ class ChatTab : MessageFilter {
         if (!ChatManager.isChatFocused() || Minecraft.getInstance().options.hideGui) {
             return -1
         }
-        if (!(0.0 <= pMouseX && pMouseX <= Mth.floor(ChatRenderer.rescaledWidth.toDouble()))) {
+        if (!(0.0 <= pMouseX && pMouseX <= Mth.floor(chatWindow.renderer.rescaledWidth.toDouble()))) {
             return -1
         }
-        val i = min(rescaledLinesPerPage, this.displayedMessages.size)
+        val i = min(chatWindow.renderer.rescaledLinesPerPage, this.displayedMessages.size)
         if (!(0.0 <= pMouseY && pMouseY < i.toDouble())) {
             return -1
         }
@@ -422,7 +433,7 @@ class ChatTab : MessageFilter {
 
     fun setScrollPos(newPosition: Int) {
         var pos = newPosition
-        val maxScroll = displayedMessages.size - ChatManager.getLinesPerPageScaled()
+        val maxScroll = displayedMessages.size - chatWindow.renderer.getLinesPerPageScaled()
         if (pos > maxScroll) {
             pos = maxScroll
         }
@@ -436,8 +447,8 @@ class ChatTab : MessageFilter {
     fun moveToMessage(chatScreen: ChatScreen, message: ChatPlusGuiMessageLine) {
         val linkedMessage = message.linkedMessage
         val moveIndex = when (Config.values.jumpToMessageMode) {
-            JumpToMessageMode.TOP -> rescaledLinesPerPage
-            JumpToMessageMode.MIDDLE -> ChatManager.getLinesPerPageScaled() / 2 + 1
+            JumpToMessageMode.TOP -> this.chatWindow.renderer.rescaledLinesPerPage
+            JumpToMessageMode.MIDDLE -> this.chatWindow.renderer.getLinesPerPageScaled() / 2 + 1
             JumpToMessageMode.BOTTOM -> 1
             JumpToMessageMode.CURSOR -> getMessageLineIndexAt(
                 ChatPlusScreen.lastMouseX.toDouble(),
@@ -448,17 +459,17 @@ class ChatTab : MessageFilter {
         filterChat = true
         refreshDisplayMessages()
         (chatScreen as IMixinScreen).callRebuildWidgets()
-        val displayIndex = ChatManager.selectedTab.displayedMessages.indexOfFirst { line -> line.linkedMessage === linkedMessage }
-        val scrollTo = ChatManager.selectedTab.displayedMessages.size - displayIndex - moveIndex
-        ChatManager.selectedTab.scrollChat(scrollTo)
+        val displayIndex = ChatManager.globalSelectedTab.displayedMessages.indexOfFirst { line -> line.linkedMessage === linkedMessage }
+        val scrollTo = ChatManager.globalSelectedTab.displayedMessages.size - displayIndex - moveIndex
+        ChatManager.globalSelectedTab.scrollChat(scrollTo)
     }
 
     fun rescaleChat() {
         ChatPlus.LOGGER.info("Rescale chat")
-        EventBus.post(ChatTabRescale(this))
+        EventBus.post(ChatTabRescale(chatWindow, this))
         resetChatScroll()
         queueRefreshDisplayedMessages(true)
-        ChatRenderer.updateCachedDimension()
+        this.chatWindow.renderer.updateCachedDimension()
     }
 
     fun queueRefreshDisplayedMessages(reason: Boolean) {
@@ -485,7 +496,7 @@ class ChatTab : MessageFilter {
 
         if (rescaleChat) {
             ChatPlus.LOGGER.info("Rewrapping messages")
-            EventBus.post(ChatTabRewrapDisplayMessages(this))
+            EventBus.post(ChatTabRewrapDisplayMessages(chatWindow, this))
 
             rescaleChat = false
 
@@ -507,7 +518,7 @@ class ChatTab : MessageFilter {
         } else if (filterChat) {
             val filterStart = System.currentTimeMillis()
             filterChat = false
-            val refreshEvent = EventBus.post(ChatTabRefreshDisplayMessages(this, false))
+            val refreshEvent = EventBus.post(ChatTabRefreshDisplayMessages(chatWindow, this, false))
             val filters = refreshEvent.predicates
             if (filters.isEmpty()) {
                 resetFilter()
@@ -575,12 +586,13 @@ class ChatTab : MessageFilter {
         }
     }
 
-    fun getComponentStyleAt(pMouseX: Double, pMouseY: Double): Style? {
+    fun getComponentStyleAt(mouseX: Double, mouseY: Double): Style? {
         val messageAtEvent = EventBus.post(
             ChatTabGetMessageAtEvent(
+                chatWindow,
                 this,
-                screenToChatX(pMouseX),
-                screenToChatY(pMouseY)
+                screenToChatX(mouseX),
+                screenToChatY(mouseY)
             )
         )
         val x = messageAtEvent.chatX

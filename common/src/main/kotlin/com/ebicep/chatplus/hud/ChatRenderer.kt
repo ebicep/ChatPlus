@@ -1,14 +1,24 @@
 package com.ebicep.chatplus.hud
 
+import com.ebicep.chatplus.ChatPlus
 import com.ebicep.chatplus.config.Config.values
 import com.ebicep.chatplus.config.MessageDirection
+import com.ebicep.chatplus.config.queueUpdateConfig
 import com.ebicep.chatplus.events.Event
 import com.ebicep.chatplus.events.EventBus
+import com.ebicep.chatplus.features.chattabs.CHAT_TAB_HEIGHT
 import com.ebicep.chatplus.features.chattabs.ChatTab
-import com.ebicep.chatplus.hud.ChatManager.selectedTab
+import com.ebicep.chatplus.features.chatwindows.ChatWindow
+import com.ebicep.chatplus.hud.ChatManager.getDefaultY
+import com.ebicep.chatplus.hud.ChatManager.getLineHeight
+import com.ebicep.chatplus.hud.ChatManager.getMaxHeightScaled
+import com.ebicep.chatplus.hud.ChatManager.getScale
+import com.ebicep.chatplus.hud.ChatPlusScreen.EDIT_BOX_HEIGHT
 import com.ebicep.chatplus.util.GraphicsUtil.createPose
 import com.ebicep.chatplus.util.GraphicsUtil.guiForward
 import com.mojang.blaze3d.vertex.PoseStack
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import net.minecraft.client.GuiMessage
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphics
@@ -18,6 +28,7 @@ import kotlin.math.roundToInt
 
 abstract class ChatRenderLineEvent(
     open val guiGraphics: GuiGraphics,
+    open val chatWindow: ChatWindow,
     open val chatPlusGuiMessageLine: ChatTab.ChatPlusGuiMessageLine,
     open val verticalChatOffset: Int,
     open val verticalTextOffset: Int,
@@ -25,8 +36,10 @@ abstract class ChatRenderLineEvent(
     val line: GuiMessage.Line
         get() = chatPlusGuiMessageLine.line
 }
+
 class ChatRenderLineTextEvent(
     guiGraphics: GuiGraphics,
+    chatWindow: ChatWindow,
     chatPlusGuiMessageLine: ChatTab.ChatPlusGuiMessageLine,
     val fadeOpacity: Double,
     val textColor: Int,
@@ -34,80 +47,169 @@ class ChatRenderLineTextEvent(
     verticalChatOffset: Int,
     verticalTextOffset: Int,
     val text: String,
-) : ChatRenderLineEvent(guiGraphics, chatPlusGuiMessageLine, verticalChatOffset, verticalTextOffset)
+) : ChatRenderLineEvent(guiGraphics, chatWindow, chatPlusGuiMessageLine, verticalChatOffset, verticalTextOffset)
 
 class ChatRenderPreLineAppearanceEvent(
     guiGraphics: GuiGraphics,
+    chatWindow: ChatWindow,
     chatPlusGuiMessageLine: ChatTab.ChatPlusGuiMessageLine,
     verticalChatOffset: Int,
     verticalTextOffset: Int,
     var textColor: Int,
     var backgroundColor: Int,
-) : ChatRenderLineEvent(guiGraphics, chatPlusGuiMessageLine, verticalChatOffset, verticalTextOffset)
+) : ChatRenderLineEvent(guiGraphics, chatWindow, chatPlusGuiMessageLine, verticalChatOffset, verticalTextOffset)
 
 data class ChatRenderPreLinesEvent(
     val guiGraphics: GuiGraphics,
+    val chatWindow: ChatWindow,
     var chatFocused: Boolean,
     var returnFunction: Boolean = false
 ) : Event
 
 data class ChatRenderPreLinesRenderEvent(
-    val guiGraphics: GuiGraphics
+    val guiGraphics: GuiGraphics,
+    val chatWindow: ChatWindow,
 ) : Event
 
 data class ChatRenderPostLinesEvent(
     val guiGraphics: GuiGraphics,
+    val chatWindow: ChatWindow,
     var displayMessageIndex: Int,
     var returnFunction: Boolean = false
 ) : Event
 
+@Serializable
+class ChatRenderer {
 
-object ChatRenderer {
+    var x: Int = 0
+        set(newX) {
+            if (field == newX) {
+                return
+            }
+            field = newX
+            internalX = newX
+        }
+    var y: Int = -CHAT_TAB_HEIGHT - EDIT_BOX_HEIGHT
+        set(newY) {
+            if (field == newY) {
+                return
+            }
+            field = newY
+            internalY = newY
+        }
+    var width: Int = MIN_WIDTH
+        set(newWidth) {
+            if (field == newWidth) {
+                return
+            }
+            field = newWidth
+            queueUpdateConfig = true
+            internalWidth = newWidth
+            chatWindow.selectedTab.rescaleChat()
+        }
+    var height: Int = MIN_HEIGHT
+        set(newHeight) {
+            if (field == newHeight) {
+                return
+            }
+            field = newHeight
+            queueUpdateConfig = true
+            internalHeight = newHeight
+            updateCachedDimension()
+        }
 
+    @Transient
+    var internalX: Int = 0
+
+    @Transient
+    var internalY: Int = -CHAT_TAB_HEIGHT - EDIT_BOX_HEIGHT
+
+    @Transient
+    var internalWidth: Int = MIN_WIDTH
+
+    @Transient
+    var internalHeight: Int = MIN_HEIGHT
+
+    @Transient
+    lateinit var chatWindow: ChatWindow
+
+    @Transient
     private var previousScreenWidth = -1
+
+    @Transient
     private var previousScreenHeight = -1
 
     // cached values since render is called every tick they only need to be calculated once/on change
+    @Transient
     var textOpacity: Double = 0.0
+
+    @Transient
     var backgroundOpacity: Float = 0f
+
+    @Transient
     var lineSpacing: Float = 0f
+
+    @Transient
     var l1 = 0
+
+    @Transient
     var scale: Float = 0f
-    var x: Int = 0
-    var y: Int = 0
-    var height: Int = 0
-    var width: Int = 0
+
+    @Transient
     var backgroundWidthEndX: Int = 0
+
+    @Transient
     var rescaledX: Int = 0
+
+    @Transient
     var rescaledY: Int = 0
+
+    @Transient
     var rescaledHeight: Int = 0
+
+    @Transient
     var rescaledWidth: Int = 0
+
+    @Transient
     var rescaledEndX: Int = 0
+
+    @Transient
     var rescaledLinesPerPage: Int = 0
+
+    @Transient
     var lineHeight: Int = 0
+
+    init {
+        ChatPlus.LOGGER.info("ChatRenderer init")
+        ChatPlus.LOGGER.info("x: $x, y: $y, width: $width, height: $height")
+        internalX = x
+        internalY = y
+        internalWidth = width
+        internalHeight = height
+    }
 
     fun updateCachedDimension() {
         textOpacity = ChatManager.getTextOpacity() * 0.9 + 0.1
         backgroundOpacity = ChatManager.getBackgroundOpacity()
         lineSpacing = ChatManager.getLineSpacing()
         l1 = (-8.0 * (lineSpacing + 1.0) + 4.0 * lineSpacing).roundToInt()
-        scale = ChatManager.getScale()
-        x = ChatManager.getX()
-        y = ChatManager.getY()
-        height = ChatManager.getHeight()
-        width = ChatManager.getWidth()
-        backgroundWidthEndX = x + width
-        rescaledX = ceil(x / scale).toInt()
-        rescaledY = ceil(y / scale).toInt()
-        rescaledHeight = ceil(height / scale).toInt()
-        rescaledWidth = ceil(width / scale).toInt()
+        scale = getScale()
+        internalX = getUpdatedX()
+        internalY = getUpdatedY()
+        internalHeight = getUpdatedHeight()
+        internalWidth = getUpdatedWidth()
+        backgroundWidthEndX = internalX + internalWidth
+        rescaledX = ceil(internalX / scale).toInt()
+        rescaledY = ceil(internalY / scale).toInt()
+        rescaledHeight = ceil(internalHeight / scale).toInt()
+        rescaledWidth = ceil(internalWidth / scale).toInt()
         rescaledEndX = ceil(backgroundWidthEndX / scale).toInt()
-        rescaledLinesPerPage = ChatManager.getLinesPerPageScaled()
-        lineHeight = ChatManager.getLineHeight()
+        rescaledLinesPerPage = getLinesPerPageScaled()
+        lineHeight = getLineHeight()
     }
 
-    fun render(guiGraphics: GuiGraphics, guiTicks: Int, mouseX: Int, mouseY: Int) {
-        if (y != ChatManager.getY()) {
+    fun render(chatWindow: ChatWindow, guiGraphics: GuiGraphics, guiTicks: Int, mouseX: Int, mouseY: Int) {
+        if (internalY != getUpdatedY()) {
             updateCachedDimension()
         }
         handleScreenResize()
@@ -115,13 +217,13 @@ object ChatRenderer {
         val poseStack: PoseStack = guiGraphics.pose()
         var chatFocused: Boolean = ChatManager.isChatFocused()
 
-        val preLinesEvent = ChatRenderPreLinesEvent(guiGraphics, chatFocused)
+        val preLinesEvent = ChatRenderPreLinesEvent(guiGraphics, chatWindow, chatFocused)
         if (EventBus.post(preLinesEvent).returnFunction) {
             return
         }
         chatFocused = preLinesEvent.chatFocused
 
-        val messagesToDisplay = selectedTab.displayedMessages.size
+        val messagesToDisplay = chatWindow.selectedTab.displayedMessages.size
         poseStack.pushPose()
         poseStack.scale(scale, scale, 1.0f)
         var displayMessageIndex = 0
@@ -129,10 +231,10 @@ object ChatRenderer {
         if (!chatFocused) {
             linesPerPage = (linesPerPage * values.unfocusedHeight).roundToInt()
         }
-        EventBus.post(ChatRenderPreLinesRenderEvent(guiGraphics))
-        while (displayMessageIndex + selectedTab.chatScrollbarPos < messagesToDisplay && displayMessageIndex < linesPerPage) {
-            val messageIndex = messagesToDisplay - displayMessageIndex - selectedTab.chatScrollbarPos
-            val chatPlusGuiMessageLine: ChatTab.ChatPlusGuiMessageLine = selectedTab.displayedMessages[messageIndex - 1]
+        EventBus.post(ChatRenderPreLinesRenderEvent(guiGraphics, chatWindow))
+        while (displayMessageIndex + chatWindow.selectedTab.chatScrollbarPos < messagesToDisplay && displayMessageIndex < linesPerPage) {
+            val messageIndex = messagesToDisplay - displayMessageIndex - chatWindow.selectedTab.chatScrollbarPos
+            val chatPlusGuiMessageLine: ChatTab.ChatPlusGuiMessageLine = chatWindow.selectedTab.displayedMessages[messageIndex - 1]
             val line: GuiMessage.Line = chatPlusGuiMessageLine.line
             val ticksLived: Int = guiTicks - line.addedTime()
             if (ticksLived >= 200 && !chatFocused) {
@@ -154,6 +256,7 @@ object ChatRenderer {
             val verticalTextOffset: Int = verticalChatOffset + l1 // align text with background
             val lineAppearanceEvent = ChatRenderPreLineAppearanceEvent(
                 guiGraphics,
+                chatWindow,
                 chatPlusGuiMessageLine,
                 verticalChatOffset,
                 verticalTextOffset,
@@ -182,6 +285,7 @@ object ChatRenderer {
                 EventBus.post(
                     ChatRenderLineTextEvent(
                         guiGraphics,
+                        chatWindow,
                         chatPlusGuiMessageLine,
                         fadeOpacity,
                         textColor,
@@ -202,7 +306,12 @@ object ChatRenderer {
             }
             ++displayMessageIndex
         }
-        if (EventBus.post(ChatRenderPostLinesEvent(guiGraphics, displayMessageIndex)).returnFunction) {
+        if (ChatManager.selectedWindow == chatWindow) {
+            guiGraphics.renderOutline(internalX, internalY - height, width, height, 0xff000000.toInt())
+        } else {
+            guiGraphics.renderOutline(internalX, internalY - height, width, height, 0x80000000.toInt())
+        }
+        if (EventBus.post(ChatRenderPostLinesEvent(guiGraphics, chatWindow, displayMessageIndex)).returnFunction) {
             return
         }
         poseStack.popPose()
@@ -216,15 +325,17 @@ object ChatRenderer {
         val heightChanged = screenHeight != previousScreenHeight && previousScreenHeight != -1
 
         if (widthChanged) {
-            values.internalX = values.x
-            ChatManager.getX()
+            internalX = x
+            internalWidth = width
+            getUpdatedX()
             if (screenWidth < previousScreenWidth) {
-                values.internalX = (screenWidth * values.internalX / previousScreenWidth.toDouble()).roundToInt()
+                internalX = (screenWidth * internalX / previousScreenWidth.toDouble()).roundToInt()
             }
         }
         if (heightChanged) {
-            values.internalY = values.y
-            ChatManager.getY()
+            internalY = y
+            internalHeight = height
+            getUpdatedY()
         }
         previousScreenWidth = screenWidth
         previousScreenHeight = screenHeight
@@ -240,6 +351,84 @@ object ChatRenderer {
         d0 *= 10.0
         d0 = Mth.clamp(d0, 0.0, 1.0)
         return d0 * d0
+    }
+
+    /**
+     * Width of chat window, raw value not scaled
+     */
+    fun getUpdatedWidth(): Int {
+        var width = internalWidth
+        val guiWidth = Minecraft.getInstance().window.guiScaledWidth
+        val lowerThanMin = width < MIN_WIDTH
+        val x = internalX
+        val hasSpace = guiWidth - x >= MIN_WIDTH
+        if (lowerThanMin && hasSpace) {
+            width = MIN_WIDTH
+            chatWindow.selectedTab.rescaleChat()
+        }
+        if (width <= 0) {
+            width = 200.coerceAtMost(guiWidth - x - 1)
+        }
+        if (x + width >= guiWidth) {
+            width = guiWidth - x
+        }
+        return width
+    }
+
+    fun getBackgroundWidth(): Float {
+        return getUpdatedWidth() / getScale()
+    }
+
+    /**
+     * Height of chat window, raw value not scaled
+     */
+    fun getUpdatedHeight(): Int {
+        var height = internalHeight
+        val lowerThanMin = height < MIN_HEIGHT
+        val hasSpace = internalY - 1 >= MIN_HEIGHT
+        if (lowerThanMin && hasSpace) {
+            height = MIN_HEIGHT
+        }
+        if (internalY - height <= 0) {
+            height = internalY - 1
+        }
+        if (height >= internalY) {
+            height = internalY - 1
+        }
+        return height
+    }
+
+    fun getUpdatedX(): Int {
+        var x = internalX
+        if (x + internalWidth >= Minecraft.getInstance().window.guiScaledWidth) {
+            x = Minecraft.getInstance().window.guiScaledWidth - internalWidth - 1
+            internalX = x
+        }
+        if (x < 0) {
+            x = 0
+            internalX = x
+        }
+        return x
+    }
+
+    fun getUpdatedY(): Int {
+        var y = internalY
+        if (y < 0) {
+            y += Minecraft.getInstance().window.guiScaledHeight
+        }
+        if (y >= Minecraft.getInstance().window.guiScaledHeight - EDIT_BOX_HEIGHT) {
+            y = getMaxHeightScaled()
+            internalY = getDefaultY()
+        }
+        return y
+    }
+
+    fun getLinesPerPage(): Int {
+        return getUpdatedHeight() / getLineHeight()
+    }
+
+    fun getLinesPerPageScaled(): Int {
+        return (getLinesPerPage() / getScale()).roundToInt()
     }
 
 }

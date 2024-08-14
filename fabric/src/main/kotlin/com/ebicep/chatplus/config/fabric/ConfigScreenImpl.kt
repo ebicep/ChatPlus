@@ -6,10 +6,8 @@ import com.ebicep.chatplus.features.AlignMessage
 import com.ebicep.chatplus.features.FilterMessages
 import com.ebicep.chatplus.features.FilterMessages.DEFAULT_COLOR
 import com.ebicep.chatplus.features.HoverHighlight
-import com.ebicep.chatplus.features.chattabs.ChatTab
 import com.ebicep.chatplus.features.internal.MessageFilter
 import com.ebicep.chatplus.features.speechtotext.SpeechToText
-import com.ebicep.chatplus.hud.ChatRenderer
 import com.ebicep.chatplus.translator.LanguageManager
 import com.ebicep.chatplus.translator.RegexMatch
 import com.mojang.blaze3d.platform.InputConstants
@@ -246,46 +244,46 @@ object ConfigScreenImpl {
                 "chatPlus.chatTabs.moveToTabWhenCycling.toggle",
                 Config.values.moveToTabWhenCycling
             ) { Config.values.moveToTabWhenCycling = it })
-        chatTabs.addEntry(
-            getCustomListOption(
-                "chatPlus.chatTabs.title",
-                Config.values.chatTabs,
-                {
-                    Config.values.chatTabs = it
-                    Config.resetSortedChatTabs()
-                },
-                Config.values.chatTabs.size > 0,
-                { ChatTab("", "") },
-                { value ->
-                    listOf(
-                        entryBuilder.stringField("chatPlus.chatTabs.name", value.name) { value.name = it },
-                        entryBuilder.stringField("chatPlus.chatTabs.pattern", value.pattern) { value.pattern = it },
-                        entryBuilder.booleanToggle(
-                            "chatPlus.messageFilter.formatted.toggle",
-                            value.formatted
-                        ) { value.formatted = it },
-                        entryBuilder.stringField("chatPlus.chatTabs.autoPrefix", value.autoPrefix) { value.autoPrefix = it },
-                        entryBuilder.startIntField(
-                            Component.translatable("chatPlus.chatTabs.priority"),
-                            value.priority
-                        )
-                            .setTooltip(Component.translatable("chatPlus.chatTabs.priority.tooltip"))
-                            .setDefaultValue(0)
-                            .setSaveConsumer { value.priority = it }
-                            .build(),
-                        entryBuilder.booleanToggle(
-                            "chatPlus.chatTabs.alwaysAdd",
-                            value.alwaysAdd
-                        ) { value.alwaysAdd = it },
-                        entryBuilder.booleanToggle(
-                            "chatPlus.chatTabs.skipOthers",
-                            value.skipOthers
-                        ) { value.skipOthers = it },
-                    )
-                },
-                { Component.literal(it.name) }
-            )
-        )
+//        chatTabs.addEntry(
+//            getCustomListOption(
+//                "chatPlus.chatTabs.title",
+//                Config.values.chatTabs,
+//                {
+//                    Config.values.chatTabs = it
+//                    Config.resetSortedChatTabs()
+//                },
+//                Config.values.chatTabs.size > 0,
+//                { ChatTab("", "") },
+//                { value ->
+//                    listOf(
+//                        entryBuilder.stringField("chatPlus.chatTabs.name", value.name) { value.name = it },
+//                        entryBuilder.stringField("chatPlus.chatTabs.pattern", value.pattern) { value.pattern = it },
+//                        entryBuilder.booleanToggle(
+//                            "chatPlus.messageFilter.formatted.toggle",
+//                            value.formatted
+//                        ) { value.formatted = it },
+//                        entryBuilder.stringField("chatPlus.chatTabs.autoPrefix", value.autoPrefix) { value.autoPrefix = it },
+//                        entryBuilder.startIntField(
+//                            Component.translatable("chatPlus.chatTabs.priority"),
+//                            value.priority
+//                        )
+//                            .setTooltip(Component.translatable("chatPlus.chatTabs.priority.tooltip"))
+//                            .setDefaultValue(0)
+//                            .setSaveConsumer { value.priority = it }
+//                            .build(),
+//                        entryBuilder.booleanToggle(
+//                            "chatPlus.chatTabs.alwaysAdd",
+//                            value.alwaysAdd
+//                        ) { value.alwaysAdd = it },
+//                        entryBuilder.booleanToggle(
+//                            "chatPlus.chatTabs.skipOthers",
+//                            value.skipOthers
+//                        ) { value.skipOthers = it },
+//                    )
+//                },
+//                { Component.literal(it.name) }
+//            )
+//        )
     }
 
     private fun addMessageFilterOption(builder: ConfigBuilder, entryBuilder: ConfigEntryBuilder) {
@@ -900,9 +898,9 @@ object ConfigScreenImpl {
             .setTextGetter { Component.literal("$it%") }
             .setSaveConsumer {
                 saveConsumer.accept(it / 100f)
-                if (updateDimensions) {
-                    ChatRenderer.updateCachedDimension()
-                }
+//                if (updateDimensions) { TODO
+//                    ChatRenderer.updateCachedDimension()
+//                }
                 queueUpdateConfig = true
             }
             .build()

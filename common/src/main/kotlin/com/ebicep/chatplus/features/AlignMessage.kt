@@ -14,27 +14,27 @@ object AlignMessage {
 
     init {
         EventBus.register<ChatRenderLineTextEvent> {
-            it.guiGraphics.pose().translate0(x = Config.values.messageAlignment.translation(it.text))
+            it.guiGraphics.pose().translate0(x = Config.values.messageAlignment.translation(it.chatWindow.renderer, it.text))
         }
         EventBus.register<ChatTabGetMessageAtEvent> {
             val messageLine = it.chatTab.getMessageAtLineRelative(it.chatX, it.chatY) ?: return@register
-            it.chatX -= Config.values.messageAlignment.translation(messageLine.content)
+            it.chatX -= Config.values.messageAlignment.translation(it.chatTab.chatWindow.renderer, messageLine.content)
         }
     }
 
     @Serializable
-    enum class Alignment(key: String, val translation: (text: String) -> Double) {
+    enum class Alignment(key: String, val translation: (renderer: ChatRenderer, text: String) -> Double) {
         LEFT(
             "chatPlus.chatSettings.messageAlignment.left",
-            { 0.0 }
+            { _, _ -> 0.0 }
         ),
         CENTER(
             "chatPlus.chatSettings.messageAlignment.center",
-            { ChatRenderer.rescaledWidth / 2.0 - Minecraft.getInstance().font.width(it) / 2.0 }
+            { renderer, text -> renderer.rescaledWidth / 2.0 - Minecraft.getInstance().font.width(text) / 2.0 }
         ),
         RIGHT(
             "chatPlus.chatSettings.messageAlignment.right",
-            { (ChatRenderer.rescaledWidth - Minecraft.getInstance().font.width(it)).toDouble() }
+            { renderer, text -> (renderer.rescaledWidth - Minecraft.getInstance().font.width(text)).toDouble() }
         ),
 
         ;

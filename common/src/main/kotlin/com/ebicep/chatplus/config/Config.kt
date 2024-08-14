@@ -12,19 +12,14 @@ import com.ebicep.chatplus.features.AlignMessage
 import com.ebicep.chatplus.features.FilterMessages
 import com.ebicep.chatplus.features.HoverHighlight
 import com.ebicep.chatplus.features.PlayerHeadChatDisplay
-import com.ebicep.chatplus.features.chattabs.CHAT_TAB_HEIGHT
-import com.ebicep.chatplus.features.chattabs.ChatTab
-import com.ebicep.chatplus.features.chattabs.ChatTabs.defaultTab
+import com.ebicep.chatplus.features.chatwindows.ChatWindow
+import com.ebicep.chatplus.features.chatwindows.ChatWindows.DefaultWindow
 import com.ebicep.chatplus.features.internal.MessageFilter
 import com.ebicep.chatplus.features.speechtotext.SpeechToText
-import com.ebicep.chatplus.hud.ChatManager
-import com.ebicep.chatplus.hud.ChatPlusScreen
-import com.ebicep.chatplus.hud.ChatRenderer
 import com.ebicep.chatplus.translator.LanguageManager
 import com.ebicep.chatplus.translator.RegexMatch
 import com.mojang.blaze3d.platform.InputConstants
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.Transient
 import kotlinx.serialization.UseSerializers
 import kotlinx.serialization.json.Json
 import net.minecraft.util.Mth
@@ -43,10 +38,6 @@ var queueUpdateConfig = false
 
 object Config {
     var values = ConfigVariables()
-
-    fun resetSortedChatTabs() {
-        values.sortedChatTabs = values.chatTabs.sortedBy { -it.priority }
-    }
 
     fun save() {
         val configDirectory = File(configDirectoryPath)
@@ -79,12 +70,7 @@ object Config {
     }
 
     private fun loadValues() {
-        values.internalX = values.x
-        values.internalY = values.y
-        values.chatTabs.forEach {
-            it.regex = Regex(it.pattern)
-        }
-        resetSortedChatTabs()
+//        values.chatWindows.forEach { it.init() }
         values.filterMessagesPatterns.forEach {
             it.regex = Regex(it.pattern)
         }
@@ -103,10 +89,9 @@ object Config {
         values.lineSpacing = Mth.clamp(values.lineSpacing, 0f, 1f)
         values.maxMessages = Mth.clamp(values.maxMessages, 1000, 10_000_000)
         values.maxCommandSuggestions = Mth.clamp(values.maxCommandSuggestions, 10, 30)
-        if (values.chatTabs.isEmpty()) {
-            values.chatTabs.add(defaultTab)
+        if (values.chatWindows.isEmpty()) {
+            values.chatWindows.add(DefaultWindow)
         }
-        values.selectedTab = Mth.clamp(values.selectedTab, 0, values.chatTabs.size - 1)
         LanguageManager.findLanguageFromName(values.translateTo).let { if (it == null) values.translateTo = "Auto Detect" }
         LanguageManager.findLanguageFromName(values.translateSelf).let { if (it == null) values.translateSelf = "Auto Detect" }
         LanguageManager.findLanguageFromName(values.translateSpeak).let { if (it == null) values.translateSpeak = "English" }
@@ -145,9 +130,11 @@ data class ConfigVariables(
     // animation
     var animationEnabled: Boolean = true,
     var animationNewMessageTransitionTime: Int = 200,
+    // windows
+    var chatWindows: MutableList<ChatWindow> = mutableListOf(),
     // tabs
-    var chatTabs: MutableList<ChatTab> = mutableListOf(defaultTab),
-    var selectedTab: Int = 0,
+//    var chatTabs: MutableList<ChatTab> = mutableListOf(defaultTab),
+//    var selectedTab: Int = 0,
     var scrollCycleTabEnabled: Boolean = true,
     var arrowCycleTabEnabled: Boolean = true,
     var moveToTabWhenCycling: Boolean = true,
@@ -215,50 +202,6 @@ data class ConfigVariables(
     var speechToTextTranslateToInputBox: Boolean = true,
     var speechToTextTranslateLang: String = "English",
 ) {
-    // internal
-    @Transient
-    var sortedChatTabs: List<ChatTab> = listOf()
-    var internalX: Int = 0
-    var internalY: Int = -CHAT_TAB_HEIGHT - ChatPlusScreen.EDIT_BOX_HEIGHT
-
-    var width: Int = 180
-        set(newWidth) {
-            if (field == newWidth) {
-                return
-            }
-            field = newWidth
-            queueUpdateConfig = true
-            ChatManager.selectedTab.rescaleChat()
-        }
-
-    // variables here for custom setters
-
-    var x: Int = 0
-        set(newX) {
-            if (field == newX) {
-                return
-            }
-            field = newX
-            internalX = newX
-        }
-    var y: Int = -CHAT_TAB_HEIGHT - ChatPlusScreen.EDIT_BOX_HEIGHT
-        set(newY) {
-            if (field == newY) {
-                return
-            }
-            field = newY
-            internalY = newY
-        }
-
-    var height: Int = 320
-        set(newHeight) {
-            if (field == newHeight) {
-                return
-            }
-            field = newHeight
-            queueUpdateConfig = true
-            ChatRenderer.updateCachedDimension()
-        }
 
     // general
     var messageAlignment: AlignMessage.Alignment = AlignMessage.Alignment.LEFT
@@ -278,7 +221,7 @@ data class ConfigVariables(
                 return
             }
             field = newY
-            ChatRenderer.updateCachedDimension()
+//            ChatRenderer.updateCachedDimension()
             queueUpdateConfig = true
         }
 

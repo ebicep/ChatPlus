@@ -5,7 +5,6 @@ import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.client.gui.screens.ChatScreen
 import org.apache.commons.lang3.StringUtils
 
-
 data class ChatScreenKeyPressedEvent(
     val screen: ChatScreen,
     val keyCode: Int,

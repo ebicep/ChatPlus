@@ -1,6 +1,5 @@
 package com.ebicep.chatplus.features.chattabs
 
-import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.config.queueUpdateConfig
 import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.hud.ChatManager
@@ -21,24 +20,25 @@ object ChatTabsMover {
             if (!movingTab) {
                 return@register
             }
-            val selectedTab = ChatManager.selectedTab
-            val movingTabIndex: Int = Config.values.chatTabs.indexOf(selectedTab)
+            val chatWindow = ChatManager.selectedWindow
+            val selectedTab = ChatManager.globalSelectedTab
+            val movingTabIndex: Int = chatWindow.tabs.indexOf(selectedTab)
             if (movingTabIndex == -1) {
                 return@register
             }
             movingTabXOffset = it.mouseX - movingTabMouseStart
-            for (otherTab in Config.values.chatTabs) {
+            for (otherTab in chatWindow.tabs) {
                 if (otherTab === selectedTab) {
                     continue
                 }
-                val tabIndex = Config.values.chatTabs.indexOf(otherTab)
+                val tabIndex = chatWindow.tabs.indexOf(otherTab)
                 val movingLeft = tabIndex < movingTabIndex
                 val otherTabMiddleX = otherTab.xStart + otherTab.width / 2.0
                 val leftSwap = movingLeft && selectedTab.xStart < otherTabMiddleX
                 val rightSwap = !movingLeft && selectedTab.xEnd > otherTabMiddleX
                 if (leftSwap || rightSwap) {
-                    Config.values.chatTabs.add(tabIndex, Config.values.chatTabs.removeAt(movingTabIndex))
-                    Config.values.selectedTab = tabIndex
+                    chatWindow.tabs.add(tabIndex, chatWindow.tabs.removeAt(movingTabIndex))
+                    chatWindow.selectedTabIndex = tabIndex
                     queueUpdateConfig = true
                     break
                 }
@@ -57,7 +57,7 @@ object ChatTabsMover {
         }
         EventBus.register<ChatTabRenderEvent> {
             val poseStack = it.poseStack
-            val moving = movingTab && it.chatTab === ChatManager.selectedTab
+            val moving = movingTab && it.chatTab === ChatManager.globalSelectedTab
             if (moving && abs(movingTabXOffset) > 4) {
                 it.xStart = movingTabXStart + movingTabXOffset
                 poseStack.guiForward()

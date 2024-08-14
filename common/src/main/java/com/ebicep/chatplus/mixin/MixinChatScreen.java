@@ -303,7 +303,7 @@ public abstract class MixinChatScreen extends Screen implements IMixinChatScreen
         if (!Config.INSTANCE.getValues().getEnabled()) {
             return;
         }
-        cir.setReturnValue(ChatManager.INSTANCE.getSelectedTab().getComponentStyleAt(mouseX, mouseY));
+        cir.setReturnValue(ChatManager.INSTANCE.getGlobalSelectedTab().getComponentStyleAt(mouseX, mouseY));
         cir.cancel();
     }
 

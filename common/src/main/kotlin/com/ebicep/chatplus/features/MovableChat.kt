@@ -35,26 +35,28 @@ object MovableChat {
             if (it.button != 0 || !Config.values.keyMoveChat.isDown()) {
                 return@register
             }
-            val side = ChatManager.getX() + ChatManager.getWidth()
-            val sideInner = ChatManager.getX() + ChatManager.getWidth() - RENDER_MOVING_SIZE
-            val roof = ChatManager.getY() - ChatManager.getHeight()
-            val roofInner = ChatManager.getY() - ChatManager.getHeight() + RENDER_MOVING_SIZE
+            val chatWindow = ChatManager.selectedWindow
+            val renderer = chatWindow.renderer
+            val side = renderer.getUpdatedX() + renderer.getUpdatedWidth()
+            val sideInner = renderer.getUpdatedX() + renderer.getUpdatedWidth() - RENDER_MOVING_SIZE
+            val roof = renderer.getUpdatedY() - renderer.getUpdatedHeight()
+            val roofInner = renderer.getUpdatedY() - renderer.getUpdatedHeight() + RENDER_MOVING_SIZE
             val mouseX = it.mouseX
             val mouseY = it.mouseY
-            if (mouseX > sideInner && mouseX < side && mouseY > roof && mouseY < ChatManager.getY()) {
+            if (mouseX > sideInner && mouseX < side && mouseY > roof && mouseY < renderer.getUpdatedY()) {
                 movingChatX = true
             }
-            if (mouseY < roofInner && mouseY > roof && mouseX > ChatManager.getX() && mouseX < side) {
+            if (mouseY < roofInner && mouseY > roof && mouseX > renderer.getUpdatedX() && mouseX < side) {
                 movingChatY = true
             }
             if (!movingChatX && !movingChatY) {
                 if (
-                    mouseX > ChatManager.getX() && mouseX < sideInner &&
-                    mouseY > roofInner && mouseY < ChatManager.getY()
+                    mouseX > renderer.getUpdatedX() && mouseX < sideInner &&
+                    mouseY > roofInner && mouseY < renderer.getUpdatedY()
                 ) {
                     movingChatBox = true
-                    xDisplacement = mouseX - ChatManager.getX()
-                    yDisplacement = mouseY - ChatManager.getY()
+                    xDisplacement = mouseX - renderer.getUpdatedX()
+                    yDisplacement = mouseY - renderer.getUpdatedY()
                 }
             }
         }
@@ -70,43 +72,45 @@ object MovableChat {
                 movingChat = false
                 return@register
             }
+            val chatWindow = ChatManager.selectedWindow
+            val renderer = chatWindow.renderer
             val mouseX = it.mouseX
             val mouseY = it.mouseY
             if (movingChatX) {
                 val newWidth: Double = Mth.clamp(
-                    mouseX - ChatManager.getX(),
+                    mouseX - renderer.getUpdatedX(),
                     MIN_WIDTH.toDouble(),
-                    Minecraft.getInstance().window.guiScaledWidth - ChatManager.getX().toDouble()
+                    Minecraft.getInstance().window.guiScaledWidth - renderer.getUpdatedX().toDouble()
                 )
                 val width = newWidth.roundToInt()
-                Config.values.width = width
+                renderer.width = width
             }
             if (movingChatY) {
                 val newHeight: Double = Mth.clamp(
-                    ChatManager.getY() - mouseY,
+                    renderer.getUpdatedY() - mouseY,
                     MIN_HEIGHT.toDouble(),
-                    ChatManager.getY() - 1.0
+                    renderer.getUpdatedY() - 1.0
                 )
                 val height = newHeight.roundToInt()
-                Config.values.height = height
+                renderer.height = height
             }
             if (movingChatBox) {
-                Config.values.x = Mth.clamp(
+                renderer.x = Mth.clamp(
                     (mouseX - xDisplacement).roundToInt(),
                     0,
-                    Minecraft.getInstance().window.guiScaledWidth - ChatManager.getWidth() - 1
+                    Minecraft.getInstance().window.guiScaledWidth - renderer.getUpdatedWidth() - 1
                 )
                 val maxHeightScaled = ChatManager.getMaxHeightScaled()
                 var newY = Mth.clamp(
                     (mouseY - yDisplacement).roundToInt(),
-                    ChatManager.getHeight() + 1,
+                    renderer.getUpdatedHeight() + 1,
                     maxHeightScaled
                 )
                 if (newY == maxHeightScaled) {
                     newY = ChatManager.getDefaultY()
                 }
-                Config.values.y = newY
-                ChatRenderer.updateCachedDimension()
+                renderer.y = newY
+                renderer.updateCachedDimension()
             }
         }
 
@@ -114,28 +118,30 @@ object MovableChat {
         EventBus.register<ChatRenderPreLinesEvent> {
             // for when there are no messages
             moving = ChatManager.isChatFocused() && Config.values.keyMoveChat.isDown()
-            val messagesToDisplay = ChatManager.selectedTab.displayedMessages.size
+            val messagesToDisplay = it.chatWindow.selectedTab.displayedMessages.size
             if (messagesToDisplay > 0) {
                 return@register
             }
+            val chatWindow = ChatManager.selectedWindow
+            val renderer = chatWindow.renderer
             // render full chat box
             val guiGraphics = it.guiGraphics
             if (moving) {
                 guiGraphics.fill(
-                    ChatRenderer.x,
-                    ChatRenderer.y - ChatRenderer.height,
-                    ChatRenderer.backgroundWidthEndX,
-                    ChatRenderer.y,
-                    (255 * ChatRenderer.backgroundOpacity).toInt() shl 24
+                    renderer.x,
+                    renderer.y - renderer.height,
+                    renderer.backgroundWidthEndX,
+                    renderer.y,
+                    (255 * renderer.backgroundOpacity).toInt() shl 24
                 )
             }
             renderMoving(
                 guiGraphics.pose(),
                 guiGraphics,
-                ChatRenderer.x,
-                ChatRenderer.y,
-                ChatRenderer.height,
-                ChatRenderer.width
+                renderer.x,
+                renderer.y,
+                renderer.height,
+                renderer.width
             )
             it.returnFunction = true
         }
@@ -143,25 +149,27 @@ object MovableChat {
             if (!moving) {
                 return@register
             }
+            val chatWindow = ChatManager.selectedWindow
+            val renderer = chatWindow.renderer
             val guiGraphics = it.guiGraphics
             guiGraphics.fill(
-                ChatRenderer.rescaledX,
-                ChatRenderer.rescaledY - ChatRenderer.rescaledHeight,
-                ChatRenderer.rescaledEndX,
-                ChatRenderer.rescaledY - it.displayMessageIndex * ChatRenderer.lineHeight,
-                (255 * ChatRenderer.backgroundOpacity).toInt() shl 24
+                renderer.rescaledX,
+                renderer.rescaledY - renderer.rescaledHeight,
+                renderer.rescaledEndX,
+                renderer.rescaledY - it.displayMessageIndex * renderer.lineHeight,
+                (255 * renderer.backgroundOpacity).toInt() shl 24
             )
             val poseStack = guiGraphics.pose()
             poseStack.createPose {
-                val unscaled = 1 / ChatRenderer.scale
+                val unscaled = 1 / renderer.scale
                 poseStack.scale(unscaled, unscaled, 1f)
                 renderMoving(
                     poseStack,
                     guiGraphics,
-                    ChatRenderer.x,
-                    ChatRenderer.y,
-                    ChatRenderer.height,
-                    ChatRenderer.width
+                    renderer.internalX,
+                    renderer.internalY,
+                    renderer.internalHeight,
+                    renderer.internalWidth
                 )
             }
         }

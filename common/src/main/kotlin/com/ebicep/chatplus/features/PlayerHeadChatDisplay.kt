@@ -99,7 +99,7 @@ object PlayerHeadChatDisplay {
                 PlayerFaceRenderer.draw(
                     guiGraphics,
                     resourceLocation,
-                    ChatRenderer.rescaledX,
+                    it.chatWindow.renderer.rescaledX,
                     it.verticalTextOffset,
                     PlayerFaceRenderer.SKIN_HEAD_WIDTH
                 )

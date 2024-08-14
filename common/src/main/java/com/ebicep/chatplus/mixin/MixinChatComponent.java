@@ -4,7 +4,8 @@ import com.ebicep.chatplus.ChatPlus;
 import com.ebicep.chatplus.config.Config;
 import com.ebicep.chatplus.features.chattabs.ChatTab;
 import com.ebicep.chatplus.features.chattabs.ChatTabs;
-import com.ebicep.chatplus.hud.ChatRenderer;
+import com.ebicep.chatplus.features.chatwindows.ChatWindow;
+import com.ebicep.chatplus.features.chatwindows.ChatWindows;
 import net.minecraft.client.GuiMessageTag;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.ChatComponent;
@@ -23,7 +24,7 @@ public class MixinChatComponent {
         if (!ChatPlus.INSTANCE.isEnabled()) {
             return;
         }
-        ChatRenderer.INSTANCE.render(guiGraphics, i, j, k);
+        ChatWindows.INSTANCE.renderAll(guiGraphics, i, j, k);
         ci.cancel();
     }
 
@@ -32,9 +33,13 @@ public class MixinChatComponent {
         if (!ChatPlus.INSTANCE.isEnabled()) {
             return;
         }
-        if (Config.INSTANCE.getValues().getChatTabsEnabled()) {
+        if (!Config.INSTANCE.getValues().getChatTabsEnabled()) {
+            ChatTabs.INSTANCE.getDefaultTab().addNewMessage(component, messageSignature, i, guiMessageTag);
+            return;
+        }
+        for (ChatWindow window : Config.INSTANCE.getValues().getChatWindows()) {
             Integer lastPriority = null;
-            for (ChatTab chatTab : Config.INSTANCE.getValues().getSortedChatTabs()) {
+            for (ChatTab chatTab : window.getSortedTabs()) {
                 int priority = chatTab.getPriority();
                 boolean alwaysAdd = chatTab.getAlwaysAdd();
                 if (lastPriority != null && lastPriority > priority && !alwaysAdd) {
@@ -50,8 +55,6 @@ public class MixinChatComponent {
                     }
                 }
             }
-        } else {
-            ChatTabs.INSTANCE.getDefaultTab().addNewMessage(component, messageSignature, i, guiMessageTag);
         }
     }
 

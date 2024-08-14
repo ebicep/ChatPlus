@@ -6,11 +6,11 @@ import com.ebicep.chatplus.events.Event
 import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.events.Events
 import com.ebicep.chatplus.features.chattabs.ChatTab
-import com.ebicep.chatplus.features.chattabs.ChatTabs.defaultTab
+import com.ebicep.chatplus.features.chattabs.ChatTabs.DefaultTab
+import com.ebicep.chatplus.features.chatwindows.ChatWindow
 import com.ebicep.chatplus.hud.ChatPlusScreen.EDIT_BOX_HEIGHT
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.screens.ChatScreen
-import kotlin.math.roundToInt
 
 const val MIN_HEIGHT = 80
 const val MIN_WIDTH = 160
@@ -29,19 +29,20 @@ data class GetMaxHeightEvent(
 
 object ChatManager {
 
-
     val sentMessages: MutableList<String> = ArrayList()
-    val selectedTab: ChatTab
+    val selectedWindow: ChatWindow
+        get() = Config.values.chatWindows.last()
+    val globalSelectedTab: ChatTab
         get() {
             if (!Config.values.chatTabsEnabled) {
-                return defaultTab
+                return DefaultTab
             }
-            if (Config.values.chatTabs.isEmpty()) {
-                Config.values.chatTabs.add(defaultTab)
-                Config.values.selectedTab = 0
+            if (selectedWindow.tabs.isEmpty()) {
+                selectedWindow.tabs.add(DefaultTab)
+                selectedWindow.selectedTabIndex = 0
                 queueUpdateConfig = true
             }
-            return Config.values.chatTabs[Config.values.selectedTab]
+            return selectedWindow.selectedTab
         }
 
     init {
@@ -104,86 +105,6 @@ object ChatManager {
             return .001f
         }
         return scale
-    }
-
-    /**
-     * Width of chat window, raw value not scaled
-     */
-    fun getWidth(): Int {
-        var width = Config.values.width
-        val guiWidth = Minecraft.getInstance().window.guiScaledWidth
-        val lowerThanMin = width < MIN_WIDTH
-        val x = ChatRenderer.x
-        val hasSpace = guiWidth - x >= MIN_WIDTH
-        if (lowerThanMin && hasSpace) {
-            width = MIN_WIDTH
-            selectedTab.rescaleChat()
-        }
-        if (width <= 0) {
-            width = 200.coerceAtMost(guiWidth - x - 1)
-        }
-        if (x + width >= guiWidth) {
-            width = guiWidth - x
-        }
-        return width
-    }
-
-    fun getBackgroundWidth(): Float {
-        return getWidth() / getScale()
-    }
-
-
-    /**
-     * Height of chat window, raw value not scaled
-     */
-    fun getHeight(): Int {
-        var height = Config.values.height
-        val lowerThanMin = Config.values.height < MIN_HEIGHT
-        val y = ChatRenderer.y
-        val hasSpace = y - 1 >= MIN_HEIGHT
-        if (lowerThanMin && hasSpace) {
-            height = MIN_HEIGHT
-        }
-        if (y - Config.values.height <= 0) {
-            height = y - 1
-        }
-        if (height >= y) {
-            height = y - 1
-        }
-        return height
-    }
-
-    fun getX(): Int {
-        var x = Config.values.internalX
-        if (x + Config.values.width >= Minecraft.getInstance().window.guiScaledWidth) {
-            x = Minecraft.getInstance().window.guiScaledWidth - Config.values.width - 1
-            Config.values.internalX = x
-        }
-        if (x < 0) {
-            x = 0
-            Config.values.internalX = x
-        }
-        return x
-    }
-
-    fun getY(): Int {
-        var y = Config.values.internalY
-        if (y < 0) {
-            y += Minecraft.getInstance().window.guiScaledHeight
-        }
-        if (y >= Minecraft.getInstance().window.guiScaledHeight - EDIT_BOX_HEIGHT) {
-            y = getMaxHeightScaled()
-            Config.values.internalY = getDefaultY()
-        }
-        return y
-    }
-
-    fun getLinesPerPage(): Int {
-        return getHeight() / getLineHeight()
-    }
-
-    fun getLinesPerPageScaled(): Int {
-        return (getLinesPerPage() / getScale()).roundToInt()
     }
 
     fun getLineHeight(): Int {

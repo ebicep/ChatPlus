@@ -1,6 +1,7 @@
 package com.ebicep.chatplus.features
 
 import com.ebicep.chatplus.features.chattabs.ChatTabs
+import com.ebicep.chatplus.features.chatwindows.ChatWindows
 import com.ebicep.chatplus.features.speechtotext.SpeechToText
 import com.ebicep.chatplus.features.textbarelements.TextBarElements
 
@@ -25,6 +26,7 @@ object FeatureManager {
         ScrollBar
         BookmarkMessages
         Animations
+        ChatWindows
 //        AlternatingColorBackground
     }
 

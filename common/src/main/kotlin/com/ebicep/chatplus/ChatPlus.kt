@@ -27,7 +27,7 @@ object ChatPlus {
 
     fun doTest() {
         for (i in 1..500_000) {
-            ChatManager.selectedTab.addNewMessage(Component.literal("Test $i"), null, 0, null)
+            ChatManager.globalSelectedTab.addNewMessage(Component.literal("Test $i"), null, 0, null)
         }
     }
 

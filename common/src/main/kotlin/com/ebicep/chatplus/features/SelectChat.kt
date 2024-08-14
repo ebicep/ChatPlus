@@ -18,7 +18,7 @@ object SelectChat {
     fun getSelectedMessagesOrdered(): List<ChatTab.ChatPlusGuiMessageLine> {
         return selectedMessages.sortedWith(
             compareBy<ChatTab.ChatPlusGuiMessageLine> {
-                ChatManager.selectedTab.messages.indexOf(it.linkedMessage)
+                ChatManager.globalSelectedTab.messages.indexOf(it.linkedMessage)
             }.thenBy {
                 it.wrappedIndex
             }
@@ -36,9 +36,9 @@ object SelectChat {
                 selectedMessages.clear()
                 return@register
             }
-            ChatManager.selectedTab.getHoveredOverMessageLine()?.let { message ->
+            ChatManager.globalSelectedTab.getHoveredOverMessageLine()?.let { message ->
                 if (Screen.hasShiftDown() && lastSelected != null) {
-                    val displayedMessages = ChatManager.selectedTab.displayedMessages
+                    val displayedMessages = ChatManager.globalSelectedTab.displayedMessages
                     val lastSelectedIndex = displayedMessages.indexOf(lastSelected)
                     val messageIndex = displayedMessages.indexOf(message)
                     for (i in minOf(lastSelectedIndex, messageIndex)..maxOf(lastSelectedIndex, messageIndex)) {
@@ -64,7 +64,7 @@ object SelectChat {
             if (!rightClicking) {
                 return@register
             }
-            ChatManager.selectedTab.getHoveredOverMessageLine()?.let { message ->
+            ChatManager.globalSelectedTab.getHoveredOverMessageLine()?.let { message ->
                 if (!selectedMessages.contains(message)) {
                     selectedMessages += message
                 }

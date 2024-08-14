@@ -28,7 +28,7 @@ object ChatPlusScreenAdapter {
 
     fun handleRemoved(chatScreen: ChatScreen) {
         EventBus.post(ChatScreenCloseEvent(chatScreen))
-        ChatManager.selectedTab.resetChatScroll()
+        ChatManager.globalSelectedTab.resetChatScroll()
 //        ChatManager.selectedTab.refreshDisplayedMessage()
     }
 
@@ -41,10 +41,11 @@ object ChatPlusScreenAdapter {
     }
 
     fun handlePageUpDown(up: Boolean) {
+        val globalSelectedTab = ChatManager.globalSelectedTab
         if (up) {
-            ChatManager.selectedTab.scrollChat(ChatManager.getLinesPerPage() - 1)
+            globalSelectedTab.scrollChat(globalSelectedTab.chatWindow.renderer.getLinesPerPage() - 1)
         } else {
-            ChatManager.selectedTab.scrollChat(-ChatManager.getLinesPerPage() + 1)
+            globalSelectedTab.scrollChat(-globalSelectedTab.chatWindow.renderer.getLinesPerPage() + 1)
         }
     }
 
@@ -66,7 +67,7 @@ object ChatPlusScreenAdapter {
         } else if (!InputConstants.isKeyDown(window, Config.values.keyFineScroll.value)) {
             delta *= 7.0
         }
-        ChatManager.selectedTab.scrollChat(delta.toInt())
+        ChatManager.globalSelectedTab.scrollChat(delta.toInt())
         return false
     }
 

@@ -24,7 +24,7 @@ object CopyMessage {
                 return@register
             }
             val copied: MutableList<ChatTab.ChatPlusGuiMessageLine> = mutableListOf()
-            val hoveredOverMessage = ChatManager.selectedTab.getHoveredOverMessageLine()
+            val hoveredOverMessage = ChatManager.globalSelectedTab.getHoveredOverMessageLine()
             if (hoveredOverMessage != null && SelectChat.selectedMessages.isEmpty()) {
                 copied.add(hoveredOverMessage)
                 copyToClipboard(hoveredOverMessage)

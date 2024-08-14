@@ -5,7 +5,6 @@ import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.features.chattabs.ChatTab
 import com.ebicep.chatplus.features.chattabs.ChatTabAddDisplayMessageEvent
 import com.ebicep.chatplus.features.chattabs.ChatTabAddNewMessageEvent
-import com.ebicep.chatplus.hud.ChatManager
 import net.minecraft.ChatFormatting
 import net.minecraft.network.chat.*
 import net.minecraft.util.Mth
@@ -69,12 +68,13 @@ object CompactMessages {
                 val addedTime = if (Config.values.compactMessagesRefreshAddedTime) it.addedTime else oldDisplayMessage.line.addedTime
                 val displayMessageEvent = EventBus.post(
                     ChatTabAddDisplayMessageEvent(
+                        it.chatWindow,
                         chatTab,
                         it.componentWithTimeStamp,
                         addedTime,
                         oldDisplayMessage.line.tag,
                         message,
-                        Mth.floor(ChatManager.getBackgroundWidth())
+                        Mth.floor(it.chatWindow.renderer.getBackgroundWidth())
                     )
                 )
                 chatTab.addWrappedComponents(

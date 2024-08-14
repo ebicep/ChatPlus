@@ -25,7 +25,7 @@ object ClientCommandRegistration {
         ClientCommandManager.literal(commandName)
             .then(ClientCommandManager.literal("clear")
                 .executes {
-                    ChatManager.selectedTab.clear()
+                    ChatManager.globalSelectedTab.clear()
                     Command.SINGLE_SUCCESS
                 }
             )

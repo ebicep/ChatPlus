@@ -12,7 +12,7 @@ object AlternatingColorBackground {
         // LOOKS LIKE SHIT!!!
         EventBus.register<ChatRenderPreLineAppearanceEvent> {
             val line = it.chatPlusGuiMessageLine
-            it.backgroundColor = if (ChatManager.selectedTab.displayedMessages.indexOf(line) % 2 == 0) 1681011250 else 1261580850
+            it.backgroundColor = if (ChatManager.globalSelectedTab.displayedMessages.indexOf(line) % 2 == 0) 1681011250 else 1261580850
         }
     }
 
