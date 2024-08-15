@@ -967,7 +967,7 @@ object ConfigScreenImpl {
             false,
             { value, entry ->
                 val v = value ?: create()
-                MultiElementListEntry(entryNameFunction.invoke(value), v, render(v), true)
+                MultiElementListEntry(entryNameFunction.invoke(v), v, render(v), true)
             }
         )
     }
