@@ -40,6 +40,7 @@ object ConfigScreenImpl {
         builder.setGlobalizedExpanded(true)
         val entryBuilder: ConfigEntryBuilder = builder.entryBuilder()
         addGeneralOptions(builder, entryBuilder)
+        addHideChatOptions(builder, entryBuilder)
         addCompactMessagesOptions(builder, entryBuilder)
         addScrollbarOption(builder, entryBuilder)
         addAnimationOption(builder, entryBuilder)
@@ -158,6 +159,26 @@ object ConfigScreenImpl {
         general.addEntry(
             entryBuilder.linePriorityField("chatPlus.linePriority.selectChat", Config.values.selectChatLinePriority)
             { Config.values.selectChatLinePriority = it }
+        )
+    }
+
+    private fun addHideChatOptions(builder: ConfigBuilder, entryBuilder: ConfigEntryBuilder) {
+        val hideChat = builder.getOrCreateCategory(Component.translatable("chatPlus.hideChat.title"))
+        hideChat.addEntry(
+            entryBuilder.booleanToggle(
+                "chatPlus.hideChat.toggle",
+                Config.values.hideChatEnabled
+            ) { Config.values.hideChatEnabled = it })
+        hideChat.addEntry(
+            entryBuilder.booleanToggle(
+                "chatPlus.hideChat.showWhenFocused.toggle",
+                Config.values.hideChatShowWhenFocused
+            ) { Config.values.hideChatShowWhenFocused = it })
+        hideChat.addEntry(
+            entryBuilder.keyCodeOptionWithModifier(
+                "chatPlus.hideChat.key",
+                Config.values.hideChatToggleKey
+            )
         )
     }
 

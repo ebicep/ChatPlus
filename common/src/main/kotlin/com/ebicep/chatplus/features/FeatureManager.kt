@@ -25,6 +25,7 @@ object FeatureManager {
         ScrollBar
         BookmarkMessages
         Animations
+        HideChat
 //        AlternatingColorBackground
     }
 

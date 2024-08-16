@@ -21,7 +21,6 @@ import dev.architectury.event.events.client.ClientSystemMessageEvent
 import net.minecraft.ChatFormatting
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.components.EditBox
-import net.minecraft.client.gui.screens.ChatScreen
 import net.minecraft.client.gui.screens.Screen
 import net.minecraft.network.chat.ChatType
 import net.minecraft.network.chat.Component
@@ -157,7 +156,7 @@ object TranslateMessage {
             CompoundEventResult.pass()
         }
         ClientRawInputEvent.KEY_PRESSED.register { _, keyCode, _, _, modifiers ->
-            if (Minecraft.getInstance().screen is ChatScreen) {
+            if (ChatManager.isChatFocused()) {
                 return@register EventResult.pass()
             }
             if (keyCode != Config.values.translateKey.key.value || modifiers != Config.values.translateKey.modifier.toInt()) {
