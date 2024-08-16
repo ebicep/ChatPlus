@@ -34,6 +34,7 @@ class ChatRenderLineTextEvent(
     verticalChatOffset: Int,
     verticalTextOffset: Int,
     val text: String,
+    val index: Int,
 ) : ChatRenderLineEvent(guiGraphics, chatPlusGuiMessageLine, verticalChatOffset, verticalTextOffset)
 
 class ChatRenderPreLineAppearanceEvent(
@@ -188,7 +189,8 @@ object ChatRenderer {
                         backgroundColor,
                         verticalChatOffset,
                         verticalTextOffset,
-                        chatPlusGuiMessageLine.content
+                        chatPlusGuiMessageLine.content,
+                        messageIndex
                     )
                 )
                 // text

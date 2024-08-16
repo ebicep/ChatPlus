@@ -175,6 +175,11 @@ object ConfigScreenImpl {
                 Config.values.hideChatShowWhenFocused
             ) { Config.values.hideChatShowWhenFocused = it })
         hideChat.addEntry(
+            entryBuilder.booleanToggle(
+                "chatPlus.hideChat.showHiddenOnScreen.toggle",
+                Config.values.hideChatShowHiddenOnScreen
+            ) { Config.values.hideChatShowHiddenOnScreen = it })
+        hideChat.addEntry(
             entryBuilder.keyCodeOptionWithModifier(
                 "chatPlus.hideChat.key",
                 Config.values.hideChatToggleKey

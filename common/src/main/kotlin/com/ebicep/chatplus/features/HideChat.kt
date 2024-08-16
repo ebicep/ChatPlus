@@ -1,11 +1,14 @@
 package com.ebicep.chatplus.features
 
+import com.ebicep.chatplus.MOD_COLOR
 import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.hud.ChatManager
 import com.ebicep.chatplus.hud.ChatRenderPreLinesEvent
 import dev.architectury.event.EventResult
+import dev.architectury.event.events.client.ClientGuiEvent
 import dev.architectury.event.events.client.ClientRawInputEvent
+import net.minecraft.client.Minecraft
 
 object HideChat {
 
@@ -40,6 +43,19 @@ object HideChat {
             onCooldown = true
             Config.values.hideChatEnabled = !Config.values.hideChatEnabled
             EventResult.interruptTrue()
+        }
+        // show on screen
+        ClientGuiEvent.RENDER_HUD.register { guiGraphics, tickDelta ->
+            if (!Config.values.hideChatEnabled || !Config.values.hideChatShowHiddenOnScreen) {
+                return@register
+            }
+            guiGraphics.drawCenteredString(
+                Minecraft.getInstance().font,
+                "Chat Hidden",
+                Minecraft.getInstance().window.guiScaledWidth / 2,
+                40,
+                MOD_COLOR
+            )
         }
     }
 

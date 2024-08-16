@@ -26,6 +26,7 @@ object FeatureManager {
         BookmarkMessages
         Animations
         HideChat
+        Debug
 //        AlternatingColorBackground
     }
 
