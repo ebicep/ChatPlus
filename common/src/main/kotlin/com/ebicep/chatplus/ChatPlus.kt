@@ -12,6 +12,7 @@ import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 
 const val MOD_ID = "chatplus"
+const val MOD_COLOR = 0xFF12e3DB.toInt()
 
 object ChatPlus {
 
@@ -39,7 +40,7 @@ object ChatPlus {
         // rgb(18, 227, 219)
         Minecraft.getInstance().player?.sendSystemMessage(
             Component.literal("ChatPlus").withStyle {
-                it.withColor(0xFF12e3DB.toInt())
+                it.withColor(MOD_COLOR)
             }.append(Component.literal(" > ").withStyle {
                 it.withColor(ChatFormatting.DARK_GRAY)
             }).append(component)

@@ -117,6 +117,11 @@ data class ConfigVariables(
     var jumpToMessageMode: JumpToMessageMode = JumpToMessageMode.CURSOR,
     var messageDirection: MessageDirection = MessageDirection.BOTTOM_UP,
     var selectChatLinePriority: Int = 100,
+    // hide chat
+    var hideChatEnabled: Boolean = false,
+    var hideChatShowWhenFocused: Boolean = true,
+    var hideChatShowHiddenOnScreen: Boolean = true,
+    var hideChatToggleKey: KeyWithModifier = KeyWithModifier(InputConstants.getKey("key.keyboard.unknown"), 0),
     // compact messages
     var compactMessagesEnabled: Boolean = true,
     var compactMessagesRefreshAddedTime: Boolean = false,

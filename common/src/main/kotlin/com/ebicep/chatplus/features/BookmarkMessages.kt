@@ -9,7 +9,6 @@ import com.ebicep.chatplus.features.textbarelements.TextBarElements
 import com.ebicep.chatplus.hud.*
 import com.ebicep.chatplus.mixin.IMixinChatScreen
 import com.ebicep.chatplus.mixin.IMixinScreen
-import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.screens.ChatScreen
 import java.util.*
 
@@ -81,8 +80,7 @@ object BookmarkMessages {
             }
         }
         EventBus.register<ChatTabAddDisplayMessageEvent> {
-            val screen = Minecraft.getInstance().screen
-            if (showingBoomarks && screen is ChatScreen) {
+            if (showingBoomarks && ChatManager.isChatFocused()) {
                 it.filtered = true
                 it.addMessage = bookmarkedMessages.contains(it.linkedMessage)
             }
