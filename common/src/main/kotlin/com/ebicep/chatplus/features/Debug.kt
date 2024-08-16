@@ -2,7 +2,6 @@ package com.ebicep.chatplus.features
 
 import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.hud.*
-import com.ebicep.chatplus.hud.ChatManager.selectedTab
 import com.ebicep.chatplus.util.GraphicsUtil.createPose
 import com.ebicep.chatplus.util.GraphicsUtil.translate0
 import net.minecraft.client.Minecraft
@@ -29,7 +28,7 @@ object Debug {
                 )
                 guiGraphics.drawString(
                     Minecraft.getInstance().font,
-                    "${selectedTab.chatScrollbarPos}",
+                    "${ChatManager.globalSelectedTab.chatScrollbarPos}",
                     ChatPlusScreen.lastMouseX + 5,
                     ChatPlusScreen.lastMouseY + 15,
                     0xFFFFFF
@@ -44,15 +43,16 @@ object Debug {
             if (!ChatManager.isChatFocused()) {
                 return@register
             }
+            val renderer = it.chatWindow.renderer
             val guiGraphics = it.guiGraphics
             val pose = guiGraphics.pose()
             pose.createPose {
                 pose.translate0(z = 5000)
                 guiGraphics.drawString(
                     Minecraft.getInstance().font,
-                    "${ChatRenderer.x},${ChatRenderer.y}",
-                    ChatRenderer.x,
-                    ChatRenderer.y + 5,
+                    "${renderer.x},${renderer.y}",
+                    renderer.x,
+                    renderer.y + 5,
                     0x00FF00
                 )
             }
@@ -64,15 +64,16 @@ object Debug {
             if (!ChatManager.isChatFocused()) {
                 return@register
             }
+            val renderer = it.chatWindow.renderer
             val guiGraphics = it.guiGraphics
             val pose = guiGraphics.pose()
             pose.createPose {
                 pose.translate0(z = 5000)
                 guiGraphics.drawString(
                     Minecraft.getInstance().font,
-                    "${ChatRenderer.rescaledEndX},${ChatRenderer.rescaledY - it.displayMessageIndex * ChatRenderer.lineHeight}",
-                    ChatRenderer.rescaledEndX,
-                    ChatRenderer.rescaledY - it.displayMessageIndex * ChatRenderer.lineHeight - 10,
+                    "${renderer.rescaledEndX},${renderer.rescaledY - it.displayMessageIndex * renderer.lineHeight}",
+                    renderer.rescaledEndX,
+                    renderer.rescaledY - it.displayMessageIndex * renderer.lineHeight - 10,
                     0x00FF00
                 )
             }
@@ -84,6 +85,7 @@ object Debug {
             if (!ChatManager.isChatFocused()) {
                 return@register
             }
+            val renderer = it.chatWindow.renderer
             val guiGraphics = it.guiGraphics
             val pose = guiGraphics.pose()
             pose.createPose {
@@ -91,8 +93,8 @@ object Debug {
                 guiGraphics.drawString(
                     Minecraft.getInstance().font,
                     "${it.index}",
-                    ChatRenderer.rescaledEndX + 1,
-                    it.verticalChatOffset - ChatRenderer.lineHeight,
+                    renderer.rescaledEndX + 1,
+                    it.verticalChatOffset - renderer.lineHeight,
                     0x00FF00
                 )
             }
@@ -104,8 +106,8 @@ object Debug {
                 guiGraphics.drawString(
                     Minecraft.getInstance().font,
                     it.text.replace("§", "&"),
-                    ((ChatRenderer.rescaledEndX + 1) * inverseScale).toInt(),
-                    ((it.verticalChatOffset - ChatRenderer.lineHeight) * inverseScale).toInt(),
+                    ((renderer.rescaledEndX + 1) * inverseScale).toInt(),
+                    ((it.verticalChatOffset - renderer.lineHeight) * inverseScale).toInt(),
                     0xFFFF00
                 )
             }
