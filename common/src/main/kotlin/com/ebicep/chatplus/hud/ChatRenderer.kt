@@ -244,7 +244,7 @@ class ChatRenderer {
             }
             val fadeOpacity = if (chatFocused) 1.0 else getTimeFactor(ticksLived)
             var textColor = (255.0 * fadeOpacity * textOpacity).toInt()
-            var backgroundColor = (255.0 * fadeOpacity * backgroundOpacity).toInt() shl 24
+            var backgroundColor = chatWindow.backgroundColor
             if (textColor <= 3) {
                 ++displayMessageIndex
                 continue
@@ -307,11 +307,6 @@ class ChatRenderer {
                 )
             }
             ++displayMessageIndex
-        }
-        if (ChatManager.selectedWindow == chatWindow) {
-            guiGraphics.renderOutline(internalX, internalY - height, width, height, 0xff000000.toInt())
-        } else {
-            guiGraphics.renderOutline(internalX, internalY - height, width, height, 0x80000000.toInt())
         }
         if (EventBus.post(ChatRenderPostLinesEvent(guiGraphics, chatWindow, displayMessageIndex)).returnFunction) {
             return

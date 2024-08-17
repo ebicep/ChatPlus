@@ -6,6 +6,8 @@ import com.ebicep.chatplus.features.AlignMessage
 import com.ebicep.chatplus.features.FilterMessages
 import com.ebicep.chatplus.features.FilterMessages.DEFAULT_COLOR
 import com.ebicep.chatplus.features.HoverHighlight
+import com.ebicep.chatplus.features.chattabs.ChatTab
+import com.ebicep.chatplus.features.chatwindows.ChatWindow
 import com.ebicep.chatplus.features.internal.MessageFilter
 import com.ebicep.chatplus.features.speechtotext.SpeechToText
 import com.ebicep.chatplus.translator.LanguageManager
@@ -42,7 +44,7 @@ object ConfigScreenImpl {
         addCompactMessagesOptions(builder, entryBuilder)
         addScrollbarOption(builder, entryBuilder)
         addAnimationOption(builder, entryBuilder)
-        addChatTabsOption(builder, entryBuilder)
+        addChatWindowsTabsOption(builder, entryBuilder)
         addMessageFilterOption(builder, entryBuilder)
         addHoverHighlightOption(builder, entryBuilder)
         addBookmarkOption(builder, entryBuilder)
@@ -248,68 +250,100 @@ object ConfigScreenImpl {
             ) { Config.values.animationNewMessageTransitionTime = it })
     }
 
-    private fun addChatTabsOption(builder: ConfigBuilder, entryBuilder: ConfigEntryBuilder) {
-        val chatTabs = builder.getOrCreateCategory(Component.translatable("chatPlus.chatTabs.title"))
-        chatTabs.addEntry(
+    private fun addChatWindowsTabsOption(builder: ConfigBuilder, entryBuilder: ConfigEntryBuilder) {
+        val category = builder.getOrCreateCategory(Component.translatable("chatPlus.chatWindowsTabs.title"))
+        category.addEntry(
             entryBuilder.booleanToggle(
-                "chatPlus.chatTabs.toggle",
-                Config.values.chatTabsEnabled
-            ) { Config.values.chatTabsEnabled = it })
-        chatTabs.addEntry(
+                "chatPlus.chatWindowsTabs.toggle",
+                Config.values.chatWindowsTabsEnabled
+            ) { Config.values.chatWindowsTabsEnabled = it })
+        category.addEntry(
             entryBuilder.booleanToggle(
                 "chatPlus.chatTabs.scrollCycleTabEnabled.toggle",
                 Config.values.scrollCycleTabEnabled
             ) { Config.values.scrollCycleTabEnabled = it })
-        chatTabs.addEntry(
+        category.addEntry(
             entryBuilder.booleanToggle(
                 "chatPlus.chatTabs.arrowCycleTabEnabled.toggle",
                 Config.values.arrowCycleTabEnabled
             ) { Config.values.arrowCycleTabEnabled = it })
-        chatTabs.addEntry(
+        category.addEntry(
             entryBuilder.booleanToggle(
                 "chatPlus.chatTabs.moveToTabWhenCycling.toggle",
                 Config.values.moveToTabWhenCycling
             ) { Config.values.moveToTabWhenCycling = it })
-//        chatTabs.addEntry(
-//            getCustomListOption(
-//                "chatPlus.chatTabs.title",
-//                Config.values.chatTabs,
-//                {
-//                    Config.values.chatTabs = it
-//                    Config.resetSortedChatTabs()
-//                },
-//                Config.values.chatTabs.size > 0,
-//                { ChatTab("", "") },
-//                { value ->
-//                    listOf(
-//                        entryBuilder.stringField("chatPlus.chatTabs.name", value.name) { value.name = it },
-//                        entryBuilder.stringField("chatPlus.chatTabs.pattern", value.pattern) { value.pattern = it },
-//                        entryBuilder.booleanToggle(
-//                            "chatPlus.messageFilter.formatted.toggle",
-//                            value.formatted
-//                        ) { value.formatted = it },
-//                        entryBuilder.stringField("chatPlus.chatTabs.autoPrefix", value.autoPrefix) { value.autoPrefix = it },
-//                        entryBuilder.startIntField(
-//                            Component.translatable("chatPlus.chatTabs.priority"),
-//                            value.priority
-//                        )
-//                            .setTooltip(Component.translatable("chatPlus.chatTabs.priority.tooltip"))
-//                            .setDefaultValue(0)
-//                            .setSaveConsumer { value.priority = it }
-//                            .build(),
-//                        entryBuilder.booleanToggle(
-//                            "chatPlus.chatTabs.alwaysAdd",
-//                            value.alwaysAdd
-//                        ) { value.alwaysAdd = it },
-//                        entryBuilder.booleanToggle(
-//                            "chatPlus.chatTabs.skipOthers",
-//                            value.skipOthers
-//                        ) { value.skipOthers = it },
-//                    )
-//                },
-//                { Component.literal(it.name) }
-//            )
-//        )
+        category.addEntry(
+            getCustomListOption(
+                "chatPlus.chatWindowsTabs.title",
+                Config.values.chatWindows,
+                {
+                    Config.values.chatWindows = it
+                    Config.values.chatWindows.forEach { window -> window.resetSortedChatTabs() }
+                },
+                Config.values.chatWindows.size > 0,
+                { ChatWindow() },
+                { window ->
+                    listOf(
+                        entryBuilder.startAlphaColorField(
+                            Component.translatable("chatPlus.chatWindow.backgroundColor"),
+                            window.backgroundColor
+                        )
+                            .setTooltip(Component.translatable("chatPlus.chatWindow.backgroundColor.tooltip"))
+                            .setDefaultValue(window.backgroundColor)
+                            .setSaveConsumer { window.backgroundColor = it }
+                            .build(),
+                        entryBuilder.booleanToggle(
+                            "chatPlus.chatWindow.outline",
+                            window.outline
+                        ) { window.outline = it },
+                        entryBuilder.startAlphaColorField(Component.translatable("chatPlus.chatWindow.outlineColor"), window.outlineColor)
+                            .setTooltip(Component.translatable("chatPlus.chatWindow.outlineColor.tooltip"))
+                            .setDefaultValue(window.outlineColor)
+                            .setSaveConsumer { window.outlineColor = it }
+                            .build(),
+                        getCustomListOption(
+                            "chatPlus.chatTabs.title",
+                            window.tabs,
+                            {
+                                window.tabs = it
+                                window.resetSortedChatTabs()
+                            },
+                            window.tabs.size > 0,
+                            { ChatTab("", "") },
+                            { value ->
+                                listOf(
+                                    entryBuilder.stringField("chatPlus.chatTabs.name", value.name) { value.name = it },
+                                    entryBuilder.stringField("chatPlus.chatTabs.pattern", value.pattern) { value.pattern = it },
+                                    entryBuilder.booleanToggle(
+                                        "chatPlus.messageFilter.formatted.toggle",
+                                        value.formatted
+                                    ) { value.formatted = it },
+                                    entryBuilder.stringField("chatPlus.chatTabs.autoPrefix", value.autoPrefix) { value.autoPrefix = it },
+                                    entryBuilder.startIntField(
+                                        Component.translatable("chatPlus.chatTabs.priority"),
+                                        value.priority
+                                    )
+                                        .setTooltip(Component.translatable("chatPlus.chatTabs.priority.tooltip"))
+                                        .setDefaultValue(0)
+                                        .setSaveConsumer { value.priority = it }
+                                        .build(),
+                                    entryBuilder.booleanToggle(
+                                        "chatPlus.chatTabs.alwaysAdd",
+                                        value.alwaysAdd
+                                    ) { value.alwaysAdd = it },
+                                    entryBuilder.booleanToggle(
+                                        "chatPlus.chatTabs.skipOthers",
+                                        value.skipOthers
+                                    ) { value.skipOthers = it },
+                                )
+                            },
+                            { Component.literal(it.name) }
+                        )
+                    )
+                },
+                { Component.literal("Window ${Config.values.chatWindows.indexOf(it) + 1}") }
+            )
+        )
     }
 
     private fun addMessageFilterOption(builder: ConfigBuilder, entryBuilder: ConfigEntryBuilder) {

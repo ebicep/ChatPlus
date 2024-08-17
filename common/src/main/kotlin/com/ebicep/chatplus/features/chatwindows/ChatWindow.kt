@@ -16,16 +16,20 @@ import kotlinx.serialization.Transient
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.util.Mth
+import java.awt.Color
 
 @Serializable
 class ChatWindow {
 
-    val tabs: MutableList<ChatTab> = mutableListOf()
+    var tabs: MutableList<ChatTab> = mutableListOf()
     val selectedTab: ChatTab
         get() = tabs[selectedTabIndex]
     var selectedTabIndex = 0
     val renderer = ChatRenderer()
     private var startRenderTabIndex = 0
+    var backgroundColor: Int = Color(0f, 0f, 0f, .5f).rgb
+    var outline: Boolean = false
+    var outlineColor: Int = Color(0f, 0f, 0f, 0f).rgb
 
     @Transient
     var sortedTabs: List<ChatTab> = listOf()

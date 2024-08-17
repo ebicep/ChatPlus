@@ -34,7 +34,7 @@ object ChatManager {
         get() = Config.values.chatWindows.last()
     val globalSelectedTab: ChatTab
         get() {
-            if (!Config.values.chatTabsEnabled) {
+            if (!Config.values.chatWindowsTabsEnabled) {
                 return DefaultTab
             }
             if (selectedWindow.tabs.isEmpty()) {

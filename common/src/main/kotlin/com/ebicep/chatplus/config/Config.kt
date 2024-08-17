@@ -220,7 +220,7 @@ data class ConfigVariables(
         }
 
     // tabs
-    var chatTabsEnabled: Boolean = true
+    var chatWindowsTabsEnabled: Boolean = true
         set(newY) {
             if (field == newY) {
                 return

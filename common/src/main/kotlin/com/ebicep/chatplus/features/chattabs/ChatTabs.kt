@@ -29,14 +29,14 @@ object ChatTabs {
 
     init {
         EventBus.register<ChatPlusTickEvent> {
-            if (!Config.values.chatTabsEnabled) {
+            if (!Config.values.chatWindowsTabsEnabled) {
                 checkTabRefresh(DefaultWindow, DefaultTab)
             } else {
                 Config.values.chatWindows.forEach { window -> window.tabs.forEach { checkTabRefresh(window, it) } }
             }
         }
         EventBus.register<ChatRenderPreLinesEvent>({ 100 }) {
-            if (!Config.values.chatTabsEnabled) {
+            if (!Config.values.chatWindowsTabsEnabled) {
                 return@register
             }
             val chatFocused: Boolean = ChatManager.isChatFocused()
@@ -47,7 +47,7 @@ object ChatTabs {
             }
         }
         EventBus.register<ChatScreenKeyPressedEvent> {
-            if (!Config.values.chatTabsEnabled || !Config.values.arrowCycleTabEnabled) {
+            if (!Config.values.chatWindowsTabsEnabled || !Config.values.arrowCycleTabEnabled) {
                 return@register
             }
             it.screen as IMixinChatScreen
@@ -62,7 +62,7 @@ object ChatTabs {
             }
         }
         EventBus.register<ChatScreenMouseScrolledEvent> {
-            if (!Config.values.chatTabsEnabled || !Config.values.scrollCycleTabEnabled) {
+            if (!Config.values.chatWindowsTabsEnabled || !Config.values.scrollCycleTabEnabled) {
                 return@register
             }
             val amountX = it.amountX
@@ -72,7 +72,7 @@ object ChatTabs {
             selectedWindow.scrollTab(Mth.clamp(-amountX.toInt(), -1, 1))
         }
         EventBus.register<ChatScreenMouseClickedEvent> {
-            if (!Config.values.chatTabsEnabled) {
+            if (!Config.values.chatWindowsTabsEnabled) {
                 return@register
             }
             if (it.button == 0) {
@@ -80,13 +80,13 @@ object ChatTabs {
             }
         }
         EventBus.register<GetMaxHeightEvent> {
-            if (!Config.values.chatTabsEnabled) {
+            if (!Config.values.chatWindowsTabsEnabled) {
                 return@register
             }
             it.maxHeight -= CHAT_TAB_HEIGHT
         }
         EventBus.register<GetDefaultYEvent> {
-            if (!Config.values.chatTabsEnabled) {
+            if (!Config.values.chatWindowsTabsEnabled) {
                 return@register
             }
             it.y -= CHAT_TAB_HEIGHT

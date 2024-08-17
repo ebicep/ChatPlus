@@ -116,13 +116,13 @@ object MovableChat {
 
         var moving = false
         EventBus.register<ChatRenderPreLinesEvent> {
+            val chatWindow = it.chatWindow
             // for when there are no messages
             moving = ChatManager.isChatFocused() && Config.values.keyMoveChat.isDown()
-            val messagesToDisplay = it.chatWindow.selectedTab.displayedMessages.size
+            val messagesToDisplay = chatWindow.selectedTab.displayedMessages.size
             if (messagesToDisplay > 0) {
                 return@register
             }
-            val chatWindow = ChatManager.selectedWindow
             val renderer = chatWindow.renderer
             // render full chat box
             val guiGraphics = it.guiGraphics
@@ -132,7 +132,7 @@ object MovableChat {
                     renderer.y - renderer.height,
                     renderer.backgroundWidthEndX,
                     renderer.y,
-                    (255 * renderer.backgroundOpacity).toInt() shl 24
+                    chatWindow.backgroundColor
                 )
             }
             renderMoving(
@@ -149,7 +149,7 @@ object MovableChat {
             if (!moving) {
                 return@register
             }
-            val chatWindow = ChatManager.selectedWindow
+            val chatWindow = it.chatWindow
             val renderer = chatWindow.renderer
             val guiGraphics = it.guiGraphics
             guiGraphics.fill(
@@ -157,7 +157,7 @@ object MovableChat {
                 renderer.rescaledY - renderer.rescaledHeight,
                 renderer.rescaledEndX,
                 renderer.rescaledY - it.displayMessageIndex * renderer.lineHeight,
-                (255 * renderer.backgroundOpacity).toInt() shl 24
+                chatWindow.backgroundColor
             )
             val poseStack = guiGraphics.pose()
             poseStack.createPose {

@@ -33,7 +33,7 @@ public class MixinChatComponent {
         if (!ChatPlus.INSTANCE.isEnabled()) {
             return;
         }
-        if (!Config.INSTANCE.getValues().getChatTabsEnabled()) {
+        if (!Config.INSTANCE.getValues().getChatWindowsTabsEnabled()) {
             ChatTabs.INSTANCE.getDefaultTab().addNewMessage(component, messageSignature, i, guiMessageTag);
             return;
         }

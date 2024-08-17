@@ -2,8 +2,11 @@ package com.ebicep.chatplus.features.chatwindows
 
 import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.events.EventBus
+import com.ebicep.chatplus.hud.ChatManager
+import com.ebicep.chatplus.hud.ChatRenderPostLinesEvent
 import com.ebicep.chatplus.hud.ChatScreenMouseClickedEvent
 import com.ebicep.chatplus.util.GraphicsUtil.createPose
+import com.ebicep.chatplus.util.GraphicsUtil.guiForward
 import com.ebicep.chatplus.util.GraphicsUtil.translate0
 import net.minecraft.client.gui.GuiGraphics
 
@@ -19,6 +22,23 @@ object ChatWindows {
                     selectWindow(Config.values.chatWindows[i])
                     return@register
                 }
+            }
+        }
+        EventBus.register<ChatRenderPostLinesEvent> {
+            if (!ChatManager.isChatFocused()) {
+                return@register
+            }
+            val chatWindow = it.chatWindow
+            if (!chatWindow.outline) {
+                return@register
+            }
+            val renderer = chatWindow.renderer
+            val guiGraphics = it.guiGraphics
+            val poseStack = guiGraphics.pose()
+            poseStack.createPose {
+                poseStack.guiForward(amount = 150.0)
+                val h = it.displayMessageIndex * renderer.lineHeight
+                guiGraphics.renderOutline(renderer.internalX, renderer.internalY - h, renderer.width, h, chatWindow.outlineColor)
             }
         }
     }
