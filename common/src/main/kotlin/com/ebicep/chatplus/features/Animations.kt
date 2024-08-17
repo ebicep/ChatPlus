@@ -21,7 +21,7 @@ object Animations {
     }
 
     private fun getAnimationMessageTransitionOffset(chatWindow: ChatWindow): Int {
-        val timeAlive: Long = System.currentTimeMillis() - globalSelectedTab.lastMessageTime
+        val timeAlive: Long = System.currentTimeMillis() - chatWindow.selectedTab.lastMessageTime
         val fadeTime = Config.values.animationNewMessageTransitionTime.toFloat()
         if (timeAlive >= fadeTime || globalSelectedTab.chatScrollbarPos != 0) {
             return 0
