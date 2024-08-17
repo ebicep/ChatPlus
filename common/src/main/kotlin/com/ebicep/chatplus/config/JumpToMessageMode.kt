@@ -4,7 +4,7 @@ import kotlinx.serialization.Serializable
 import net.minecraft.network.chat.Component
 
 @Serializable
-enum class JumpToMessageMode(key: String) {
+enum class JumpToMessageMode(key: String) : EnumTranslatableName {
     TOP("chatPlus.chatSettings.jumpToMessageMode.top"),
     MIDDLE("chatPlus.chatSettings.jumpToMessageMode.middle"),
     BOTTOM("chatPlus.chatSettings.jumpToMessageMode.bottom"),
@@ -13,5 +13,9 @@ enum class JumpToMessageMode(key: String) {
     ;
 
     val translatable: Component = Component.translatable(key)
+
+    override fun getTranslatableName(): Component {
+        return translatable
+    }
 
 }

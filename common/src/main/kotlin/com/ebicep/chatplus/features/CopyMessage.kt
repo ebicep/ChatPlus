@@ -10,8 +10,11 @@ import com.ebicep.chatplus.hud.ChatScreenKeyPressedEvent
 import com.ebicep.chatplus.util.TimeStampedLines
 import net.minecraft.ChatFormatting
 import net.minecraft.client.Minecraft
+import java.awt.Color
 
 object CopyMessage {
+
+    val DEFAULT_COLOR = Color(255, 0, 255, 255).rgb
 
     init {
         var lastCopied: TimeStampedLines? = null

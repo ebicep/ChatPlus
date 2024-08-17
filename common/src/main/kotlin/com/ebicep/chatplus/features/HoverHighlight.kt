@@ -1,6 +1,7 @@
 package com.ebicep.chatplus.features
 
 import com.ebicep.chatplus.config.Config
+import com.ebicep.chatplus.config.EnumTranslatableName
 import com.ebicep.chatplus.events.Event
 import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.hud.ChatManager
@@ -63,13 +64,17 @@ object HoverHighlight {
     }
 
     @Serializable
-    enum class HighlightMode(key: String) {
+    enum class HighlightMode(key: String) : EnumTranslatableName {
         BRIGHTER("chatPlus.hoverHighlight.mode.brighter"),
         CUSTOM_COLOR("chatPlus.hoverHighlight.mode.customColor"),
 
         ;
 
         val translatable: Component = Component.translatable(key)
+
+        override fun getTranslatableName(): Component {
+            return translatable
+        }
 
     }
 

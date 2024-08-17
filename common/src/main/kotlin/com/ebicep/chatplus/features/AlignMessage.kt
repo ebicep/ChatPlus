@@ -1,6 +1,7 @@
 package com.ebicep.chatplus.features
 
 import com.ebicep.chatplus.config.Config
+import com.ebicep.chatplus.config.EnumTranslatableName
 import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.features.chattabs.ChatTabGetMessageAtEvent
 import com.ebicep.chatplus.hud.ChatRenderLineTextEvent
@@ -23,7 +24,7 @@ object AlignMessage {
     }
 
     @Serializable
-    enum class Alignment(key: String, val translation: (renderer: ChatRenderer, text: String) -> Double) {
+    enum class Alignment(val key: String, val translation: (renderer: ChatRenderer, text: String) -> Double) : EnumTranslatableName {
         LEFT(
             "chatPlus.chatSettings.messageAlignment.left",
             { _, _ -> 0.0 }
@@ -40,6 +41,10 @@ object AlignMessage {
         ;
 
         val translatable: Component = Component.translatable(key)
+
+        override fun getTranslatableName(): Component {
+            return translatable
+        }
 
     }
 
