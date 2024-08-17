@@ -159,18 +159,20 @@ object MovableChat {
                 renderer.rescaledY - it.displayMessageIndex * renderer.lineHeight,
                 chatWindow.backgroundColor
             )
-            val poseStack = guiGraphics.pose()
-            poseStack.createPose {
-                val unscaled = 1 / renderer.scale
-                poseStack.scale(unscaled, unscaled, 1f)
-                renderMoving(
-                    poseStack,
-                    guiGraphics,
-                    renderer.internalX,
-                    renderer.internalY,
-                    renderer.internalHeight,
-                    renderer.internalWidth
-                )
+            if (it.chatWindow == ChatManager.selectedWindow) {
+                val poseStack = guiGraphics.pose()
+                poseStack.createPose {
+                    val unscaled = 1 / renderer.scale
+                    poseStack.scale(unscaled, unscaled, 1f)
+                    renderMoving(
+                        poseStack,
+                        guiGraphics,
+                        renderer.internalX,
+                        renderer.internalY,
+                        renderer.internalHeight,
+                        renderer.internalWidth
+                    )
+                }
             }
         }
 
