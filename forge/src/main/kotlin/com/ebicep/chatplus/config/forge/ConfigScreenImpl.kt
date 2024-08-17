@@ -318,7 +318,7 @@ object ConfigScreenImpl {
                         )
                     )
                 },
-                { Component.literal("Window ${Config.values.chatWindows.indexOf(it) + 1}").withColor(it.backgroundColor) }
+                { Component.literal("Window").withColor(it.backgroundColor) }
             )
         )
     }
