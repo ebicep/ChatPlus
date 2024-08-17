@@ -195,8 +195,8 @@ class ChatRenderer {
         lineSpacing = ChatManager.getLineSpacing()
         l1 = (-8.0 * (lineSpacing + 1.0) + 4.0 * lineSpacing).roundToInt()
         scale = getScale()
-        internalX = getUpdatedX()
-        internalY = getUpdatedY()
+        internalX = getUpdatedX(x)
+        internalY = getUpdatedY(y)
         internalHeight = getUpdatedHeight()
         internalWidth = getUpdatedWidth()
         backgroundWidthEndX = internalX + internalWidth
@@ -210,7 +210,7 @@ class ChatRenderer {
     }
 
     fun render(chatWindow: ChatWindow, guiGraphics: GuiGraphics, guiTicks: Int, mouseX: Int, mouseY: Int) {
-        if (internalY != getUpdatedY()) {
+        if (internalY != getUpdatedY(y)) {
             updateCachedDimension()
         }
         handleScreenResize()
@@ -396,26 +396,35 @@ class ChatRenderer {
     }
 
     fun getUpdatedX(): Int {
-        var x = internalX
+        return getUpdatedX(internalX)
+    }
+
+    fun getUpdatedX(startingX: Int): Int {
+        var x = startingX
         if (x + internalWidth >= Minecraft.getInstance().window.guiScaledWidth) {
             x = Minecraft.getInstance().window.guiScaledWidth - internalWidth - 1
-            internalX = x
         }
         if (x < 0) {
             x = 0
-            internalX = x
         }
         return x
     }
 
     fun getUpdatedY(): Int {
-        var y = internalY
+        val updatedY = getUpdatedY(internalY)
+        if (updatedY == getDefaultY()) {
+            internalY = getDefaultY()
+        }
+        return updatedY
+    }
+
+    fun getUpdatedY(startingY: Int): Int {
+        var y = startingY
         if (y < 0) {
             y += Minecraft.getInstance().window.guiScaledHeight
         }
         if (y >= Minecraft.getInstance().window.guiScaledHeight - EDIT_BOX_HEIGHT) {
             y = getMaxHeightScaled()
-            internalY = getDefaultY()
         }
         return y
     }
