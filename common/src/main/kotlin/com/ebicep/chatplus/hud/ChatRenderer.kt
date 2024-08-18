@@ -106,7 +106,7 @@ class ChatRenderer {
             field = newWidth
             queueUpdateConfig = true
             internalWidth = newWidth
-            chatWindow.selectedTab.rescaleChat()
+            chatWindow.tabs.forEach { it.rescaleChat() }
         }
     var height: Int = MIN_HEIGHT
         set(newHeight) {
