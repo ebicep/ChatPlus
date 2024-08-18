@@ -711,14 +711,14 @@ object ConfigScreenImpl {
                             .setDefaultValue("")
                             .setSaveConsumer { value.match = it }
                             .build(),
-                        entryBuilder.startIntField(
-                            Component.translatable("chatPlus.translator.senderNameGroupIndex"),
-                            value.senderNameGroupIndex
-                        )
-                            .setTooltip(Component.translatable("chatPlus.translator.senderNameGroupIndex.tooltip"))
-                            .setDefaultValue(0)
-                            .setSaveConsumer { value.senderNameGroupIndex = it }
-                            .build(),
+//                        entryBuilder.startIntField(
+//                            Component.translatable("chatPlus.translator.senderNameGroupIndex"),
+//                            value.senderNameGroupIndex
+//                        )
+//                            .setTooltip(Component.translatable("chatPlus.translator.senderNameGroupIndex.tooltip"))
+//                            .setDefaultValue(0)
+//                            .setSaveConsumer { value.senderNameGroupIndex = it }
+//                            .build(),
                     )
                 },
                 { Component.literal(it.match) }
