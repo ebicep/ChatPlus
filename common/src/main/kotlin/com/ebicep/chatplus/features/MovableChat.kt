@@ -128,20 +128,20 @@ object MovableChat {
             val guiGraphics = it.guiGraphics
             if (moving) {
                 guiGraphics.fill(
-                    renderer.x,
-                    renderer.y - renderer.height,
+                    renderer.internalX,
+                    renderer.internalY - renderer.internalHeight,
                     renderer.backgroundWidthEndX,
-                    renderer.y,
+                    renderer.internalY,
                     chatWindow.backgroundColor
                 )
             }
             renderMoving(
                 guiGraphics.pose(),
                 guiGraphics,
-                renderer.x,
-                renderer.y,
-                renderer.height,
-                renderer.width
+                renderer.internalX,
+                renderer.internalY,
+                renderer.internalHeight,
+                renderer.internalWidth
             )
             it.returnFunction = true
         }
