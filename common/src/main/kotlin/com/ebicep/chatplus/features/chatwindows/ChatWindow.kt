@@ -21,15 +21,17 @@ import java.awt.Color
 @Serializable
 class ChatWindow {
 
-    var tabs: MutableList<ChatTab> = mutableListOf()
-    val selectedTab: ChatTab
-        get() = tabs[selectedTabIndex]
-    var selectedTabIndex = 0
-    val renderer = ChatRenderer()
-    private var startRenderTabIndex = 0
     var backgroundColor: Int = Color(0f, 0f, 0f, .5f).rgb
     var outline: Boolean = false
     var outlineColor: Int = Color(0f, 0f, 0f, 0f).rgb
+    val renderer = ChatRenderer()
+    var hideTabs = false
+    var selectedTabIndex = 0
+    private var startRenderTabIndex = 0
+    var tabs: MutableList<ChatTab> = mutableListOf()
+
+    val selectedTab: ChatTab
+        get() = tabs[selectedTabIndex]
 
     @Transient
     var sortedTabs: List<ChatTab> = listOf()
@@ -103,6 +105,9 @@ class ChatWindow {
     }
 
     fun renderTabs(guiGraphics: GuiGraphics) {
+        if (hideTabs) {
+            return
+        }
         val poseStack = guiGraphics.pose()
         var xStart = renderer.internalX.toDouble()
         val yStart = renderer.internalY.toDouble() + CHAT_TAB_Y_OFFSET

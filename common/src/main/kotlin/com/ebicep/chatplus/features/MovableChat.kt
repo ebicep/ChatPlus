@@ -100,14 +100,14 @@ object MovableChat {
                     0,
                     Minecraft.getInstance().window.guiScaledWidth - renderer.getUpdatedWidth() - 1
                 )
-                val maxHeightScaled = ChatManager.getMaxHeightScaled()
+                val maxHeightScaled = renderer.getMaxHeightScaled()
                 var newY = Mth.clamp(
                     (mouseY - yDisplacement).roundToInt(),
                     renderer.getUpdatedHeight() + 1,
                     maxHeightScaled
                 )
                 if (newY == maxHeightScaled) {
-                    newY = ChatManager.getDefaultY()
+                    newY = renderer.getDefaultY()
                 }
                 renderer.y = newY
                 renderer.updateCachedDimension()

@@ -2,9 +2,8 @@ package com.ebicep.chatplus.features.chatwindows
 
 import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.events.EventBus
-import com.ebicep.chatplus.hud.ChatManager
-import com.ebicep.chatplus.hud.ChatRenderPostLinesEvent
-import com.ebicep.chatplus.hud.ChatScreenMouseClickedEvent
+import com.ebicep.chatplus.features.chattabs.CHAT_TAB_HEIGHT
+import com.ebicep.chatplus.hud.*
 import com.ebicep.chatplus.util.GraphicsUtil.createPose
 import com.ebicep.chatplus.util.GraphicsUtil.guiForward
 import com.ebicep.chatplus.util.GraphicsUtil.translate0
@@ -40,6 +39,18 @@ object ChatWindows {
                 val h = it.displayMessageIndex * renderer.lineHeight
                 guiGraphics.renderOutline(renderer.internalX, renderer.internalY - h, renderer.width, h, chatWindow.outlineColor)
             }
+        }
+        EventBus.register<GetMaxHeightEvent> {
+            if (it.chatWindow.hideTabs) {
+                return@register
+            }
+            it.maxHeight -= CHAT_TAB_HEIGHT
+        }
+        EventBus.register<GetDefaultYEvent> {
+            if (it.chatWindow.hideTabs) {
+                return@register
+            }
+            it.y -= CHAT_TAB_HEIGHT
         }
     }
 

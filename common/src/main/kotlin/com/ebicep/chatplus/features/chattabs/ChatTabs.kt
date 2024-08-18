@@ -79,18 +79,6 @@ object ChatTabs {
                 selectedWindow.handleClickedTab(it.mouseX, it.mouseY)
             }
         }
-        EventBus.register<GetMaxHeightEvent> {
-            if (!Config.values.chatWindowsTabsEnabled) {
-                return@register
-            }
-            it.maxHeight -= CHAT_TAB_HEIGHT
-        }
-        EventBus.register<GetDefaultYEvent> {
-            if (!Config.values.chatWindowsTabsEnabled) {
-                return@register
-            }
-            it.y -= CHAT_TAB_HEIGHT
-        }
         // tab auto prefix
         EventBus.register<ChatScreenSendMessagePreEvent> {
             it.message = ChatManager.globalSelectedTab.autoPrefix + it.message

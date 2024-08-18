@@ -266,6 +266,10 @@ object ConfigScreenImpl {
                 { ChatWindow() },
                 { window ->
                     listOf(
+                        entryBuilder.booleanToggle(
+                            "chatPlus.chatWindow.hideTabs",
+                            window.hideTabs
+                        ) { window.hideTabs = it },
                         entryBuilder.alphaField(
                             "chatPlus.chatWindow.backgroundColor",
                             window.backgroundColor
@@ -711,14 +715,14 @@ object ConfigScreenImpl {
                             .setDefaultValue("")
                             .setSaveConsumer { value.match = it }
                             .build(),
-                        entryBuilder.startIntField(
-                            Component.translatable("chatPlus.translator.senderNameGroupIndex"),
-                            value.senderNameGroupIndex
-                        )
-                            .setTooltip(Component.translatable("chatPlus.translator.senderNameGroupIndex.tooltip"))
-                            .setDefaultValue(0)
-                            .setSaveConsumer { value.senderNameGroupIndex = it }
-                            .build(),
+//                        entryBuilder.startIntField(
+//                            Component.translatable("chatPlus.translator.senderNameGroupIndex"),
+//                            value.senderNameGroupIndex
+//                        )
+//                            .setTooltip(Component.translatable("chatPlus.translator.senderNameGroupIndex.tooltip"))
+//                            .setDefaultValue(0)
+//                            .setSaveConsumer { value.senderNameGroupIndex = it }
+//                            .build(),
                     )
                 },
                 { Component.literal(it.match) }

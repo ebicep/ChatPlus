@@ -266,6 +266,10 @@ object ConfigScreenImpl {
                 { ChatWindow() },
                 { window ->
                     listOf(
+                        entryBuilder.booleanToggle(
+                            "chatPlus.chatWindow.hideTabs",
+                            window.hideTabs
+                        ) { window.hideTabs = it },
                         entryBuilder.alphaField(
                             "chatPlus.chatWindow.backgroundColor",
                             window.backgroundColor

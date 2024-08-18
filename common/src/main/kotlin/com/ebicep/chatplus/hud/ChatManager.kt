@@ -3,12 +3,10 @@ package com.ebicep.chatplus.hud
 import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.config.queueUpdateConfig
 import com.ebicep.chatplus.events.Event
-import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.events.Events
 import com.ebicep.chatplus.features.chattabs.ChatTab
 import com.ebicep.chatplus.features.chattabs.ChatTabs.DefaultTab
 import com.ebicep.chatplus.features.chatwindows.ChatWindow
-import com.ebicep.chatplus.hud.ChatPlusScreen.EDIT_BOX_HEIGHT
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.screens.ChatScreen
 
@@ -16,14 +14,17 @@ const val MIN_HEIGHT = 80
 const val MIN_WIDTH = 160
 
 data class GetMaxWidthEvent(
+    var chatWindow: ChatWindow,
     var maxWidth: Int
 ) : Event
 
 data class GetDefaultYEvent(
+    var chatWindow: ChatWindow,
     var y: Int
 ) : Event
 
 data class GetMaxHeightEvent(
+    var chatWindow: ChatWindow,
     var maxHeight: Int
 ) : Event
 
@@ -48,33 +49,6 @@ object ChatManager {
     init {
         sentMessages.addAll(Minecraft.getInstance().commandHistory().history())
     }
-
-    fun getDefaultY(): Int {
-        return EventBus.post(GetDefaultYEvent(-EDIT_BOX_HEIGHT)).y
-    }
-
-    fun getMaxWidthScaled(): Int {
-        return EventBus.post(GetMaxWidthEvent(Minecraft.getInstance().window.guiScaledWidth)).maxWidth
-    }
-
-    fun getMaxHeightScaled(): Int {
-        return EventBus.post(GetMaxHeightEvent(Minecraft.getInstance().window.guiScaledHeight - EDIT_BOX_HEIGHT)).maxHeight
-    }
-
-    fun getMaxHeightScaled(guiScaledHeight: Int): Int {
-        return EventBus.post(GetMaxHeightEvent(guiScaledHeight - EDIT_BOX_HEIGHT)).maxHeight
-    }
-
-    fun getMinWidthScaled(): Int {
-        return MIN_WIDTH
-//        return (MIN_WIDTH / getScale()).roundToInt()
-    }
-
-    fun getMinHeightScaled(): Int {
-        return MIN_HEIGHT
-//        return (MIN_HEIGHT / getScale()).roundToInt()
-    }
-
     /**
      * Gets the list of messages previously sent through the chat GUI
      */

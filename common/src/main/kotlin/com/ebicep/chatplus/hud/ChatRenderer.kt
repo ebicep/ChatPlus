@@ -9,9 +9,7 @@ import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.features.chattabs.CHAT_TAB_HEIGHT
 import com.ebicep.chatplus.features.chattabs.ChatTab
 import com.ebicep.chatplus.features.chatwindows.ChatWindow
-import com.ebicep.chatplus.hud.ChatManager.getDefaultY
 import com.ebicep.chatplus.hud.ChatManager.getLineHeight
-import com.ebicep.chatplus.hud.ChatManager.getMaxHeightScaled
 import com.ebicep.chatplus.hud.ChatManager.getScale
 import com.ebicep.chatplus.hud.ChatPlusScreen.EDIT_BOX_HEIGHT
 import com.ebicep.chatplus.util.GraphicsUtil.createPose
@@ -436,5 +434,32 @@ class ChatRenderer {
     fun getLinesPerPageScaled(): Int {
         return (getLinesPerPage() / getScale()).roundToInt()
     }
+
+    fun getDefaultY(): Int {
+        return EventBus.post(GetDefaultYEvent(chatWindow, -EDIT_BOX_HEIGHT)).y
+    }
+
+    fun getMaxWidthScaled(): Int {
+        return EventBus.post(GetMaxWidthEvent(chatWindow, Minecraft.getInstance().window.guiScaledWidth)).maxWidth
+    }
+
+    fun getMaxHeightScaled(): Int {
+        return EventBus.post(GetMaxHeightEvent(chatWindow, Minecraft.getInstance().window.guiScaledHeight - EDIT_BOX_HEIGHT)).maxHeight
+    }
+
+    fun getMaxHeightScaled(guiScaledHeight: Int): Int {
+        return EventBus.post(GetMaxHeightEvent(chatWindow, guiScaledHeight - EDIT_BOX_HEIGHT)).maxHeight
+    }
+
+    fun getMinWidthScaled(): Int {
+        return MIN_WIDTH
+//        return (MIN_WIDTH / getScale()).roundToInt()
+    }
+
+    fun getMinHeightScaled(): Int {
+        return MIN_HEIGHT
+//        return (MIN_HEIGHT / getScale()).roundToInt()
+    }
+
 
 }

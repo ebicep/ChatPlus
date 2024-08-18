@@ -99,6 +99,8 @@
   "chatPlus.chatWindowsTabs.title": "Chat Windows/Tabs",
   "chatPlus.chatWindowsTabs.toggle": "Enabled",
   "chatPlus.chatWindowsTabs.toggle.tooltip": "Enables/Disables chat windows/tabs.",
+  "chatPlus.chatWindow.hideTabs": "Hide Tabs",
+  "chatPlus.chatWindow.hideTabs.tooltip": "Enables/Disables hides the tabs in the chat window.",
   "chatPlus.chatWindow.backgroundColor": "Background Color",
   "chatPlus.chatWindow.backgroundColor.tooltip": "Background color of the chat window.",
   "chatPlus.chatWindow.outlineColor": "Outline Color",
