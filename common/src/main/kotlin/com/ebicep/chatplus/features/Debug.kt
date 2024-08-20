@@ -88,29 +88,29 @@ object Debug {
             val renderer = it.chatWindow.renderer
             val guiGraphics = it.guiGraphics
             val pose = guiGraphics.pose()
-            pose.createPose {
-                pose.translate0(z = 5000)
-                guiGraphics.drawString(
-                    Minecraft.getInstance().font,
-                    "${it.index}",
-                    renderer.rescaledEndX + 1,
-                    it.verticalChatOffset - renderer.lineHeight,
-                    0x00FF00
-                )
-            }
-            pose.createPose {
-                pose.translate0(x = 20, z = 5000)
-                val scale = .5f
-                val inverseScale = 1 / scale
-                pose.scale(scale, scale, scale)
-                guiGraphics.drawString(
-                    Minecraft.getInstance().font,
-                    it.text.replace("§", "&"),
-                    ((renderer.rescaledEndX + 1) * inverseScale).toInt(),
-                    ((it.verticalChatOffset - renderer.lineHeight) * inverseScale).toInt(),
-                    0xFFFF00
-                )
-            }
+//            pose.createPose {
+//                pose.translate0(z = 5000)
+//                guiGraphics.drawString(
+//                    Minecraft.getInstance().font,
+//                    "${it.index}",
+//                    renderer.rescaledEndX + 1,
+//                    it.verticalChatOffset - renderer.lineHeight,
+//                    0x00FF00
+//                )
+//            }
+//            pose.createPose {
+//                pose.translate0(x = 20, z = 5000)
+//                val scale = .5f
+//                val inverseScale = 1 / scale
+//                pose.scale(scale, scale, scale)
+//                guiGraphics.drawString(
+//                    Minecraft.getInstance().font,
+//                    it.text.replace("§", "&"),
+//                    ((renderer.rescaledEndX + 1) * inverseScale).toInt(),
+//                    ((it.verticalChatOffset - renderer.lineHeight) * inverseScale).toInt(),
+//                    0xFFFF00
+//                )
+//            }
         }
     }
 

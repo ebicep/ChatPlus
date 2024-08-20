@@ -135,6 +135,13 @@ class ChatTab : MessageFilter {
     // if true then tab loop will break if message is added to this tab, overrides alwaysAdds
     var skipOthers: Boolean = false
 
+    constructor(chatWindow: ChatWindow, name: String, pattern: String, autoPrefix: String = "", alwaysAdd: Boolean = false) : super(pattern) {
+        this.chatWindow = chatWindow
+        this.name = name
+        this.autoPrefix = autoPrefix
+        this.alwaysAdd = alwaysAdd
+    }
+
     constructor(name: String, pattern: String, autoPrefix: String = "", alwaysAdd: Boolean = false) : super(pattern) {
         this.name = name
         this.autoPrefix = autoPrefix
@@ -194,7 +201,7 @@ class ChatTab : MessageFilter {
     var xEnd: Double = 0.0
 
     @Transient
-    var y: Double = 0.0
+    var yStart: Double = 0.0
 
     @Transient
     var lastMessageTime: Long = 0
@@ -610,6 +617,7 @@ class ChatTab : MessageFilter {
     companion object {
 
         const val PADDING = 2
+        const val TAB_HEIGHT = 9 + PADDING * 2
 
         private fun stripColor(pText: String): String? {
             return if (Minecraft.getInstance().options.chatColors().get()) pText else ChatFormatting.stripFormatting(pText)

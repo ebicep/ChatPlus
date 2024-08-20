@@ -3,6 +3,7 @@ package com.ebicep.chatplus.features.chatwindows
 import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.features.chattabs.CHAT_TAB_HEIGHT
+import com.ebicep.chatplus.features.chattabs.CHAT_TAB_Y_OFFSET
 import com.ebicep.chatplus.hud.*
 import com.ebicep.chatplus.util.GraphicsUtil.createPose
 import com.ebicep.chatplus.util.GraphicsUtil.guiForward
@@ -59,11 +60,14 @@ object ChatWindows {
         val startX = renderer.getUpdatedX()
         val endX = startX + renderer.getUpdatedWidth()
         val startY = renderer.getUpdatedY() - renderer.getUpdatedHeight()
-        val endY = renderer.getUpdatedY()
+        var endY = renderer.getUpdatedY()
+        if (!chatWindow.hideTabs) {
+            endY += CHAT_TAB_HEIGHT + CHAT_TAB_Y_OFFSET
+        }
         return startX < x && x < endX && startY < y && y < endY
     }
 
-    private fun selectWindow(chatWindow: ChatWindow) {
+    fun selectWindow(chatWindow: ChatWindow) {
         Config.values.chatWindows.remove(chatWindow)
         Config.values.chatWindows.add(chatWindow)
     }

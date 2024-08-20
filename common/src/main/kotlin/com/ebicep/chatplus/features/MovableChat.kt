@@ -51,8 +51,9 @@ object MovableChat {
             }
             if (!movingChatX && !movingChatY) {
                 if (
-                    mouseX > renderer.getUpdatedX() && mouseX < sideInner &&
-                    mouseY > roofInner && mouseY < renderer.getUpdatedY()
+                    renderer.getUpdatedX() < mouseX && mouseX < sideInner &&
+                    roofInner < mouseY && mouseY < renderer.getUpdatedY()
+//                    || chatWindow.getClickedTab(mouseX, mouseY) != null
                 ) {
                     movingChatBox = true
                     xDisplacement = mouseX - renderer.getUpdatedX()

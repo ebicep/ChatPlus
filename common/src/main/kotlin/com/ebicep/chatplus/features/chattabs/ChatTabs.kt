@@ -9,7 +9,7 @@ import com.ebicep.chatplus.features.chatwindows.ChatWindows.DefaultWindow
 import com.ebicep.chatplus.hud.*
 import com.ebicep.chatplus.hud.ChatManager.selectedWindow
 import com.ebicep.chatplus.mixin.IMixinChatScreen
-import com.mojang.blaze3d.vertex.PoseStack
+import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.util.Mth
 
 
@@ -17,9 +17,9 @@ const val CHAT_TAB_HEIGHT = 15
 const val CHAT_TAB_Y_OFFSET = 1 // offset from text box
 const val CHAT_TAB_X_SPACE = 1 // space between categories
 
-data class ChatTabClickedEvent(val chatTab: ChatTab, val mouseX: Double, val tabXStart: Double)
+data class ChatTabClickedEvent(val chatTab: ChatTab, val mouseX: Double, val mouseY: Double, val tabXStart: Double, val tabYStart: Double)
 
-data class ChatTabRenderEvent(val poseStack: PoseStack, val chatTab: ChatTab, val tabWidth: Int, var xStart: Double)
+data class ChatTabRenderEvent(val guiGraphics: GuiGraphics, val chatTab: ChatTab, val tabWidth: Int, var xStart: Double, var yStart: Double)
 
 data class ChatTabSwitchEvent(val oldTab: ChatTab, val newTab: ChatTab)
 

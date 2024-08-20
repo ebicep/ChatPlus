@@ -461,5 +461,4 @@ class ChatRenderer {
 //        return (MIN_HEIGHT / getScale()).roundToInt()
     }
 
-
 }

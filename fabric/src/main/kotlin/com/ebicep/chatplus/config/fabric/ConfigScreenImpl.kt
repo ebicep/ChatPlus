@@ -285,12 +285,9 @@ object ConfigScreenImpl {
                         getCustomListOption(
                             "chatPlus.chatTabs.title",
                             window.tabs,
-                            {
-                                window.tabs = it
-                                window.resetSortedChatTabs()
-                            },
+                            { window.tabs = it },
                             window.tabs.size > 0,
-                            { ChatTab("", "") },
+                            { ChatTab(window, "", "") },
                             { value ->
                                 listOf(
                                     entryBuilder.stringField("chatPlus.chatTabs.name", value.name) { value.name = it },
