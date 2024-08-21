@@ -128,7 +128,7 @@ object ScreenshotChat {
                 resetScreenShotTick()
                 screenshotMode = ScreenshotMode.LINE
                 lastLinesScreenShotted = TimeStampedLines(hoveredOverMessage, Events.currentTick + 60)
-            } else if (SelectChat.selectedMessages.isNotEmpty()) {
+            } else if (SelectChat.getAllSelectedMessages().isNotEmpty()) {
                 resetScreenShotTick()
                 screenshotMode = ScreenshotMode.SELECTED
                 lastLinesScreenShotted = TimeStampedLines(SelectChat.getSelectedMessagesOrdered().toMutableList(), Events.currentTick + 60)

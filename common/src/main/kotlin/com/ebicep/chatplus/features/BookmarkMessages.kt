@@ -43,11 +43,12 @@ object BookmarkMessages {
             var toggledBookmarkMessage = false
             if (Config.values.bookmarkKey.isDown()) {
                 val hoveredOverMessage = ChatManager.globalSelectedTab.getHoveredOverMessageLine()
-                if (hoveredOverMessage != null && SelectChat.selectedMessages.isEmpty()) {
+                val selectedMessages = SelectChat.getAllSelectedMessages()
+                if (hoveredOverMessage != null && selectedMessages.isEmpty()) {
                     toggleMessageBookmark(hoveredOverMessage.linkedMessage)
                     toggledBookmarkMessage = true
                 } else if (SelectChat.selectedMessages.isNotEmpty()) {
-                    SelectChat.selectedMessages.forEach {
+                    selectedMessages.forEach {
                         toggleMessageBookmark(it.linkedMessage)
                     }
                     toggledBookmarkMessage = true

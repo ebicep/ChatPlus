@@ -3,6 +3,7 @@ package com.ebicep.chatplus.features
 import com.ebicep.chatplus.ChatPlus
 import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.events.EventBus
+import com.ebicep.chatplus.features.chattabs.AddNewMessageEvent
 import com.ebicep.chatplus.features.chattabs.ChatTab
 import com.ebicep.chatplus.features.textbarelements.FindToggleEvent
 import com.ebicep.chatplus.features.textbarelements.TextBarElements
@@ -19,6 +20,7 @@ import dev.architectury.event.events.client.ClientChatEvent
 import dev.architectury.event.events.client.ClientRawInputEvent
 import dev.architectury.event.events.client.ClientSystemMessageEvent
 import net.minecraft.ChatFormatting
+import net.minecraft.client.GuiMessageTag
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.components.EditBox
 import net.minecraft.client.gui.screens.Screen
@@ -186,7 +188,7 @@ object TranslateMessage {
                 translateClickCooldown = System.currentTimeMillis()
                 // selected message compatibility, sends one translate request with all selected messages split by § then sends the
                 // translated messages unsplit
-                val selectedMessages = SelectChat.selectedMessages
+                val selectedMessages = SelectChat.getAllSelectedMessages()
                 val messages: List<ChatTab.ChatPlusGuiMessage> = if (selectedMessages.contains(message)) {
                     SelectChat.getSelectedMessagesOrdered().map { it.linkedMessage }
                 } else {
@@ -235,11 +237,20 @@ object TranslateMessage {
 
         override fun onTranslate(matchedRegex: String?, translatedMessage: TranslateResult, fromLanguage: String?) {
             translatedMessage.translatedText.split("§").forEachIndexed { index, it ->
-                Minecraft.getInstance().player?.sendSystemMessage(
-                    ComponentUtil.literal(
-                        (matchedRegex ?: "") + it.trim() + " (" + (fromLanguage ?: "Unknown") + ")",
-                        ChatFormatting.GREEN,
-                        HoverEvent(HoverEvent.Action.SHOW_TEXT, line[index].guiMessage.content.copy())
+                val component = ComponentUtil.literal(
+                    (matchedRegex ?: "") + it.trim() + " (" + (fromLanguage ?: "Unknown") + ")",
+                    ChatFormatting.GREEN,
+                    HoverEvent(HoverEvent.Action.SHOW_TEXT, line[index].guiMessage.content.copy())
+                )
+                ChatManager.globalSelectedTab.addNewMessage(
+                    AddNewMessageEvent(
+                        component.copy(),
+                        component,
+                        null,
+                        null,
+                        Minecraft.getInstance().gui.guiTicks,
+                        GuiMessageTag.system(),
+                        false
                     )
                 )
             }
