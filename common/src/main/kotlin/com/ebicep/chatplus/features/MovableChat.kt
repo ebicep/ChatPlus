@@ -71,8 +71,13 @@ object MovableChat {
         get() = movingTabMouseYStart - movingTabYStart
 
     init {
+        var toggleCooldown = false
         EventBus.register<ChatScreenKeyPressedEvent>({ 2 }) {
+            if (toggleCooldown) {
+                return@register
+            }
             if (Config.values.movableChatToggleKey.isDown()) {
+                toggleCooldown = true
                 Config.values.movableChatEnabled = !Config.values.movableChatEnabled
                 ChatPlus.sendMessage(
                     Component.literal("Movable Chat ${if (Config.values.movableChatEnabled) "Enabled" else "Disabled"}")
@@ -80,6 +85,9 @@ object MovableChat {
                 )
                 it.returnFunction = true
             }
+        }
+        EventBus.register<ChatScreenKeyReleasedEvent> {
+            toggleCooldown = false
         }
         EventBus.register<ChatScreenMouseClickedEvent>({ 50 }, { movingChat }) {
             if (it.button != 0 || !Config.values.movableChatEnabled) {

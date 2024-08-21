@@ -13,6 +13,13 @@ data class ChatScreenKeyPressedEvent(
     var returnFunction: Boolean = false
 ) : Event
 
+data class ChatScreenKeyReleasedEvent(
+    val screen: ChatScreen,
+    val keyCode: Int,
+    val scanCode: Int,
+    val modifiers: Int
+) : Event
+
 data class ChatScreenMouseClickedEvent(
     val screen: ChatScreen,
     val mouseX: Double,

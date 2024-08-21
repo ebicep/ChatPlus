@@ -36,8 +36,12 @@ object ChatPlusScreenAdapter {
         return EventBus.post(ChatScreenInputBoxEditEvent(chatScreen, str)).returnFunction
     }
 
-    fun handleKeyPressed(chatScreen: ChatScreen, pKeyCode: Int, pScanCode: Int, pModifiers: Int): Boolean {
-        return EventBus.post(ChatScreenKeyPressedEvent(chatScreen, pKeyCode, pScanCode, pModifiers)).returnFunction
+    fun handleKeyPressed(chatScreen: ChatScreen, keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
+        return EventBus.post(ChatScreenKeyPressedEvent(chatScreen, keyCode, scanCode, modifiers)).returnFunction
+    }
+
+    fun handleKeyReleased(chatScreen: ChatScreen, keyCode: Int, scanCode: Int, modifiers: Int) {
+        EventBus.post(ChatScreenKeyReleasedEvent(chatScreen, keyCode, scanCode, modifiers))
     }
 
     fun handlePageUpDown(up: Boolean) {
