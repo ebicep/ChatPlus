@@ -137,6 +137,10 @@ data class ConfigVariables(
     var animationNewMessageTransitionTime: Int = 200,
     // windows
     var chatWindows: MutableList<ChatWindow> = mutableListOf(),
+    // moving chat
+    var movableChatEnabled: Boolean = true,
+    var movableChatToggleKey: InputConstants.Key = InputConstants.getKey("key.keyboard.right.control"),
+
     // tabs
 //    var chatTabs: MutableList<ChatTab> = mutableListOf(defaultTab),
 //    var selectedTab: Int = 0,
@@ -185,7 +189,6 @@ data class ConfigVariables(
     var keyNoScroll: InputConstants.Key = InputConstants.getKey("key.keyboard.left.control"),
     var keyFineScroll: InputConstants.Key = InputConstants.getKey("key.keyboard.left.shift"),
     var keyLargeScroll: InputConstants.Key = InputConstants.getKey("key.keyboard.left.alt"),
-    var keyMoveChat: InputConstants.Key = InputConstants.getKey("key.keyboard.right.control"),
     var keyPeekChat: InputConstants.Key = InputConstants.getKey("key.keyboard.p"),
     // translator
     var translatorEnabled: Boolean = true,

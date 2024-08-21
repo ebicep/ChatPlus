@@ -41,9 +41,7 @@ object ChatTabs {
             }
             val chatFocused: Boolean = ChatManager.isChatFocused()
             if (chatFocused) {
-                Config.values.chatWindows.forEach { window ->
-                    window.renderTabs(guiGraphics = it.guiGraphics)
-                }
+                it.chatWindow.renderTabs(guiGraphics = it.guiGraphics)
             }
         }
         EventBus.register<ChatScreenKeyPressedEvent> {
@@ -83,8 +81,6 @@ object ChatTabs {
         EventBus.register<ChatScreenSendMessagePreEvent> {
             it.message = ChatManager.globalSelectedTab.autoPrefix + it.message
         }
-        // moving tabs
-        ChatTabsMover
     }
 
     private fun checkTabRefresh(chatWindow: ChatWindow, chatTab: ChatTab) {

@@ -45,6 +45,7 @@ object ConfigScreenImpl {
         addCompactMessagesOptions(builder, entryBuilder)
         addScrollbarOption(builder, entryBuilder)
         addAnimationOption(builder, entryBuilder)
+        addMovableChatOption(builder, entryBuilder)
         addChatWindowsTabsOption(builder, entryBuilder)
         addMessageFilterOption(builder, entryBuilder)
         addHoverHighlightOption(builder, entryBuilder)
@@ -324,6 +325,19 @@ object ConfigScreenImpl {
         )
     }
 
+    private fun addMovableChatOption(builder: ConfigBuilder, entryBuilder: ConfigEntryBuilder) {
+        val category = builder.getOrCreateCategory(Component.translatable("chatPlus.movableChat.title"))
+        category.addEntry(
+            entryBuilder.booleanToggle(
+                "chatPlus.movableChat.toggle",
+                Config.values.movableChatEnabled
+            ) { Config.values.movableChatEnabled = it }
+        )
+        category.addEntry(
+            entryBuilder.keyCodeOption("key.moveChat", Config.values.movableChatToggleKey) { Config.values.movableChatToggleKey = it }
+        )
+    }
+
     private fun addMessageFilterOption(builder: ConfigBuilder, entryBuilder: ConfigEntryBuilder) {
         val messageFilter = builder.getOrCreateCategory(Component.translatable("chatPlus.messageFilter.title"))
         messageFilter.addEntry(
@@ -600,9 +614,6 @@ object ConfigScreenImpl {
         )
         keyBinds.addEntry(
             entryBuilder.keyCodeOption("key.largeScroll", Config.values.keyLargeScroll) { Config.values.keyLargeScroll = it }
-        )
-        keyBinds.addEntry(
-            entryBuilder.keyCodeOption("key.moveChat", Config.values.keyMoveChat) { Config.values.keyMoveChat = it }
         )
         keyBinds.addEntry(
             entryBuilder.keyCodeOption("key.peekChat", Config.values.keyPeekChat) { Config.values.keyPeekChat = it }
