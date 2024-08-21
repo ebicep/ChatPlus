@@ -180,7 +180,7 @@ class ChatWindow {
             poseStack.guiForward()
             guiGraphics.fill(
                 0,
-                0,
+                (if (isSelected) -CHAT_TAB_Y_OFFSET else 0),
                 chatTab.width,
                 TAB_HEIGHT,
                 backgroundOpacity
