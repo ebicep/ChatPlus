@@ -43,9 +43,10 @@ object ClientCommandRegistration {
                 Commands.literal("debug")
                     .executes {
                         Debug.debug = !Debug.debug
-                        ChatPlus.sendMessage(Component.literal("Debug ${if (Debug.debug) "Enabled" else "Disabled"}").withStyle {
-                            it.withColor(if (Debug.debug) ChatFormatting.GREEN else ChatFormatting.RED)
-                        })
+                        ChatPlus.sendMessage(
+                            Component.literal("Debug ${if (Debug.debug) "Enabled" else "Disabled"}")
+                                .withStyle(if (Debug.debug) ChatFormatting.GREEN else ChatFormatting.RED)
+                        )
                         Command.SINGLE_SUCCESS
                 }
             )

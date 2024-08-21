@@ -5,7 +5,6 @@ import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.config.ConfigScreen
 import com.ebicep.chatplus.features.internal.Debug
 import com.ebicep.chatplus.hud.ChatManager
-import com.ebicep.chatplus.util.ComponentUtil
 import com.mojang.brigadier.Command
 import com.mojang.brigadier.CommandDispatcher
 import com.mojang.brigadier.builder.LiteralArgumentBuilder
@@ -44,17 +43,10 @@ object ClientCommandRegistration {
             .then(ClientCommandManager.literal("debug")
                 .executes {
                     Debug.debug = !Debug.debug
-                    ChatPlus.sendMessage(Component.literal("Debug ${if (Debug.debug) "Enabled" else "Disabled"}").withStyle {
-                        it.withColor(if (Debug.debug) ChatFormatting.GREEN else ChatFormatting.RED)
-                    })
-                    Command.SINGLE_SUCCESS
-                }
-            )
-            .then(
-                ClientCommandManager.literal("test")
-                    .executes {
-                        val translatable = Component.translatable("chatPlus.compactMessages.searchAmount.tooltip")
-                        ComponentUtil.splitLines(translatable, 100)
+                    ChatPlus.sendMessage(
+                        Component.literal("Debug ${if (Debug.debug) "Enabled" else "Disabled"}")
+                            .withStyle(if (Debug.debug) ChatFormatting.GREEN else ChatFormatting.RED)
+                    )
                     Command.SINGLE_SUCCESS
                 }
             )
