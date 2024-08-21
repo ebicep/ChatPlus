@@ -4,17 +4,14 @@ import com.ebicep.chatplus.ChatPlus
 import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.config.JumpToMessageMode
 import com.ebicep.chatplus.config.MessageDirection
-import com.ebicep.chatplus.config.TimestampMode
 import com.ebicep.chatplus.events.Event
 import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.events.Events
-import com.ebicep.chatplus.features.CompactMessages.literalIgnored
 import com.ebicep.chatplus.features.chatwindows.ChatWindow
 import com.ebicep.chatplus.features.internal.MessageFilter
 import com.ebicep.chatplus.hud.ChatManager
 import com.ebicep.chatplus.hud.ChatPlusScreen
 import com.ebicep.chatplus.mixin.IMixinScreen
-import com.ebicep.chatplus.util.KotlinUtil.containsReference
 import com.google.common.base.Predicate
 import com.google.common.collect.Lists
 import kotlinx.serialization.Serializable
@@ -30,8 +27,6 @@ import net.minecraft.locale.Language
 import net.minecraft.network.chat.*
 import net.minecraft.util.FormattedCharSequence
 import net.minecraft.util.Mth
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentHashMap.KeySetView
@@ -41,9 +36,9 @@ import kotlin.math.min
 data class ChatTabAddNewMessageEvent(
     val chatWindow: ChatWindow,
     val chatTab: ChatTab,
-    val guiMessage: ChatTab.ChatPlusGuiMessage,
-    val componentWithTimeStamp: MutableComponent,
-    val component: Component,
+    val chatPlusGuiMessage: ChatTab.ChatPlusGuiMessage,
+    var mutableComponent: MutableComponent,
+    val rawComponent: Component,
     val signature: MessageSignature?,
     val addedTime: Int,
     val tag: GuiMessageTag?,
@@ -104,12 +99,13 @@ data class ChatTabRefreshDisplayMessages(
 @Serializable
 class ChatTab : MessageFilter {
 
-    data class ChatPlusGuiMessage(
-        var rawComponent: Component?,
-        val guiMessage: GuiMessage,
+    class ChatPlusGuiMessage(
+        var rawComponent: Component? = null,
         var timesRepeated: Int = 1,
         var senderUUID: UUID? = null
-    )
+    ) {
+        lateinit var guiMessage: GuiMessage
+    }
 
     data class ChatPlusGuiMessageLine(
         val line: GuiMessage.Line,
@@ -216,74 +212,32 @@ class ChatTab : MessageFilter {
         addedTime: Int,
         tag: GuiMessageTag?
     ) {
-        val componentWithTimeStamp: MutableComponent = getTimeStampedMessage(component)
-        val chatPlusGuiMessage = ChatPlusGuiMessage(
-            if (Config.values.compactMessagesIgnoreTimestamps) component else null,
-            GuiMessage(addedTime, componentWithTimeStamp, signature, tag)
+        val chatPlusGuiMessage = ChatPlusGuiMessage()
+        val newMessageEvent = EventBus.post(
+            ChatTabAddNewMessageEvent(
+                chatWindow,
+                this,
+                chatPlusGuiMessage,
+                component.copy(),
+                component,
+                signature,
+                addedTime,
+                tag,
+            )
         )
-        if (EventBus.post(
-                ChatTabAddNewMessageEvent(
-                    chatWindow,
-                    this,
-                    chatPlusGuiMessage,
-                    componentWithTimeStamp,
-                    component,
-                    signature,
-                    addedTime,
-                    tag,
-                )
-            ).returnFunction
-        ) {
+        if (newMessageEvent.returnFunction) {
             return
         }
+        chatPlusGuiMessage.guiMessage = GuiMessage(addedTime, newMessageEvent.mutableComponent, signature, tag)
         this.messages.add(chatPlusGuiMessage)
         this.lastMessageTime = System.currentTimeMillis()
         while (this.messages.size > Config.values.maxMessages) {
             EventBus.post(ChatTabRemoveMessageEvent(chatWindow, this, this.messages.removeFirst()))
         }
-        this.addNewDisplayMessage(componentWithTimeStamp, addedTime, tag, chatPlusGuiMessage)
+        this.addNewDisplayMessage(newMessageEvent.mutableComponent, addedTime, tag, chatPlusGuiMessage)
     }
 
-    private fun getTimeStampedMessage(component: Component): MutableComponent {
-        if (Config.values.chatTimestampMode == TimestampMode.NONE) {
-            return component.copy() as MutableComponent
-        }
-        val componentWithTimeStamp: MutableComponent = Component.empty()
-        val timestampedHoverComponents = HashSet<Any>()
-        component.toFlatList().forEach {
-            val flatComponent = it as MutableComponent
-            if (flatComponent.style.hoverEvent == null) {
-                flatComponent.withStyle {
-                    val hoverValue = getTimestamp(false)
-                    timestampedHoverComponents.add(hoverValue)
-                    it.withHoverEvent(HoverEvent(HoverEvent.Action.SHOW_TEXT, hoverValue))
-                }
-            } else {
-                when (flatComponent.style.hoverEvent?.action) {
-                    HoverEvent.Action.SHOW_TEXT -> {
-                        val hoverValue = flatComponent.style.hoverEvent?.getValue(HoverEvent.Action.SHOW_TEXT)
-                        if (hoverValue != null && !timestampedHoverComponents.containsReference(hoverValue)) {
-                            hoverValue.siblings.add(getTimestamp(true))
-                            timestampedHoverComponents.add(hoverValue)
-                        }
-                    }
-
-                    HoverEvent.Action.SHOW_ENTITY -> {
-                        val hoverValue = flatComponent.style.hoverEvent?.getValue(HoverEvent.Action.SHOW_ENTITY)
-                        if (hoverValue != null && !timestampedHoverComponents.containsReference(hoverValue.tooltipLines)) {
-                            hoverValue.tooltipLines.add(getTimestamp(false))
-                            timestampedHoverComponents.add(hoverValue.tooltipLines)
-                        }
-                    }
-                }
-
-            }
-            componentWithTimeStamp.append(flatComponent)
-        }
-        return componentWithTimeStamp
-    }
-
-    fun addNewDisplayMessage(
+    private fun addNewDisplayMessage(
         component: MutableComponent,
         addedTime: Int,
         tag: GuiMessageTag?,
@@ -351,22 +305,6 @@ class ChatTab : MessageFilter {
                 wrappedIndex++
             }
         }
-    }
-
-    private fun getTimestamp(newLine: Boolean): Component {
-        return literalIgnored((if (newLine) "\n" else "") + "Sent at ")
-            .withStyle {
-                it.withColor(ChatFormatting.GRAY)
-            }
-            .append(Component.literal(getCurrentTime())
-                .withStyle {
-                    it.withColor(ChatFormatting.YELLOW)
-                })
-            .append(Component.literal("."))
-    }
-
-    private fun getCurrentTime(): String {
-        return LocalDateTime.now().format(DateTimeFormatter.ofPattern(Config.values.chatTimestampMode.format))
     }
 
     fun clear() {

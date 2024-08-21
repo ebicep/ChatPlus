@@ -7,7 +7,6 @@ import com.ebicep.chatplus.features.chattabs.ChatTabAddDisplayMessageEvent
 import com.ebicep.chatplus.features.chattabs.ChatTabAddNewMessageEvent
 import com.ebicep.chatplus.features.chattabs.ChatTabGetMessageAtEvent
 import com.ebicep.chatplus.hud.ChatRenderLineTextEvent
-import com.ebicep.chatplus.hud.ChatRenderer
 import com.ebicep.chatplus.util.GraphicsUtil.createPose
 import com.ebicep.chatplus.util.GraphicsUtil.guiForward
 import com.ebicep.chatplus.util.GraphicsUtil.translate0
@@ -42,14 +41,14 @@ object PlayerHeadChatDisplay {
             if (!Config.values.playerHeadChatDisplayEnabled) {
                 return@register
             }
-            val content = it.component.string
+            val content = it.rawComponent.string
             val connection = Minecraft.getInstance().connection ?: return@register
             content.split(NAME_REGEX).forEach { word ->
                 if (word.isBlank()) {
                     return@forEach
                 }
                 playerNameUUIDs[word]?.let { timedUUID ->
-                    it.guiMessage.senderUUID = timedUUID.uuid
+                    it.chatPlusGuiMessage.senderUUID = timedUUID.uuid
                     return@register
                 }
                 val playerInfo = connection.getPlayerInfo(word)
@@ -57,7 +56,7 @@ object PlayerHeadChatDisplay {
                     val uuid = playerInfo.profile.id
                     playerNameUUIDs[word] = TimedUUID(uuid, System.currentTimeMillis())
                     playerHeads[uuid] = playerInfo.skin.texture
-                    it.guiMessage.senderUUID = uuid
+                    it.chatPlusGuiMessage.senderUUID = uuid
                     return@register
                 }
             }

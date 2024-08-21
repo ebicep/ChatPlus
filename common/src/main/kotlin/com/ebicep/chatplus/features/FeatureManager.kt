@@ -32,6 +32,7 @@ object FeatureManager {
         HideChat
         Debug
         OnScreenDisplay
+        TimestampMessages
 //        AlternatingColorBackground
     }
 

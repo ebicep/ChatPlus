@@ -24,7 +24,7 @@ object FilterMessages {
             if (!Config.values.filterMessagesEnabled) {
                 return@register
             }
-            val message = it.guiMessage.guiMessage.content.string
+            val message = it.rawComponent!!.string
             for (filterHighlight in Config.values.filterMessagesPatterns) {
                 if (!filterHighlight.playSound || !filterHighlight.matches(message)) {
                     continue

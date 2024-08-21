@@ -30,10 +30,10 @@ object BookmarkMessages {
             bookmarkedMessages.remove(it.guiMessage)
         }
         EventBus.register<ChatTabAddNewMessageEvent> {
-            val content = it.component.string
+            val content = it.rawComponent.string
             for (autoBookMarkPattern in Config.values.autoBookMarkPatterns) {
                 if (autoBookMarkPattern.matches(content)) {
-                    bookmarkedMessages.add(it.guiMessage)
+                    bookmarkedMessages.add(it.chatPlusGuiMessage)
                     return@register
                 }
             }
