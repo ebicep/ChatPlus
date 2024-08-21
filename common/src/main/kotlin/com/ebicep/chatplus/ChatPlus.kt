@@ -3,7 +3,6 @@ package com.ebicep.chatplus
 import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.events.Events
 import com.ebicep.chatplus.features.FeatureManager
-import com.ebicep.chatplus.hud.ChatManager
 import com.ebicep.chatplus.translator.LanguageManager
 import net.minecraft.ChatFormatting
 import net.minecraft.client.Minecraft
@@ -28,7 +27,7 @@ object ChatPlus {
 
     fun doTest() {
         for (i in 1..500_000) {
-            ChatManager.globalSelectedTab.addNewMessage(Component.literal("Test $i"), null, 0, null)
+//            ChatManager.globalSelectedTab.addNewMessage(Component.literal("Test $i"), null, 0, null)
         }
     }
 

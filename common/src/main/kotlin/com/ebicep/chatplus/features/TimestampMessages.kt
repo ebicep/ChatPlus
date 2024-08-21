@@ -4,7 +4,7 @@ import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.config.TimestampMode
 import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.features.CompactMessages.literalIgnored
-import com.ebicep.chatplus.features.chattabs.ChatTabAddNewMessageEvent
+import com.ebicep.chatplus.features.chattabs.AddNewMessageEvent
 import com.ebicep.chatplus.util.KotlinUtil.containsReference
 import net.minecraft.ChatFormatting
 import net.minecraft.network.chat.Component
@@ -18,18 +18,13 @@ object TimestampMessages {
     private var lastTime: String = ""
     private var lastTimestamp: Component = Component.empty()
     private var lastTimestampNewLine: Component = Component.empty()
-    private var lastComponent: Component = Component.empty()
 
     init {
-        EventBus.register<ChatTabAddNewMessageEvent>({ 5 }) {
+        EventBus.register<AddNewMessageEvent>({ 5 }) {
             if (Config.values.chatTimestampMode == TimestampMode.NONE) {
                 it.mutableComponent = it.rawComponent.copy()
                 return@register
             }
-            if (it.rawComponent === lastComponent) {
-                return@register
-            }
-            lastComponent = it.rawComponent
             val currentTime = getCurrentTime()
             if (lastTime != currentTime) {
                 lastTime = currentTime

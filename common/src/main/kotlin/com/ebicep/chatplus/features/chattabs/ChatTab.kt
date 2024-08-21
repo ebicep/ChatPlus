@@ -32,6 +32,15 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentHashMap.KeySetView
 import kotlin.math.min
 
+data class AddNewMessageEvent(
+    var mutableComponent: MutableComponent,
+    val rawComponent: Component,
+    var senderUUID: UUID?,
+    val signature: MessageSignature?,
+    val addedTime: Int,
+    val tag: GuiMessageTag?,
+    var returnFunction: Boolean = false
+) : Event
 
 data class ChatTabAddNewMessageEvent(
     val chatWindow: ChatWindow,
@@ -44,7 +53,6 @@ data class ChatTabAddNewMessageEvent(
     val tag: GuiMessageTag?,
     var returnFunction: Boolean = false
 ) : Event
-
 
 data class ChatTabAddDisplayMessageEvent(
     val chatWindow: ChatWindow,
@@ -206,35 +214,35 @@ class ChatTab : MessageFilter {
     lateinit var chatWindow: ChatWindow
 
 
-    fun addNewMessage(
-        component: Component,
-        signature: MessageSignature?,
-        addedTime: Int,
-        tag: GuiMessageTag?
-    ) {
-        val chatPlusGuiMessage = ChatPlusGuiMessage()
-        val newMessageEvent = EventBus.post(
-            ChatTabAddNewMessageEvent(
-                chatWindow,
-                this,
-                chatPlusGuiMessage,
-                component.copy(),
-                component,
-                signature,
-                addedTime,
-                tag,
-            )
-        )
-        if (newMessageEvent.returnFunction) {
+    fun addNewMessage(addNewMessageEvent: AddNewMessageEvent) {
+        val mutableComponent = addNewMessageEvent.mutableComponent
+        val rawComponent = addNewMessageEvent.rawComponent
+        val signature = addNewMessageEvent.signature
+        val addedTime = addNewMessageEvent.addedTime
+        val tag = addNewMessageEvent.tag
+        val chatPlusGuiMessage = ChatPlusGuiMessage(senderUUID = addNewMessageEvent.senderUUID)
+        if (EventBus.post(
+                ChatTabAddNewMessageEvent(
+                    chatWindow,
+                    this,
+                    chatPlusGuiMessage,
+                    mutableComponent,
+                    rawComponent,
+                    signature,
+                    addedTime,
+                    tag,
+                )
+            ).returnFunction
+        ) {
             return
         }
-        chatPlusGuiMessage.guiMessage = GuiMessage(addedTime, newMessageEvent.mutableComponent, signature, tag)
+        chatPlusGuiMessage.guiMessage = GuiMessage(addedTime, mutableComponent, signature, tag)
         this.messages.add(chatPlusGuiMessage)
         this.lastMessageTime = System.currentTimeMillis()
         while (this.messages.size > Config.values.maxMessages) {
             EventBus.post(ChatTabRemoveMessageEvent(chatWindow, this, this.messages.removeFirst()))
         }
-        this.addNewDisplayMessage(newMessageEvent.mutableComponent, addedTime, tag, chatPlusGuiMessage)
+        this.addNewDisplayMessage(mutableComponent, addedTime, tag, chatPlusGuiMessage)
     }
 
     private fun addNewDisplayMessage(

@@ -3,8 +3,8 @@ package com.ebicep.chatplus.features
 import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.events.ChatPlusMinuteEvent
 import com.ebicep.chatplus.events.EventBus
+import com.ebicep.chatplus.features.chattabs.AddNewMessageEvent
 import com.ebicep.chatplus.features.chattabs.ChatTabAddDisplayMessageEvent
-import com.ebicep.chatplus.features.chattabs.ChatTabAddNewMessageEvent
 import com.ebicep.chatplus.features.chattabs.ChatTabGetMessageAtEvent
 import com.ebicep.chatplus.hud.ChatRenderLineTextEvent
 import com.ebicep.chatplus.util.GraphicsUtil.createPose
@@ -37,7 +37,7 @@ object PlayerHeadChatDisplay {
                 }
             }
         }
-        EventBus.register<ChatTabAddNewMessageEvent> {
+        EventBus.register<AddNewMessageEvent> {
             if (!Config.values.playerHeadChatDisplayEnabled) {
                 return@register
             }
@@ -48,7 +48,7 @@ object PlayerHeadChatDisplay {
                     return@forEach
                 }
                 playerNameUUIDs[word]?.let { timedUUID ->
-                    it.chatPlusGuiMessage.senderUUID = timedUUID.uuid
+                    it.senderUUID = timedUUID.uuid
                     return@register
                 }
                 val playerInfo = connection.getPlayerInfo(word)
@@ -56,7 +56,7 @@ object PlayerHeadChatDisplay {
                     val uuid = playerInfo.profile.id
                     playerNameUUIDs[word] = TimedUUID(uuid, System.currentTimeMillis())
                     playerHeads[uuid] = playerInfo.skin.texture
-                    it.chatPlusGuiMessage.senderUUID = uuid
+                    it.senderUUID = uuid
                     return@register
                 }
             }
