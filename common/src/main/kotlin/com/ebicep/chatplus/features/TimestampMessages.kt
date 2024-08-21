@@ -18,6 +18,7 @@ object TimestampMessages {
     private var lastTime: String = ""
     private var lastTimestamp: Component = Component.empty()
     private var lastTimestampNewLine: Component = Component.empty()
+    private var lastComponent: Component = Component.empty()
 
     init {
         EventBus.register<ChatTabAddNewMessageEvent>({ 5 }) {
@@ -25,6 +26,10 @@ object TimestampMessages {
                 it.mutableComponent = it.rawComponent.copy()
                 return@register
             }
+            if (it.rawComponent === lastComponent) {
+                return@register
+            }
+            lastComponent = it.rawComponent
             val currentTime = getCurrentTime()
             if (lastTime != currentTime) {
                 lastTime = currentTime
