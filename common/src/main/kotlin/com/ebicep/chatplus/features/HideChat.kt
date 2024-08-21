@@ -3,14 +3,17 @@ package com.ebicep.chatplus.features
 import com.ebicep.chatplus.MOD_COLOR
 import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.events.EventBus
+import com.ebicep.chatplus.features.internal.OnScreenDisplayEvent
 import com.ebicep.chatplus.hud.ChatManager
 import com.ebicep.chatplus.hud.ChatRenderPreLinesEvent
+import com.ebicep.chatplus.util.ComponentUtil.withColor
 import dev.architectury.event.EventResult
-import dev.architectury.event.events.client.ClientGuiEvent
 import dev.architectury.event.events.client.ClientRawInputEvent
-import net.minecraft.client.Minecraft
+import net.minecraft.network.chat.Component
 
 object HideChat {
+
+    private val CHAT_HIDDEN_COMPONENT = Component.literal("Chat Hidden").withColor(MOD_COLOR)
 
     init {
         var hidden = false
@@ -44,18 +47,11 @@ object HideChat {
             Config.values.hideChatEnabled = !Config.values.hideChatEnabled
             EventResult.interruptTrue()
         }
-        // show on screen
-        ClientGuiEvent.RENDER_HUD.register { guiGraphics, tickDelta ->
+        EventBus.register<OnScreenDisplayEvent> {
             if (!Config.values.hideChatEnabled || !Config.values.hideChatShowHiddenOnScreen) {
                 return@register
             }
-            guiGraphics.drawCenteredString(
-                Minecraft.getInstance().font,
-                "Chat Hidden",
-                Minecraft.getInstance().window.guiScaledWidth / 2,
-                40,
-                MOD_COLOR
-            )
+            it.components.add(CHAT_HIDDEN_COMPONENT)
         }
     }
 

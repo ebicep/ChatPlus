@@ -4,10 +4,10 @@ import com.ebicep.chatplus.ChatPlus
 import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.config.queueUpdateConfig
 import com.ebicep.chatplus.events.EventBus
-import com.ebicep.chatplus.features.Debug
 import com.ebicep.chatplus.features.chattabs.*
 import com.ebicep.chatplus.features.chattabs.ChatTab.Companion.TAB_HEIGHT
 import com.ebicep.chatplus.features.chattabs.ChatTabs.DefaultTab
+import com.ebicep.chatplus.features.internal.Debug
 import com.ebicep.chatplus.hud.ChatManager
 import com.ebicep.chatplus.hud.ChatRenderer
 import com.ebicep.chatplus.util.GraphicsUtil.createPose

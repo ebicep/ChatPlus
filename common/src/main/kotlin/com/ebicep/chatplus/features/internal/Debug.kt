@@ -1,4 +1,4 @@
-package com.ebicep.chatplus.features
+package com.ebicep.chatplus.features.internal
 
 import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.hud.*

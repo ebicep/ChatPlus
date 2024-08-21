@@ -4,15 +4,17 @@ import com.ebicep.chatplus.ChatPlus
 import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.config.queueUpdateConfig
 import com.ebicep.chatplus.events.EventBus
-import com.ebicep.chatplus.features.Debug.debug
 import com.ebicep.chatplus.features.chattabs.*
 import com.ebicep.chatplus.features.chattabs.ChatTab.Companion.TAB_HEIGHT
 import com.ebicep.chatplus.features.chatwindows.ChatWindow
 import com.ebicep.chatplus.features.chatwindows.ChatWindows
+import com.ebicep.chatplus.features.internal.Debug.debug
+import com.ebicep.chatplus.features.internal.OnScreenDisplayEvent
 import com.ebicep.chatplus.hud.*
 import com.ebicep.chatplus.hud.ChatPlusScreen.EDIT_BOX_HEIGHT
 import com.ebicep.chatplus.hud.ChatPlusScreen.lastMouseX
 import com.ebicep.chatplus.hud.ChatPlusScreen.lastMouseY
+import com.ebicep.chatplus.util.ComponentUtil.withColor
 import com.ebicep.chatplus.util.GraphicsUtil.createPose
 import com.ebicep.chatplus.util.GraphicsUtil.fill0
 import com.ebicep.chatplus.util.GraphicsUtil.guiForward
@@ -24,11 +26,15 @@ import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.network.chat.Component
 import net.minecraft.util.Mth
+import java.awt.Color
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.roundToInt
 
 object MovableChat {
+
+    val MOVABLE_CHAT_COLOR = Color(255, 255, 255).rgb
+    private val MOVABLE_CHAT_ENABLED_COMPONENT = Component.literal("Movable Chat Enabled").withColor(MOVABLE_CHAT_COLOR)
 
     // moving chat box
     private const val RENDER_MOVING_SIZE = 4f // width/length of box when rendering moving chat
@@ -320,6 +326,12 @@ object MovableChat {
             if (debug && movingTab) {
                 renderDebugMoving(it.guiGraphics, chatWindow)
             }
+        }
+        EventBus.register<OnScreenDisplayEvent> {
+            if (!Config.values.movableChatEnabled || !Config.values.movableChatShowEnabledOnScreen || !ChatManager.isChatFocused()) {
+                return@register
+            }
+            it.components.add(MOVABLE_CHAT_ENABLED_COMPONENT)
         }
     }
 

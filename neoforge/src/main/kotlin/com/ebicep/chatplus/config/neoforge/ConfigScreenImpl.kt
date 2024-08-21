@@ -5,6 +5,7 @@ import com.ebicep.chatplus.config.*
 import com.ebicep.chatplus.config.serializers.KeyWithModifier
 import com.ebicep.chatplus.features.*
 import com.ebicep.chatplus.features.FilterMessages.DEFAULT_COLOR
+import com.ebicep.chatplus.features.MovableChat.MOVABLE_CHAT_COLOR
 import com.ebicep.chatplus.features.chattabs.ChatTab
 import com.ebicep.chatplus.features.chatwindows.ChatWindow
 import com.ebicep.chatplus.features.internal.MessageFilter
@@ -326,7 +327,7 @@ object ConfigScreenImpl {
     }
 
     private fun addMovableChatOption(builder: ConfigBuilder, entryBuilder: ConfigEntryBuilder) {
-        val category = builder.getOrCreateCategory(Component.translatable("chatPlus.movableChat.title"))
+        val category = builder.getOrCreateCategory(Component.translatable("chatPlus.movableChat.title").withColor(MOVABLE_CHAT_COLOR))
         category.addEntry(
             entryBuilder.booleanToggle(
                 "chatPlus.movableChat.toggle",
@@ -334,7 +335,12 @@ object ConfigScreenImpl {
             ) { Config.values.movableChatEnabled = it }
         )
         category.addEntry(
-            entryBuilder.keyCodeOption("key.moveChat", Config.values.movableChatToggleKey) { Config.values.movableChatToggleKey = it }
+            entryBuilder.booleanToggle(
+                "chatPlus.movableChat.showEnabledOnScreen.toggle",
+                Config.values.movableChatShowEnabledOnScreen
+            ) { Config.values.movableChatShowEnabledOnScreen = it })
+        category.addEntry(
+            entryBuilder.keyCodeOption("chatPlus.movableChat.toggleKey", Config.values.movableChatToggleKey) { Config.values.movableChatToggleKey = it }
         )
     }
 

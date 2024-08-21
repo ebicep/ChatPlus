@@ -139,6 +139,7 @@ data class ConfigVariables(
     var chatWindows: MutableList<ChatWindow> = mutableListOf(),
     // moving chat
     var movableChatEnabled: Boolean = true,
+    var movableChatShowEnabledOnScreen: Boolean = true,
     var movableChatToggleKey: InputConstants.Key = InputConstants.getKey("key.keyboard.right.control"),
 
     // tabs
