@@ -27,7 +27,7 @@ object Animations {
             return 0
         }
         val offset = chatWindow.renderer.lineHeight - Mth.lerp(timeAlive / fadeTime, 0.0f, chatWindow.renderer.lineHeight.toFloat()).toInt()
-        return when (Config.values.messageDirection) {
+        return when (chatWindow.messageDirection) {
             MessageDirection.TOP_DOWN -> -offset
             MessageDirection.BOTTOM_UP -> offset
         }

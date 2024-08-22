@@ -79,39 +79,6 @@ object ConfigScreenImpl {
                 30
             ) { Config.values.maxCommandSuggestions = it })
         general.addEntry(
-            entryBuilder.percentSlider(
-                "chatPlus.chatSettings.chatTextSize",
-                Config.values.scale,
-                { Config.values.scale = it })
-        )
-        general.addEntry(
-            entryBuilder.percentSlider(
-                "chatPlus.chatSettings.textOpacity",
-                Config.values.textOpacity,
-                { Config.values.textOpacity = it })
-        )
-        general.addEntry(
-            entryBuilder.percentSlider(
-                "chatPlus.chatSettings.backgroundOpacity",
-                Config.values.backgroundOpacity,
-                { Config.values.backgroundOpacity = it }
-            )
-        )
-        general.addEntry(
-            entryBuilder.percentSlider(
-                "chatPlus.chatSettings.unfocusedHeight",
-                Config.values.unfocusedHeight,
-                { Config.values.unfocusedHeight = it }
-            )
-        )
-        general.addEntry(
-            entryBuilder.percentSlider(
-                "chatPlus.chatSettings.lineSpacing",
-                Config.values.lineSpacing,
-                { Config.values.lineSpacing = it }
-            )
-        )
-        general.addEntry(
             entryBuilder.enumSelector(
                 "chatPlus.chatSettings.chatTimestampMode",
                 TimestampMode::class.java,
@@ -124,20 +91,6 @@ object ConfigScreenImpl {
                 JumpToMessageMode::class.java,
                 Config.values.jumpToMessageMode
             ) { Config.values.jumpToMessageMode = it }
-        )
-        general.addEntry(
-            entryBuilder.enumSelector(
-                "chatPlus.chatSettings.messageDirection",
-                MessageDirection::class.java,
-                Config.values.messageDirection
-            ) { Config.values.messageDirection = it }
-        )
-        general.addEntry(
-            entryBuilder.enumSelector(
-                "chatPlus.chatSettings.messageAlignment",
-                AlignMessage.Alignment::class.java,
-                Config.values.messageAlignment
-            ) { Config.values.messageAlignment = it }
         )
         general.addEntry(
             entryBuilder.linePriorityField("chatPlus.linePriority.selectChat", Config.values.selectChatLinePriority)
@@ -262,7 +215,10 @@ object ConfigScreenImpl {
                 Config.values.chatWindows,
                 {
                     Config.values.chatWindows = it
-                    Config.values.chatWindows.forEach { window -> window.resetSortedChatTabs() }
+                    Config.values.chatWindows.forEach { window ->
+                        window.resetSortedChatTabs()
+                        window.renderer.updateCachedDimension()
+                    }
                 },
                 Config.values.chatWindows.size > 0,
                 { ChatWindow() },
@@ -284,6 +240,34 @@ object ConfigScreenImpl {
                             "chatPlus.chatWindow.outlineColor",
                             window.outlineColor
                         ) { window.outlineColor = it },
+                        entryBuilder.percentSlider(
+                            "chatPlus.chatWindow.chatTextSize",
+                            window.scale,
+                            { window.scale = it }),
+                        entryBuilder.percentSlider(
+                            "chatPlus.chatWindow.textOpacity",
+                            window.textOpacity,
+                            { window.textOpacity = it }),
+                        entryBuilder.percentSlider(
+                            "chatPlus.chatWindow.unfocusedHeight",
+                            window.unfocusedHeight,
+                            { window.unfocusedHeight = it }
+                        ),
+                        entryBuilder.percentSlider(
+                            "chatPlus.chatWindow.lineSpacing",
+                            window.lineSpacing,
+                            { window.lineSpacing = it }
+                        ),
+                        entryBuilder.enumSelector(
+                            "chatPlus.chatWindow.messageAlignment",
+                            AlignMessage.Alignment::class.java,
+                            window.messageAlignment
+                        ) { window.messageAlignment = it },
+                        entryBuilder.enumSelector(
+                            "chatPlus.chatWindow.messageDirection",
+                            MessageDirection::class.java,
+                            window.messageDirection
+                        ) { window.messageDirection = it },
                         getCustomListOption(
                             "chatPlus.chatTabs.title",
                             window.tabs,

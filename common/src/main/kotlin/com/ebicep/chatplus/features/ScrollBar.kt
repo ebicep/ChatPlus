@@ -6,6 +6,7 @@ import com.ebicep.chatplus.features.chattabs.ChatTabAddDisplayMessageEvent
 import com.ebicep.chatplus.hud.*
 import com.ebicep.chatplus.util.GraphicsUtil.createPose
 import com.ebicep.chatplus.util.GraphicsUtil.fill0
+import kotlin.math.max
 import kotlin.math.roundToInt
 
 object ScrollBar {
@@ -28,7 +29,7 @@ object ScrollBar {
             if (!Config.values.scrollbarEnabled) {
                 return@register
             }
-            it.maxWidth -= barWidth
+            it.maxWidth -= max(0, barWidth)
         }
         EventBus.register<ChatRenderPostLinesEvent> {
             if (!Config.values.scrollbarEnabled) {

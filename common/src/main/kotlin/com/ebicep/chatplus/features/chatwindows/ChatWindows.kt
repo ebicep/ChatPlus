@@ -38,7 +38,7 @@ object ChatWindows {
             poseStack.createPose {
                 poseStack.guiForward(amount = 150.0)
                 val h = it.displayMessageIndex * renderer.lineHeight
-                guiGraphics.renderOutline(renderer.internalX, renderer.internalY - h, renderer.width, h, chatWindow.outlineColor)
+                guiGraphics.renderOutline(renderer.rescaledX, renderer.rescaledY - h, renderer.rescaledWidth, h, chatWindow.outlineColor)
             }
         }
         EventBus.register<GetMaxHeightEvent> {

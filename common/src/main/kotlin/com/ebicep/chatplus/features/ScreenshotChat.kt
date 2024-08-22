@@ -110,7 +110,7 @@ object ScreenshotChat {
                 min(
                     it.displayMessageIndex,
                     renderer.rescaledLinesPerPage
-                ) * ChatManager.getLineHeight() * renderer.scale.toDouble() + 2
+                ) * 9 * renderer.scale.toDouble() + 2
             )
         }
         // line screenshot

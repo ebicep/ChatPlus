@@ -73,28 +73,4 @@ object ChatManager {
         return Minecraft.getInstance().screen is ChatScreen
     }
 
-    fun getScale(): Float {
-        val scale = Config.values.scale
-        if (scale <= 0) {
-            return .001f
-        }
-        return scale
-    }
-
-    fun getLineHeight(): Int {
-        return (9.0 * (getLineSpacing() + 1.0)).toInt()
-    }
-
-    fun getTextOpacity(): Float {
-        return Config.values.textOpacity
-    }
-
-    fun getBackgroundOpacity(): Float {
-        return Config.values.backgroundOpacity
-    }
-
-    fun getLineSpacing(): Float {
-        return Config.values.lineSpacing
-    }
-
 }

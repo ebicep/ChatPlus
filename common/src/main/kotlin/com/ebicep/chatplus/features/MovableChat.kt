@@ -89,6 +89,21 @@ object MovableChat {
         EventBus.register<ChatScreenKeyReleasedEvent> {
             toggleCooldown = false
         }
+        EventBus.register<ChatScreenCloseEvent> {
+            movingChat = false
+            movingTab = false
+            dragging = false
+        }
+        EventBus.register<ChatScreenMouseReleasedEvent> {
+            if (movingChat) {
+                movingChat = false
+                it.returnFunction = true
+            }
+            if (movingTab) {
+                movingTab = false
+            }
+            dragging = false
+        }
         EventBus.register<ChatScreenMouseClickedEvent>({ 50 }, { movingChat }) {
             if (it.button != 0 || !Config.values.movableChatEnabled) {
                 return@register
@@ -142,16 +157,6 @@ object MovableChat {
             movingTabYOffset = 0
             movingTabYStart = it.tabYStart.roundToInt()
 
-        }
-        EventBus.register<ChatScreenMouseReleasedEvent> {
-            if (movingChat) {
-                movingChat = false
-                it.returnFunction = true
-            }
-            if (movingTab) {
-                movingTab = false
-            }
-            dragging = false
         }
 
         EventBus.register<ChatScreenMouseDraggedEvent>({ 50 }, { movingChat }) {
@@ -225,13 +230,11 @@ object MovableChat {
                 }
             }
         }
-
         EventBus.register<HoverHighlight.HoverHighlightRenderEvent> {
             if (movingChat) {
                 it.cancelled = true
             }
         }
-
         EventBus.register<ChatTabRenderEvent> {
             val guiGraphics = it.guiGraphics
             val chatTab = it.chatTab

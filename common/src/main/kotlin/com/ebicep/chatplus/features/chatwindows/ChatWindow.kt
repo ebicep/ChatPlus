@@ -2,8 +2,10 @@ package com.ebicep.chatplus.features.chatwindows
 
 import com.ebicep.chatplus.ChatPlus
 import com.ebicep.chatplus.config.Config
+import com.ebicep.chatplus.config.MessageDirection
 import com.ebicep.chatplus.config.queueUpdateConfig
 import com.ebicep.chatplus.events.EventBus
+import com.ebicep.chatplus.features.AlignMessage
 import com.ebicep.chatplus.features.chattabs.*
 import com.ebicep.chatplus.features.chattabs.ChatTab.Companion.TAB_HEIGHT
 import com.ebicep.chatplus.features.chattabs.ChatTabs.DefaultTab
@@ -26,6 +28,13 @@ class ChatWindow {
     var backgroundColor: Int = Color(0f, 0f, 0f, .5f).rgb
     var outline: Boolean = false
     var outlineColor: Int = Color(0f, 0f, 0f, 0f).rgb
+    var scale: Float = 1f
+    var textOpacity: Float = 1f
+    var unfocusedHeight: Float = .5f
+    var lineSpacing: Float = 0f
+    var messageAlignment: AlignMessage.Alignment = AlignMessage.Alignment.LEFT
+    var messageDirection: MessageDirection = MessageDirection.BOTTOM_UP
+
     val renderer = ChatRenderer()
     var hideTabs = false
     var selectedTabIndex = 0
@@ -45,6 +54,10 @@ class ChatWindow {
     init {
         ChatPlus.LOGGER.info("Create $this")
         // correct values
+        scale = Mth.clamp(scale, 0f, 1f)
+        textOpacity = Mth.clamp(textOpacity, 0f, 1f)
+        unfocusedHeight = Mth.clamp(unfocusedHeight, 0f, 1f)
+        lineSpacing = Mth.clamp(lineSpacing, 0f, 1f)
         if (tabs.isEmpty()) {
             tabs.add(DefaultTab)
         }
@@ -173,7 +186,7 @@ class ChatWindow {
     private fun renderTab(chatTab: ChatTab, guiGraphics: GuiGraphics) {
         val poseStack = guiGraphics.pose()
         val isSelected = chatTab == ChatManager.globalSelectedTab
-        val backgroundOpacity = ((if (isSelected) 255 else 100) * ChatManager.getBackgroundOpacity()).toInt() shl 24
+        val backgroundOpacity = ((if (isSelected) 255 else 100) * Color(backgroundColor, true).alpha / 255.0).toInt() shl 24
         val textColor = if (isSelected) 0xffffff else 0x999999
 
         poseStack.createPose {

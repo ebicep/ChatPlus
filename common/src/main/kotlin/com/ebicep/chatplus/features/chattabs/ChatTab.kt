@@ -347,7 +347,7 @@ class ChatTab : MessageFilter {
 
     private fun screenToChatY(pY: Double): Double {
         val yDiff: Double = chatWindow.renderer.internalY - pY
-        return when (Config.values.messageDirection) {
+        return when (chatWindow.messageDirection) {
             MessageDirection.TOP_DOWN -> chatWindow.renderer.rescaledLinesPerPage - yDiff / (chatWindow.renderer.scale * chatWindow.renderer.lineHeight.toDouble())
             MessageDirection.BOTTOM_UP -> yDiff / (chatWindow.renderer.scale * chatWindow.renderer.lineHeight.toDouble())
         }

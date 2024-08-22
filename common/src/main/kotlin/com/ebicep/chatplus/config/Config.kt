@@ -8,10 +8,8 @@ import com.ebicep.chatplus.ChatPlus
 import com.ebicep.chatplus.MOD_ID
 import com.ebicep.chatplus.config.serializers.KeySerializer
 import com.ebicep.chatplus.config.serializers.KeyWithModifier
-import com.ebicep.chatplus.features.AlignMessage
 import com.ebicep.chatplus.features.FilterMessages
 import com.ebicep.chatplus.features.HoverHighlight
-import com.ebicep.chatplus.features.PlayerHeadChatDisplay
 import com.ebicep.chatplus.features.chatwindows.ChatWindow
 import com.ebicep.chatplus.features.chatwindows.ChatWindows.DefaultWindow
 import com.ebicep.chatplus.features.internal.MessageFilter
@@ -82,11 +80,6 @@ object Config {
     }
 
     private fun correctValues() {
-        values.scale = Mth.clamp(values.scale, 0f, 1f)
-        values.textOpacity = Mth.clamp(values.textOpacity, 0f, 1f)
-        values.backgroundOpacity = Mth.clamp(values.backgroundOpacity, 0f, 1f)
-        values.unfocusedHeight = Mth.clamp(values.unfocusedHeight, 0f, 1f)
-        values.lineSpacing = Mth.clamp(values.lineSpacing, 0f, 1f)
         values.maxMessages = Mth.clamp(values.maxMessages, 1000, 10_000_000)
         values.maxCommandSuggestions = Mth.clamp(values.maxCommandSuggestions, 10, 30)
         if (values.chatWindows.isEmpty()) {
@@ -106,16 +99,10 @@ object Config {
 data class ConfigVariables(
     // general
     var enabled: Boolean = true,
-    var scale: Float = 1f,
-    var textOpacity: Float = 1f,
-    var backgroundOpacity: Float = .5f,
-    var unfocusedHeight: Float = .5f,
-    var lineSpacing: Float = 0f,
     var maxMessages: Int = 1000,
     var maxCommandSuggestions: Int = 15,
     var chatTimestampMode: TimestampMode = TimestampMode.HR_12_SECOND,
     var jumpToMessageMode: JumpToMessageMode = JumpToMessageMode.CURSOR,
-    var messageDirection: MessageDirection = MessageDirection.BOTTOM_UP,
     var selectChatLinePriority: Int = 100,
     // hide chat
     var hideChatEnabled: Boolean = false,
@@ -211,17 +198,6 @@ data class ConfigVariables(
     var speechToTextTranslateToInputBox: Boolean = true,
     var speechToTextTranslateLang: String = "English",
 ) {
-
-    // general
-    var messageAlignment: AlignMessage.Alignment = AlignMessage.Alignment.LEFT
-        set(newAlignment) {
-            if (field == newAlignment) {
-                return
-            }
-            field = newAlignment
-            queueUpdateConfig = true
-            PlayerHeadChatDisplay.updateMessageOffset()
-        }
 
     // tabs
     var chatWindowsTabsEnabled: Boolean = true

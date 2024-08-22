@@ -1,7 +1,6 @@
 package com.ebicep.chatplus.hud
 
 import com.ebicep.chatplus.ChatPlus
-import com.ebicep.chatplus.config.Config.values
 import com.ebicep.chatplus.config.MessageDirection
 import com.ebicep.chatplus.config.queueUpdateConfig
 import com.ebicep.chatplus.events.Event
@@ -9,8 +8,6 @@ import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.features.chattabs.CHAT_TAB_HEIGHT
 import com.ebicep.chatplus.features.chattabs.ChatTab
 import com.ebicep.chatplus.features.chatwindows.ChatWindow
-import com.ebicep.chatplus.hud.ChatManager.getLineHeight
-import com.ebicep.chatplus.hud.ChatManager.getScale
 import com.ebicep.chatplus.hud.ChatPlusScreen.EDIT_BOX_HEIGHT
 import com.ebicep.chatplus.util.GraphicsUtil.createPose
 import com.ebicep.chatplus.util.GraphicsUtil.guiForward
@@ -143,12 +140,6 @@ class ChatRenderer {
     var textOpacity: Double = 0.0
 
     @Transient
-    var backgroundOpacity: Float = 0f
-
-    @Transient
-    var lineSpacing: Float = 0f
-
-    @Transient
     var l1 = 0
 
     @Transient
@@ -188,11 +179,9 @@ class ChatRenderer {
     }
 
     fun updateCachedDimension() {
-        textOpacity = ChatManager.getTextOpacity() * 0.9 + 0.1
-        backgroundOpacity = ChatManager.getBackgroundOpacity()
-        lineSpacing = ChatManager.getLineSpacing()
-        l1 = (-8.0 * (lineSpacing + 1.0) + 4.0 * lineSpacing).roundToInt()
-        scale = getScale()
+        textOpacity = chatWindow.textOpacity * 0.9 + 0.1
+        l1 = (-8.0 * (chatWindow.lineSpacing + 1.0) + 4.0 * chatWindow.lineSpacing).roundToInt()
+        scale = getUpdatedScale()
         internalX = getUpdatedX(x)
         internalY = getUpdatedY(y)
         internalHeight = getUpdatedHeight()
@@ -204,7 +193,7 @@ class ChatRenderer {
         rescaledWidth = ceil(internalWidth / scale).toInt()
         rescaledEndX = ceil(backgroundWidthEndX / scale).toInt()
         rescaledLinesPerPage = getLinesPerPageScaled()
-        lineHeight = getLineHeight()
+        lineHeight = getUpdatedLineHeight()
     }
 
     fun render(chatWindow: ChatWindow, guiGraphics: GuiGraphics, guiTicks: Int, mouseX: Int, mouseY: Int) {
@@ -228,7 +217,7 @@ class ChatRenderer {
         var displayMessageIndex = 0
         var linesPerPage = rescaledLinesPerPage
         if (!chatFocused) {
-            linesPerPage = (linesPerPage * values.unfocusedHeight).roundToInt()
+            linesPerPage = (linesPerPage * chatWindow.unfocusedHeight).roundToInt()
         }
         EventBus.post(ChatRenderPreLinesRenderEvent(guiGraphics, chatWindow))
         while (displayMessageIndex + chatWindow.selectedTab.chatScrollbarPos < messagesToDisplay && displayMessageIndex < linesPerPage) {
@@ -248,7 +237,7 @@ class ChatRenderer {
                 continue
             }
             // how high chat is from input bar, if changed need to change queue offset
-            val verticalChatOffset: Int = when (values.messageDirection) {
+            val verticalChatOffset: Int = when (chatWindow.messageDirection) {
                 MessageDirection.TOP_DOWN -> (rescaledY - rescaledLinesPerPage * lineHeight + lineHeight) + displayMessageIndex * lineHeight
                 MessageDirection.BOTTOM_UP -> rescaledY - displayMessageIndex * lineHeight
             }
@@ -371,7 +360,7 @@ class ChatRenderer {
     }
 
     fun getBackgroundWidth(): Float {
-        return getUpdatedWidth() / getScale()
+        return getUpdatedWidth() / getUpdatedScale()
     }
 
     /**
@@ -427,12 +416,16 @@ class ChatRenderer {
         return y
     }
 
+    fun getUpdatedLineHeight(): Int {
+        return (9.0 * (chatWindow.lineSpacing + 1.0)).toInt()
+    }
+
     fun getLinesPerPage(): Int {
-        return getUpdatedHeight() / getLineHeight()
+        return getUpdatedHeight() / getUpdatedLineHeight()
     }
 
     fun getLinesPerPageScaled(): Int {
-        return (getLinesPerPage() / getScale()).roundToInt()
+        return (getLinesPerPage() / getUpdatedScale()).roundToInt()
     }
 
     fun getDefaultY(): Int {
@@ -459,6 +452,14 @@ class ChatRenderer {
     fun getMinHeightScaled(): Int {
         return MIN_HEIGHT
 //        return (MIN_HEIGHT / getScale()).roundToInt()
+    }
+
+    fun getUpdatedScale(): Float {
+        val scale = chatWindow.scale
+        if (scale <= 0) {
+            return .001f
+        }
+        return scale
     }
 
 }
