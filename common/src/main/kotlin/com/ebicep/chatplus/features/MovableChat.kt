@@ -356,6 +356,15 @@ object MovableChat {
         removeTabFromWindow(chatWindow, selectedTab)
 
         val newWindow = ChatWindow()
+        newWindow.backgroundColor = chatWindow.backgroundColor
+        newWindow.outline = chatWindow.outline
+        newWindow.outlineColor = chatWindow.outlineColor
+        newWindow.scale = chatWindow.scale
+        newWindow.textOpacity = chatWindow.textOpacity
+        newWindow.unfocusedHeight = chatWindow.unfocusedHeight
+        newWindow.lineSpacing = chatWindow.lineSpacing
+        newWindow.messageAlignment = chatWindow.messageAlignment
+        newWindow.messageDirection = chatWindow.messageDirection
         selectedTab.chatWindow = newWindow
         newWindow.tabs = mutableListOf(selectedTab)
 
