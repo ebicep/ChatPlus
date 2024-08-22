@@ -58,6 +58,9 @@ object SelectChat {
                     val displayedMessages = selectedTab.displayedMessages
                     val lastSelectedIndex = displayedMessages.indexOf(lastSelected)
                     val messageIndex = displayedMessages.indexOf(message)
+                    if (lastSelectedIndex == -1 || messageIndex == -1) {
+                        return@register
+                    }
                     for (i in minOf(lastSelectedIndex, messageIndex)..maxOf(lastSelectedIndex, messageIndex)) {
                         val displayedMessage = displayedMessages[i]
                         if (!selected.contains(displayedMessage)) {
