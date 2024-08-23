@@ -8,7 +8,10 @@ import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.features.chattabs.CHAT_TAB_HEIGHT
 import com.ebicep.chatplus.features.chattabs.ChatTab
 import com.ebicep.chatplus.features.chatwindows.ChatWindow
+import com.ebicep.chatplus.features.internal.Debug
 import com.ebicep.chatplus.hud.ChatPlusScreen.EDIT_BOX_HEIGHT
+import com.ebicep.chatplus.hud.ChatPlusScreen.lastMouseX
+import com.ebicep.chatplus.hud.ChatPlusScreen.lastMouseY
 import com.ebicep.chatplus.util.GraphicsUtil.createPose
 import com.ebicep.chatplus.util.GraphicsUtil.guiForward
 import com.mojang.blaze3d.vertex.PoseStack
@@ -105,12 +108,14 @@ class ChatRenderer {
         }
     var height: Int = MIN_HEIGHT
         set(newHeight) {
-            if (field == newHeight) {
+            val lineHeightScaled = lineHeight * scale
+            val normalizedHeight = (newHeight - newHeight % lineHeightScaled + lineHeightScaled).toInt()
+            if (field == normalizedHeight) {
                 return
             }
-            field = newHeight
+            field = normalizedHeight
             queueUpdateConfig = true
-            internalHeight = newHeight
+            internalHeight = normalizedHeight
             updateCachedDimension()
         }
 
@@ -125,6 +130,10 @@ class ChatRenderer {
 
     @Transient
     var internalHeight: Int = MIN_HEIGHT
+        set(newHeight) {
+            val lineHeightScaled = lineHeight * scale
+            field = (newHeight - newHeight % lineHeightScaled + lineHeightScaled).toInt()
+        }
 
     @Transient
     lateinit var chatWindow: ChatWindow
@@ -299,6 +308,17 @@ class ChatRenderer {
             return
         }
         poseStack.popPose()
+
+        if (Debug.debug && chatWindow == ChatManager.selectedWindow) {
+            poseStack.createPose {
+                poseStack.guiForward(amount = 500.0)
+                guiGraphics.drawString(Minecraft.getInstance().font, "$height", lastMouseX - 15, lastMouseY + 5, 0x3eeff)
+                guiGraphics.drawString(Minecraft.getInstance().font, "$rescaledHeight", lastMouseX - 15, lastMouseY + 15, 0x3eeff)
+                guiGraphics.drawString(Minecraft.getInstance().font, "$lineHeight", lastMouseX - 15, lastMouseY + 25, 0x3eeff)
+                guiGraphics.drawString(Minecraft.getInstance().font, "${getLinesPerPage()}", lastMouseX - 15, lastMouseY + 35, 0x3eeff)
+                guiGraphics.drawString(Minecraft.getInstance().font, "$rescaledLinesPerPage", lastMouseX - 15, lastMouseY + 45, 0x3eeff)
+            }
+        }
     }
 
     private fun handleScreenResize() {
@@ -421,11 +441,11 @@ class ChatRenderer {
     }
 
     fun getLinesPerPage(): Int {
-        return getUpdatedHeight() / getUpdatedLineHeight()
+        return (getUpdatedHeight() / getUpdatedLineHeight().toDouble()).roundToInt()
     }
 
     fun getLinesPerPageScaled(): Int {
-        return (getLinesPerPage() / getUpdatedScale()).roundToInt()
+        return (getUpdatedHeight() / getUpdatedLineHeight().toDouble() / getUpdatedScale()).roundToInt()
     }
 
     fun getDefaultY(): Int {
