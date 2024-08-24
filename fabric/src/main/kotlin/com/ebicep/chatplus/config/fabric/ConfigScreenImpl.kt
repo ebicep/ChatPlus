@@ -37,6 +37,7 @@ object ConfigScreenImpl {
             .setTitle(Component.translatable("chatPlus.title").withColor(MOD_COLOR))
             .setSavingRunnable {
                 Config.save()
+                ChatManager.rescaleAll()
             }
             .transparentBackground()
         builder.setGlobalized(true)
@@ -155,10 +156,7 @@ object ConfigScreenImpl {
             entryBuilder.booleanToggle(
                 "chatPlus.scrollbar.toggle",
                 Config.values.scrollbarEnabled
-            ) {
-                Config.values.scrollbarEnabled = it
-                ChatManager.rescaleAll()
-            })
+            ) { Config.values.scrollbarEnabled = it })
         scrollbar.addEntry(
             entryBuilder.booleanToggle(
                 "chatPlus.scrollbar.invertedScrolling",
@@ -168,10 +166,7 @@ object ConfigScreenImpl {
             entryBuilder.alphaField(
                 "chatPlus.scrollbar.color",
                 Config.values.scrollbarColor
-            ) {
-                Config.values.scrollbarColor = it
-                ChatManager.rescaleAll()
-            })
+            ) { Config.values.scrollbarColor = it })
         scrollbar.addEntry(
             entryBuilder.intField("chatPlus.scrollbar.width", Config.values.scrollbarWidth) { Config.values.scrollbarWidth = it }
         )
@@ -581,35 +576,22 @@ object ConfigScreenImpl {
             entryBuilder.booleanToggle(
                 "chatPlus.playerHeadChatDisplayEnabled.toggle",
                 Config.values.playerHeadChatDisplayEnabled
-            ) {
-                Config.values.playerHeadChatDisplayEnabled = it
-                ChatManager.rescaleAll()
-            })
+            ) { Config.values.playerHeadChatDisplayEnabled = it })
         headDisplay.addEntry(
             entryBuilder.booleanToggle(
                 "chatPlus.playerHeadChatDisplayShowOnWrapped.toggle",
                 Config.values.playerHeadChatDisplayShowOnWrapped
-            ) {
-                Config.values.playerHeadChatDisplayShowOnWrapped = it
-                ChatManager.rescaleAll()
-            })
+            ) { Config.values.playerHeadChatDisplayShowOnWrapped = it })
         headDisplay.addEntry(
             entryBuilder.booleanToggle(
                 "chatPlus.playerHeadChatDisplayOffsetNonHeadMessages.toggle",
                 Config.values.playerHeadChatDisplayOffsetNonHeadMessages
-            ) {
-                Config.values.playerHeadChatDisplayOffsetNonHeadMessages = it
-                ChatManager.rescaleAll()
-            })
+            ) { Config.values.playerHeadChatDisplayOffsetNonHeadMessages = it })
         headDisplay.addEntry(
             entryBuilder.booleanToggle(
                 "chatPlus.playerHeadChatDisplayOffsetNonHeadMessagesShowOnWrapped.toggle",
                 Config.values.playerHeadChatDisplayOffsetNonHeadMessagesShowOnWrapped
-            ) {
-                Config.values.playerHeadChatDisplayOffsetNonHeadMessagesShowOnWrapped = it
-                ChatManager.rescaleAll()
-            })
-
+            ) { Config.values.playerHeadChatDisplayOffsetNonHeadMessagesShowOnWrapped = it })
     }
 
     private fun addKeyBindOptions(builder: ConfigBuilder, entryBuilder: ConfigEntryBuilder) {

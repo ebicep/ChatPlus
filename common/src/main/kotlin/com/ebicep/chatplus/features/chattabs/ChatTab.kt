@@ -213,6 +213,9 @@ class ChatTab : MessageFilter {
     @Transient
     lateinit var chatWindow: ChatWindow
 
+    override fun toString(): String {
+        return "ChatTab($name)"
+    }
 
     fun addNewMessage(addNewMessageEvent: AddNewMessageEvent) {
         val mutableComponent = addNewMessageEvent.mutableComponent
@@ -418,14 +421,14 @@ class ChatTab : MessageFilter {
     }
 
     fun rescaleChat() {
-        ChatPlus.LOGGER.info("Rescale chat")
+        ChatPlus.LOGGER.info("$this Rescale")
         EventBus.post(ChatTabRescale(chatWindow, this))
         resetChatScroll()
         queueRefreshDisplayedMessages(true)
     }
 
     fun queueRefreshDisplayedMessages(reason: Boolean) {
-        ChatPlus.LOGGER.info("Queueing refresh - $reason")
+        ChatPlus.LOGGER.info("$this Queueing refresh - $reason")
         if (reason) {
             rescaleChat = true
             resetDisplayMessageAtTick = Events.currentTick + (if (isSelectedInAnyWindow()) 60 else 20)
@@ -441,7 +444,7 @@ class ChatTab : MessageFilter {
 
     fun refreshDisplayMessages() {
         if (refreshing) {
-            ChatPlus.LOGGER.info("Next refreshing")
+            ChatPlus.LOGGER.info("$this Next refreshing")
             queueRefreshDisplayedMessages(rescaleChat)
             return
         }
@@ -451,7 +454,7 @@ class ChatTab : MessageFilter {
         val start = System.currentTimeMillis()
 
         if (rescaleChat) {
-            ChatPlus.LOGGER.info("Rewrapping messages")
+            ChatPlus.LOGGER.info("$this Rewrapping messages")
             EventBus.post(ChatTabRewrapDisplayMessages(chatWindow, this))
 
             rescaleChat = false
@@ -469,8 +472,8 @@ class ChatTab : MessageFilter {
                 )
             }
             wasFiltered = false
-            ChatPlus.LOGGER.info("Added ${displayedMessages.size} messages")
-            ChatPlus.LOGGER.info("Rewrapping time taken: ${System.currentTimeMillis() - start}ms")
+            ChatPlus.LOGGER.info("$this Added ${displayedMessages.size} messages")
+            ChatPlus.LOGGER.info("$this Rewrapping time taken: ${System.currentTimeMillis() - start}ms")
         } else if (filterChat) {
             val filterStart = System.currentTimeMillis()
             filterChat = false
@@ -479,13 +482,13 @@ class ChatTab : MessageFilter {
             if (filters.isEmpty()) {
                 resetFilter()
             } else {
-                ChatPlus.LOGGER.info("Filtering - $wasFiltered")
+                ChatPlus.LOGGER.info("$this Filtering - $wasFiltered")
                 if (!wasFiltered) {
                     unfilteredDisplayedMessages = displayedMessages.toMutableList()
-                    ChatPlus.LOGGER.info("Saved ${unfilteredDisplayedMessages.size} messages")
+                    ChatPlus.LOGGER.info("$this Saved ${unfilteredDisplayedMessages.size} messages")
                 } else {
                     displayedMessages = unfilteredDisplayedMessages.toMutableList()
-                    ChatPlus.LOGGER.info("Loaded ${displayedMessages.size} messages")
+                    ChatPlus.LOGGER.info("$this Loaded ${displayedMessages.size} messages")
                 }
                 wasFiltered = true
                 val oldDisplayedMessageSize = displayedMessages.size
@@ -515,13 +518,13 @@ class ChatTab : MessageFilter {
                     it?.join()
                 }
                 val newMessages = displayedMessages.subList(oldDisplayedMessageSize, displayedMessages.size)
-                ChatPlus.LOGGER.info("New messages: ${newMessages.size} - $oldDisplayedMessageSize - ${displayedMessages.size}")
+                ChatPlus.LOGGER.info("$this New messages: ${newMessages.size} - $oldDisplayedMessageSize - ${displayedMessages.size}")
                 displayedMessages.clear()
                 threadMessages.toSortedMap().forEach { (_, value) ->
                     displayedMessages.addAll(value)
                 }
             }
-            ChatPlus.LOGGER.info("Filter time taken: ${System.currentTimeMillis() - filterStart}ms")
+            ChatPlus.LOGGER.info("$this Filter time taken: ${System.currentTimeMillis() - filterStart}ms")
         }
         resetChatScroll()
 //        ChatPlus.LOGGER.info("Refresh time taken: ${System.currentTimeMillis() - start}ms")
@@ -530,15 +533,15 @@ class ChatTab : MessageFilter {
     }
 
     fun resetFilter() {
-        ChatPlus.LOGGER.info("Reset Filter -  $wasFiltered")
+        ChatPlus.LOGGER.info("$this Reset Filter -  $wasFiltered")
         if (wasFiltered) {
             if (unfilteredDisplayedMessages.size < 100) {
-                ChatPlus.LOGGER.error("NO MESSAGES")
+                ChatPlus.LOGGER.error("$this NO MESSAGES")
             }
             displayedMessages = unfilteredDisplayedMessages.toMutableList()
             unfilteredDisplayedMessages.clear()
             wasFiltered = false
-            ChatPlus.LOGGER.info("Reloaded ${displayedMessages.size} messages")
+            ChatPlus.LOGGER.info("$this Reloaded ${displayedMessages.size} messages")
         }
     }
 
