@@ -37,7 +37,7 @@ object MovableChat {
     private val MOVABLE_CHAT_ENABLED_COMPONENT = Component.literal("Movable Chat Enabled").withColor(MOVABLE_CHAT_COLOR)
 
     // moving chat box
-    private const val RENDER_MOVING_SIZE = 4f // width/length of box when rendering moving chat
+    private const val RENDER_MOVING_SIZE = 5f // width/length of box when rendering moving chat
     private var movingChat: Boolean
         get() = movingChatWidth || movingChatHeight || movingChatBox
         set(value) {
@@ -566,8 +566,8 @@ object MovableChat {
                 guiGraphics.fill0(
                     x + backgroundWidth - RENDER_MOVING_SIZE,
                     y - height.toFloat(),
-                    x + backgroundWidth.toFloat() + .75f,
-                    y.toFloat() + .5f,
+                    x + backgroundWidth.toFloat(),
+                    y.toFloat(),
                     200,
                     0xFFFFFFFF.toInt()
                 )
@@ -575,7 +575,7 @@ object MovableChat {
             if (movingChatHeight) {
                 guiGraphics.fill0(
                     x.toFloat(),
-                    y - height.toFloat() - .25f,
+                    y - height.toFloat(),
                     x + backgroundWidth.toFloat(),
                     y - height + RENDER_MOVING_SIZE,
                     200,
