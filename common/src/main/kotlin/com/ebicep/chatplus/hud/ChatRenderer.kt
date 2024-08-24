@@ -108,14 +108,12 @@ class ChatRenderer {
         }
     var height: Int = MIN_HEIGHT
         set(newHeight) {
-            val lineHeightScaled = lineHeight * scale
-            val normalizedHeight = (newHeight - newHeight % lineHeightScaled + lineHeightScaled).toInt()
-            if (field == normalizedHeight) {
+            if (field == newHeight) {
                 return
             }
-            field = normalizedHeight
+            field = newHeight
             queueUpdateConfig = true
-            internalHeight = normalizedHeight
+            internalHeight = newHeight
             updateCachedDimension()
         }
 
@@ -132,7 +130,7 @@ class ChatRenderer {
     var internalHeight: Int = MIN_HEIGHT
         set(newHeight) {
             val lineHeightScaled = lineHeight * scale
-            field = (newHeight - newHeight % lineHeightScaled + lineHeightScaled).toInt()
+            field = newHeight//(newHeight - (newHeight % lineHeightScaled)).toInt()
         }
 
     @Transient
@@ -193,8 +191,8 @@ class ChatRenderer {
         scale = getUpdatedScale()
         internalX = getUpdatedX(x)
         internalY = getUpdatedY(y)
-        internalHeight = getUpdatedHeight()
-        internalWidth = getUpdatedWidth()
+        internalHeight = getUpdatedHeight(height)
+        internalWidth = getUpdatedWidth(width)
         backgroundWidthEndX = internalX + internalWidth
         rescaledX = ceil(internalX / scale).toInt()
         rescaledY = ceil(internalY / scale).toInt()
@@ -357,49 +355,51 @@ class ChatRenderer {
         return d0 * d0
     }
 
-    /**
-     * Width of chat window, raw value not scaled
-     */
     fun getUpdatedWidth(): Int {
-        var width = internalWidth
+        return getUpdatedWidth(internalWidth)
+    }
+
+    fun getUpdatedWidth(startingWidth: Int): Int {
+        var w = startingWidth
         val guiWidth = Minecraft.getInstance().window.guiScaledWidth
-        val lowerThanMin = width < MIN_WIDTH
+        val lowerThanMin = w < MIN_WIDTH
         val x = internalX
         val hasSpace = guiWidth - x >= MIN_WIDTH
         if (lowerThanMin && hasSpace) {
-            width = MIN_WIDTH
+            w = MIN_WIDTH
             chatWindow.selectedTab.rescaleChat()
         }
-        if (width <= 0) {
-            width = 200.coerceAtMost(guiWidth - x - 1)
+        if (w <= 0) {
+            w = MIN_WIDTH.coerceAtMost(guiWidth - x)
         }
-        if (x + width >= guiWidth) {
-            width = guiWidth - x
+        if (x + w >= guiWidth) {
+            w = guiWidth - x
         }
-        return width
+        return w
     }
 
     fun getBackgroundWidth(): Float {
         return getUpdatedWidth() / getUpdatedScale()
     }
 
-    /**
-     * Height of chat window, raw value not scaled
-     */
     fun getUpdatedHeight(): Int {
-        var height = internalHeight
-        val lowerThanMin = height < MIN_HEIGHT
+        return getUpdatedHeight(internalHeight)
+    }
+
+    fun getUpdatedHeight(startingHeight: Int): Int {
+        var h = startingHeight
+        val lowerThanMin = h < MIN_HEIGHT
         val hasSpace = internalY - 1 >= MIN_HEIGHT
         if (lowerThanMin && hasSpace) {
-            height = MIN_HEIGHT
+            h = MIN_HEIGHT
         }
-        if (internalY - height <= 0) {
-            height = internalY - 1
+        if (internalY - h <= 0) {
+            h = internalY - 1
         }
-        if (height >= internalY) {
-            height = internalY - 1
+        if (h >= internalY) {
+            h = internalY - 1
         }
-        return height
+        return h
     }
 
     fun getUpdatedX(): Int {
@@ -409,7 +409,7 @@ class ChatRenderer {
     fun getUpdatedX(startingX: Int): Int {
         var x = startingX
         if (x + internalWidth >= Minecraft.getInstance().window.guiScaledWidth) {
-            x = Minecraft.getInstance().window.guiScaledWidth - internalWidth - 1
+            x = Minecraft.getInstance().window.guiScaledWidth - internalWidth
         }
         if (x < 0) {
             x = 0

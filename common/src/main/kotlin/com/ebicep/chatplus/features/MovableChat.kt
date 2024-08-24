@@ -264,7 +264,7 @@ object MovableChat {
                 val newWidth: Double = Mth.clamp(
                     mouseX - renderer.getUpdatedX(),
                     MIN_WIDTH.toDouble(),
-                    Minecraft.getInstance().window.guiScaledWidth - renderer.getUpdatedX().toDouble() - 1
+                    Minecraft.getInstance().window.guiScaledWidth - renderer.getUpdatedX().toDouble()
                 )
                 val width = newWidth.roundToInt()
                 renderer.width = width
@@ -276,13 +276,14 @@ object MovableChat {
                     renderer.getUpdatedY() - 1.0
                 )
                 val height = newHeight.roundToInt()
-                renderer.height = height
+                val lineHeightScaled = renderer.lineHeight * renderer.scale
+                renderer.height = (height - (height % lineHeightScaled) + lineHeightScaled).toInt()
             }
             if (movingChatBox && dragging) {
                 renderer.x = Mth.clamp(
                     (mouseX - xDisplacement).roundToInt(),
                     0,
-                    Minecraft.getInstance().window.guiScaledWidth - renderer.getUpdatedWidth() - 1
+                    Minecraft.getInstance().window.guiScaledWidth - renderer.getUpdatedWidth()
                 )
                 val maxHeightScaled = renderer.getMaxHeightScaled()
                 var newY = Mth.clamp(

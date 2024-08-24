@@ -35,5 +35,6 @@ fun main() {
     println(Color(-16737281, true))
     println(Color(2130706432, true))
     println(Color((0xFFFFFF55).toInt(), true))
+    println(Color(654311423, true))
     //00c800
 }
