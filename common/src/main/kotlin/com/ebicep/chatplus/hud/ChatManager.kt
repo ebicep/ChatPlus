@@ -73,4 +73,8 @@ object ChatManager {
         return Minecraft.getInstance().screen is ChatScreen
     }
 
+    fun rescaleAll() {
+        ChatManager.rescaleAll()
+    }
+
 }

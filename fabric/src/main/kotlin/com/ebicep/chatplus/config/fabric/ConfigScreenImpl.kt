@@ -10,6 +10,7 @@ import com.ebicep.chatplus.features.chattabs.ChatTab
 import com.ebicep.chatplus.features.chatwindows.ChatWindow
 import com.ebicep.chatplus.features.internal.MessageFilter
 import com.ebicep.chatplus.features.speechtotext.SpeechToText
+import com.ebicep.chatplus.hud.ChatManager
 import com.ebicep.chatplus.translator.LanguageManager
 import com.ebicep.chatplus.translator.RegexMatch
 import com.ebicep.chatplus.util.ComponentUtil
@@ -154,7 +155,10 @@ object ConfigScreenImpl {
             entryBuilder.booleanToggle(
                 "chatPlus.scrollbar.toggle",
                 Config.values.scrollbarEnabled
-            ) { Config.values.scrollbarEnabled = it })
+            ) {
+                Config.values.scrollbarEnabled = it
+                ChatManager.rescaleAll()
+            })
         scrollbar.addEntry(
             entryBuilder.booleanToggle(
                 "chatPlus.scrollbar.invertedScrolling",
@@ -164,8 +168,10 @@ object ConfigScreenImpl {
             entryBuilder.alphaField(
                 "chatPlus.scrollbar.color",
                 Config.values.scrollbarColor
-            ) { Config.values.scrollbarColor = it }
-        )
+            ) {
+                Config.values.scrollbarColor = it
+                ChatManager.rescaleAll()
+            })
         scrollbar.addEntry(
             entryBuilder.intField("chatPlus.scrollbar.width", Config.values.scrollbarWidth) { Config.values.scrollbarWidth = it }
         )
@@ -575,22 +581,34 @@ object ConfigScreenImpl {
             entryBuilder.booleanToggle(
                 "chatPlus.playerHeadChatDisplayEnabled.toggle",
                 Config.values.playerHeadChatDisplayEnabled
-            ) { Config.values.playerHeadChatDisplayEnabled = it })
+            ) {
+                Config.values.playerHeadChatDisplayEnabled = it
+                ChatManager.rescaleAll()
+            })
         headDisplay.addEntry(
             entryBuilder.booleanToggle(
                 "chatPlus.playerHeadChatDisplayShowOnWrapped.toggle",
                 Config.values.playerHeadChatDisplayShowOnWrapped
-            ) { Config.values.playerHeadChatDisplayShowOnWrapped = it })
+            ) {
+                Config.values.playerHeadChatDisplayShowOnWrapped = it
+                ChatManager.rescaleAll()
+            })
         headDisplay.addEntry(
             entryBuilder.booleanToggle(
                 "chatPlus.playerHeadChatDisplayOffsetNonHeadMessages.toggle",
                 Config.values.playerHeadChatDisplayOffsetNonHeadMessages
-            ) { Config.values.playerHeadChatDisplayOffsetNonHeadMessages = it })
+            ) {
+                Config.values.playerHeadChatDisplayOffsetNonHeadMessages = it
+                ChatManager.rescaleAll()
+            })
         headDisplay.addEntry(
             entryBuilder.booleanToggle(
                 "chatPlus.playerHeadChatDisplayOffsetNonHeadMessagesShowOnWrapped.toggle",
                 Config.values.playerHeadChatDisplayOffsetNonHeadMessagesShowOnWrapped
-            ) { Config.values.playerHeadChatDisplayOffsetNonHeadMessagesShowOnWrapped = it })
+            ) {
+                Config.values.playerHeadChatDisplayOffsetNonHeadMessagesShowOnWrapped = it
+                ChatManager.rescaleAll()
+            })
 
     }
 
