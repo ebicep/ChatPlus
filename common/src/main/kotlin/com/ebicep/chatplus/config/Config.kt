@@ -30,7 +30,7 @@ private val json = Json {
     prettyPrint = true
 }
 val configDirectoryPath: String
-    get() = ConfigDirectory.getConfigDirectory().toString() + "\\chatplus"
+    get() = ConfigDirectory.getConfigDirectory().toString() + "/chatplus"
 var queueUpdateConfig = false
 
 
@@ -47,7 +47,7 @@ object Config {
     }
 
     fun load() {
-        ChatPlus.LOGGER.info("Config Directory: ${ConfigDirectory.getConfigDirectory().toAbsolutePath().normalize()}\\chatplus")
+        ChatPlus.LOGGER.info("Config Directory: ${ConfigDirectory.getConfigDirectory().toAbsolutePath().normalize()}/chatplus")
         val configDirectory = File(configDirectoryPath)
         if (!configDirectory.exists()) {
             configDirectory.mkdir()

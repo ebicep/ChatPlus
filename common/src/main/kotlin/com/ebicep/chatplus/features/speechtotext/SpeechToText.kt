@@ -89,7 +89,7 @@ object SpeechToText {
     }
 
     fun getAllPossibleModels(): MutableList<String> {
-        val modelDirectory = File("$configDirectoryPath\\models")
+        val modelDirectory = File("$configDirectoryPath/models")
         if (!modelDirectory.exists()) {
             modelDirectory.mkdir()
         }
@@ -279,7 +279,7 @@ class MicrophoneThread : Thread("ChatPlusMicrophoneThread") {
             if (recognizer == null) {
                 try {
                     recognizer = Recognizer(
-                        Model("$configDirectoryPath\\models\\" + Config.values.speechToTextSelectedAudioModel),
+                        Model("$configDirectoryPath/models/" + Config.values.speechToTextSelectedAudioModel),
                         SpeechToText.SAMPLE_RATE.toFloat()
                     )
                     val recognizedModel = "Recognized Model: ${Config.values.speechToTextSelectedAudioModel}"
