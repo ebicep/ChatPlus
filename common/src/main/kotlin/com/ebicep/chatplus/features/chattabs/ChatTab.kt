@@ -428,11 +428,15 @@ class ChatTab : MessageFilter {
         ChatPlus.LOGGER.info("Queueing refresh - $reason")
         if (reason) {
             rescaleChat = true
-            resetDisplayMessageAtTick = Events.currentTick + 20
+            resetDisplayMessageAtTick = Events.currentTick + (if (isSelectedInAnyWindow()) 60 else 20)
         } else {
             filterChat = true
             resetDisplayMessageAtTick = Events.currentTick + 15
         }
+    }
+
+    private fun isSelectedInAnyWindow(): Boolean {
+        return Config.values.chatWindows.any { it.selectedTab == this }
     }
 
     fun refreshDisplayMessages() {

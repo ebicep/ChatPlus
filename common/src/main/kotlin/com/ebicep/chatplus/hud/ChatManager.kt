@@ -74,7 +74,7 @@ object ChatManager {
     }
 
     fun rescaleAll() {
-        ChatManager.rescaleAll()
+        Config.values.chatWindows.forEach { window -> window.tabs.forEach { tab -> tab.rescaleChat() } }
     }
 
 }
