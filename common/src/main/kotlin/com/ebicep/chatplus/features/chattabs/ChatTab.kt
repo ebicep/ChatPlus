@@ -422,7 +422,6 @@ class ChatTab : MessageFilter {
         EventBus.post(ChatTabRescale(chatWindow, this))
         resetChatScroll()
         queueRefreshDisplayedMessages(true)
-        this.chatWindow.renderer.updateCachedDimension()
     }
 
     fun queueRefreshDisplayedMessages(reason: Boolean) {

@@ -10,8 +10,8 @@ import com.ebicep.chatplus.features.chatwindows.ChatWindow
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.screens.ChatScreen
 
-const val MIN_HEIGHT = 80
-const val MIN_WIDTH = 160
+const val MIN_HEIGHT = 8
+const val MIN_WIDTH = 130
 
 data class GetMaxWidthEvent(
     var chatWindow: ChatWindow,

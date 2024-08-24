@@ -117,7 +117,7 @@ object MovableChat {
                 mouseY,
                 renderer.getUpdatedX(),
                 renderer.getUpdatedY() - renderer.getUpdatedHeight(),
-                renderer.getUpdatedX() + renderer.getUpdatedWidth(),
+                renderer.getUpdatedX() + renderer.getUpdatedWidthValue(),
                 renderer.getUpdatedY()
             )
             if (insideChatBox) {
@@ -126,7 +126,7 @@ object MovableChat {
                     mouseY,
                     renderer.getUpdatedX() + RENDER_MOVING_SIZE,
                     renderer.getUpdatedY() - renderer.getUpdatedHeight() + RENDER_MOVING_SIZE,
-                    renderer.getUpdatedX() + renderer.getUpdatedWidth() - RENDER_MOVING_SIZE,
+                    renderer.getUpdatedX() + renderer.getUpdatedWidthValue() - RENDER_MOVING_SIZE,
                     renderer.getUpdatedY() - RENDER_MOVING_SIZE
                 )
                 if (insideInnerChatBox) {
@@ -134,7 +134,7 @@ object MovableChat {
                     xDisplacement = mouseX - renderer.getUpdatedX()
                     yDisplacement = mouseY - renderer.getUpdatedY()
                 } else {
-                    if (mouseX > renderer.getUpdatedX() + renderer.getUpdatedWidth() - RENDER_MOVING_SIZE) {
+                    if (mouseX > renderer.getUpdatedX() + renderer.getUpdatedWidthValue() - RENDER_MOVING_SIZE) {
                         movingChatWidth = true
                     }
                     if (mouseY < renderer.getUpdatedY() - renderer.getUpdatedHeight() + RENDER_MOVING_SIZE) {
@@ -283,7 +283,7 @@ object MovableChat {
                 renderer.x = Mth.clamp(
                     (mouseX - xDisplacement).roundToInt(),
                     0,
-                    Minecraft.getInstance().window.guiScaledWidth - renderer.getUpdatedWidth()
+                    Minecraft.getInstance().window.guiScaledWidth - renderer.getUpdatedWidthValue()
                 )
                 val maxHeightScaled = renderer.getMaxHeightScaled()
                 var newY = Mth.clamp(
@@ -295,6 +295,8 @@ object MovableChat {
                     newY = renderer.getDefaultY()
                 }
                 renderer.y = newY
+            }
+            if (movingChat) {
                 renderer.updateCachedDimension()
             }
             if (!movingTab) {

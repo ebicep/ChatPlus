@@ -58,7 +58,7 @@ object ChatWindows {
     private fun insideWindow(chatWindow: ChatWindow, x: Double, y: Double): Boolean {
         val renderer = chatWindow.renderer
         val startX = renderer.getUpdatedX()
-        val endX = startX + renderer.getUpdatedWidth()
+        val endX = startX + renderer.getUpdatedWidthValue()
         val startY = renderer.getUpdatedY() - renderer.getUpdatedHeight()
         var endY = renderer.getUpdatedY()
         if (!chatWindow.hideTabs) {

@@ -114,7 +114,6 @@ class ChatRenderer {
             field = newHeight
             queueUpdateConfig = true
             internalHeight = newHeight
-            updateCachedDimension()
         }
 
     @Transient
@@ -192,7 +191,15 @@ class ChatRenderer {
         internalX = getUpdatedX(x)
         internalY = getUpdatedY(y)
         internalHeight = getUpdatedHeight(height)
-        internalWidth = getUpdatedWidth(width)
+        val updatedWidth = getUpdatedWidth(width)
+        internalWidth = updatedWidth.newWidth
+        val updateWidthStatus = updatedWidth.status
+        if (updateWidthStatus != UpdateWidthStatus.SUCCESS) {
+            if (updateWidthStatus == UpdateWidthStatus.LOWER_MIN_WITH_SPACE || updateWidthStatus == UpdateWidthStatus.LESS_THAN_ZERO) {
+                width = MIN_WIDTH
+            }
+            chatWindow.selectedTab.rescaleChat()
+        }
         backgroundWidthEndX = internalX + internalWidth
         rescaledX = ceil(internalX / scale).toInt()
         rescaledY = ceil(internalY / scale).toInt()
@@ -344,6 +351,9 @@ class ChatRenderer {
 
         if (heightChanged || widthChanged) {
             updateCachedDimension()
+            if (widthChanged) {
+                chatWindow.tabs.forEach { it.rescaleChat() }
+            }
         }
     }
 
@@ -355,31 +365,47 @@ class ChatRenderer {
         return d0 * d0
     }
 
-    fun getUpdatedWidth(): Int {
+    fun getUpdatedWidth(): UpdateWidth {
         return getUpdatedWidth(internalWidth)
     }
 
-    fun getUpdatedWidth(startingWidth: Int): Int {
+    fun getUpdatedWidthValue(): Int {
+        return getUpdatedWidth().newWidth
+    }
+
+    fun getUpdatedWidth(startingWidth: Int): UpdateWidth {
         var w = startingWidth
         val guiWidth = Minecraft.getInstance().window.guiScaledWidth
         val lowerThanMin = w < MIN_WIDTH
         val x = internalX
         val hasSpace = guiWidth - x >= MIN_WIDTH
+        var status = UpdateWidthStatus.SUCCESS
         if (lowerThanMin && hasSpace) {
             w = MIN_WIDTH
-            chatWindow.selectedTab.rescaleChat()
+            status = UpdateWidthStatus.LOWER_MIN_WITH_SPACE
         }
         if (w <= 0) {
             w = MIN_WIDTH.coerceAtMost(guiWidth - x)
+            status = UpdateWidthStatus.LESS_THAN_ZERO
         }
         if (x + w >= guiWidth) {
             w = guiWidth - x
+            status = UpdateWidthStatus.GREATER_THAN_GUI_WIDTH
         }
-        return w
+        return UpdateWidth(status, w)
+    }
+
+    data class UpdateWidth(val status: UpdateWidthStatus, val newWidth: Int)
+
+    enum class UpdateWidthStatus {
+        LOWER_MIN_WITH_SPACE,
+        LESS_THAN_ZERO,
+        GREATER_THAN_GUI_WIDTH,
+        SUCCESS
     }
 
     fun getBackgroundWidth(): Float {
-        return getUpdatedWidth() / getUpdatedScale()
+        return getUpdatedWidthValue() / getUpdatedScale()
     }
 
     fun getUpdatedHeight(): Int {
