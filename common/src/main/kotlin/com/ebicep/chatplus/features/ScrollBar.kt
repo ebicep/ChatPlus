@@ -38,7 +38,10 @@ object ScrollBar {
             if (!ChatManager.isChatFocused()) {
                 return@register
             }
-            val chatWindow = ChatManager.selectedWindow
+            val chatWindow = it.chatWindow
+            if (chatWindow !== ChatManager.selectedWindow) {
+                return@register
+            }
             val renderer = chatWindow.renderer
             val messageCount = ChatManager.globalSelectedTab.displayedMessages.size
             val linesPerPage = renderer.rescaledLinesPerPage
