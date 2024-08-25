@@ -142,6 +142,7 @@ object MovableChat {
                     }
                 }
             }
+            it.returnFunction = movingChat
         }
         EventBus.register<ChatTabClickedEvent> {
             movingTab = true
@@ -156,7 +157,6 @@ object MovableChat {
             movingTabXStart = it.tabXStart.roundToInt()
             movingTabYOffset = 0
             movingTabYStart = it.tabYStart.roundToInt()
-
         }
 
         EventBus.register<ChatScreenMouseDraggedEvent>({ 50 }, { movingChat }) {
