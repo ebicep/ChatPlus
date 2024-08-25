@@ -3,6 +3,7 @@ package com.ebicep.chatplus.features
 import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.features.chattabs.ChatTabAddDisplayMessageEvent
+import com.ebicep.chatplus.features.chattabs.ChatTabGetMessageAtEvent
 import com.ebicep.chatplus.hud.*
 import com.ebicep.chatplus.util.GraphicsUtil.createPose
 import com.ebicep.chatplus.util.GraphicsUtil.fill0
@@ -112,6 +113,12 @@ object ScrollBar {
                 val newScrollPos = lastScrollPos - scrollOffset
                 ChatManager.globalSelectedTab.setScrollPos(newScrollPos.roundToInt())
             }
+        }
+        EventBus.register<ChatTabGetMessageAtEvent> {
+            if (!Config.values.scrollbarEnabled) {
+                return@register
+            }
+            it.chatX += max(0, barWidth)
         }
     }
 
