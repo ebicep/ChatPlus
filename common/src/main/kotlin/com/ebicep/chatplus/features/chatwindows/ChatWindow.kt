@@ -6,6 +6,7 @@ import com.ebicep.chatplus.config.MessageDirection
 import com.ebicep.chatplus.config.queueUpdateConfig
 import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.features.AlignMessage
+import com.ebicep.chatplus.features.ChatPadding
 import com.ebicep.chatplus.features.chattabs.*
 import com.ebicep.chatplus.features.chattabs.ChatTab.Companion.TAB_HEIGHT
 import com.ebicep.chatplus.features.chattabs.ChatTabs.DefaultTab
@@ -34,6 +35,7 @@ class ChatWindow {
     var lineSpacing: Float = 0f
     var messageAlignment: AlignMessage.Alignment = AlignMessage.Alignment.LEFT
     var messageDirection: MessageDirection = MessageDirection.BOTTOM_UP
+    val padding: ChatPadding.Padding = ChatPadding.Padding()
 
     val renderer = ChatRenderer()
     var hideTabs = false

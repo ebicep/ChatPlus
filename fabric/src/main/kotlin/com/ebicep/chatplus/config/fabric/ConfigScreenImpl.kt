@@ -224,6 +224,23 @@ object ConfigScreenImpl {
                 Config.values.chatWindows.size > 0,
                 { ChatWindow() },
                 { window ->
+                    val paddingCategory = entryBuilder.startSubCategory(Component.translatable("chatPlus.chatWindow.padding"))
+                    paddingCategory.add(
+                        entryBuilder.intSlider(
+                            "chatPlus.chatWindow.padding.left",
+                            window.padding.left,
+                            0,
+                            20
+                        ) { window.padding.left = it }
+                    )
+                    paddingCategory.add(
+                        entryBuilder.intSlider(
+                            "chatPlus.chatWindow.padding.right",
+                            window.padding.right,
+                            0,
+                            20
+                        ) { window.padding.right = it }
+                    )
                     listOf(
                         entryBuilder.booleanToggle(
                             "chatPlus.chatWindow.hideTabs",
@@ -269,6 +286,7 @@ object ConfigScreenImpl {
                             MessageDirection::class.java,
                             window.messageDirection
                         ) { window.messageDirection = it },
+                        paddingCategory.build(),
                         getCustomListOption(
                             "chatPlus.chatTabs.title",
                             window.tabs,

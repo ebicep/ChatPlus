@@ -1,10 +1,13 @@
 package com.ebicep.chatplus.features.internal
 
 import com.ebicep.chatplus.events.EventBus
+import com.ebicep.chatplus.features.chattabs.ChatTabGetMessageAtEvent
 import com.ebicep.chatplus.hud.*
 import com.ebicep.chatplus.util.GraphicsUtil.createPose
+import com.ebicep.chatplus.util.GraphicsUtil.guiForward
 import com.ebicep.chatplus.util.GraphicsUtil.translate0
 import net.minecraft.client.Minecraft
+import kotlin.math.roundToInt
 
 object Debug {
 
@@ -18,20 +21,41 @@ object Debug {
             }
             val guiGraphics = it.guiGraphics
             val pose = guiGraphics.pose()
+            val mouseX = ChatPlusScreen.lastMouseX
+            val mouseY = ChatPlusScreen.lastMouseY
             pose.createPose {
+                pose.guiForward(amount = 5000.0)
                 guiGraphics.drawString(
                     Minecraft.getInstance().font,
-                    "${ChatPlusScreen.lastMouseX},${ChatPlusScreen.lastMouseY}",
-                    ChatPlusScreen.lastMouseX + 5,
-                    ChatPlusScreen.lastMouseY + 5,
+                    "$mouseX,$mouseY",
+                    mouseX + 5,
+                    mouseY + 5,
                     0xFFFFFF
+                )
+                val globalSelectedTab = ChatManager.globalSelectedTab
+                guiGraphics.drawString(
+                    Minecraft.getInstance().font,
+                    "${globalSelectedTab.chatScrollbarPos}",
+                    mouseX + 5,
+                    mouseY + 15,
+                    0xFFFFFF
+                )
+                // mouse relative to chat window position
+
+                val messageAtEvent = EventBus.post(
+                    ChatTabGetMessageAtEvent(
+                        globalSelectedTab.chatWindow,
+                        globalSelectedTab,
+                        globalSelectedTab.screenToChatX(mouseX.toDouble()),
+                        globalSelectedTab.screenToChatY(mouseY.toDouble())
+                    )
                 )
                 guiGraphics.drawString(
                     Minecraft.getInstance().font,
-                    "${ChatManager.globalSelectedTab.chatScrollbarPos}",
-                    ChatPlusScreen.lastMouseX + 5,
-                    ChatPlusScreen.lastMouseY + 15,
-                    0xFFFFFF
+                    "${messageAtEvent.chatX.roundToInt()},${messageAtEvent.chatY.roundToInt()}",
+                    mouseX + 5,
+                    mouseY - 5,
+                    0xFF00FF
                 )
             }
         }

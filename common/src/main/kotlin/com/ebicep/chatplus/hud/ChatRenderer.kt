@@ -314,7 +314,7 @@ class ChatRenderer {
         }
         poseStack.popPose()
 
-        if (Debug.debug && chatWindow == ChatManager.selectedWindow) {
+        if (chatFocused && Debug.debug && chatWindow == ChatManager.selectedWindow) {
             poseStack.createPose {
                 poseStack.guiForward(amount = 500.0)
                 guiGraphics.drawString(Minecraft.getInstance().font, "$height", lastMouseX - 15, lastMouseY + 5, 0x3eeff)

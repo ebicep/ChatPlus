@@ -118,6 +118,9 @@ object ScrollBar {
             if (!Config.values.scrollbarEnabled) {
                 return@register
             }
+            if (ChatManager.selectedWindow.messageAlignment != AlignMessage.Alignment.RIGHT) {
+                return@register
+            }
             it.chatX += max(0, barWidth)
         }
     }

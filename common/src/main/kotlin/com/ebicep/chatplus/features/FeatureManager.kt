@@ -33,6 +33,7 @@ object FeatureManager {
         Debug
         OnScreenDisplay
         TimestampMessages
+        ChatPadding
 //        AlternatingColorBackground
     }
 

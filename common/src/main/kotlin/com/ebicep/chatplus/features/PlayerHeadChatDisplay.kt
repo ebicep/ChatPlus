@@ -20,7 +20,8 @@ import java.util.*
 object PlayerHeadChatDisplay {
 
     private const val CACHE_EXPIRATION = 1000 * 60 * 10
-    private const val HEAD_WIDTH_PADDED = PlayerFaceRenderer.SKIN_HEAD_WIDTH + 2
+    private const val HEAD_RIGHT_PADDING = 2
+    private const val HEAD_WIDTH_PADDED = PlayerFaceRenderer.SKIN_HEAD_WIDTH + HEAD_RIGHT_PADDING
     private const val HEAD_WIDTH_PADDED_HALF = HEAD_WIDTH_PADDED / 2
     private val NAME_REGEX = Regex("(§.)|\\W")
     private val playerNameUUIDs = mutableMapOf<String, TimedUUID>()
@@ -133,7 +134,7 @@ object PlayerHeadChatDisplay {
         }
     }
 
-    fun getMessageOffset(chatWindow: ChatWindow): Int {
+    private fun getMessageOffset(chatWindow: ChatWindow): Int {
         return when (chatWindow.messageAlignment) {
             AlignMessage.Alignment.LEFT -> HEAD_WIDTH_PADDED
             AlignMessage.Alignment.CENTER -> HEAD_WIDTH_PADDED_HALF
