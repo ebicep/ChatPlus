@@ -11,6 +11,7 @@ import com.ebicep.chatplus.features.textbarelements.ScreenShotChatEvent
 import com.ebicep.chatplus.features.textbarelements.TextBarElements
 import com.ebicep.chatplus.hud.*
 import com.ebicep.chatplus.util.GraphicsUtil.createPose
+import com.ebicep.chatplus.util.GraphicsUtil.fill0
 import com.ebicep.chatplus.util.GraphicsUtil.guiForward
 import com.ebicep.chatplus.util.GraphicsUtil.translate0
 import com.ebicep.chatplus.util.TimeStampedLines
@@ -96,7 +97,7 @@ object ScreenshotChat {
             // fill background to change to transparent later
             val guiGraphics = it.guiGraphics
             guiGraphics.pose().guiForward(100.0)
-            guiGraphics.fill(
+            guiGraphics.fill0(
                 renderer.rescaledX - 10,
                 renderer.rescaledY - renderer.rescaledHeight - 10,
                 renderer.rescaledEndX + 10,

@@ -195,17 +195,17 @@ class ChatTab : MessageFilter {
         }
 
     @Transient
-    var xStart: Double = 0.0
+    var xStart: Int = 0
         set(value) {
             field = value
             xEnd = field + width
         }
 
     @Transient
-    var xEnd: Double = 0.0
+    var xEnd: Int = 0
 
     @Transient
-    var yStart: Double = 0.0
+    var yStart: Int = 0
 
     @Transient
     var lastMessageTime: Long = 0

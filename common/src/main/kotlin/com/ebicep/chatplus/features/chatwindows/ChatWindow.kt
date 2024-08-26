@@ -22,6 +22,7 @@ import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.util.Mth
 import java.awt.Color
+import kotlin.math.roundToInt
 
 @Serializable
 class ChatWindow {
@@ -106,7 +107,7 @@ class ChatWindow {
 
     fun handleClickedTab(x: Double, y: Double) {
         val clickedTab: ChatTab = getClickedTab(x, y) ?: return
-        EventBus.post(ChatTabClickedEvent(clickedTab, x, y, clickedTab.xStart, clickedTab.yStart))
+        EventBus.post(ChatTabClickedEvent(clickedTab, x, y, clickedTab.xStart.toDouble(), clickedTab.yStart.toDouble()))
         if (clickedTab != ChatManager.globalSelectedTab) {
             val oldTab = ChatManager.globalSelectedTab
             oldTab.resetFilter()
@@ -139,8 +140,8 @@ class ChatWindow {
             return
         }
         val poseStack = guiGraphics.pose()
-        var xStart = renderer.internalX.toDouble()
-        val yStart = renderer.internalY.toDouble() + CHAT_TAB_Y_OFFSET
+        var xStart: Int = renderer.internalX
+        val yStart: Int = renderer.internalY + CHAT_TAB_Y_OFFSET
         poseStack.createPose {
             tabs.forEachIndexed { index, it ->
                 if (index < startRenderTabIndex) {
@@ -166,14 +167,14 @@ class ChatWindow {
                             poseStack.guiForward()
                             guiGraphics.drawString(
                                 Minecraft.getInstance().font,
-                                "x:${it.xStart.toInt()}",
+                                "x:${it.xStart}",
                                 0,
                                 -20,
                                 0xFF5050
                             )
                             guiGraphics.drawString(
                                 Minecraft.getInstance().font,
-                                "y:${it.yStart.toInt()}",
+                                "y:${it.yStart}",
                                 0,
                                 -10,
                                 0xFF5050
@@ -188,8 +189,10 @@ class ChatWindow {
     private fun renderTab(chatTab: ChatTab, guiGraphics: GuiGraphics) {
         val poseStack = guiGraphics.pose()
         val isSelected = chatTab == ChatManager.globalSelectedTab
-        val backgroundOpacity = ((if (isSelected) 255 else 100) * Color(backgroundColor, true).alpha / 255.0).toInt() shl 24
-        val textColor = if (isSelected) 0xffffff else 0x999999
+        val backgroundColor = chatTab.chatWindow.backgroundColor
+        val oldAlpha = (backgroundColor shr 24) and 0xff
+        val newAlpha = (oldAlpha * (if (isSelected) 1f else (100 / 255f))).roundToInt()
+        val textColor = if (isSelected) 0xffffff else 0x999999 // TODO
 
         poseStack.createPose {
             poseStack.guiForward()
@@ -198,7 +201,7 @@ class ChatWindow {
                 (if (isSelected) -CHAT_TAB_Y_OFFSET else 0),
                 chatTab.width,
                 TAB_HEIGHT,
-                backgroundOpacity
+                backgroundColor and 0xFFFFFF or (newAlpha shl 24)
             )
             poseStack.guiForward()
             guiGraphics.drawString(

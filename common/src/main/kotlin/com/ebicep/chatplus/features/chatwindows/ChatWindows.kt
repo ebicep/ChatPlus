@@ -6,7 +6,9 @@ import com.ebicep.chatplus.features.chattabs.CHAT_TAB_HEIGHT
 import com.ebicep.chatplus.features.chattabs.CHAT_TAB_Y_OFFSET
 import com.ebicep.chatplus.hud.*
 import com.ebicep.chatplus.util.GraphicsUtil.createPose
+import com.ebicep.chatplus.util.GraphicsUtil.drawHorizontalLine
 import com.ebicep.chatplus.util.GraphicsUtil.guiForward
+import com.ebicep.chatplus.util.GraphicsUtil.renderOutline
 import com.ebicep.chatplus.util.GraphicsUtil.translate0
 import net.minecraft.client.gui.GuiGraphics
 
@@ -32,13 +34,49 @@ object ChatWindows {
             if (!chatWindow.outline) {
                 return@register
             }
+            val selectedTab = chatWindow.selectedTab
             val renderer = chatWindow.renderer
             val guiGraphics = it.guiGraphics
             val poseStack = guiGraphics.pose()
             poseStack.createPose {
                 poseStack.guiForward(amount = 150.0)
-                val h = it.displayMessageIndex * renderer.lineHeight
-                guiGraphics.renderOutline(renderer.rescaledX, renderer.rescaledY - h, renderer.rescaledWidth, h, chatWindow.outlineColor)
+                val thickness = 1 / renderer.scale
+                val h = (if (Config.values.movableChatEnabled) renderer.rescaledHeight.toFloat() else it.displayMessageIndex * renderer.lineHeight.toFloat()) + thickness
+                val w = renderer.rescaledEndX - renderer.rescaledX
+                guiGraphics.renderOutline(
+                    renderer.rescaledX - thickness,
+                    renderer.rescaledY - h,
+                    w + thickness + thickness,
+                    h + thickness + thickness,
+                    chatWindow.outlineColor,
+                    thickness,
+                    bottom = false
+                )
+                val tabStartX = selectedTab.xStart / renderer.scale - thickness
+                val tabEndX = selectedTab.xEnd / renderer.scale + thickness
+                guiGraphics.renderOutline(
+                    tabStartX,
+                    renderer.rescaledY - CHAT_TAB_Y_OFFSET,
+                    tabEndX - tabStartX,
+                    CHAT_TAB_HEIGHT / renderer.scale,
+                    chatWindow.outlineColor,
+                    thickness,
+                    top = false
+                )
+                guiGraphics.drawHorizontalLine(
+                    renderer.rescaledX,
+                    tabStartX,
+                    renderer.rescaledY,
+                    chatWindow.outlineColor,
+                    thickness
+                )
+                guiGraphics.drawHorizontalLine(
+                    tabEndX,
+                    renderer.rescaledEndX,
+                    renderer.rescaledY,
+                    chatWindow.outlineColor,
+                    thickness
+                )
             }
         }
         EventBus.register<GetMaxHeightEvent> {

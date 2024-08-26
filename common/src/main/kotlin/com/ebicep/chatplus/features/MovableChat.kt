@@ -207,7 +207,7 @@ object MovableChat {
             val chatWindow = it.chatWindow
             val renderer = chatWindow.renderer
             val guiGraphics = it.guiGraphics
-            guiGraphics.fill(
+            guiGraphics.fill0(
                 renderer.rescaledX,
                 renderer.rescaledY - renderer.rescaledHeight,
                 renderer.rescaledEndX,
@@ -248,8 +248,8 @@ object MovableChat {
             val movingY = yOff > 4
             val outsideTabBar = outsideTabBar(chatTab.chatWindow, lastMouseX.toDouble(), lastMouseY.toDouble(), 0, 0) != RelativeMouseTabBarPosition.INSIDE
             if (outsideTabBar || movingX || movingY) {
-                it.xStart = (movingTabXStart + movingTabXOffset).toDouble()
-                it.yStart = (movingTabYStart + movingTabYOffset).toDouble()
+                it.xStart = movingTabXStart + movingTabXOffset
+                it.yStart = movingTabYStart + movingTabYOffset
             }
             if (debug) {
                 renderDebugTab(guiGraphics, chatTab, outsideTabBar)
@@ -425,8 +425,8 @@ object MovableChat {
         // make sure tab is viewed in same place but with offset based on new window
         movingTabMouseXStart = windowMovedTo.renderer.internalX + oldWidth + CHAT_TAB_X_SPACE + innerTabXOffset
         movingTabMouseYStart = windowMovedTo.renderer.internalY + innerTabYOffset + CHAT_TAB_Y_OFFSET
-        movingTabXStart = newStartX.roundToInt()
-        movingTabYStart = windowMovedTo.tabs.first().yStart.roundToInt()
+        movingTabXStart = newStartX
+        movingTabYStart = windowMovedTo.tabs.first().yStart
         movingTabXOffset = (mouseX - movingTabMouseXStart).roundToInt()
         movingTabYOffset = (mouseY - movingTabMouseYStart).roundToInt()
         selectedTab.xStart = newStartX
@@ -460,7 +460,7 @@ object MovableChat {
         }
         poseStack.createPose {
             // below cursor - offset from tab start position
-            poseStack.translate0(x = chatTab.xStart, y = chatTab.yStart, z = 100.0)
+            poseStack.translate0(x = chatTab.xStart, y = chatTab.yStart, z = 100)
             guiGraphics.drawString(
                 Minecraft.getInstance().font,
                 "$movingTabXOffset",
@@ -508,7 +508,7 @@ object MovableChat {
                 guiGraphics.renderOutline(
                     window.renderer.internalX - MOVE_PADDING_X,
                     getTabStartY(window) - MOVE_PADDING_Y,
-                    width + MOVE_PADDING_X * 2,
+                    width.toInt() + MOVE_PADDING_X * 2,
                     TAB_HEIGHT + MOVE_PADDING_Y * 2,
                     (0xFFFFFF00).toInt()
                 )
@@ -520,7 +520,7 @@ object MovableChat {
                 guiGraphics.renderOutline(
                     window.renderer.internalX,
                     getTabStartY(window),
-                    width,
+                    width as Int,
                     TAB_HEIGHT,
                     (0xFF00FF00).toInt()
                 )
@@ -617,7 +617,7 @@ object MovableChat {
         }
         val renderer = chatWindow.renderer
         val barStartX = renderer.internalX - paddingX
-        val barEndX = (if (isSingleTabWindow(chatWindow)) renderer.internalX + chatWindow.getTabBarWidth() else renderer.rescaledEndX) + paddingX
+        val barEndX = (if (isSingleTabWindow(chatWindow)) renderer.internalX + chatWindow.getTabBarWidth() else renderer.rescaledEndX).toFloat() + paddingX
         val barStartY = getTabStartY(chatWindow) - paddingY
         val barEndY = getTabEndY(chatWindow) + paddingY
         when {

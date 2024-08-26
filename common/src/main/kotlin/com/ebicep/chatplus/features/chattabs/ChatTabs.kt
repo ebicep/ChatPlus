@@ -17,11 +17,26 @@ const val CHAT_TAB_HEIGHT = 15
 const val CHAT_TAB_Y_OFFSET = 1 // offset from text box
 const val CHAT_TAB_X_SPACE = 1 // space between categories
 
-data class ChatTabClickedEvent(val chatTab: ChatTab, val mouseX: Double, val mouseY: Double, val tabXStart: Double, val tabYStart: Double)
+data class ChatTabClickedEvent(
+    val chatTab: ChatTab,
+    val mouseX: Double,
+    val mouseY: Double,
+    val tabXStart: Double,
+    val tabYStart: Double
+)
 
-data class ChatTabRenderEvent(val guiGraphics: GuiGraphics, val chatTab: ChatTab, val tabWidth: Int, var xStart: Double, var yStart: Double)
+data class ChatTabRenderEvent(
+    val guiGraphics: GuiGraphics,
+    val chatTab: ChatTab,
+    val tabWidth: Int,
+    var xStart: Int,
+    var yStart: Int
+)
 
-data class ChatTabSwitchEvent(val oldTab: ChatTab, val newTab: ChatTab)
+data class ChatTabSwitchEvent(
+    val oldTab: ChatTab,
+    val newTab: ChatTab
+)
 
 object ChatTabs {
 

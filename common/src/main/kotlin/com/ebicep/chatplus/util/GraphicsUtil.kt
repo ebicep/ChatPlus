@@ -2,9 +2,11 @@ package com.ebicep.chatplus.util
 
 import com.ebicep.chatplus.mixin.IMixinGuiGraphics
 import com.mojang.blaze3d.vertex.PoseStack
+import net.minecraft.client.gui.Font
 import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.client.renderer.RenderType
 import net.minecraft.util.FastColor
+import net.minecraft.util.FormattedCharSequence
 
 object GraphicsUtil {
 
@@ -37,6 +39,10 @@ object GraphicsUtil {
         this.fill0(RenderType.gui(), i, j, k, l, m, n)
     }
 
+    fun GuiGraphics.fill0(i: Float, j: Float, k: Float, l: Float, n: Int) {
+        this.fill0(RenderType.gui(), i, j, k, l, 0, n)
+    }
+
     fun GuiGraphics.fill0(renderType: RenderType, i: Float, j: Float, k: Float, l: Float, m: Int, n: Int) {
         this as IMixinGuiGraphics
         val matrix4f = this.pose().last().pose()
@@ -64,7 +70,86 @@ object GraphicsUtil {
         vertexConsumer.vertex(matrix4f, i, l, m.toFloat()).color(g, h, p, f).endVertex()
         vertexConsumer.vertex(matrix4f, k, l, m.toFloat()).color(g, h, p, f).endVertex()
         vertexConsumer.vertex(matrix4f, k, j, m.toFloat()).color(g, h, p, f).endVertex()
-        this.`chatPlus$flushIfUnmanaged`()
+        this.callFlushIfUnmanaged()
+    }
+
+    fun GuiGraphics.renderOutline(
+        startX: Float,
+        startY: Float,
+        width: Float,
+        height: Float,
+        color: Int,
+        thickness: Float = 1f,
+        top: Boolean = true,
+        bottom: Boolean = true,
+        left: Boolean = true,
+        right: Boolean = true
+    ) {
+        if (top) {
+            this.fill0(startX, startY, startX + width, startY + thickness, color)
+        }
+        if (bottom) {
+            this.fill0(startX, startY + height - thickness, startX + width, startY + height, color)
+        }
+        if (left) {
+            this.fill0(startX, startY + thickness, startX + thickness, startY + height - thickness, color)
+        }
+        if (right) {
+            this.fill0(startX + width - thickness, startY + thickness, startX + width, startY + height - thickness, color)
+        }
+    }
+
+    fun GuiGraphics.drawHorizontalLine(x1: Int, x2: Int, y: Int, color: Int) {
+        this.fill(x1, y, x2, y + 1, color)
+    }
+
+    fun GuiGraphics.drawHorizontalLine(x1: Float, x2: Float, y: Float, color: Int, thickness: Float = 1f) {
+        this.fill0(x1, y, x2, y + thickness, color)
+    }
+
+    fun GuiGraphics.drawString0(font: Font, string: String, x: Float, y: Float, color: Int): Int {
+        return this.drawString0(font, string, x, y, color, true)
+    }
+
+    fun GuiGraphics.drawString0(font: Font, string: String, x: Float, y: Float, color: Int, bl: Boolean): Int {
+        this as IMixinGuiGraphics
+        val l = font.drawInBatch(
+            string,
+            x,
+            y,
+            color,
+            bl,
+            this.pose().last().pose(),
+            this.bufferSource(),
+            Font.DisplayMode.NORMAL,
+            0,
+            0xF000F0,
+            font.isBidirectional
+        )
+        this.callFlushIfUnmanaged()
+        return l
+    }
+
+    fun GuiGraphics.drawString0(font: Font, formattedCharSequence: FormattedCharSequence, x: Float, y: Float, color: Int): Int {
+        return this.drawString0(font, formattedCharSequence, x, y, color, true)
+    }
+
+    fun GuiGraphics.drawString0(font: Font, formattedCharSequence: FormattedCharSequence, x: Float, y: Float, color: Int, bl: Boolean): Int {
+        this as IMixinGuiGraphics
+        val l = font.drawInBatch(
+            formattedCharSequence,
+            x,
+            y,
+            color,
+            bl,
+            this.pose().last().pose(),
+            this.bufferSource(),
+            Font.DisplayMode.NORMAL,
+            0,
+            0xF000F0
+        )
+        this.callFlushIfUnmanaged()
+        return l
     }
 
 }

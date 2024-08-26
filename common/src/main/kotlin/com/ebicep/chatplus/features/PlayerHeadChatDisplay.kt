@@ -100,8 +100,8 @@ object PlayerHeadChatDisplay {
                 PlayerFaceRenderer.draw(
                     guiGraphics,
                     resourceLocation,
-                    it.chatWindow.renderer.rescaledX,
-                    it.verticalTextOffset,
+                    it.chatWindow.renderer.rescaledX.toInt(), //TODO float?
+                    it.verticalTextOffset.toInt(),
                     PlayerFaceRenderer.SKIN_HEAD_WIDTH
                 )
                 RenderSystem.setShaderColor(1f, 1f, 1f, 1f)

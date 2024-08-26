@@ -4,6 +4,7 @@ import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.features.chattabs.ChatTabGetMessageAtEvent
 import com.ebicep.chatplus.hud.*
 import com.ebicep.chatplus.util.GraphicsUtil.createPose
+import com.ebicep.chatplus.util.GraphicsUtil.drawString0
 import com.ebicep.chatplus.util.GraphicsUtil.guiForward
 import com.ebicep.chatplus.util.GraphicsUtil.translate0
 import net.minecraft.client.Minecraft
@@ -93,7 +94,7 @@ object Debug {
             val pose = guiGraphics.pose()
             pose.createPose {
                 pose.translate0(z = 5000)
-                guiGraphics.drawString(
+                guiGraphics.drawString0(
                     Minecraft.getInstance().font,
                     "${renderer.rescaledEndX},${renderer.rescaledY - it.displayMessageIndex * renderer.lineHeight}",
                     renderer.rescaledEndX,

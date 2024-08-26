@@ -13,6 +13,8 @@ import com.ebicep.chatplus.hud.ChatPlusScreen.EDIT_BOX_HEIGHT
 import com.ebicep.chatplus.hud.ChatPlusScreen.lastMouseX
 import com.ebicep.chatplus.hud.ChatPlusScreen.lastMouseY
 import com.ebicep.chatplus.util.GraphicsUtil.createPose
+import com.ebicep.chatplus.util.GraphicsUtil.drawString0
+import com.ebicep.chatplus.util.GraphicsUtil.fill0
 import com.ebicep.chatplus.util.GraphicsUtil.guiForward
 import com.mojang.blaze3d.vertex.PoseStack
 import kotlinx.serialization.Serializable
@@ -28,8 +30,8 @@ abstract class ChatRenderLineEvent(
     open val guiGraphics: GuiGraphics,
     open val chatWindow: ChatWindow,
     open val chatPlusGuiMessageLine: ChatTab.ChatPlusGuiMessageLine,
-    open val verticalChatOffset: Int,
-    open val verticalTextOffset: Int,
+    open val verticalChatOffset: Float,
+    open val verticalTextOffset: Float,
 ) : Event {
     val line: GuiMessage.Line
         get() = chatPlusGuiMessageLine.line
@@ -42,8 +44,8 @@ class ChatRenderLineTextEvent(
     val fadeOpacity: Double,
     val textColor: Int,
     val backgroundColor: Int,
-    verticalChatOffset: Int,
-    verticalTextOffset: Int,
+    verticalChatOffset: Float,
+    verticalTextOffset: Float,
     val text: String,
     val index: Int,
 ) : ChatRenderLineEvent(guiGraphics, chatWindow, chatPlusGuiMessageLine, verticalChatOffset, verticalTextOffset)
@@ -52,8 +54,8 @@ class ChatRenderPreLineAppearanceEvent(
     guiGraphics: GuiGraphics,
     chatWindow: ChatWindow,
     chatPlusGuiMessageLine: ChatTab.ChatPlusGuiMessageLine,
-    verticalChatOffset: Int,
-    verticalTextOffset: Int,
+    verticalChatOffset: Float,
+    verticalTextOffset: Float,
     var textColor: Int,
     var backgroundColor: Int,
 ) : ChatRenderLineEvent(guiGraphics, chatWindow, chatPlusGuiMessageLine, verticalChatOffset, verticalTextOffset)
@@ -155,10 +157,10 @@ class ChatRenderer {
     var backgroundWidthEndX: Int = 0
 
     @Transient
-    var rescaledX: Int = 0
+    var rescaledX: Float = 0f
 
     @Transient
-    var rescaledY: Int = 0
+    var rescaledY: Float = 0f
 
     @Transient
     var rescaledHeight: Int = 0
@@ -167,7 +169,7 @@ class ChatRenderer {
     var rescaledWidth: Int = 0
 
     @Transient
-    var rescaledEndX: Int = 0
+    var rescaledEndX: Float = 0f
 
     @Transient
     var rescaledLinesPerPage: Int = 0
@@ -201,11 +203,11 @@ class ChatRenderer {
             chatWindow.selectedTab.rescaleChat()
         }
         backgroundWidthEndX = internalX + internalWidth
-        rescaledX = ceil(internalX / scale).toInt()
-        rescaledY = ceil(internalY / scale).toInt()
+        rescaledX = internalX / scale
+        rescaledY = internalY / scale
         rescaledHeight = ceil(internalHeight / scale).toInt()
         rescaledWidth = ceil(internalWidth / scale).toInt()
-        rescaledEndX = ceil(backgroundWidthEndX / scale).toInt()
+        rescaledEndX = backgroundWidthEndX / scale
         rescaledLinesPerPage = getLinesPerPageScaled()
         lineHeight = getUpdatedLineHeight()
     }
@@ -251,11 +253,11 @@ class ChatRenderer {
                 continue
             }
             // how high chat is from input bar, if changed need to change queue offset
-            val verticalChatOffset: Int = when (chatWindow.messageDirection) {
+            val verticalChatOffset: Float = when (chatWindow.messageDirection) {
                 MessageDirection.TOP_DOWN -> (rescaledY - rescaledLinesPerPage * lineHeight + lineHeight) + displayMessageIndex * lineHeight
                 MessageDirection.BOTTOM_UP -> rescaledY - displayMessageIndex * lineHeight
             }
-            val verticalTextOffset: Int = verticalChatOffset + l1 // align text with background
+            val verticalTextOffset: Float = verticalChatOffset + l1 // align text with background
             val lineAppearanceEvent = ChatRenderPreLineAppearanceEvent(
                 guiGraphics,
                 chatWindow,
@@ -274,16 +276,17 @@ class ChatRenderer {
             poseStack.createPose {
                 poseStack.guiForward(amount = 50.0)
                 //background
-                guiGraphics.fill(
-                    rescaledX,
-                    verticalChatOffset - lineHeight,
+                guiGraphics.fill0(
+                    internalX / scale,
+                    verticalChatOffset - lineHeight.toFloat(),
                     rescaledEndX,
                     verticalChatOffset,
+                    200,
                     backgroundColor
                 )
             }
             poseStack.createPose {
-                poseStack.guiForward(amount = 100.0)
+                poseStack.guiForward(amount = 300.0)
                 EventBus.post(
                     ChatRenderLineTextEvent(
                         guiGraphics,
@@ -299,7 +302,7 @@ class ChatRenderer {
                     )
                 )
                 // text
-                guiGraphics.drawString(
+                guiGraphics.drawString0(
                     Minecraft.getInstance().font,
                     line.content,
                     rescaledX,
