@@ -74,7 +74,7 @@ object AlignMessage {
         ),
         RIGHT(
             "chatPlus.chatWindow.messageAlignment.right",
-            { renderer, text -> (renderer.rescaledWidth - Minecraft.getInstance().font.width(text).toDouble()) }
+            { renderer, text -> renderer.rescaledWidth - Minecraft.getInstance().font.width(text).toDouble() - 1 }
         ),
 
         ;
