@@ -138,9 +138,6 @@ class ChatWindow {
     }
 
     fun renderTabs(guiGraphics: GuiGraphics) {
-        if (hideTabs) {
-            return
-        }
         val poseStack = guiGraphics.pose()
         var xStart: Int = renderer.internalX
         val yStart: Int = renderer.internalY + CHAT_TAB_Y_OFFSET
@@ -160,7 +157,9 @@ class ChatWindow {
                     it.xStart = translateX
                     it.yStart = translatedY
 
-                    renderTab(it, guiGraphics)
+                    if (!hideTabs) {
+                        renderTab(it, guiGraphics)
+                    }
 
                     xStart += tabWidth + CHAT_TAB_X_SPACE
 
