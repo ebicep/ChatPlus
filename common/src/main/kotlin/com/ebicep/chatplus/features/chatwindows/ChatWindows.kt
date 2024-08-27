@@ -43,15 +43,16 @@ object ChatWindows {
             poseStack.createPose {
                 poseStack.guiForward(amount = 150.0)
                 val thickness = 1
-                val h = if (Config.values.movableChatEnabled) renderer.height else (min(messagesToDisplay, renderer.getLinesPerPage()) * renderer.lineHeight)
+                val lineCount = if (Config.values.movableChatEnabled) renderer.rescaledLinesPerPage else min(messagesToDisplay, renderer.rescaledLinesPerPage)
+                val h = lineCount * (renderer.lineHeight * renderer.scale)
                 val w = renderer.internalWidth
                 guiGraphics.renderOutline(
-                    renderer.internalX - thickness,
-                    renderer.internalY - h,
-                    w + thickness + thickness,
-                    h + thickness + thickness,
+                    renderer.internalX.toFloat() - thickness,
+                    renderer.internalY.toFloat() - h - thickness,
+                    w.toFloat() + thickness + thickness,
+                    h + thickness + thickness + thickness,
                     chatWindow.outlineColor,
-                    thickness,
+                    thickness.toFloat(),
                     bottom = false
                 )
                 val tabStartX = selectedTab.xStart - thickness

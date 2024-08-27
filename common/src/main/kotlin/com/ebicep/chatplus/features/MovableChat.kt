@@ -207,11 +207,12 @@ object MovableChat {
             val chatWindow = it.chatWindow
             val renderer = chatWindow.renderer
             val guiGraphics = it.guiGraphics
+            val height = it.displayMessageIndex * renderer.lineHeight
             guiGraphics.fill0(
                 renderer.rescaledX,
-                renderer.rescaledY - renderer.rescaledHeight,
+                renderer.rescaledY - height,
                 renderer.rescaledEndX,
-                renderer.rescaledY - it.displayMessageIndex * renderer.lineHeight,
+                renderer.rescaledY - height,
                 chatWindow.backgroundColor
             )
             if (it.chatWindow == ChatManager.selectedWindow) {
