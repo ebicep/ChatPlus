@@ -30,6 +30,8 @@ class ChatWindow {
     var backgroundColor: Int = Color(0f, 0f, 0f, .5f).rgb
     var outline: Boolean = false
     var outlineColor: Int = Color(0f, 0f, 0f, 0f).rgb
+
+    //    var outline: Int = Color(0f, 0f, 0f, 0f).rgb
     var scale: Float = 1f
     var textOpacity: Float = 1f
     var unfocusedHeight: Float = .5f

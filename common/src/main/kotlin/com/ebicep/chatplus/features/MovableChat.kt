@@ -207,12 +207,11 @@ object MovableChat {
             val chatWindow = it.chatWindow
             val renderer = chatWindow.renderer
             val guiGraphics = it.guiGraphics
-            val height = it.displayMessageIndex * renderer.lineHeight
             guiGraphics.fill0(
                 renderer.rescaledX,
-                renderer.rescaledY - height,
+                renderer.rescaledY - renderer.getLinesPerPage() * renderer.lineHeight,
                 renderer.rescaledEndX,
-                renderer.rescaledY - height,
+                renderer.rescaledY - it.displayMessageIndex * renderer.lineHeight,
                 chatWindow.backgroundColor
             )
             if (it.chatWindow == ChatManager.selectedWindow) {
@@ -521,7 +520,7 @@ object MovableChat {
                 guiGraphics.renderOutline(
                     window.renderer.internalX,
                     getTabStartY(window),
-                    width as Int,
+                    width.toInt(),
                     TAB_HEIGHT,
                     (0xFF00FF00).toInt()
                 )
