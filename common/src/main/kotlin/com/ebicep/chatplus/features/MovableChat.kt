@@ -360,8 +360,7 @@ object MovableChat {
 
         val newWindow = ChatWindow()
         newWindow.backgroundColor = chatWindow.backgroundColor
-        newWindow.outline = chatWindow.outline
-        newWindow.outlineColor = chatWindow.outlineColor
+        newWindow.outline = chatWindow.outline.clone()
         newWindow.scale = chatWindow.scale
         newWindow.textOpacity = chatWindow.textOpacity
         newWindow.unfocusedHeight = chatWindow.unfocusedHeight

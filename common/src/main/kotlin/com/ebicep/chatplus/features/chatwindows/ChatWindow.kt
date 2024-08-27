@@ -28,10 +28,7 @@ import kotlin.math.roundToInt
 class ChatWindow {
 
     var backgroundColor: Int = Color(0f, 0f, 0f, .5f).rgb
-    var outline: Boolean = false
-    var outlineColor: Int = Color(0f, 0f, 0f, 0f).rgb
-
-    //    var outline: Int = Color(0f, 0f, 0f, 0f).rgb
+    var outline: ChatWindowOutline = ChatWindowOutline()
     var scale: Float = 1f
     var textOpacity: Float = 1f
     var unfocusedHeight: Float = .5f
@@ -189,17 +186,28 @@ class ChatWindow {
 
     private fun renderTab(chatTab: ChatTab, guiGraphics: GuiGraphics) {
         val poseStack = guiGraphics.pose()
-        val isSelected = chatTab == ChatManager.globalSelectedTab
-        val backgroundColor = chatTab.chatWindow.backgroundColor
+        val isGlobalSelected = chatTab == ChatManager.globalSelectedTab
+        val isWindowSelected = chatTab == selectedTab
+        val chatWindow = chatTab.chatWindow
+        val backgroundColor = chatWindow.backgroundColor
         val oldAlpha = (backgroundColor shr 24) and 0xff
-        val newAlpha = (oldAlpha * (if (isSelected) 1f else (100 / 255f))).roundToInt()
-        val textColor = if (isSelected) 0xffffff else 0x999999 // TODO
+        val newAlpha = (oldAlpha * (if (isGlobalSelected) 1f else (100 / 255f))).roundToInt()
+        val textColor = if (isGlobalSelected) 0xffffff else 0x999999 // TODO
+        val startY = if (isWindowSelected) {
+            if (chatWindow.outline.outlineTabType == ChatWindowOutline.OutlineTabType.SELECTED_TAB_OPEN_TOP) {
+                -(chatTab.yStart - chatWindow.renderer.internalY)
+            } else {
+                -CHAT_TAB_Y_OFFSET
+            }
+        } else {
+            0
+        }
 
         poseStack.createPose {
-            poseStack.guiForward()
+            poseStack.guiForward(if (isGlobalSelected) 650.0 else 550.0)
             guiGraphics.fill(
                 0,
-                (if (isSelected) -(chatTab.yStart - chatTab.chatWindow.renderer.internalY) else 0),
+                startY,
                 chatTab.width,
                 TAB_HEIGHT,
                 backgroundColor and 0xFFFFFF or (newAlpha shl 24)
@@ -225,5 +233,6 @@ class ChatWindow {
         }
         return totalWidth - CHAT_TAB_X_SPACE
     }
+
 
 }

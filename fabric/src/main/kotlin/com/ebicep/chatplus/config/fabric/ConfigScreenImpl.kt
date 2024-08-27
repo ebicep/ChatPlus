@@ -8,6 +8,7 @@ import com.ebicep.chatplus.features.FilterMessages.DEFAULT_COLOR
 import com.ebicep.chatplus.features.MovableChat.MOVABLE_CHAT_COLOR
 import com.ebicep.chatplus.features.chattabs.ChatTab
 import com.ebicep.chatplus.features.chatwindows.ChatWindow
+import com.ebicep.chatplus.features.chatwindows.ChatWindowOutline
 import com.ebicep.chatplus.features.internal.MessageFilter
 import com.ebicep.chatplus.features.speechtotext.SpeechToText
 import com.ebicep.chatplus.hud.ChatManager
@@ -241,6 +242,36 @@ object ConfigScreenImpl {
                             20
                         ) { window.padding.right = it }
                     )
+                    val outlineCategory = entryBuilder.startSubCategory(Component.translatable("chatPlus.chatWindow.outline"))
+                    outlineCategory.add(
+                        entryBuilder.booleanToggle(
+                            "chatPlus.chatWindow.outline",
+                            window.outline.enabled
+                        ) { window.outline.enabled = it },
+                    )
+                    outlineCategory.add(
+                        entryBuilder.alphaField(
+                            "chatPlus.chatWindow.outlineColor",
+                            window.outline.outlineColor
+                        ) { window.outline.outlineColor = it })
+                    outlineCategory.add(
+                        entryBuilder.enumSelector(
+                            "chatPlus.chatWindow.outlineBoxType",
+                            ChatWindowOutline.OutlineBoxType::class.java,
+                            window.outline.outlineBoxType
+                        ) { window.outline.outlineBoxType = it })
+                    outlineCategory.add(
+                        entryBuilder.enumSelector(
+                            "chatPlus.chatWindow.outlineTabType",
+                            ChatWindowOutline.OutlineTabType::class.java,
+                            window.outline.outlineTabType
+                        ) { window.outline.outlineTabType = it })
+                    outlineCategory.add(
+                        entryBuilder.booleanToggle(
+                            "chatPlus.chatWindow.hideOutlineWhenNotSelected",
+                            window.outline.hideOutlineWhenNotSelected
+                        ) { window.outline.hideOutlineWhenNotSelected = it }
+                    )
                     listOf(
                         entryBuilder.booleanToggle(
                             "chatPlus.chatWindow.hideTabs",
@@ -250,14 +281,7 @@ object ConfigScreenImpl {
                             "chatPlus.chatWindow.backgroundColor",
                             window.backgroundColor
                         ) { window.backgroundColor = it },
-                        entryBuilder.booleanToggle(
-                            "chatPlus.chatWindow.outline",
-                            window.outline
-                        ) { window.outline = it },
-                        entryBuilder.alphaField(
-                            "chatPlus.chatWindow.outlineColor",
-                            window.outlineColor
-                        ) { window.outlineColor = it },
+                        outlineCategory.build(),
                         entryBuilder.percentSlider(
                             "chatPlus.chatWindow.chatTextSize",
                             window.scale,

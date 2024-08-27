@@ -85,17 +85,32 @@ object GraphicsUtil {
         left: Boolean = true,
         right: Boolean = true
     ) {
+        renderOutlineSetPos(startX, startY, startX + width, startY + height, color, thickness, top, bottom, left, right)
+    }
+
+    fun GuiGraphics.renderOutlineSetPos(
+        startX: Float,
+        startY: Float,
+        endX: Float,
+        endY: Float,
+        color: Int,
+        thickness: Float = 1f,
+        top: Boolean = true,
+        bottom: Boolean = true,
+        left: Boolean = true,
+        right: Boolean = true
+    ) {
         if (top) {
-            this.fill0(startX, startY, startX + width, startY + thickness, color)
+            this.fill0(startX, startY, endX, startY + thickness, color)
         }
         if (bottom) {
-            this.fill0(startX, startY + height - thickness, startX + width, startY + height, color)
+            this.fill0(startX, endY - thickness, endX, endY, color)
         }
         if (left) {
-            this.fill0(startX, startY + thickness, startX + thickness, startY + height - thickness, color)
+            this.fill0(startX, startY + thickness, startX + thickness, endY - thickness, color)
         }
         if (right) {
-            this.fill0(startX + width - thickness, startY + thickness, startX + width, startY + height - thickness, color)
+            this.fill0(endX - thickness, startY + thickness, endX, endY - thickness, color)
         }
     }
 
@@ -111,19 +126,35 @@ object GraphicsUtil {
         left: Boolean = true,
         right: Boolean = true
     ) {
+        renderOutlineSetPos(startX, startY, startX + width, startY + height, color, thickness, top, bottom, left, right)
+    }
+
+    fun GuiGraphics.renderOutlineSetPos(
+        startX: Int,
+        startY: Int,
+        endX: Int,
+        endY: Int,
+        color: Int,
+        thickness: Int = 1,
+        top: Boolean = true,
+        bottom: Boolean = true,
+        left: Boolean = true,
+        right: Boolean = true
+    ) {
         if (top) {
-            this.fill(startX, startY, startX + width, startY + thickness, color)
+            this.fill(startX, startY, endX, startY + thickness, color)
         }
         if (bottom) {
-            this.fill(startX, startY + height - thickness, startX + width, startY + height, color)
+            this.fill(startX, endY - thickness, endX, endY, color)
         }
         if (left) {
-            this.fill(startX, startY + thickness, startX + thickness, startY + height - thickness, color)
+            this.fill(startX, startY + thickness, startX + thickness, endY - thickness, color)
         }
         if (right) {
-            this.fill(startX + width - thickness, startY + thickness, startX + width, startY + height - thickness, color)
+            this.fill(endX - thickness, startY + thickness, endX, endY - thickness, color)
         }
     }
+
 
     fun GuiGraphics.drawHorizontalLine(x1: Int, x2: Int, y: Int, color: Int) {
         this.fill(x1, y, x2, y + 1, color)

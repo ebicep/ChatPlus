@@ -6,13 +6,9 @@ import com.ebicep.chatplus.features.chattabs.CHAT_TAB_HEIGHT
 import com.ebicep.chatplus.features.chattabs.CHAT_TAB_Y_OFFSET
 import com.ebicep.chatplus.hud.*
 import com.ebicep.chatplus.util.GraphicsUtil.createPose
-import com.ebicep.chatplus.util.GraphicsUtil.drawHorizontalLine
-import com.ebicep.chatplus.util.GraphicsUtil.drawVerticalLine
 import com.ebicep.chatplus.util.GraphicsUtil.guiForward
-import com.ebicep.chatplus.util.GraphicsUtil.renderOutline
 import com.ebicep.chatplus.util.GraphicsUtil.translate0
 import net.minecraft.client.gui.GuiGraphics
-import kotlin.math.min
 
 object ChatWindows {
 
@@ -33,71 +29,22 @@ object ChatWindows {
                 return@register
             }
             val chatWindow = it.chatWindow
-            if (!chatWindow.outline) {
+            if (!chatWindow.outline.enabled) {
+                return@register
+            }
+            if (chatWindow.outline.hideOutlineWhenNotSelected && ChatManager.selectedWindow != chatWindow) {
                 return@register
             }
             val selectedTab = chatWindow.selectedTab
-            val messagesToDisplay = selectedTab.displayedMessages.size
             val renderer = chatWindow.renderer
             val guiGraphics = it.guiGraphics
             val poseStack = guiGraphics.pose()
             poseStack.createPose {
-                poseStack.guiForward(amount = 150.0)
-                val thickness = 1
-                val lineCount = if (Config.values.movableChatEnabled) renderer.rescaledLinesPerPage else min(messagesToDisplay, renderer.rescaledLinesPerPage)
-                val h = lineCount * (renderer.lineHeight * renderer.scale)
-                val w = renderer.internalWidth
-                guiGraphics.renderOutline(
-                    renderer.internalX.toFloat() - thickness,
-                    renderer.internalY.toFloat() - h - thickness,
-                    w.toFloat() + thickness + thickness,
-                    h + thickness + thickness + thickness,
-                    chatWindow.outlineColor,
-                    thickness.toFloat(),
-                    bottom = false
-                )
-                val tabStartX = selectedTab.xStart - thickness
-                val tabEndX = selectedTab.xEnd + thickness
-                // tab U shaped box
-                guiGraphics.renderOutline(
-                    tabStartX,
-                    selectedTab.yStart - CHAT_TAB_Y_OFFSET * 2,
-                    tabEndX - tabStartX,
-                    CHAT_TAB_HEIGHT,
-                    chatWindow.outlineColor,
-                    thickness,
-                    top = false
-                )
-                // tab sides for dragging tab down
-                guiGraphics.drawVerticalLine(
-                    tabStartX,
-                    renderer.internalY,
-                    selectedTab.yStart,
-                    chatWindow.outlineColor,
-                    thickness
-                )
-                guiGraphics.drawVerticalLine(
-                    selectedTab.xEnd,
-                    renderer.internalY,
-                    selectedTab.yStart,
-                    chatWindow.outlineColor,
-                    thickness
-                )
-                // chat bottom left/right
-                guiGraphics.drawHorizontalLine(
-                    renderer.internalX,
-                    tabStartX,
-                    renderer.internalY,
-                    chatWindow.outlineColor,
-                    thickness
-                )
-                guiGraphics.drawHorizontalLine(
-                    tabEndX,
-                    renderer.backgroundWidthEndX,
-                    renderer.internalY,
-                    chatWindow.outlineColor,
-                    thickness
-                )
+                poseStack.guiForward(if (ChatManager.globalSelectedTab == selectedTab) 700.0 else 500.0)
+                val outlineBoxType = chatWindow.outline.outlineBoxType
+                val outlineTabType = chatWindow.outline.outlineTabType
+                outlineBoxType.render(outlineTabType, guiGraphics, chatWindow, selectedTab, renderer)
+                outlineTabType.render(outlineBoxType, guiGraphics, chatWindow, selectedTab, renderer)
             }
         }
         EventBus.register<GetMaxHeightEvent> {
@@ -113,6 +60,69 @@ object ChatWindows {
             it.y -= CHAT_TAB_HEIGHT
         }
     }
+//
+//    private fun render(
+//        renderer: ChatRenderer,
+//        messagesToDisplay: Int,
+//        guiGraphics: GuiGraphics,
+//        chatWindow: ChatWindow,
+//        selectedTab: ChatTab
+//    ) {
+//        val lineCount = if (Config.values.movableChatEnabled) renderer.rescaledLinesPerPage else min(messagesToDisplay, renderer.rescaledLinesPerPage)
+//        val h = lineCount * (renderer.lineHeight * renderer.scale)
+//        val w = renderer.internalWidth
+//        guiGraphics.renderOutline(
+//            renderer.internalX.toFloat() - THICKNESS,
+//            renderer.internalY.toFloat() - h - THICKNESS,
+//            w.toFloat() + THICKNESS + THICKNESS,
+//            h + THICKNESS + THICKNESS + THICKNESS,
+//            chatWindow.outlineColor,
+//            THICKNESS.toFloat(),
+//            bottom = false
+//        )
+//        val tabStartX = selectedTab.xStart - THICKNESS
+//        val tabEndX = selectedTab.xEnd + THICKNESS
+//        // tab U shaped box
+//        guiGraphics.renderOutline(
+//            tabStartX,
+//            selectedTab.yStart - CHAT_TAB_Y_OFFSET * 2,
+//            tabEndX - tabStartX,
+//            CHAT_TAB_HEIGHT,
+//            chatWindow.outlineColor,
+//            THICKNESS,
+//            top = false
+//        )
+//        // tab sides for dragging tab down
+//        guiGraphics.drawVerticalLine(
+//            tabStartX,
+//            renderer.internalY,
+//            selectedTab.yStart,
+//            chatWindow.outlineColor,
+//            THICKNESS
+//        )
+//        guiGraphics.drawVerticalLine(
+//            selectedTab.xEnd,
+//            renderer.internalY,
+//            selectedTab.yStart,
+//            chatWindow.outlineColor,
+//            THICKNESS
+//        )
+//        // chat bottom left/right
+//        guiGraphics.drawHorizontalLine(
+//            renderer.internalX,
+//            tabStartX,
+//            renderer.internalY,
+//            chatWindow.outlineColor,
+//            THICKNESS
+//        )
+//        guiGraphics.drawHorizontalLine(
+//            tabEndX,
+//            renderer.backgroundWidthEndX,
+//            renderer.internalY,
+//            chatWindow.outlineColor,
+//            THICKNESS
+//        )
+//    }
 
     private fun insideWindow(chatWindow: ChatWindow, x: Double, y: Double): Boolean {
         val renderer = chatWindow.renderer
