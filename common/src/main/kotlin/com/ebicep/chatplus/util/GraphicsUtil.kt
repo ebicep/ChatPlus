@@ -99,12 +99,42 @@ object GraphicsUtil {
         }
     }
 
+    fun GuiGraphics.renderOutline(
+        startX: Int,
+        startY: Int,
+        width: Int,
+        height: Int,
+        color: Int,
+        thickness: Int = 1,
+        top: Boolean = true,
+        bottom: Boolean = true,
+        left: Boolean = true,
+        right: Boolean = true
+    ) {
+        if (top) {
+            this.fill(startX, startY, startX + width, startY + thickness, color)
+        }
+        if (bottom) {
+            this.fill(startX, startY + height - thickness, startX + width, startY + height, color)
+        }
+        if (left) {
+            this.fill(startX, startY + thickness, startX + thickness, startY + height - thickness, color)
+        }
+        if (right) {
+            this.fill(startX + width - thickness, startY + thickness, startX + width, startY + height - thickness, color)
+        }
+    }
+
     fun GuiGraphics.drawHorizontalLine(x1: Int, x2: Int, y: Int, color: Int) {
         this.fill(x1, y, x2, y + 1, color)
     }
 
     fun GuiGraphics.drawHorizontalLine(x1: Float, x2: Float, y: Float, color: Int, thickness: Float = 1f) {
         this.fill0(x1, y, x2, y + thickness, color)
+    }
+
+    fun GuiGraphics.drawHorizontalLine(x1: Int, x2: Int, y: Int, color: Int, thickness: Int = 1) {
+        this.fill(x1, y, x2, y + thickness, color)
     }
 
     fun GuiGraphics.drawString0(font: Font, string: String, x: Float, y: Float, color: Int): Int {

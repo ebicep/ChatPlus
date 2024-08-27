@@ -11,6 +11,7 @@ import com.ebicep.chatplus.util.GraphicsUtil.guiForward
 import com.ebicep.chatplus.util.GraphicsUtil.renderOutline
 import com.ebicep.chatplus.util.GraphicsUtil.translate0
 import net.minecraft.client.gui.GuiGraphics
+import kotlin.math.min
 
 object ChatWindows {
 
@@ -26,7 +27,7 @@ object ChatWindows {
                 }
             }
         }
-        EventBus.register<ChatRenderPostLinesEvent> {
+        EventBus.register<ChatRenderPreLinesEvent> {
             if (!ChatManager.isChatFocused()) {
                 return@register
             }
@@ -35,45 +36,46 @@ object ChatWindows {
                 return@register
             }
             val selectedTab = chatWindow.selectedTab
+            val messagesToDisplay = selectedTab.displayedMessages.size
             val renderer = chatWindow.renderer
             val guiGraphics = it.guiGraphics
             val poseStack = guiGraphics.pose()
             poseStack.createPose {
                 poseStack.guiForward(amount = 150.0)
-                val thickness = 1 / renderer.scale
-                val h = (if (Config.values.movableChatEnabled) renderer.rescaledHeight.toFloat() else it.displayMessageIndex * renderer.lineHeight.toFloat()) + thickness
-                val w = renderer.rescaledEndX - renderer.rescaledX
+                val thickness = 1
+                val h = if (Config.values.movableChatEnabled) renderer.height else (min(messagesToDisplay, renderer.getLinesPerPage()) * renderer.lineHeight)
+                val w = renderer.internalWidth
                 guiGraphics.renderOutline(
-                    renderer.rescaledX - thickness,
-                    renderer.rescaledY - h,
+                    renderer.internalX - thickness,
+                    renderer.internalY - h,
                     w + thickness + thickness,
                     h + thickness + thickness,
                     chatWindow.outlineColor,
                     thickness,
                     bottom = false
                 )
-                val tabStartX = selectedTab.xStart / renderer.scale - thickness
-                val tabEndX = selectedTab.xEnd / renderer.scale + thickness
+                val tabStartX = selectedTab.xStart - thickness
+                val tabEndX = selectedTab.xEnd + thickness
                 guiGraphics.renderOutline(
                     tabStartX,
-                    renderer.rescaledY - CHAT_TAB_Y_OFFSET,
+                    renderer.internalY - CHAT_TAB_Y_OFFSET,
                     tabEndX - tabStartX,
-                    CHAT_TAB_HEIGHT / renderer.scale,
+                    CHAT_TAB_HEIGHT,
                     chatWindow.outlineColor,
                     thickness,
                     top = false
                 )
                 guiGraphics.drawHorizontalLine(
-                    renderer.rescaledX,
+                    renderer.internalX,
                     tabStartX,
-                    renderer.rescaledY,
+                    renderer.internalY,
                     chatWindow.outlineColor,
                     thickness
                 )
                 guiGraphics.drawHorizontalLine(
                     tabEndX,
-                    renderer.rescaledEndX,
-                    renderer.rescaledY,
+                    renderer.backgroundWidthEndX,
+                    renderer.internalY,
                     chatWindow.outlineColor,
                     thickness
                 )
