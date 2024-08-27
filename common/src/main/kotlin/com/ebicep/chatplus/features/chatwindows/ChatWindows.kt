@@ -7,6 +7,7 @@ import com.ebicep.chatplus.features.chattabs.CHAT_TAB_Y_OFFSET
 import com.ebicep.chatplus.hud.*
 import com.ebicep.chatplus.util.GraphicsUtil.createPose
 import com.ebicep.chatplus.util.GraphicsUtil.drawHorizontalLine
+import com.ebicep.chatplus.util.GraphicsUtil.drawVerticalLine
 import com.ebicep.chatplus.util.GraphicsUtil.guiForward
 import com.ebicep.chatplus.util.GraphicsUtil.renderOutline
 import com.ebicep.chatplus.util.GraphicsUtil.translate0
@@ -57,15 +58,32 @@ object ChatWindows {
                 )
                 val tabStartX = selectedTab.xStart - thickness
                 val tabEndX = selectedTab.xEnd + thickness
+                // tab U shaped box
                 guiGraphics.renderOutline(
                     tabStartX,
-                    renderer.internalY - CHAT_TAB_Y_OFFSET,
+                    selectedTab.yStart - CHAT_TAB_Y_OFFSET * 2,
                     tabEndX - tabStartX,
                     CHAT_TAB_HEIGHT,
                     chatWindow.outlineColor,
                     thickness,
                     top = false
                 )
+                // tab sides for dragging tab down
+                guiGraphics.drawVerticalLine(
+                    tabStartX,
+                    renderer.internalY,
+                    selectedTab.yStart,
+                    chatWindow.outlineColor,
+                    thickness
+                )
+                guiGraphics.drawVerticalLine(
+                    selectedTab.xEnd,
+                    renderer.internalY,
+                    selectedTab.yStart,
+                    chatWindow.outlineColor,
+                    thickness
+                )
+                // chat bottom left/right
                 guiGraphics.drawHorizontalLine(
                     renderer.internalX,
                     tabStartX,

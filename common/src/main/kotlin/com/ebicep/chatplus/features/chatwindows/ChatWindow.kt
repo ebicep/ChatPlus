@@ -199,7 +199,7 @@ class ChatWindow {
             poseStack.guiForward()
             guiGraphics.fill(
                 0,
-                (if (isSelected) -CHAT_TAB_Y_OFFSET else 0),
+                (if (isSelected) -(chatTab.yStart - chatTab.chatWindow.renderer.internalY) else 0),
                 chatTab.width,
                 TAB_HEIGHT,
                 backgroundColor and 0xFFFFFF or (newAlpha shl 24)

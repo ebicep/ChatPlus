@@ -56,8 +56,8 @@ object MovableChat {
     private var yDisplacement = 0.0
 
     // moving tabs
-    private const val MOVE_PADDING_X = 4
-    private const val MOVE_PADDING_Y = TAB_HEIGHT
+    private const val MOVE_PADDING_X = 2
+    private const val MOVE_PADDING_Y = TAB_HEIGHT / 2
     private var movingTab: Boolean = false
     private var movingTabMouseXStart: Int = 0
     private var movingTabMouseYStart: Int = 0

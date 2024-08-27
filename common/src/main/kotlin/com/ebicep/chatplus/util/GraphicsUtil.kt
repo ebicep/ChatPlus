@@ -137,6 +137,10 @@ object GraphicsUtil {
         this.fill(x1, y, x2, y + thickness, color)
     }
 
+    fun GuiGraphics.drawVerticalLine(x: Int, y1: Int, y2: Int, color: Int, thickness: Int = 1) {
+        this.fill(x, y1, x + thickness, y2, color)
+    }
+
     fun GuiGraphics.drawString0(font: Font, string: String, x: Float, y: Float, color: Int): Int {
         return this.drawString0(font, string, x, y, color, true)
     }
