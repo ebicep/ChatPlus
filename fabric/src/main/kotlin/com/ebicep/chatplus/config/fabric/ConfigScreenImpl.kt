@@ -334,6 +334,14 @@ object ConfigScreenImpl {
                             1 - window.unfocusedTabOpacityMultiplier,
                             { window.unfocusedTabOpacityMultiplier = 1 - it }
                         ),
+                        entryBuilder.alphaField(
+                            "chatPlus.chatWindow.tabTextColorSelected",
+                            window.tabTextColorSelected
+                        ) { window.tabTextColorSelected = it },
+                        entryBuilder.alphaField(
+                            "chatPlus.chatWindow.tabTextColorUnselected",
+                            window.tabTextColorUnselected
+                        ) { window.tabTextColorUnselected = it },
                         getCustomListOption(
                             "chatPlus.chatTabs.title",
                             window.tabs,

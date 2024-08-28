@@ -42,6 +42,8 @@ class ChatWindow {
     var selectedTabIndex = 0
     var startRenderTabIndex = 0
     var hideTabs = false
+    var tabTextColorSelected: Int = Color(255, 255, 255, 255).rgb
+    var tabTextColorUnselected: Int = Color(153, 153, 153, 255).rgb
     var unfocusedTabOpacityMultiplier: Float = .4f
     var tabs: MutableList<ChatTab> = mutableListOf()
         set(value) {
@@ -215,7 +217,7 @@ class ChatWindow {
         if (!isWindowSelected) {
             backgroundColor = reduceAlpha(backgroundColor, unfocusedTabOpacityMultiplier)
         }
-        var textColor = (if (isGlobalSelected) Color(255, 255, 255, 255) else Color(153, 153, 153, 255)).rgb// TODO
+        var textColor = if (isGlobalSelected) chatWindow.tabTextColorSelected else tabTextColorUnselected
         if (!isWindowSelected) {
             textColor = reduceAlpha(textColor, if (unfocusedTabOpacityMultiplier == 0f) .05f else unfocusedTextOpacityMultiplier)
         }
