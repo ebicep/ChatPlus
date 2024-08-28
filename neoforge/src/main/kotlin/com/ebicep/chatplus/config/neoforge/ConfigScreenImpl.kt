@@ -8,8 +8,10 @@ import com.ebicep.chatplus.features.FilterMessages.DEFAULT_COLOR
 import com.ebicep.chatplus.features.MovableChat.MOVABLE_CHAT_COLOR
 import com.ebicep.chatplus.features.chattabs.ChatTab
 import com.ebicep.chatplus.features.chatwindows.ChatWindow
+import com.ebicep.chatplus.features.chatwindows.ChatWindowOutline
 import com.ebicep.chatplus.features.internal.MessageFilter
 import com.ebicep.chatplus.features.speechtotext.SpeechToText
+import com.ebicep.chatplus.hud.ChatManager
 import com.ebicep.chatplus.translator.LanguageManager
 import com.ebicep.chatplus.translator.RegexMatch
 import com.ebicep.chatplus.util.ComponentUtil
@@ -36,6 +38,7 @@ object ConfigScreenImpl {
             .setTitle(Component.translatable("chatPlus.title").withColor(MOD_COLOR))
             .setSavingRunnable {
                 Config.save()
+                ChatManager.rescaleAll()
             }
             .transparentBackground()
         builder.setGlobalized(true)
@@ -164,8 +167,7 @@ object ConfigScreenImpl {
             entryBuilder.alphaField(
                 "chatPlus.scrollbar.color",
                 Config.values.scrollbarColor
-            ) { Config.values.scrollbarColor = it }
-        )
+            ) { Config.values.scrollbarColor = it })
         scrollbar.addEntry(
             entryBuilder.intField("chatPlus.scrollbar.width", Config.values.scrollbarWidth) { Config.values.scrollbarWidth = it }
         )
@@ -223,6 +225,53 @@ object ConfigScreenImpl {
                 Config.values.chatWindows.size > 0,
                 { ChatWindow() },
                 { window ->
+                    val paddingCategory = entryBuilder.startSubCategory(Component.translatable("chatPlus.chatWindow.padding"))
+                    paddingCategory.add(
+                        entryBuilder.intSlider(
+                            "chatPlus.chatWindow.padding.left",
+                            window.padding.left,
+                            0,
+                            20
+                        ) { window.padding.left = it }
+                    )
+                    paddingCategory.add(
+                        entryBuilder.intSlider(
+                            "chatPlus.chatWindow.padding.right",
+                            window.padding.right,
+                            0,
+                            20
+                        ) { window.padding.right = it }
+                    )
+                    val outlineCategory = entryBuilder.startSubCategory(Component.translatable("chatPlus.chatWindow.outline"))
+                    outlineCategory.add(
+                        entryBuilder.booleanToggle(
+                            "chatPlus.chatWindow.outline",
+                            window.outline.enabled
+                        ) { window.outline.enabled = it },
+                    )
+                    outlineCategory.add(
+                        entryBuilder.alphaField(
+                            "chatPlus.chatWindow.outlineColor",
+                            window.outline.outlineColor
+                        ) { window.outline.outlineColor = it })
+                    outlineCategory.add(
+                        entryBuilder.enumSelector(
+                            "chatPlus.chatWindow.outlineBoxType",
+                            ChatWindowOutline.OutlineBoxType::class.java,
+                            window.outline.outlineBoxType
+                        ) { window.outline.outlineBoxType = it })
+                    outlineCategory.add(
+                        entryBuilder.enumSelector(
+                            "chatPlus.chatWindow.outlineTabType",
+                            ChatWindowOutline.OutlineTabType::class.java,
+                            window.outline.outlineTabType
+                        ) { window.outline.outlineTabType = it })
+                    outlineCategory.add(
+                        entryBuilder.booleanToggle(
+                            "chatPlus.chatWindow.hideOutlineWhenNotSelected",
+                            window.outline.hideOutlineWhenNotSelected
+                        ) { window.outline.hideOutlineWhenNotSelected = it }
+                    )
                     listOf(
                         entryBuilder.booleanToggle(
                             "chatPlus.chatWindow.hideTabs",
@@ -232,14 +281,7 @@ object ConfigScreenImpl {
                             "chatPlus.chatWindow.backgroundColor",
                             window.backgroundColor
                         ) { window.backgroundColor = it },
-                        entryBuilder.booleanToggle(
-                            "chatPlus.chatWindow.outline",
-                            window.outline
-                        ) { window.outline = it },
-                        entryBuilder.alphaField(
-                            "chatPlus.chatWindow.outlineColor",
-                            window.outlineColor
-                        ) { window.outlineColor = it },
+                        outlineCategory.build(),
                         entryBuilder.percentSlider(
                             "chatPlus.chatWindow.chatTextSize",
                             window.scale,
@@ -268,6 +310,7 @@ object ConfigScreenImpl {
                             MessageDirection::class.java,
                             window.messageDirection
                         ) { window.messageDirection = it },
+                        paddingCategory.build(),
                         getCustomListOption(
                             "chatPlus.chatTabs.title",
                             window.tabs,
@@ -591,7 +634,6 @@ object ConfigScreenImpl {
                 "chatPlus.playerHeadChatDisplayOffsetNonHeadMessagesShowOnWrapped.toggle",
                 Config.values.playerHeadChatDisplayOffsetNonHeadMessagesShowOnWrapped
             ) { Config.values.playerHeadChatDisplayOffsetNonHeadMessagesShowOnWrapped = it })
-
     }
 
     private fun addKeyBindOptions(builder: ConfigBuilder, entryBuilder: ConfigEntryBuilder) {

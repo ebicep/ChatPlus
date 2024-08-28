@@ -44,7 +44,9 @@ object ChatWindows {
                 val outlineBoxType = chatWindow.outline.outlineBoxType
                 val outlineTabType = chatWindow.outline.outlineTabType
                 outlineBoxType.render(outlineTabType, guiGraphics, chatWindow, selectedTab, renderer)
-                outlineTabType.render(outlineBoxType, guiGraphics, chatWindow, selectedTab, renderer)
+                if (!chatWindow.hideTabs) {
+                    outlineTabType.render(outlineBoxType, guiGraphics, chatWindow, selectedTab, renderer)
+                }
             }
         }
         EventBus.register<GetMaxHeightEvent> {

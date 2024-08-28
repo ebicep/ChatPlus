@@ -47,7 +47,7 @@ class ChatWindowOutline {
                     renderer.internalX.toFloat() - THICKNESS,
                     renderer.internalY.toFloat() - h - THICKNESS,
                     renderer.internalX.toFloat() + renderer.internalWidth.toFloat() + THICKNESS,
-                    renderer.internalY.toFloat() + CHAT_TAB_HEIGHT,
+                    renderer.internalY.toFloat() + (if (chatWindow.hideTabs) 0 else CHAT_TAB_HEIGHT),
                     chatWindow.outline.outlineColor,
                     THICKNESS.toFloat(),
                 )
@@ -56,6 +56,9 @@ class ChatWindowOutline {
         TEXT_AND_TAB_BOX("chatPlus.chatWindow.outlineBoxType.textAndTabBox") {
             override fun render(outlineTabType: OutlineTabType, guiGraphics: GuiGraphics, chatWindow: ChatWindow, selectedTab: ChatTab, renderer: ChatRenderer) {
                 WHOLE_BOX.render(outlineTabType, guiGraphics, chatWindow, selectedTab, renderer)
+                if (chatWindow.hideTabs) {
+                    return
+                }
                 // render top tab box line
                 if (outlineTabType == OutlineTabType.SELECTED_TAB_OPEN_TOP) {
                     guiGraphics.drawHorizontalLine(
@@ -95,8 +98,11 @@ class ChatWindowOutline {
                     renderer.internalY.toFloat() + THICKNESS + THICKNESS,
                     chatWindow.outline.outlineColor,
                     THICKNESS.toFloat(),
-                    bottom = outlineTabType != OutlineTabType.SELECTED_TAB_OPEN_TOP
+                    bottom = chatWindow.hideTabs || outlineTabType != OutlineTabType.SELECTED_TAB_OPEN_TOP
                 )
+                if (chatWindow.hideTabs) {
+                    return
+                }
                 if (outlineTabType == OutlineTabType.SELECTED_TAB_OPEN_TOP) {
                     guiGraphics.drawHorizontalLine(
                         renderer.internalX,
@@ -117,6 +123,9 @@ class ChatWindowOutline {
         },
         TAB_BOX("chatPlus.chatWindow.outlineBoxType.tabBox") {
             override fun render(outlineTabType: OutlineTabType, guiGraphics: GuiGraphics, chatWindow: ChatWindow, selectedTab: ChatTab, renderer: ChatRenderer) {
+                if (chatWindow.hideTabs) {
+                    return
+                }
                 guiGraphics.renderOutlineSetPos(
                     renderer.internalX.toFloat() - THICKNESS,
                     renderer.internalY.toFloat() - THICKNESS,

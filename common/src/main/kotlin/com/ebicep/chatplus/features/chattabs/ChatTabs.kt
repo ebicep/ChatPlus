@@ -88,6 +88,9 @@ object ChatTabs {
             if (!Config.values.chatWindowsTabsEnabled) {
                 return@register
             }
+            if (selectedWindow.hideTabs) {
+                return@register
+            }
             if (it.button == 0) {
                 selectedWindow.handleClickedTab(it.mouseX, it.mouseY)
             }
