@@ -121,6 +121,7 @@ data class ConfigVariables(
     var scrollbarWidth: Int = 6,
     // animation
     var animationEnabled: Boolean = true,
+    var animationDisableOnFocus: Boolean = false,
     var animationNewMessageTransitionTime: Int = 200,
     // windows
     var chatWindows: MutableList<ChatWindow> = mutableListOf(),

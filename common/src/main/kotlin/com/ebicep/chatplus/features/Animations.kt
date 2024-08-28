@@ -4,6 +4,7 @@ import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.config.MessageDirection
 import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.features.chatwindows.ChatWindow
+import com.ebicep.chatplus.hud.ChatManager
 import com.ebicep.chatplus.hud.ChatManager.globalSelectedTab
 import com.ebicep.chatplus.hud.ChatRenderPreLinesRenderEvent
 import com.ebicep.chatplus.util.GraphicsUtil.translate0
@@ -14,6 +15,9 @@ object Animations {
     init {
         EventBus.register<ChatRenderPreLinesRenderEvent> {
             if (!Config.values.animationEnabled) {
+                return@register
+            }
+            if (Config.values.animationDisableOnFocus && ChatManager.isChatFocused()) {
                 return@register
             }
             it.guiGraphics.pose().translate0(y = getAnimationMessageTransitionOffset(it.chatWindow))

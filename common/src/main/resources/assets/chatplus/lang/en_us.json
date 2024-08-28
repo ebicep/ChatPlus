@@ -73,6 +73,8 @@
   "chatPlus.animation.title": "Animation",
   "chatPlus.animation.toggle": "Enabled",
   "chatPlus.animation.toggle.tooltip": "Enables/Disables chat animations.",
+  "chatPlus.animation.disableOnFocus": "Disable On Focus",
+  "chatPlus.animation.disableOnFocus.tooltip": "Disable animations when the chat is focused.",
   "chatPlus.animation.newMessageTransitionTime": "New Message Transition Time",
   "chatPlus.animation.newMessageTransitionTime.tooltip": "The time it takes for a new message to transition in.",
   "chatPlus.chatWindowsTabs.title": "Chat Windows/Tabs",

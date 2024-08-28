@@ -181,6 +181,11 @@ object ConfigScreenImpl {
                 Config.values.animationEnabled
             ) { Config.values.animationEnabled = it })
         animation.addEntry(
+            entryBuilder.booleanToggle(
+                "chatPlus.animation.disableOnFocus",
+                Config.values.animationDisableOnFocus
+            ) { Config.values.animationDisableOnFocus = it })
+        animation.addEntry(
             entryBuilder.intSlider(
                 "chatPlus.animation.newMessageTransitionTime",
                 Config.values.animationNewMessageTransitionTime,
