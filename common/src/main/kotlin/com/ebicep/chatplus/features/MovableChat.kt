@@ -185,7 +185,7 @@ object MovableChat {
                     renderer.internalY - renderer.internalHeight,
                     renderer.backgroundWidthEndX,
                     renderer.internalY,
-                    chatWindow.backgroundColor
+                    chatWindow.getUpdatedBackgroundColor()
                 )
                 if (it.chatWindow == ChatManager.selectedWindow) {
                     renderMoving(
@@ -212,7 +212,7 @@ object MovableChat {
                 renderer.rescaledY - renderer.getLinesPerPage() * renderer.lineHeight,
                 renderer.rescaledEndX,
                 renderer.rescaledY - it.displayMessageIndex * renderer.lineHeight,
-                chatWindow.backgroundColor
+                chatWindow.getUpdatedBackgroundColor()
             )
             if (it.chatWindow == ChatManager.selectedWindow) {
                 val poseStack = guiGraphics.pose()
@@ -358,15 +358,7 @@ object MovableChat {
         ChatPlus.LOGGER.info("Removed tab from $chatWindow to create new window")
         removeTabFromWindow(chatWindow, selectedTab)
 
-        val newWindow = ChatWindow()
-        newWindow.backgroundColor = chatWindow.backgroundColor
-        newWindow.outline = chatWindow.outline.clone()
-        newWindow.scale = chatWindow.scale
-        newWindow.textOpacity = chatWindow.textOpacity
-        newWindow.unfocusedHeight = chatWindow.unfocusedHeight
-        newWindow.lineSpacing = chatWindow.lineSpacing
-        newWindow.messageAlignment = chatWindow.messageAlignment
-        newWindow.messageDirection = chatWindow.messageDirection
+        val newWindow = chatWindow.clone()
         selectedTab.chatWindow = newWindow
         newWindow.tabs = mutableListOf(selectedTab)
 

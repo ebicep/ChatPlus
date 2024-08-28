@@ -16,6 +16,7 @@ import com.ebicep.chatplus.util.GraphicsUtil.createPose
 import com.ebicep.chatplus.util.GraphicsUtil.drawString0
 import com.ebicep.chatplus.util.GraphicsUtil.fill0
 import com.ebicep.chatplus.util.GraphicsUtil.guiForward
+import com.ebicep.chatplus.util.KotlinUtil.reduceAlpha
 import com.mojang.blaze3d.vertex.PoseStack
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -145,9 +146,6 @@ class ChatRenderer {
 
     // cached values since render is called every tick they only need to be calculated once/on change
     @Transient
-    var textOpacity: Double = 0.0
-
-    @Transient
     var l1 = 0
 
     @Transient
@@ -187,7 +185,6 @@ class ChatRenderer {
     }
 
     fun updateCachedDimension() {
-        textOpacity = chatWindow.textOpacity * 0.9 + 0.1
         l1 = (-8.0 * (chatWindow.lineSpacing + 1.0) + 4.0 * chatWindow.lineSpacing).roundToInt()
         scale = getUpdatedScale()
         internalX = getUpdatedX(x)
@@ -236,6 +233,8 @@ class ChatRenderer {
             linesPerPage = (linesPerPage * chatWindow.unfocusedHeight).roundToInt()
         }
         EventBus.post(ChatRenderPreLinesRenderEvent(guiGraphics, chatWindow))
+        val textOpacity = chatWindow.getUpdatedTextOpacity()
+        val updatedBackgroundColor = chatWindow.getUpdatedBackgroundColor()
         while (displayMessageIndex + chatWindow.selectedTab.chatScrollbarPos < messagesToDisplay && displayMessageIndex < linesPerPage) {
             val messageIndex = messagesToDisplay - displayMessageIndex - chatWindow.selectedTab.chatScrollbarPos
             val chatPlusGuiMessageLine: ChatTab.ChatPlusGuiMessageLine = chatWindow.selectedTab.displayedMessages[messageIndex - 1]
@@ -246,12 +245,8 @@ class ChatRenderer {
                 continue
             }
             val fadeOpacity = if (chatFocused) 1.0 else getTimeFactor(ticksLived)
-            var textColor = (255.0 * fadeOpacity * textOpacity).toInt()
-            var backgroundColor = chatWindow.backgroundColor
-            if (textColor <= 3) {
-                ++displayMessageIndex
-                continue
-            }
+            val textOpacity = (255.0 * fadeOpacity * textOpacity).toInt()
+            var backgroundColor = updatedBackgroundColor
             // how high chat is from input bar, if changed need to change queue offset
             val verticalChatOffset: Float = when (chatWindow.messageDirection) {
                 MessageDirection.TOP_DOWN -> (rescaledY - rescaledLinesPerPage * lineHeight + lineHeight) + displayMessageIndex * lineHeight
@@ -264,15 +259,12 @@ class ChatRenderer {
                 chatPlusGuiMessageLine,
                 verticalChatOffset,
                 verticalTextOffset,
-                textColor,
+                16777215 + (textOpacity shl 24),
                 backgroundColor
             )
             EventBus.post(lineAppearanceEvent)
-            textColor = lineAppearanceEvent.textColor
-            backgroundColor = lineAppearanceEvent.backgroundColor
-            val oldAlpha = (backgroundColor shr 24) and 0xff
-            val newAlpha = oldAlpha * fadeOpacity
-            backgroundColor = (backgroundColor and 0x00ffffff) or (newAlpha.toInt() shl 24)
+            val textColor = lineAppearanceEvent.textColor
+            backgroundColor = reduceAlpha(lineAppearanceEvent.backgroundColor, fadeOpacity)
             poseStack.createPose {
                 poseStack.guiForward(amount = 50.0)
                 //background
@@ -285,6 +277,10 @@ class ChatRenderer {
                     backgroundColor
                 )
             }
+            if (textOpacity <= 3) {
+                ++displayMessageIndex
+                continue
+            }
             poseStack.createPose {
                 poseStack.guiForward(amount = 300.0)
                 EventBus.post(
@@ -293,7 +289,7 @@ class ChatRenderer {
                         chatWindow,
                         chatPlusGuiMessageLine,
                         fadeOpacity,
-                        textColor,
+                        textOpacity,
                         backgroundColor,
                         verticalChatOffset,
                         verticalTextOffset,
@@ -307,7 +303,7 @@ class ChatRenderer {
                     line.content,
                     rescaledX,
                     verticalTextOffset,
-                    16777215 + (textColor shl 24)
+                    textColor
                 )
             }
             ++displayMessageIndex

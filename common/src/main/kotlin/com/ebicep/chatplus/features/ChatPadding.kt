@@ -12,7 +12,11 @@ import kotlin.math.max
 object ChatPadding {
 
     @Serializable
-    data class Padding(var left: Int = 0, var right: Int = 0)
+    data class Padding(var left: Int = 0, var right: Int = 0) {
+        fun clone(): Padding {
+            return Padding(left, right)
+        }
+    }
 
     init {
         EventBus.register<ChatRenderLineTextEvent>({ 10 }) {
@@ -31,6 +35,7 @@ object ChatPadding {
             it.chatX -= getXTranslation(chatWindow)
         }
     }
+
 
     private fun getXTranslation(chatWindow: ChatWindow): Int {
         val padding = chatWindow.padding

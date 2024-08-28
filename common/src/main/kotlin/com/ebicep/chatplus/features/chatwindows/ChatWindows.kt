@@ -32,9 +32,6 @@ object ChatWindows {
             if (!chatWindow.outline.enabled) {
                 return@register
             }
-            if (chatWindow.outline.hideOutlineWhenNotSelected && ChatManager.selectedWindow != chatWindow) {
-                return@register
-            }
             val selectedTab = chatWindow.selectedTab
             val renderer = chatWindow.renderer
             val guiGraphics = it.guiGraphics

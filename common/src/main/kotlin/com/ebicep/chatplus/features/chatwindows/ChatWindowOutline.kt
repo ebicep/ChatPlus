@@ -5,9 +5,11 @@ import com.ebicep.chatplus.config.EnumTranslatableName
 import com.ebicep.chatplus.features.chattabs.CHAT_TAB_HEIGHT
 import com.ebicep.chatplus.features.chattabs.ChatTab
 import com.ebicep.chatplus.features.chattabs.ChatTab.Companion.TAB_HEIGHT
+import com.ebicep.chatplus.hud.ChatManager
 import com.ebicep.chatplus.hud.ChatRenderer
 import com.ebicep.chatplus.util.GraphicsUtil.drawHorizontalLine
 import com.ebicep.chatplus.util.GraphicsUtil.renderOutlineSetPos
+import com.ebicep.chatplus.util.KotlinUtil.reduceAlpha
 import kotlinx.serialization.Serializable
 import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.network.chat.Component
@@ -21,7 +23,7 @@ class ChatWindowOutline {
 
     var enabled: Boolean = false
     var outlineColor: Int = Color(0f, 0f, 0f, 0f).rgb
-    var hideOutlineWhenNotSelected = true
+    var unfocusedOutlineColorOpacityMultiplier: Float = .4f
     var outlineBoxType: OutlineBoxType = OutlineBoxType.TEXT_BOX
     var outlineTabType: OutlineTabType = OutlineTabType.SELECTED_TAB_OPEN_TOP
 
@@ -29,10 +31,17 @@ class ChatWindowOutline {
         return ChatWindowOutline().also {
             it.enabled = enabled
             it.outlineColor = outlineColor
-            it.hideOutlineWhenNotSelected = hideOutlineWhenNotSelected
+            it.unfocusedOutlineColorOpacityMultiplier = unfocusedOutlineColorOpacityMultiplier
             it.outlineBoxType = outlineBoxType
             it.outlineTabType = outlineTabType
         }
+    }
+
+    fun getUpdatedOutlineColor(chatWindow: ChatWindow): Int {
+        if (chatWindow == ChatManager.selectedWindow) {
+            return outlineColor
+        }
+        return reduceAlpha(outlineColor, unfocusedOutlineColorOpacityMultiplier)
     }
 
     enum class OutlineBoxType(key: String) : EnumTranslatableName {
@@ -48,7 +57,7 @@ class ChatWindowOutline {
                     renderer.internalY.toFloat() - h - THICKNESS,
                     renderer.internalX.toFloat() + renderer.internalWidth.toFloat() + THICKNESS,
                     renderer.internalY.toFloat() + (if (chatWindow.hideTabs) 0 else CHAT_TAB_HEIGHT),
-                    chatWindow.outline.outlineColor,
+                    chatWindow.outline.getUpdatedOutlineColor(chatWindow),
                     THICKNESS.toFloat(),
                 )
             }
@@ -65,14 +74,14 @@ class ChatWindowOutline {
                         renderer.internalX,
                         selectedTab.xStart - THICKNESS,
                         renderer.internalY,
-                        chatWindow.outline.outlineColor,
+                        chatWindow.outline.getUpdatedOutlineColor(chatWindow),
                         THICKNESS
                     )
                     guiGraphics.drawHorizontalLine(
                         selectedTab.xEnd + THICKNESS,
                         renderer.backgroundWidthEndX,
                         renderer.internalY,
-                        chatWindow.outline.outlineColor,
+                        chatWindow.outline.getUpdatedOutlineColor(chatWindow),
                         THICKNESS
                     )
                 } else {
@@ -80,7 +89,7 @@ class ChatWindowOutline {
                         renderer.internalX,
                         renderer.backgroundWidthEndX,
                         renderer.internalY,
-                        chatWindow.outline.outlineColor,
+                        chatWindow.outline.getUpdatedOutlineColor(chatWindow),
                         THICKNESS
                     )
                 }
@@ -96,7 +105,7 @@ class ChatWindowOutline {
                     renderer.internalY.toFloat() - h - THICKNESS,
                     renderer.internalX.toFloat() + renderer.internalWidth.toFloat() + THICKNESS,
                     renderer.internalY.toFloat() + THICKNESS + THICKNESS,
-                    chatWindow.outline.outlineColor,
+                    chatWindow.outline.getUpdatedOutlineColor(chatWindow),
                     THICKNESS.toFloat(),
                     bottom = chatWindow.hideTabs || outlineTabType != OutlineTabType.SELECTED_TAB_OPEN_TOP
                 )
@@ -108,14 +117,14 @@ class ChatWindowOutline {
                         renderer.internalX,
                         selectedTab.xStart,
                         renderer.internalY,
-                        chatWindow.outline.outlineColor,
+                        chatWindow.outline.getUpdatedOutlineColor(chatWindow),
                         THICKNESS
                     )
                     guiGraphics.drawHorizontalLine(
                         selectedTab.xEnd,
                         renderer.backgroundWidthEndX,
                         renderer.internalY,
-                        chatWindow.outline.outlineColor,
+                        chatWindow.outline.getUpdatedOutlineColor(chatWindow),
                         THICKNESS
                     )
                 }
@@ -128,10 +137,10 @@ class ChatWindowOutline {
                 }
                 guiGraphics.renderOutlineSetPos(
                     renderer.internalX.toFloat() - THICKNESS,
-                    renderer.internalY.toFloat() - THICKNESS,
+                    renderer.internalY.toFloat(),
                     renderer.internalX.toFloat() + renderer.internalWidth.toFloat() + THICKNESS,
                     renderer.internalY.toFloat() + CHAT_TAB_HEIGHT,
-                    chatWindow.outline.outlineColor,
+                    chatWindow.outline.getUpdatedOutlineColor(chatWindow),
                     THICKNESS.toFloat(),
                     top = outlineTabType != OutlineTabType.SELECTED_TAB_OPEN_TOP
                 )
@@ -140,14 +149,14 @@ class ChatWindowOutline {
                         renderer.internalX,
                         selectedTab.xStart - THICKNESS,
                         renderer.internalY,
-                        chatWindow.outline.outlineColor,
+                        chatWindow.outline.getUpdatedOutlineColor(chatWindow),
                         THICKNESS
                     )
                     guiGraphics.drawHorizontalLine(
                         selectedTab.xEnd + THICKNESS,
                         renderer.backgroundWidthEndX,
                         renderer.internalY,
-                        chatWindow.outline.outlineColor,
+                        chatWindow.outline.getUpdatedOutlineColor(chatWindow),
                         THICKNESS
                     )
                 }
@@ -178,7 +187,7 @@ class ChatWindowOutline {
                     selectedTab.yStart - THICKNESS,
                     selectedTab.xEnd + THICKNESS,
                     selectedTab.yStart + TAB_HEIGHT + THICKNESS,
-                    chatWindow.outline.outlineColor,
+                    chatWindow.outline.getUpdatedOutlineColor(chatWindow),
                     THICKNESS
                 )
             }
@@ -190,7 +199,7 @@ class ChatWindowOutline {
                     renderer.internalY - THICKNESS,
                     selectedTab.xEnd + THICKNESS,
                     selectedTab.yStart + TAB_HEIGHT + THICKNESS,
-                    chatWindow.outline.outlineColor,
+                    chatWindow.outline.getUpdatedOutlineColor(chatWindow),
                     THICKNESS,
                     top = false
                 )

@@ -39,4 +39,22 @@ object KotlinUtil {
         )
     }
 
+    fun Color.reduceAlpha(percentage: Float): Color {
+        val oldAlpha = (rgb shr 24) and 0xff
+        val newAlpha = oldAlpha * percentage
+        return Color(rgb and 0x00ffffff or (newAlpha.toInt() shl 24), true)
+    }
+
+    fun reduceAlpha(color: Int, percentage: Double): Int {
+        val oldAlpha = (color shr 24) and 0xff
+        val newAlpha = oldAlpha * percentage
+        return color and 0x00ffffff or (newAlpha.toInt() shl 24)
+    }
+
+    fun reduceAlpha(color: Int, percentage: Float): Int {
+        val oldAlpha = (color shr 24) and 0xff
+        val newAlpha = oldAlpha * percentage
+        return color and 0x00ffffff or (newAlpha.toInt() shl 24)
+    }
+
 }

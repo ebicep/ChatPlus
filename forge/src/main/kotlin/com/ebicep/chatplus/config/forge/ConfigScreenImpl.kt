@@ -267,29 +267,38 @@ object ConfigScreenImpl {
                             window.outline.outlineTabType
                         ) { window.outline.outlineTabType = it })
                     outlineCategory.add(
-                        entryBuilder.booleanToggle(
-                            "chatPlus.chatWindow.hideOutlineWhenNotSelected",
-                            window.outline.hideOutlineWhenNotSelected
-                        ) { window.outline.hideOutlineWhenNotSelected = it }
+                        entryBuilder.percentSlider(
+                            "chatPlus.chatWindow.unfocusedOutlineColorOpacityReduction",
+                            1 - window.outline.unfocusedOutlineColorOpacityMultiplier,
+                            { window.outline.unfocusedOutlineColorOpacityMultiplier = 1 - it }
+                        )
                     )
                     listOf(
-                        entryBuilder.booleanToggle(
-                            "chatPlus.chatWindow.hideTabs",
-                            window.hideTabs
-                        ) { window.hideTabs = it },
                         entryBuilder.alphaField(
                             "chatPlus.chatWindow.backgroundColor",
                             window.backgroundColor
                         ) { window.backgroundColor = it },
+                        entryBuilder.percentSlider(
+                            "chatPlus.chatWindow.unfocusedBackgroundColorOpacityReduction",
+                            1 - window.unfocusedBackgroundColorOpacityMultiplier,
+                            { window.unfocusedBackgroundColorOpacityMultiplier = 1 - it }
+                        ),
                         outlineCategory.build(),
                         entryBuilder.percentSlider(
                             "chatPlus.chatWindow.chatTextSize",
                             window.scale,
-                            { window.scale = it }),
+                            { window.scale = it }
+                        ),
                         entryBuilder.percentSlider(
                             "chatPlus.chatWindow.textOpacity",
-                            window.textOpacity,
-                            { window.textOpacity = it }),
+                            (window.textOpacity - .1f) / .9f,
+                            { window.textOpacity = (it * .9f) + .1f }
+                        ),
+                        entryBuilder.percentSlider(
+                            "chatPlus.chatWindow.unfocusedTextOpacityReduction",
+                            1 - window.unfocusedTextOpacityMultiplier,
+                            { window.unfocusedTextOpacityMultiplier = 1 - it }
+                        ),
                         entryBuilder.percentSlider(
                             "chatPlus.chatWindow.unfocusedHeight",
                             window.unfocusedHeight,
@@ -311,6 +320,15 @@ object ConfigScreenImpl {
                             window.messageDirection
                         ) { window.messageDirection = it },
                         paddingCategory.build(),
+                        entryBuilder.booleanToggle(
+                            "chatPlus.chatWindow.hideTabs",
+                            window.hideTabs
+                        ) { window.hideTabs = it },
+                        entryBuilder.percentSlider(
+                            "chatPlus.chatWindow.unfocusedTabOpacityReduction",
+                            1 - window.unfocusedTabOpacityMultiplier,
+                            { window.unfocusedTabOpacityMultiplier = 1 - it }
+                        ),
                         getCustomListOption(
                             "chatPlus.chatTabs.title",
                             window.tabs,

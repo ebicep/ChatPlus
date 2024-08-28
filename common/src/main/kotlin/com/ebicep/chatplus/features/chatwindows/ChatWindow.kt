@@ -16,31 +16,33 @@ import com.ebicep.chatplus.hud.ChatRenderer
 import com.ebicep.chatplus.util.GraphicsUtil.createPose
 import com.ebicep.chatplus.util.GraphicsUtil.guiForward
 import com.ebicep.chatplus.util.GraphicsUtil.translate0
+import com.ebicep.chatplus.util.KotlinUtil.reduceAlpha
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.util.Mth
 import java.awt.Color
-import kotlin.math.roundToInt
 
 @Serializable
 class ChatWindow {
 
     var backgroundColor: Int = Color(0f, 0f, 0f, .5f).rgb
+    var unfocusedBackgroundColorOpacityMultiplier: Float = .4f
     var outline: ChatWindowOutline = ChatWindowOutline()
     var scale: Float = 1f
     var textOpacity: Float = 1f
+    var unfocusedTextOpacityMultiplier: Float = 1f
     var unfocusedHeight: Float = .5f
     var lineSpacing: Float = 0f
     var messageAlignment: AlignMessage.Alignment = AlignMessage.Alignment.LEFT
     var messageDirection: MessageDirection = MessageDirection.BOTTOM_UP
-    val padding: ChatPadding.Padding = ChatPadding.Padding()
-
+    var padding: ChatPadding.Padding = ChatPadding.Padding()
     val renderer = ChatRenderer()
-    var hideTabs = false
     var selectedTabIndex = 0
     var startRenderTabIndex = 0
+    var hideTabs = false
+    var unfocusedTabOpacityMultiplier: Float = .4f
     var tabs: MutableList<ChatTab> = mutableListOf()
         set(value) {
             field = value
@@ -72,6 +74,26 @@ class ChatWindow {
         renderer.chatWindow = this
 
         resetSortedChatTabs()
+    }
+
+    /**
+     * Returns a clone ChatWindow matching the visual properties of this ChatWindow. Excluding renderer and tabs.
+     */
+    fun clone(): ChatWindow {
+        return ChatWindow().also {
+            it.backgroundColor = backgroundColor
+            it.outline = outline.clone()
+            it.scale = scale
+            it.textOpacity = textOpacity
+            it.unfocusedHeight = unfocusedHeight
+            it.unfocusedBackgroundColorOpacityMultiplier = unfocusedBackgroundColorOpacityMultiplier
+            it.lineSpacing = lineSpacing
+            it.messageAlignment = messageAlignment
+            it.messageDirection = messageDirection
+            it.padding = padding.clone()
+            it.hideTabs = hideTabs
+            it.unfocusedTabOpacityMultiplier = unfocusedTabOpacityMultiplier
+        }
     }
 
     override fun toString(): String {
@@ -187,13 +209,17 @@ class ChatWindow {
     private fun renderTab(chatTab: ChatTab, guiGraphics: GuiGraphics) {
         val poseStack = guiGraphics.pose()
         val isGlobalSelected = chatTab == ChatManager.globalSelectedTab
-        val isWindowSelected = chatTab == selectedTab
+        val isWindowSelected = this == ChatManager.selectedWindow
         val chatWindow = chatTab.chatWindow
-        val backgroundColor = chatWindow.backgroundColor
-        val oldAlpha = (backgroundColor shr 24) and 0xff
-        val newAlpha = (oldAlpha * (if (isGlobalSelected) 1f else (100 / 255f))).roundToInt()
-        val textColor = if (isGlobalSelected) 0xffffff else 0x999999 // TODO
-        val startY = if (isWindowSelected) {
+        var backgroundColor = chatWindow.backgroundColor
+        if (!isWindowSelected) {
+            backgroundColor = reduceAlpha(backgroundColor, unfocusedTabOpacityMultiplier)
+        }
+        var textColor = (if (isGlobalSelected) Color(255, 255, 255, 255) else Color(153, 153, 153, 255)).rgb// TODO
+        if (!isWindowSelected) {
+            textColor = reduceAlpha(textColor, if (unfocusedTabOpacityMultiplier == 0f) .05f else unfocusedTextOpacityMultiplier)
+        }
+        val startY = if (isWindowSelected && chatTab == selectedTab) {
             if (chatWindow.outline.outlineTabType == ChatWindowOutline.OutlineTabType.SELECTED_TAB_OPEN_TOP) {
                 -(chatTab.yStart - chatWindow.renderer.internalY)
             } else {
@@ -210,7 +236,7 @@ class ChatWindow {
                 startY,
                 chatTab.width,
                 TAB_HEIGHT,
-                backgroundColor and 0xFFFFFF or (newAlpha shl 24)
+                backgroundColor
             )
             poseStack.guiForward()
             guiGraphics.drawString(
@@ -234,5 +260,18 @@ class ChatWindow {
         return totalWidth - CHAT_TAB_X_SPACE
     }
 
+    fun getUpdatedBackgroundColor(): Int {
+        if (this == ChatManager.selectedWindow) {
+            return backgroundColor
+        }
+        return reduceAlpha(backgroundColor, unfocusedBackgroundColorOpacityMultiplier)
+    }
+
+    fun getUpdatedTextOpacity(): Float {
+        if (this == ChatManager.selectedWindow) {
+            return textOpacity
+        }
+        return textOpacity * unfocusedTextOpacityMultiplier
+    }
 
 }
