@@ -3,8 +3,10 @@ package com.ebicep.chatplus.features
 import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.features.chattabs.ChatTabAddDisplayMessageEvent
 import com.ebicep.chatplus.features.chattabs.ChatTabGetMessageAtEvent
+import com.ebicep.chatplus.features.chattabs.ChatTabGetMessageLineAtEvent
 import com.ebicep.chatplus.features.chatwindows.ChatWindow
 import com.ebicep.chatplus.hud.ChatRenderLineTextEvent
+import com.ebicep.chatplus.hud.ChatRenderPreLineAppearanceEvent
 import com.ebicep.chatplus.util.GraphicsUtil.translate0
 import kotlinx.serialization.Serializable
 import kotlin.math.max
@@ -33,6 +35,17 @@ object ChatPadding {
         EventBus.register<ChatTabGetMessageAtEvent> {
             val chatWindow = it.chatTab.chatWindow
             it.chatX -= getXTranslation(chatWindow)
+            it.chatY -= 18 / 9.0
+        }
+        EventBus.register<ChatTabGetMessageLineAtEvent> {
+            val chatWindow = it.chatTab.chatWindow
+            it.chatY += 18
+        }
+        EventBus.register<ChatRenderPreLineAppearanceEvent>({ 100 }) {
+            it.guiGraphics.pose().translate0(y = -18)
+        }
+        EventBus.register<ChatRenderLineTextEvent>({ 100 }) {
+            it.guiGraphics.pose().translate0(y = -18)
         }
     }
 

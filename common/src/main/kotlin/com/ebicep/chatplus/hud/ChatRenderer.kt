@@ -253,20 +253,21 @@ class ChatRenderer {
                 MessageDirection.BOTTOM_UP -> rescaledY - displayMessageIndex * lineHeight
             }
             val verticalTextOffset: Float = verticalChatOffset + l1 // align text with background
-            val lineAppearanceEvent = ChatRenderPreLineAppearanceEvent(
-                guiGraphics,
-                chatWindow,
-                chatPlusGuiMessageLine,
-                verticalChatOffset,
-                verticalTextOffset,
-                16777215 + (textOpacity shl 24),
-                backgroundColor
-            )
-            EventBus.post(lineAppearanceEvent)
-            val textColor = lineAppearanceEvent.textColor
-            backgroundColor = reduceAlpha(lineAppearanceEvent.backgroundColor, fadeOpacity)
+            var textColor: Int = 16777215 + (textOpacity shl 24)
             poseStack.createPose {
                 poseStack.guiForward(amount = 50.0)
+                val lineAppearanceEvent = ChatRenderPreLineAppearanceEvent(
+                    guiGraphics,
+                    chatWindow,
+                    chatPlusGuiMessageLine,
+                    verticalChatOffset,
+                    verticalTextOffset,
+                    textColor,
+                    backgroundColor
+                )
+                EventBus.post(lineAppearanceEvent)
+                textColor = lineAppearanceEvent.textColor
+                backgroundColor = reduceAlpha(lineAppearanceEvent.backgroundColor, fadeOpacity)
                 //background
                 guiGraphics.fill0(
                     internalX / scale,

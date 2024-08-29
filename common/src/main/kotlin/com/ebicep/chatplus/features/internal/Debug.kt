@@ -2,6 +2,7 @@ package com.ebicep.chatplus.features.internal
 
 import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.features.chattabs.ChatTabGetMessageAtEvent
+import com.ebicep.chatplus.features.chattabs.ChatTabGetMessageLineAtEvent
 import com.ebicep.chatplus.hud.*
 import com.ebicep.chatplus.util.GraphicsUtil.createPose
 import com.ebicep.chatplus.util.GraphicsUtil.drawString0
@@ -51,9 +52,18 @@ object Debug {
                         globalSelectedTab.screenToChatY(mouseY.toDouble())
                     )
                 )
+                val messageLineAtEvent = EventBus.post(
+                    ChatTabGetMessageLineAtEvent(
+                        globalSelectedTab.chatWindow,
+                        globalSelectedTab,
+                        mouseX.toDouble(),
+                        mouseY.toDouble()
+                    )
+                )
                 guiGraphics.drawString(
                     Minecraft.getInstance().font,
-                    "${messageAtEvent.chatX.roundToInt()},${messageAtEvent.chatY.roundToInt()}",
+                    "${messageAtEvent.chatX.roundToInt()},${messageAtEvent.chatY.roundToInt()} | " +
+                            "${globalSelectedTab.screenToChatX(messageLineAtEvent.chatX).roundToInt()},${globalSelectedTab.screenToChatY(messageLineAtEvent.chatY).roundToInt()}",
                     mouseX + 5,
                     mouseY - 5,
                     0xFF00FF

@@ -3,7 +3,6 @@ package com.ebicep.chatplus.features.chattabs
 import com.ebicep.chatplus.ChatPlus
 import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.config.JumpToMessageMode
-import com.ebicep.chatplus.config.MessageDirection
 import com.ebicep.chatplus.events.Event
 import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.events.Events
@@ -30,7 +29,6 @@ import net.minecraft.util.Mth
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentHashMap.KeySetView
-import kotlin.math.min
 
 data class AddNewMessageEvent(
     var mutableComponent: MutableComponent,
@@ -78,13 +76,6 @@ data class ChatTabRemoveDisplayMessageEvent(
     val chatTab: ChatTab,
     val chatPlusGuiMessageLine: ChatTab.ChatPlusGuiMessageLine,
     var returnFunction: Boolean = false
-) : Event
-
-data class ChatTabGetMessageAtEvent(
-    val chatWindow: ChatWindow,
-    val chatTab: ChatTab,
-    var chatX: Double,
-    var chatY: Double,
 ) : Event
 
 data class ChatTabRescale(
@@ -324,60 +315,6 @@ class ChatTab : MessageFilter {
         unfilteredDisplayedMessages.clear()
     }
 
-    fun getHoveredOverMessageLine(): ChatPlusGuiMessageLine? {
-        return getMessageLineAt(ChatPlusScreen.lastMouseX.toDouble(), ChatPlusScreen.lastMouseY.toDouble())
-    }
-
-    fun getMessageLineAt(mouseX: Double, mouseY: Double): ChatPlusGuiMessageLine? {
-        val x = screenToChatX(mouseX)
-        val y = screenToChatY(mouseY)
-        return getMessageAtLineRelative(x, y)
-    }
-
-    fun getMessageAtLineRelative(x: Double, y: Double): ChatPlusGuiMessageLine? {
-        val i = getMessageLineIndexAtRelative(x, y)
-        val size = this.displayedMessages.size
-        return if (i in 0 until size) {
-            return this.displayedMessages[size - i - 1]
-        } else {
-            null
-        }
-    }
-
-    fun screenToChatX(pX: Double): Double {
-        return (pX - chatWindow.renderer.internalX) / chatWindow.renderer.scale
-    }
-
-    fun screenToChatY(pY: Double): Double {
-        val yDiff: Double = chatWindow.renderer.internalY - pY
-        return when (chatWindow.messageDirection) {
-            MessageDirection.TOP_DOWN -> chatWindow.renderer.rescaledLinesPerPage - yDiff / (chatWindow.renderer.scale * chatWindow.renderer.lineHeight.toDouble())
-            MessageDirection.BOTTOM_UP -> yDiff / (chatWindow.renderer.scale * chatWindow.renderer.lineHeight.toDouble())
-        }
-    }
-
-    private fun getMessageLineIndexAt(pMouseX: Double, pMouseY: Double): Int {
-        return getMessageLineIndexAtRelative(screenToChatX(pMouseX), screenToChatY(pMouseY))
-    }
-
-    private fun getMessageLineIndexAtRelative(pMouseX: Double, pMouseY: Double): Int {
-        if (!ChatManager.isChatFocused() || Minecraft.getInstance().options.hideGui) {
-            return -1
-        }
-        if (!(0.0 <= pMouseX && pMouseX <= Mth.floor(chatWindow.renderer.rescaledWidth.toDouble()))) {
-            return -1
-        }
-        val i = min(chatWindow.renderer.rescaledLinesPerPage, this.displayedMessages.size)
-        if (!(0.0 <= pMouseY && pMouseY < i.toDouble())) {
-            return -1
-        }
-        val j = Mth.floor(pMouseY + chatScrollbarPos.toDouble())
-        if (j < 0 || j >= this.displayedMessages.size) {
-            return -1
-        }
-        return j
-    }
-
     fun resetChatScroll() {
         chatScrollbarPos = 0
         this.newMessageSinceScroll = false
@@ -542,27 +479,6 @@ class ChatTab : MessageFilter {
             unfilteredDisplayedMessages.clear()
             wasFiltered = false
             ChatPlus.LOGGER.info("$this Reloaded ${displayedMessages.size} messages")
-        }
-    }
-
-    fun getComponentStyleAt(mouseX: Double, mouseY: Double): Style? {
-        val messageAtEvent = EventBus.post(
-            ChatTabGetMessageAtEvent(
-                chatWindow,
-                this,
-                screenToChatX(mouseX),
-                screenToChatY(mouseY)
-            )
-        )
-        val x = messageAtEvent.chatX
-        val y = messageAtEvent.chatY
-        val i = getMessageLineIndexAtRelative(x, y)
-        val size = this.displayedMessages.size
-        return if (i in 0 until size) {
-            val guiMessageLine: GuiMessage.Line = this.displayedMessages[size - i - 1].line
-            Minecraft.getInstance().font.splitter.componentStyleAtWidth(guiMessageLine.content(), Mth.floor(x))
-        } else {
-            null
         }
     }
 

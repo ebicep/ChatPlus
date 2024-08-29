@@ -4,11 +4,7 @@ import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.config.EnumTranslatableName
 import com.ebicep.chatplus.events.Event
 import com.ebicep.chatplus.events.EventBus
-import com.ebicep.chatplus.hud.ChatManager
-import com.ebicep.chatplus.hud.ChatRenderPreLineAppearanceEvent
-
-import com.ebicep.chatplus.hud.ChatScreenCloseEvent
-import com.ebicep.chatplus.hud.ChatScreenRenderEvent
+import com.ebicep.chatplus.hud.*
 import com.ebicep.chatplus.util.KotlinUtil.brighter2
 import kotlinx.serialization.Serializable
 import net.minecraft.client.GuiMessage
@@ -31,6 +27,19 @@ object HoverHighlight {
                 return@register
             }
             hoveredOverMessage = ChatManager.globalSelectedTab.getHoveredOverMessageLine()?.line
+//            if (Debug.debug && hoveredOverMessage != null) {
+//                val guiGraphics = it.guiGraphics
+//                val poseStack = guiGraphics.pose()
+//                poseStack.createPose {
+//                    guiGraphics.drawString(
+//                        Minecraft.getInstance().font,
+//                        hoveredOverMessage!!.content,
+//                        ChatPlusScreen.lastMouseX + 10,
+//                        ChatPlusScreen.lastMouseY + 10,
+//                        0xFFFFFF
+//                    )
+//                }
+//            }
         }
         EventBus.register<ChatRenderPreLineAppearanceEvent>({ Config.values.hoverHighlightLinePriority }) {
             if (it.line !== hoveredOverMessage) {
