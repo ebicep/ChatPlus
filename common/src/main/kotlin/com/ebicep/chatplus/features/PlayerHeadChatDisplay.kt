@@ -96,7 +96,7 @@ object PlayerHeadChatDisplay {
                 poseStack.guiForward()
                 poseStack.translate0(x = -HEAD_WIDTH_PADDED.toDouble())
                 RenderSystem.enableBlend()
-                RenderSystem.setShaderColor(1f, 1f, 1f, it.fadeOpacity.toFloat())
+                RenderSystem.setShaderColor(1f, 1f, 1f, it.textColor / 255f)
                 PlayerFaceRenderer.draw(
                     guiGraphics,
                     resourceLocation,

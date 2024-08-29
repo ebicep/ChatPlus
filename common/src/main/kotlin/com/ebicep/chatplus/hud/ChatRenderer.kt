@@ -233,7 +233,7 @@ class ChatRenderer {
             linesPerPage = (linesPerPage * chatWindow.unfocusedHeight).roundToInt()
         }
         EventBus.post(ChatRenderPreLinesRenderEvent(guiGraphics, chatWindow))
-        val textOpacity = chatWindow.getUpdatedTextOpacity()
+        val updatedTextOpacity = chatWindow.getUpdatedTextOpacity()
         val updatedBackgroundColor = chatWindow.getUpdatedBackgroundColor()
         while (displayMessageIndex + chatWindow.selectedTab.chatScrollbarPos < messagesToDisplay && displayMessageIndex < linesPerPage) {
             val messageIndex = messagesToDisplay - displayMessageIndex - chatWindow.selectedTab.chatScrollbarPos
@@ -245,7 +245,7 @@ class ChatRenderer {
                 continue
             }
             val fadeOpacity = if (chatFocused) 1.0 else getTimeFactor(ticksLived)
-            val textOpacity = (255.0 * fadeOpacity * textOpacity).toInt()
+            val textOpacity = (255.0 * fadeOpacity * updatedTextOpacity).toInt()
             var backgroundColor = updatedBackgroundColor
             // how high chat is from input bar, if changed need to change queue offset
             val verticalChatOffset: Float = when (chatWindow.messageDirection) {
