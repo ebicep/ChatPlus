@@ -412,8 +412,10 @@ class ChatRenderer {
         return getUpdatedHeight(internalHeight)
     }
 
+    data class GetHeightEvent(val chatWindow: ChatWindow, var startingHeight: Int)
+
     fun getUpdatedHeight(startingHeight: Int): Int {
-        var h = startingHeight
+        var h = EventBus.post(GetHeightEvent(chatWindow, startingHeight)).startingHeight
         val lowerThanMin = h < MIN_HEIGHT
         val hasSpace = internalY - 1 >= MIN_HEIGHT
         if (lowerThanMin && hasSpace) {
@@ -478,26 +480,8 @@ class ChatRenderer {
         return EventBus.post(GetDefaultYEvent(chatWindow, -EDIT_BOX_HEIGHT)).y
     }
 
-    fun getMaxWidthScaled(): Int {
-        return EventBus.post(GetMaxWidthEvent(chatWindow, Minecraft.getInstance().window.guiScaledWidth)).maxWidth
-    }
-
     fun getMaxHeightScaled(): Int {
         return EventBus.post(GetMaxHeightEvent(chatWindow, Minecraft.getInstance().window.guiScaledHeight - EDIT_BOX_HEIGHT)).maxHeight
-    }
-
-    fun getMaxHeightScaled(guiScaledHeight: Int): Int {
-        return EventBus.post(GetMaxHeightEvent(chatWindow, guiScaledHeight - EDIT_BOX_HEIGHT)).maxHeight
-    }
-
-    fun getMinWidthScaled(): Int {
-        return MIN_WIDTH
-//        return (MIN_WIDTH / getScale()).roundToInt()
-    }
-
-    fun getMinHeightScaled(): Int {
-        return MIN_HEIGHT
-//        return (MIN_HEIGHT / getScale()).roundToInt()
     }
 
     fun getUpdatedScale(): Float {

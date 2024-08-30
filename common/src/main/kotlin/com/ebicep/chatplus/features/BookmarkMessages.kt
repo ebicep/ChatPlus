@@ -96,7 +96,7 @@ object BookmarkMessages {
                 return@register
             }
             if (showingBoomarks) {
-                ChatManager.globalSelectedTab.getMessageLineAt(it.mouseX, it.mouseY)?.let { message ->
+                ChatManager.globalSelectedTab.getHoveredOverMessageLine(it.mouseX, it.mouseY)?.let { message ->
                     showingBoomarks = false
                     ChatManager.globalSelectedTab.moveToMessage(it.screen, message)
                 }

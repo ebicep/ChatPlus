@@ -2,7 +2,7 @@ package com.ebicep.chatplus.features.internal
 
 import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.features.chattabs.ChatTabGetMessageAtEvent
-import com.ebicep.chatplus.features.chattabs.ChatTabGetMessageLineAtEvent
+import com.ebicep.chatplus.features.chattabs.MessageAtType
 import com.ebicep.chatplus.hud.*
 import com.ebicep.chatplus.util.GraphicsUtil.createPose
 import com.ebicep.chatplus.util.GraphicsUtil.drawString0
@@ -43,27 +43,13 @@ object Debug {
                     0xFFFFFF
                 )
                 // mouse relative to chat window position
-
-                val messageAtEvent = EventBus.post(
-                    ChatTabGetMessageAtEvent(
-                        globalSelectedTab.chatWindow,
-                        globalSelectedTab,
-                        globalSelectedTab.screenToChatX(mouseX.toDouble()),
-                        globalSelectedTab.screenToChatY(mouseY.toDouble())
-                    )
-                )
-                val messageLineAtEvent = EventBus.post(
-                    ChatTabGetMessageLineAtEvent(
-                        globalSelectedTab.chatWindow,
-                        globalSelectedTab,
-                        mouseX.toDouble(),
-                        mouseY.toDouble()
-                    )
-                )
+                val messageAtEvent = EventBus.post(ChatTabGetMessageAtEvent(globalSelectedTab, MessageAtType.HOVER))
+                messageAtEvent.calculateFinalPositions(mouseX.toDouble(), mouseY.toDouble())
+                val finalMouse = messageAtEvent.finalMouse
+                val finalChat = messageAtEvent.finalChat
                 guiGraphics.drawString(
                     Minecraft.getInstance().font,
-                    "${messageAtEvent.chatX.roundToInt()},${messageAtEvent.chatY.roundToInt()} | " +
-                            "${globalSelectedTab.screenToChatX(messageLineAtEvent.chatX).roundToInt()},${globalSelectedTab.screenToChatY(messageLineAtEvent.chatY).roundToInt()}",
+                    "${messageAtEvent.finalMouse.x.roundToInt()},${messageAtEvent.finalMouse.y.roundToInt()} | ${messageAtEvent.finalChat.x.roundToInt()},${messageAtEvent.finalChat.y.roundToInt()}",
                     mouseX + 5,
                     mouseY - 5,
                     0xFF00FF

@@ -3,8 +3,10 @@ package com.ebicep.chatplus.features
 import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.config.EnumTranslatableName
 import com.ebicep.chatplus.events.EventBus
+import com.ebicep.chatplus.features.chattabs.ChatPositionTranslator
 import com.ebicep.chatplus.features.chattabs.ChatTabAddDisplayMessageEvent
 import com.ebicep.chatplus.features.chattabs.ChatTabGetMessageAtEvent
+import com.ebicep.chatplus.features.chattabs.MessageAtType
 import com.ebicep.chatplus.features.internal.Debug.debug
 import com.ebicep.chatplus.hud.ChatManager
 import com.ebicep.chatplus.hud.ChatRenderLineTextEvent
@@ -33,11 +35,16 @@ object AlignMessage {
                 it.maxWidth -= 5
             }
         }
-        EventBus.register<ChatTabGetMessageAtEvent> {
+        EventBus.register<ChatTabGetMessageAtEvent>({ -1 }) {
+            if (it.messageAtType != MessageAtType.COMPONENT) {
+                return@register
+            }
             val chatTab = it.chatTab
             val chatWindow = chatTab.chatWindow
-            val messageLine = chatTab.getMessageAtLineRelative(it.chatX, it.chatY) ?: return@register
-            it.chatX -= chatWindow.messageAlignment.translation(chatWindow.renderer, messageLine.line.content)
+            it.addChatOperator { _, current ->
+                val messageLine = ChatPositionTranslator.getMessageAtLineRelative(it.chatTab, current.x, current.y) ?: return@addChatOperator
+                current.x -= chatWindow.messageAlignment.translation(chatWindow.renderer, messageLine.line.content)
+            }
         }
         EventBus.register<ChatRenderLineTextEvent> {
             if (!debug) {

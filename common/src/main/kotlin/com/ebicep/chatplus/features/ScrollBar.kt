@@ -121,7 +121,9 @@ object ScrollBar {
             if (ChatManager.selectedWindow.messageAlignment != AlignMessage.Alignment.RIGHT) {
                 return@register
             }
-            it.chatX += max(0, barWidth)
+            it.addChatOperator { _, current ->
+                current.x += max(0, barWidth)
+            }
         }
     }
 

@@ -343,7 +343,8 @@ class ChatTab : MessageFilter {
             JumpToMessageMode.TOP -> this.chatWindow.renderer.rescaledLinesPerPage
             JumpToMessageMode.MIDDLE -> this.chatWindow.renderer.getLinesPerPageScaled() / 2 + 1
             JumpToMessageMode.BOTTOM -> 1
-            JumpToMessageMode.CURSOR -> getMessageLineIndexAt(
+            JumpToMessageMode.CURSOR -> ChatPositionTranslator.getMessageLineIndexAt(
+                this,
                 ChatPlusScreen.lastMouseX.toDouble(),
                 ChatPlusScreen.lastMouseY.toDouble()
             ) - chatScrollbarPos + 1
@@ -480,6 +481,18 @@ class ChatTab : MessageFilter {
             wasFiltered = false
             ChatPlus.LOGGER.info("$this Reloaded ${displayedMessages.size} messages")
         }
+    }
+
+    fun getHoveredOverMessageLine(): ChatPlusGuiMessageLine? {
+        return ChatPositionTranslator.getHoveredOverMessageLineInternal(this)
+    }
+
+    fun getHoveredOverMessageLine(mouseX: Double, mouseY: Double): ChatPlusGuiMessageLine? {
+        return ChatPositionTranslator.getHoveredOverMessageLineInternal(this, mouseX, mouseY)
+    }
+
+    fun getComponentStyleAt(mouseX: Double, mouseY: Double): Style? {
+        return ChatPositionTranslator.getComponentStyleAt(this, mouseX, mouseY)
     }
 
     companion object {

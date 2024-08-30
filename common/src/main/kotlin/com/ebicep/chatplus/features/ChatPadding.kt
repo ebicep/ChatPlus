@@ -3,7 +3,6 @@ package com.ebicep.chatplus.features
 import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.features.chattabs.ChatTabAddDisplayMessageEvent
 import com.ebicep.chatplus.features.chattabs.ChatTabGetMessageAtEvent
-import com.ebicep.chatplus.features.chattabs.ChatTabGetMessageLineAtEvent
 import com.ebicep.chatplus.features.chatwindows.ChatWindow
 import com.ebicep.chatplus.hud.ChatRenderLineTextEvent
 import com.ebicep.chatplus.hud.ChatRenderPreLineAppearanceEvent
@@ -20,6 +19,9 @@ object ChatPadding {
         }
     }
 
+    val bottomPadding: Int
+        get() = 20
+
     init {
         EventBus.register<ChatRenderLineTextEvent>({ 10 }) {
             val chatWindow = it.chatWindow
@@ -32,20 +34,26 @@ object ChatPadding {
             val padding = chatWindow.padding
             it.maxWidth -= max(0, padding.left + padding.right)
         }
+//        EventBus.register<ChatRenderer.GetHeightEvent> {
+//            it.startingHeight -= (bottomPadding * it.chatWindow.scale).roundToInt()
+//        }
+//        EventBus.register<GetMaxHeightEvent> {
+//            it.maxHeight -= (bottomPadding * it.chatWindow.scale).roundToInt()
+//        } TODO
         EventBus.register<ChatTabGetMessageAtEvent> {
             val chatWindow = it.chatTab.chatWindow
-            it.chatX -= getXTranslation(chatWindow)
-            it.chatY -= 18 / 9.0
-        }
-        EventBus.register<ChatTabGetMessageLineAtEvent> {
-            val chatWindow = it.chatTab.chatWindow
-            it.chatY += 18
+            it.addMouseOperator { _, current ->
+                current.y -= -bottomPadding
+            }
+            it.addChatOperator { _, current ->
+                current.x -= getXTranslation(chatWindow)
+            }
         }
         EventBus.register<ChatRenderPreLineAppearanceEvent>({ 100 }) {
-            it.guiGraphics.pose().translate0(y = -18)
+            it.guiGraphics.pose().translate0(y = -bottomPadding / it.chatWindow.scale)
         }
         EventBus.register<ChatRenderLineTextEvent>({ 100 }) {
-            it.guiGraphics.pose().translate0(y = -18)
+            it.guiGraphics.pose().translate0(y = -bottomPadding / it.chatWindow.scale)
         }
     }
 
