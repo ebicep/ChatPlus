@@ -208,11 +208,12 @@ object MovableChat {
             val renderer = chatWindow.renderer
             val guiGraphics = it.guiGraphics
             // area above highest chat line
+            val startY = renderer.rescaledY - renderer.getTotalLineHeight() / renderer.scale
             guiGraphics.fill0(
                 renderer.rescaledX,
-                renderer.rescaledY - renderer.getTotalLineHeight(),
+                startY,
                 renderer.rescaledEndX,
-                renderer.rescaledY - renderer.getTotalLineHeight() + (renderer.getLinesPerPageScaled() - it.displayMessageIndex) * renderer.lineHeight,
+                startY + (renderer.getLinesPerPageScaled() - it.displayMessageIndex) * renderer.lineHeight,
                 chatWindow.getUpdatedBackgroundColor()
             )
             if (it.chatWindow == ChatManager.selectedWindow) {
