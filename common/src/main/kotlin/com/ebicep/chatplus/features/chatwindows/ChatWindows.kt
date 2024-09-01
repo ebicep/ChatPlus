@@ -25,11 +25,12 @@ object ChatWindows {
             }
         }
         EventBus.register<ChatRenderPreLinesEvent> {
-            if (!ChatManager.isChatFocused()) {
+            val chatWindow = it.chatWindow
+            val outline = chatWindow.outline
+            if (!outline.showWhenChatNotOpen) {
                 return@register
             }
-            val chatWindow = it.chatWindow
-            if (!chatWindow.outline.enabled) {
+            if (!outline.enabled) {
                 return@register
             }
             val selectedTab = chatWindow.selectedTab
@@ -38,8 +39,8 @@ object ChatWindows {
             val poseStack = guiGraphics.pose()
             poseStack.createPose {
                 poseStack.guiForward(if (ChatManager.globalSelectedTab == selectedTab) 700.0 else 500.0)
-                val outlineBoxType = chatWindow.outline.outlineBoxType
-                val outlineTabType = chatWindow.outline.outlineTabType
+                val outlineBoxType = outline.outlineBoxType
+                val outlineTabType = outline.outlineTabType
                 outlineBoxType.render(outlineTabType, guiGraphics, chatWindow, selectedTab, renderer)
                 if (!chatWindow.hideTabs) {
                     outlineTabType.render(outlineBoxType, guiGraphics, chatWindow, selectedTab, renderer)

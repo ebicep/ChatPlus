@@ -42,6 +42,7 @@ class ChatWindow {
     var selectedTabIndex = 0
     var startRenderTabIndex = 0
     var hideTabs = false
+    var showTabsWhenChatNotOpen: Boolean = false
     var tabTextColorSelected: Int = Color(255, 255, 255, 255).rgb
     var tabTextColorUnselected: Int = Color(153, 153, 153, 255).rgb
     var unfocusedTabOpacityMultiplier: Float = .4f

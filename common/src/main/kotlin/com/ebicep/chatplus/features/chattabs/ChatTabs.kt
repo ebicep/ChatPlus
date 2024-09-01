@@ -55,7 +55,7 @@ object ChatTabs {
                 return@register
             }
             val chatFocused: Boolean = ChatManager.isChatFocused()
-            if (chatFocused) {
+            if (chatFocused || it.chatWindow.showTabsWhenChatNotOpen) {
                 it.chatWindow.renderTabs(guiGraphics = it.guiGraphics)
             }
         }

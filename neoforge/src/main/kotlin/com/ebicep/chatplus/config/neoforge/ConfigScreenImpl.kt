@@ -258,9 +258,15 @@ object ConfigScreenImpl {
                     val outlineCategory = entryBuilder.startSubCategory(Component.translatable("chatPlus.chatWindow.outline"))
                     outlineCategory.add(
                         entryBuilder.booleanToggle(
-                            "chatPlus.chatWindow.outline",
+                            "chatPlus.chatWindow.outline.toggle",
                             window.outline.enabled
                         ) { window.outline.enabled = it },
+                    )
+                    outlineCategory.add(
+                        entryBuilder.booleanToggle(
+                            "chatPlus.chatWindow.showWhenChatNotOpen",
+                            window.outline.showWhenChatNotOpen
+                        ) { window.outline.showWhenChatNotOpen = it },
                     )
                     outlineCategory.add(
                         entryBuilder.alphaField(
@@ -337,6 +343,10 @@ object ConfigScreenImpl {
                             "chatPlus.chatWindow.hideTabs",
                             window.hideTabs
                         ) { window.hideTabs = it },
+                        entryBuilder.booleanToggle(
+                            "chatPlus.chatWindow.showTabsWhenChatNotOpen",
+                            window.showTabsWhenChatNotOpen
+                        ) { window.showTabsWhenChatNotOpen = it },
                         entryBuilder.percentSlider(
                             "chatPlus.chatWindow.unfocusedTabOpacityReduction",
                             1 - window.unfocusedTabOpacityMultiplier,

@@ -20,6 +20,7 @@ private const val THICKNESS = 1
 class ChatWindowOutline {
 
     var enabled: Boolean = false
+    var showWhenChatNotOpen: Boolean = false
     var outlineColor: Int = Color(0f, 0f, 0f, 0f).rgb
     var unfocusedOutlineColorOpacityMultiplier: Float = .4f
     var outlineBoxType: OutlineBoxType = OutlineBoxType.TEXT_BOX
