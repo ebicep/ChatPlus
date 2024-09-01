@@ -28,7 +28,11 @@ object ChatPadding {
             val chatWindow = it.chatWindow
             val guiGraphics = it.guiGraphics
             val poseStack = guiGraphics.pose()
-            poseStack.translate0(x = getXTranslation(chatWindow))
+            val xTranslation = getXTranslation(chatWindow)
+            if (xTranslation == 0) {
+                return@register
+            }
+            poseStack.translate0(x = xTranslation)
         }
         EventBus.register<ChatTabAddDisplayMessageEvent> {
             val chatWindow = it.chatWindow
