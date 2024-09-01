@@ -145,6 +145,9 @@ object MovableChat {
             it.returnFunction = movingChat
         }
         EventBus.register<ChatTabClickedEvent> {
+            if (!Config.values.movableChatEnabled) {
+                return@register
+            }
             movingTab = true
             if (isSingleTabWindow(it.chatTab.chatWindow)) {
                 movingChatBox = true
