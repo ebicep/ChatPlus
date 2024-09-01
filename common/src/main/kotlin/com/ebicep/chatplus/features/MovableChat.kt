@@ -116,7 +116,7 @@ object MovableChat {
                 mouseX,
                 mouseY,
                 renderer.getUpdatedX(),
-                renderer.getUpdatedY() - renderer.getUpdatedHeight(),
+                renderer.getUpdatedY() - renderer.getTotalLineHeight().roundToInt(),
                 renderer.getUpdatedX() + renderer.getUpdatedWidthValue(),
                 renderer.getUpdatedY()
             )
@@ -125,7 +125,7 @@ object MovableChat {
                     mouseX,
                     mouseY,
                     renderer.getUpdatedX() + RENDER_MOVING_SIZE,
-                    renderer.getUpdatedY() - renderer.getUpdatedHeight() + RENDER_MOVING_SIZE,
+                    renderer.getUpdatedY() - renderer.getTotalLineHeight() + RENDER_MOVING_SIZE,
                     renderer.getUpdatedX() + renderer.getUpdatedWidthValue() - RENDER_MOVING_SIZE,
                     renderer.getUpdatedY() - RENDER_MOVING_SIZE
                 )
@@ -137,7 +137,7 @@ object MovableChat {
                     if (mouseX > renderer.getUpdatedX() + renderer.getUpdatedWidthValue() - RENDER_MOVING_SIZE) {
                         movingChatWidth = true
                     }
-                    if (mouseY < renderer.getUpdatedY() - renderer.getUpdatedHeight() + RENDER_MOVING_SIZE) {
+                    if (mouseY < renderer.getUpdatedY() - renderer.getTotalLineHeight() + RENDER_MOVING_SIZE) {
                         movingChatHeight = true
                     }
                 }
@@ -180,11 +180,11 @@ object MovableChat {
             // render full chat box
             val guiGraphics = it.guiGraphics
             if (moving) {
-                guiGraphics.fill(
-                    renderer.internalX,
-                    renderer.internalY - renderer.internalHeight,
-                    renderer.backgroundWidthEndX,
-                    renderer.internalY,
+                guiGraphics.fill0(
+                    renderer.internalX.toFloat(),
+                    renderer.internalY - renderer.getTotalLineHeight(),
+                    renderer.backgroundWidthEndX.toFloat(),
+                    renderer.internalY.toFloat(),
                     chatWindow.getUpdatedBackgroundColor()
                 )
                 if (it.chatWindow == ChatManager.selectedWindow) {
@@ -193,7 +193,7 @@ object MovableChat {
                         guiGraphics,
                         renderer.internalX,
                         renderer.internalY,
-                        renderer.internalHeight,
+                        renderer.getTotalLineHeight().roundToInt(),
                         renderer.internalWidth
                     )
                 }
@@ -207,11 +207,12 @@ object MovableChat {
             val chatWindow = it.chatWindow
             val renderer = chatWindow.renderer
             val guiGraphics = it.guiGraphics
+            // area above highest chat line
             guiGraphics.fill0(
                 renderer.rescaledX,
-                renderer.rescaledY - renderer.getLinesPerPage() * renderer.lineHeight,
+                renderer.rescaledY - renderer.getTotalLineHeight(),
                 renderer.rescaledEndX,
-                renderer.rescaledY - it.displayMessageIndex * renderer.lineHeight,
+                renderer.rescaledY - renderer.getTotalLineHeight() + (renderer.getLinesPerPageScaled() - it.displayMessageIndex) * renderer.lineHeight,
                 chatWindow.getUpdatedBackgroundColor()
             )
             if (it.chatWindow == ChatManager.selectedWindow) {
@@ -224,7 +225,7 @@ object MovableChat {
                         guiGraphics,
                         renderer.internalX,
                         renderer.internalY,
-                        renderer.internalHeight,
+                        renderer.getTotalLineHeight().roundToInt(),
                         renderer.internalWidth
                     )
                 }
@@ -272,12 +273,12 @@ object MovableChat {
             if (movingChatHeight) {
                 val newHeight: Double = Mth.clamp(
                     renderer.getUpdatedY() - mouseY,
-                    MIN_HEIGHT.toDouble(),
-                    renderer.getUpdatedY() - 1.0
+                    renderer.getMinHeight().toDouble(),
+                    renderer.getMaxHeightScaled(HeightType.RAW).toDouble()
                 )
                 val height = newHeight.roundToInt()
-                val lineHeightScaled = renderer.lineHeight * renderer.scale
-                renderer.height = (height - (height % lineHeightScaled) + lineHeightScaled).toInt()
+                val heightNormalized = renderer.getNormalizedHeight(height)
+                renderer.height = heightNormalized
             }
             if (movingChatBox && dragging) {
                 renderer.x = Mth.clamp(
@@ -285,13 +286,13 @@ object MovableChat {
                     0,
                     Minecraft.getInstance().window.guiScaledWidth - renderer.getUpdatedWidthValue()
                 )
-                val maxHeightScaled = renderer.getMaxHeightScaled()
+                val maxYScaled = renderer.getMaxYScaled()
                 var newY = Mth.clamp(
                     (mouseY - yDisplacement).roundToInt(),
-                    renderer.getUpdatedHeight() + 1,
-                    maxHeightScaled
+                    renderer.getTotalLineHeight().roundToInt() + 1,
+                    maxYScaled
                 )
-                if (newY == maxHeightScaled) {
+                if (newY == maxYScaled) {
                     newY = renderer.getDefaultY()
                 }
                 renderer.y = newY
@@ -561,7 +562,7 @@ object MovableChat {
                     y - height.toFloat(),
                     x + backgroundWidth.toFloat(),
                     y.toFloat(),
-                    200,
+                    2000,
                     0xFFFFFFFF.toInt()
                 )
             }
@@ -571,7 +572,7 @@ object MovableChat {
                     y - height.toFloat(),
                     x + backgroundWidth.toFloat(),
                     y - height + RENDER_MOVING_SIZE,
-                    200,
+                    2000,
                     0xFFFFFFFF.toInt()
                 )
             }

@@ -60,7 +60,7 @@ enum class MessageAtType {
     HOVER,
     COMPONENT,
     INDEX,
-    INTERNAL,
+    ADJUSTED,
 
 }
 
@@ -82,7 +82,7 @@ object ChatPositionTranslator {
     }
 
     fun getHoveredOverMessageLineInternal(chatTab: ChatTab, mX: Double, mY: Double): ChatPlusGuiMessageLine? {
-        val messageAtEvent = EventBus.post(ChatTabGetMessageAtEvent(chatTab, MessageAtType.INTERNAL))
+        val messageAtEvent = EventBus.post(ChatTabGetMessageAtEvent(chatTab, MessageAtType.ADJUSTED))
         messageAtEvent.calculateFinalPositions(mX, mY)
         return getMessageAtLineRelative(
             chatTab,

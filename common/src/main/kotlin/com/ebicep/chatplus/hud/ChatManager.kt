@@ -25,7 +25,13 @@ data class GetDefaultYEvent(
 
 data class GetMaxHeightEvent(
     var chatWindow: ChatWindow,
+    val heightType: HeightType,
     var maxHeight: Int
+) : Event
+
+data class GetMaxYEvent(
+    var chatWindow: ChatWindow,
+    var maxY: Int
 ) : Event
 
 object ChatManager {

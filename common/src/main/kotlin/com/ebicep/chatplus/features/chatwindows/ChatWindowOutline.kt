@@ -1,6 +1,5 @@
 package com.ebicep.chatplus.features.chatwindows
 
-import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.config.EnumTranslatableName
 import com.ebicep.chatplus.features.chattabs.CHAT_TAB_HEIGHT
 import com.ebicep.chatplus.features.chattabs.ChatTab
@@ -14,7 +13,6 @@ import kotlinx.serialization.Serializable
 import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.network.chat.Component
 import java.awt.Color
-import kotlin.math.min
 
 private const val THICKNESS = 1
 
@@ -49,9 +47,7 @@ class ChatWindowOutline {
         NONE("chatPlus.chatWindow.outlineBoxType.none"),
         WHOLE_BOX("chatPlus.chatWindow.outlineBoxType.wholeBox") {
             override fun render(outlineTabType: OutlineTabType, guiGraphics: GuiGraphics, chatWindow: ChatWindow, selectedTab: ChatTab, renderer: ChatRenderer) {
-                val messagesToDisplay = selectedTab.displayedMessages.size
-                val lineCount = if (Config.values.movableChatEnabled) renderer.rescaledLinesPerPage else min(messagesToDisplay, renderer.rescaledLinesPerPage)
-                val h = lineCount * (renderer.lineHeight * renderer.scale)
+                val h = renderer.getTotalLineHeight()
                 guiGraphics.renderOutlineSetPos(
                     renderer.internalX.toFloat() - THICKNESS,
                     renderer.internalY.toFloat() - h - THICKNESS,
@@ -97,14 +93,12 @@ class ChatWindowOutline {
         },
         TEXT_BOX("chatPlus.chatWindow.outlineBoxType.textBox") {
             override fun render(outlineTabType: OutlineTabType, guiGraphics: GuiGraphics, chatWindow: ChatWindow, selectedTab: ChatTab, renderer: ChatRenderer) {
-                val messagesToDisplay = selectedTab.displayedMessages.size
-                val lineCount = if (Config.values.movableChatEnabled) renderer.rescaledLinesPerPage else min(messagesToDisplay, renderer.rescaledLinesPerPage)
-                val h = lineCount * (renderer.lineHeight * renderer.scale)
+                val h = renderer.getTotalLineHeight()
                 guiGraphics.renderOutlineSetPos(
                     renderer.internalX.toFloat() - THICKNESS,
                     renderer.internalY.toFloat() - h - THICKNESS,
                     renderer.internalX.toFloat() + renderer.internalWidth.toFloat() + THICKNESS,
-                    renderer.internalY.toFloat() + THICKNESS + THICKNESS,
+                    renderer.internalY.toFloat() + THICKNESS,
                     chatWindow.outline.getUpdatedOutlineColor(chatWindow),
                     THICKNESS.toFloat(),
                     bottom = chatWindow.hideTabs || outlineTabType != OutlineTabType.SELECTED_TAB_OPEN_TOP

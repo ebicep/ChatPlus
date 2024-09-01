@@ -127,6 +127,8 @@
   "chatPlus.chatWindow.padding.left.tooltip": "Left padding of the text within the chat box.",
   "chatPlus.chatWindow.padding.right": "Right",
   "chatPlus.chatWindow.padding.right.tooltip": "Right padding of the text within the chat box.",
+  "chatPlus.chatWindow.padding.bottom": "Bottom",
+  "chatPlus.chatWindow.padding.bottom.tooltip": "Bottom padding of the text within the chat box.\n \nMay cause problems.",
   "chatPlus.chatWindow.hideTabs": "Hide Tabs",
   "chatPlus.chatWindow.hideTabs.tooltip": "Enables/Disables hides the tabs in the chat window, this also prevents them from being moved/clicked.",
   "chatPlus.chatWindow.unfocusedTabOpacityReduction": "Unfocused Tab Opacity Reduction",

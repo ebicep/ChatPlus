@@ -247,6 +247,14 @@ object ConfigScreenImpl {
                             20
                         ) { window.padding.right = it }
                     )
+                    paddingCategory.add(
+                        entryBuilder.intSlider(
+                            "chatPlus.chatWindow.padding.bottom",
+                            window.padding.bottom,
+                            0,
+                            20
+                        ) { window.padding.bottom = it }
+                    )
                     val outlineCategory = entryBuilder.startSubCategory(Component.translatable("chatPlus.chatWindow.outline"))
                     outlineCategory.add(
                         entryBuilder.booleanToggle(

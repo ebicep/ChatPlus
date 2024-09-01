@@ -1,6 +1,7 @@
 package com.ebicep.chatplus.hud
 
 import com.ebicep.chatplus.ChatPlus
+import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.config.MessageDirection
 import com.ebicep.chatplus.config.queueUpdateConfig
 import com.ebicep.chatplus.events.Event
@@ -25,6 +26,7 @@ import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.util.Mth
 import kotlin.math.ceil
+import kotlin.math.min
 import kotlin.math.roundToInt
 
 abstract class ChatRenderLineEvent(
@@ -71,6 +73,7 @@ data class ChatRenderPreLinesEvent(
 data class ChatRenderPreLinesRenderEvent(
     val guiGraphics: GuiGraphics,
     val chatWindow: ChatWindow,
+    val guiTicks: Int,
 ) : Event
 
 data class ChatRenderPostLinesEvent(
@@ -79,6 +82,26 @@ data class ChatRenderPostLinesEvent(
     var displayMessageIndex: Int,
     var returnFunction: Boolean = false
 ) : Event
+
+enum class HeightType {
+    RAW, // raw height
+
+    ADJUSTED, // raw height minus bottom padding
+    RENDERED_LINES, // height of rendered lines (minus bottom/top padding)
+}
+
+data class GetHeightEvent(val chatWindow: ChatWindow, var startingHeight: Int, val heightType: HeightType)
+
+enum class UpdateWidthStatus {
+    LOWER_MIN_WITH_SPACE,
+    LESS_THAN_ZERO,
+    GREATER_THAN_GUI_WIDTH,
+    SUCCESS
+}
+
+data class UpdateWidth(val status: UpdateWidthStatus, val newWidth: Int)
+
+data class GetTotalLineHeightEvent(val chatWindow: ChatWindow, var totalLineHeight: Float)
 
 @Serializable
 class ChatRenderer {
@@ -187,9 +210,10 @@ class ChatRenderer {
     fun updateCachedDimension() {
         l1 = (-8.0 * (chatWindow.lineSpacing + 1.0) + 4.0 * chatWindow.lineSpacing).roundToInt()
         scale = getUpdatedScale()
+        lineHeight = getUpdatedLineHeight()
         internalX = getUpdatedX(x)
         internalY = getUpdatedY(y)
-        internalHeight = getUpdatedHeight(height)
+        internalHeight = getUpdatedHeight(height, HeightType.RAW)
         val updatedWidth = getUpdatedWidth(width)
         internalWidth = updatedWidth.newWidth
         val updateWidthStatus = updatedWidth.status
@@ -205,8 +229,7 @@ class ChatRenderer {
         rescaledHeight = ceil(internalHeight / scale).toInt()
         rescaledWidth = ceil(internalWidth / scale).toInt()
         rescaledEndX = backgroundWidthEndX / scale
-        rescaledLinesPerPage = getLinesPerPageScaled()
-        lineHeight = getUpdatedLineHeight()
+        rescaledLinesPerPage = getLinesPerPageScaled(HeightType.RENDERED_LINES)
     }
 
     fun render(chatWindow: ChatWindow, guiGraphics: GuiGraphics, guiTicks: Int, mouseX: Int, mouseY: Int) {
@@ -232,7 +255,7 @@ class ChatRenderer {
         if (!chatFocused) {
             linesPerPage = (linesPerPage * chatWindow.unfocusedHeight).roundToInt()
         }
-        EventBus.post(ChatRenderPreLinesRenderEvent(guiGraphics, chatWindow))
+        EventBus.post(ChatRenderPreLinesRenderEvent(guiGraphics, chatWindow, guiTicks))
         val updatedTextOpacity = chatWindow.getUpdatedTextOpacity()
         val updatedBackgroundColor = chatWindow.getUpdatedBackgroundColor()
         while (displayMessageIndex + chatWindow.selectedTab.chatScrollbarPos < messagesToDisplay && displayMessageIndex < linesPerPage) {
@@ -357,7 +380,7 @@ class ChatRenderer {
         }
     }
 
-    private fun getTimeFactor(ticksLived: Int): Double {
+    fun getTimeFactor(ticksLived: Int): Double {
         var d0 = ticksLived.toDouble() / 200.0
         d0 = 1.0 - d0
         d0 *= 10.0
@@ -395,37 +418,28 @@ class ChatRenderer {
         return UpdateWidth(status, w)
     }
 
-    data class UpdateWidth(val status: UpdateWidthStatus, val newWidth: Int)
-
-    enum class UpdateWidthStatus {
-        LOWER_MIN_WITH_SPACE,
-        LESS_THAN_ZERO,
-        GREATER_THAN_GUI_WIDTH,
-        SUCCESS
-    }
-
     fun getBackgroundWidth(): Float {
         return getUpdatedWidthValue() / getUpdatedScale()
     }
 
-    fun getUpdatedHeight(): Int {
-        return getUpdatedHeight(internalHeight)
+    fun getUpdatedHeight(heightType: HeightType): Int {
+        return getUpdatedHeight(internalHeight, heightType)
     }
 
-    data class GetHeightEvent(val chatWindow: ChatWindow, var startingHeight: Int)
-
-    fun getUpdatedHeight(startingHeight: Int): Int {
-        var h = EventBus.post(GetHeightEvent(chatWindow, startingHeight)).startingHeight
-        val lowerThanMin = h < MIN_HEIGHT
-        val hasSpace = internalY - 1 >= MIN_HEIGHT
+    fun getUpdatedHeight(startingHeight: Int, heightType: HeightType): Int {
+        var h = EventBus.post(GetHeightEvent(chatWindow, startingHeight, heightType)).startingHeight
+        val minHeight = getMinHeight()
+        val lowerThanMin = h < minHeight
+        val hasSpace = internalY - 1 >= minHeight
         if (lowerThanMin && hasSpace) {
-            h = MIN_HEIGHT
+            h = minHeight
         }
-        if (internalY - h <= 0) {
-            h = internalY - 1
+        val maxHeightScaled = getMaxHeightScaled()
+        if (h > maxHeightScaled) {
+            h = maxHeightScaled
         }
         if (h >= internalY) {
-            h = internalY - 1
+            h = maxHeightScaled
         }
         return h
     }
@@ -459,7 +473,7 @@ class ChatRenderer {
             y += Minecraft.getInstance().window.guiScaledHeight
         }
         if (y >= Minecraft.getInstance().window.guiScaledHeight - EDIT_BOX_HEIGHT) {
-            y = getMaxHeightScaled()
+            y = getMaxYScaled()
         }
         return y
     }
@@ -468,20 +482,35 @@ class ChatRenderer {
         return (9.0 * (chatWindow.lineSpacing + 1.0)).toInt()
     }
 
-    fun getLinesPerPage(): Int {
-        return (getUpdatedHeight() / getUpdatedLineHeight().toDouble()).roundToInt()
+    fun getLinesPerPage(heightType: HeightType = HeightType.ADJUSTED): Int {
+        return (getUpdatedHeight(heightType) / getUpdatedLineHeight().toDouble()).roundToInt()
     }
 
-    fun getLinesPerPageScaled(): Int {
-        return (getUpdatedHeight() / getUpdatedLineHeight().toDouble() / getUpdatedScale()).roundToInt()
+    fun getLinesPerPageScaled(heightType: HeightType = HeightType.ADJUSTED): Int {
+        return (getUpdatedHeight(heightType) / getUpdatedLineHeight().toDouble() / getUpdatedScale()).roundToInt()
+    }
+
+    fun getTotalLineHeight(): Float {
+        val lineCount = if (Config.values.movableChatEnabled) {
+            getLinesPerPageScaled(HeightType.ADJUSTED)
+        } else {
+            min(chatWindow.selectedTab.displayedMessages.size, getLinesPerPageScaled(HeightType.ADJUSTED))
+        }
+        val totalLineHeight = lineCount * lineHeight * scale
+        return EventBus.post(GetTotalLineHeightEvent(chatWindow, totalLineHeight)).totalLineHeight
     }
 
     fun getDefaultY(): Int {
         return EventBus.post(GetDefaultYEvent(chatWindow, -EDIT_BOX_HEIGHT)).y
     }
 
-    fun getMaxHeightScaled(): Int {
-        return EventBus.post(GetMaxHeightEvent(chatWindow, Minecraft.getInstance().window.guiScaledHeight - EDIT_BOX_HEIGHT)).maxHeight
+    fun getMaxHeightScaled(heightType: HeightType = HeightType.RAW): Int {
+        val maxHeight = EventBus.post(GetMaxHeightEvent(chatWindow, heightType, internalY - 1)).maxHeight
+        return getNormalizedHeight(maxHeight)
+    }
+
+    fun getMaxYScaled(): Int {
+        return EventBus.post(GetMaxYEvent(chatWindow, Minecraft.getInstance().window.guiScaledHeight - EDIT_BOX_HEIGHT)).maxY
     }
 
     fun getUpdatedScale(): Float {
@@ -491,5 +520,15 @@ class ChatRenderer {
         }
         return scale
     }
+
+    fun getMinHeight(): Int {
+        return EventBus.post(GetMinHeightEvent(chatWindow, MIN_HEIGHT)).minHeight
+    }
+
+    fun getNormalizedHeight(height: Int): Int {
+        return height - (height % (lineHeight * scale).toInt())
+    }
+
+    data class GetMinHeightEvent(val chatWindow: ChatWindow, var minHeight: Int)
 
 }

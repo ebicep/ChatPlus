@@ -46,11 +46,11 @@ object ChatWindows {
                 }
             }
         }
-        EventBus.register<GetMaxHeightEvent> {
+        EventBus.register<GetMaxYEvent> {
             if (it.chatWindow.hideTabs) {
                 return@register
             }
-            it.maxHeight -= CHAT_TAB_HEIGHT
+            it.maxY -= CHAT_TAB_HEIGHT
         }
         EventBus.register<GetDefaultYEvent> {
             if (it.chatWindow.hideTabs) {
@@ -59,75 +59,12 @@ object ChatWindows {
             it.y -= CHAT_TAB_HEIGHT
         }
     }
-//
-//    private fun render(
-//        renderer: ChatRenderer,
-//        messagesToDisplay: Int,
-//        guiGraphics: GuiGraphics,
-//        chatWindow: ChatWindow,
-//        selectedTab: ChatTab
-//    ) {
-//        val lineCount = if (Config.values.movableChatEnabled) renderer.rescaledLinesPerPage else min(messagesToDisplay, renderer.rescaledLinesPerPage)
-//        val h = lineCount * (renderer.lineHeight * renderer.scale)
-//        val w = renderer.internalWidth
-//        guiGraphics.renderOutline(
-//            renderer.internalX.toFloat() - THICKNESS,
-//            renderer.internalY.toFloat() - h - THICKNESS,
-//            w.toFloat() + THICKNESS + THICKNESS,
-//            h + THICKNESS + THICKNESS + THICKNESS,
-//            chatWindow.outlineColor,
-//            THICKNESS.toFloat(),
-//            bottom = false
-//        )
-//        val tabStartX = selectedTab.xStart - THICKNESS
-//        val tabEndX = selectedTab.xEnd + THICKNESS
-//        // tab U shaped box
-//        guiGraphics.renderOutline(
-//            tabStartX,
-//            selectedTab.yStart - CHAT_TAB_Y_OFFSET * 2,
-//            tabEndX - tabStartX,
-//            CHAT_TAB_HEIGHT,
-//            chatWindow.outlineColor,
-//            THICKNESS,
-//            top = false
-//        )
-//        // tab sides for dragging tab down
-//        guiGraphics.drawVerticalLine(
-//            tabStartX,
-//            renderer.internalY,
-//            selectedTab.yStart,
-//            chatWindow.outlineColor,
-//            THICKNESS
-//        )
-//        guiGraphics.drawVerticalLine(
-//            selectedTab.xEnd,
-//            renderer.internalY,
-//            selectedTab.yStart,
-//            chatWindow.outlineColor,
-//            THICKNESS
-//        )
-//        // chat bottom left/right
-//        guiGraphics.drawHorizontalLine(
-//            renderer.internalX,
-//            tabStartX,
-//            renderer.internalY,
-//            chatWindow.outlineColor,
-//            THICKNESS
-//        )
-//        guiGraphics.drawHorizontalLine(
-//            tabEndX,
-//            renderer.backgroundWidthEndX,
-//            renderer.internalY,
-//            chatWindow.outlineColor,
-//            THICKNESS
-//        )
-//    }
 
     private fun insideWindow(chatWindow: ChatWindow, x: Double, y: Double): Boolean {
         val renderer = chatWindow.renderer
         val startX = renderer.getUpdatedX()
         val endX = startX + renderer.getUpdatedWidthValue()
-        val startY = renderer.getUpdatedY() - renderer.getUpdatedHeight()
+        val startY = renderer.getUpdatedY() - renderer.getTotalLineHeight()
         var endY = renderer.getUpdatedY()
         if (!chatWindow.hideTabs) {
             endY += CHAT_TAB_HEIGHT + CHAT_TAB_Y_OFFSET
