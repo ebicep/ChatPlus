@@ -504,11 +504,11 @@ object MovableChat {
             // exit tab bar
             Config.values.chatWindows.forEach { window ->
                 val smallWidth = window === ChatManager.selectedWindow && isSingleTabWindow(window)
-                val width = if (smallWidth) window.tabSettings.getTabBarWidth() else window.renderer.rescaledEndX - window.renderer.internalX
+                val width = if (smallWidth) window.tabSettings.getTabBarWidth() else window.renderer.backgroundWidthEndX - window.renderer.internalX
                 guiGraphics.renderOutline(
                     window.renderer.internalX - MOVE_PADDING_X,
                     getTabStartY(window) - MOVE_PADDING_Y,
-                    width.toInt() + MOVE_PADDING_X * 2,
+                    (width + MOVE_PADDING_X * 2),
                     TAB_HEIGHT + MOVE_PADDING_Y * 2,
                     (0xFFFFFF00).toInt()
                 )
@@ -516,11 +516,11 @@ object MovableChat {
             // enter tab bar
             Config.values.chatWindows.forEach { window ->
                 val selected = window === ChatManager.selectedWindow && isSingleTabWindow(window)
-                val width = if (selected) window.tabSettings.getTabBarWidth() else window.renderer.rescaledEndX - window.renderer.internalX
+                val width = if (selected) window.tabSettings.getTabBarWidth() else window.renderer.backgroundWidthEndX - window.renderer.internalX
                 guiGraphics.renderOutline(
                     window.renderer.internalX,
                     getTabStartY(window),
-                    width.toInt(),
+                    width,
                     TAB_HEIGHT,
                     (0xFF00FF00).toInt()
                 )
@@ -617,7 +617,8 @@ object MovableChat {
         }
         val renderer = chatWindow.renderer
         val barStartX = renderer.internalX - paddingX
-        val barEndX = (if (isSingleTabWindow(chatWindow)) renderer.internalX + chatWindow.tabSettings.getTabBarWidth() else renderer.rescaledEndX).toFloat() + paddingX
+        val barEndX =
+            (if (isSingleTabWindow(chatWindow)) renderer.internalX + chatWindow.tabSettings.getTabBarWidth() else renderer.rescaledEndX).toFloat() * renderer.scale + paddingX
         val barStartY = getTabStartY(chatWindow) - paddingY
         val barEndY = getTabEndY(chatWindow) + paddingY
         when {
@@ -641,7 +642,7 @@ object MovableChat {
             .filter { it !== chatWindow }
             .forEach { otherWindow ->
                 val otherRenderer = otherWindow.renderer
-                val insideX = otherRenderer.internalX < mouseX && mouseX < otherRenderer.rescaledEndX
+                val insideX = otherRenderer.internalX < mouseX && mouseX < otherRenderer.backgroundWidthEndX
                 val insideY = getTabStartY(otherWindow) < mouseY && mouseY < getTabEndY(otherWindow)
                 if (insideX && insideY) {
                     return otherWindow
