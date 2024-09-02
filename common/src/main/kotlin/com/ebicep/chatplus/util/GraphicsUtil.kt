@@ -1,12 +1,16 @@
 package com.ebicep.chatplus.util
 
 import com.ebicep.chatplus.mixin.IMixinGuiGraphics
-import com.mojang.blaze3d.vertex.PoseStack
+import com.mojang.blaze3d.systems.RenderSystem
+import com.mojang.blaze3d.vertex.*
 import net.minecraft.client.gui.Font
 import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.renderer.GameRenderer
 import net.minecraft.client.renderer.RenderType
+import net.minecraft.resources.ResourceLocation
 import net.minecraft.util.FastColor
 import net.minecraft.util.FormattedCharSequence
+import org.joml.Matrix4f
 
 object GraphicsUtil {
 
@@ -215,6 +219,61 @@ object GraphicsUtil {
         )
         this.callFlushIfUnmanaged()
         return l
+    }
+
+    fun playerFaceRendererDraw(guiGraphics: GuiGraphics, resourceLocation: ResourceLocation, i: Float, j: Float, k: Float) {
+        this.playerFaceRendererDraw(guiGraphics, resourceLocation, i, j, k, true, false)
+    }
+
+    fun playerFaceRendererDraw(guiGraphics: GuiGraphics, resourceLocation: ResourceLocation, i: Float, j: Float, k: Float, bl: Boolean, bl2: Boolean) {
+        val l = 8 + (if (bl2) 8 else 0)
+        val m = 8 * (if (bl2) -1 else 1)
+        guiGraphics.blit0(resourceLocation, i, j, k, k, 8.0f, l.toFloat(), 8f, m.toFloat(), 64f, 64f)
+        if (bl) {
+            playerFaceRendererDrawHat(guiGraphics, resourceLocation, i, j, k, bl2)
+        }
+    }
+
+    private fun GuiGraphics.blit0(resourceLocation: ResourceLocation, i: Float, j: Float, k: Float, l: Float, f: Float, g: Float, m: Float, n: Float, o: Float, p: Float) {
+        blit0(resourceLocation, i, i + k, j, j + l, 0f, m, n, f, g, o, p)
+    }
+
+    private fun GuiGraphics.blit0(
+        resourceLocation: ResourceLocation,
+        i: Float,
+        j: Float,
+        k: Float,
+        l: Float,
+        m: Float,
+        n: Float,
+        o: Float,
+        f: Float,
+        g: Float,
+        p: Float,
+        q: Float
+    ) {
+        innerBlit0(resourceLocation, i, j, k, l, m, (f + 0.0f) / p, (f + n) / p, (g + 0.0f) / q, (g + o) / q)
+    }
+
+    private fun playerFaceRendererDrawHat(guiGraphics: GuiGraphics, resourceLocation: ResourceLocation, i: Float, j: Float, k: Float, bl: Boolean) {
+        val l = 8 + (if (bl) 8 else 0)
+        val m = 8 * (if (bl) -1 else 1)
+        RenderSystem.enableBlend()
+        guiGraphics.blit0(resourceLocation, i, j, k, k, 40.0f, l.toFloat(), 8f, m.toFloat(), 64f, 64f)
+        RenderSystem.disableBlend()
+    }
+
+    private fun GuiGraphics.innerBlit0(resourceLocation: ResourceLocation, i: Float, j: Float, k: Float, l: Float, m: Float, f: Float, g: Float, h: Float, n: Float) {
+        RenderSystem.setShaderTexture(0, resourceLocation)
+        RenderSystem.setShader { GameRenderer.getPositionTexShader() }
+        val matrix4f: Matrix4f = this.pose().last().pose()
+        val bufferBuilder = Tesselator.getInstance().builder
+        bufferBuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX)
+        bufferBuilder.vertex(matrix4f, i, k, m).uv(f, h).endVertex()
+        bufferBuilder.vertex(matrix4f, i, l, m).uv(f, n).endVertex()
+        bufferBuilder.vertex(matrix4f, j, l, m).uv(g, n).endVertex()
+        bufferBuilder.vertex(matrix4f, j, k, m).uv(g, h).endVertex()
+        BufferUploader.drawWithShader(bufferBuilder.end())
     }
 
 }
