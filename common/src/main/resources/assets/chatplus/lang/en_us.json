@@ -28,6 +28,8 @@
   "chatPlus.chatSettings.toggle.tooltip": "Enables/Disables ChatPlus.",
   "chatPlus.vanillaInputBox.toggle": "Vanilla Input Box",
   "chatPlus.vanillaInputBox.toggle.tooltip": "Enables/Disables using the vanilla input box appearance.",
+  "chatPlus.chatSettings.wrappedMessageLineIndent": "Wrapped Message Line Indent",
+  "chatPlus.chatSettings.wrappedMessageLineIndent.tooltip": "Indentation of wrapped message lines.\nThis may cause some lines to overflow the width of the chat box.",
   "chatPlus.chatSettings.maxMessages": "Max Messages",
   "chatPlus.chatSettings.maxMessages.tooltip": "The maximum number of messages to store. Minecraft's default is 100. Increasing this will increase memory usage.",
   "chatPlus.chatSettings.maxCommandSuggestions": "Max Command Suggestions",

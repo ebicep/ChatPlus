@@ -434,6 +434,7 @@ class ChatTab : MessageFilterFormatted {
 
         const val PADDING = 2
         const val TAB_HEIGHT = 9 + PADDING * 2
+        private val INDENT: FormattedCharSequence = FormattedCharSequence.codepoint(32, Style.EMPTY)
 
         private fun stripColor(pText: String): String? {
             return if (Minecraft.getInstance().options.chatColors().get()) pText else ChatFormatting.stripFormatting(pText)
@@ -446,14 +447,24 @@ class ChatTab : MessageFilterFormatted {
                 Optional.empty<Any?>()
             }, Style.EMPTY)
             val list: MutableList<Pair<FormattedCharSequence, String>> = Lists.newArrayList()
+            val indent = Config.values.wrappedMessageLineIndent // todo fix wrapping issue
             font.splitter.splitLines(
                 componentCollector.resultOrEmpty,
                 maxWidth,
                 Style.EMPTY
             ) { formattedText: FormattedText, isNewLine: Boolean ->
                 val formattedCharSequence = Language.getInstance().getVisualOrder(formattedText)
-                // note: removed new line indent
-                list.add(Pair(formattedCharSequence, formattedText.string))
+                if (indent > 0 && isNewLine) {
+                    val sequenceList: MutableList<FormattedCharSequence> = mutableListOf()
+                    for (i in 0 until indent) {
+                        sequenceList.add(INDENT)
+                    }
+                    sequenceList.add(formattedCharSequence)
+                    list.add(Pair(FormattedCharSequence.composite(sequenceList), formattedText.string))
+                } else {
+                    // note: removed new line indent
+                    list.add(Pair(formattedCharSequence, formattedText.string))
+                }
             }
             return if (list.isEmpty()) {
                 mutableListOf(Pair(FormattedCharSequence.EMPTY, ""))

@@ -101,6 +101,7 @@ data class ConfigVariables(
     // general
     var enabled: Boolean = true,
     var vanillaInputBox: Boolean = false,
+    var wrappedMessageLineIndent: Int = 0,
     var maxMessages: Int = 1000,
     var maxCommandSuggestions: Int = 15,
     var chatTimestampMode: TimestampMode = TimestampMode.HR_12_SECOND,

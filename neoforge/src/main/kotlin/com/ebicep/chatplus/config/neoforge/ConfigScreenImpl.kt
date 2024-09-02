@@ -71,6 +71,13 @@ object ConfigScreenImpl {
         general.addEntry(entryBuilder.booleanToggle("chatPlus.vanillaInputBox.toggle", Config.values.vanillaInputBox) { Config.values.vanillaInputBox = it })
         general.addEntry(
             entryBuilder.intSlider(
+                "chatPlus.chatSettings.wrappedMessageLineIndent",
+                Config.values.wrappedMessageLineIndent,
+                0,
+                5
+            ) { Config.values.wrappedMessageLineIndent = it })
+        general.addEntry(
+            entryBuilder.intSlider(
                 "chatPlus.chatSettings.maxMessages",
                 Config.values.maxMessages,
                 1000,
