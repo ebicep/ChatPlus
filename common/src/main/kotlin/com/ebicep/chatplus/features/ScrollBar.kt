@@ -55,10 +55,10 @@ object ScrollBar {
                 val chatScrollbarPos = ChatManager.globalSelectedTab.chatScrollbarPos
                 val lineHeight = renderer.lineHeight
                 val displayHeight = linesPerPage * lineHeight
-                barStartX = (renderer.rescaledEndX - barWidth).toFloat()
+                barStartX = renderer.rescaledEndX - barWidth
                 barEndX = barStartX + barWidth
                 barBottomY = -(chatScrollbarPos * displayHeight / messageCount.toFloat() - renderer.rescaledY)
-                var barHeight = (displayHeight * displayHeight / (messageCount * lineHeight.toFloat()))
+                var barHeight = displayHeight * displayHeight / (messageCount * lineHeight.toFloat())
                 barTopY = barBottomY - barHeight
                 scrollPerY = -(displayHeight.toDouble() / messageCount - renderer.rescaledY) - renderer.rescaledY
 
@@ -66,8 +66,8 @@ object ScrollBar {
                     barHeight = MIN_HEIGHT
                     barBottomY += HALF_MIN_HEIGHT
                     barTopY = barBottomY - barHeight
-                    barBottomY = barBottomY.coerceAtMost(renderer.rescaledY.toFloat())
-                    barTopY = barTopY.coerceAtLeast((renderer.rescaledY - displayHeight).toFloat())
+                    barBottomY = barBottomY.coerceAtMost(renderer.rescaledY)
+                    barTopY = barTopY.coerceAtLeast(renderer.rescaledY - displayHeight)
                 }
 
                 guiGraphics.fill0(
@@ -75,7 +75,7 @@ object ScrollBar {
                     barBottomY,
                     barEndX,
                     barTopY,
-                    200, // z
+                    1000, // z
                     Config.values.scrollbarColor
                 )
             }
