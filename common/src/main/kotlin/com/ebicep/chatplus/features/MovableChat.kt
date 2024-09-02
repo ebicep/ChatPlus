@@ -364,7 +364,7 @@ object MovableChat {
         mouseX: Double,
         mouseY: Double
     ) {
-        ChatPlus.LOGGER.info("Removed tab from $chatWindow to create new window")
+        ChatPlus.LOGGER.info("Removed $selectedTab from $chatWindow to create new window")
         removeTabFromWindow(chatWindow, selectedTab)
 
         val newWindow = chatWindow.clone()
@@ -420,6 +420,7 @@ object MovableChat {
         selectedTab.rescaleChat()
         windowMovedTo.tabSettings.tabs.add(selectedTab)
         windowMovedTo.tabSettings.selectedTabIndex = windowMovedTo.tabSettings.tabs.size - 1
+        windowMovedTo.tabSettings.resetSortedChatTabs()
         ChatWindowsManager.selectWindow(windowMovedTo)
 
         // make sure tab is viewed in same place but with offset based on new window
@@ -661,6 +662,7 @@ object MovableChat {
         } else {
             chatWindow.tabSettings.selectedTabIndex = max(0, chatWindow.tabSettings.selectedTabIndex - 1)
             chatWindow.tabSettings.startRenderTabIndex = Mth.clamp(chatWindow.tabSettings.startRenderTabIndex, 0, chatWindow.tabSettings.tabs.size - 1)
+            chatWindow.tabSettings.resetSortedChatTabs()
         }
     }
 

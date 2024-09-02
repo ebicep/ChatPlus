@@ -7,7 +7,7 @@ import com.ebicep.chatplus.features.chattabs.CHAT_TAB_X_SPACE
 import com.ebicep.chatplus.features.chattabs.CHAT_TAB_Y_OFFSET
 import com.ebicep.chatplus.features.chattabs.ChatTab
 import com.ebicep.chatplus.features.chattabs.ChatTab.Companion.TAB_HEIGHT
-import com.ebicep.chatplus.features.chattabs.ChatTabs.DefaultTab
+import com.ebicep.chatplus.features.chattabs.ChatTabs.createDefaultTab
 import com.ebicep.chatplus.features.internal.Debug
 import com.ebicep.chatplus.hud.ChatManager
 import com.ebicep.chatplus.util.GraphicsUtil.createPose
@@ -48,7 +48,7 @@ class TabSettings {
 
     init {
         if (tabs.isEmpty()) {
-            tabs.add(DefaultTab)
+            tabs.add(createDefaultTab())
         }
         selectedTabIndex = Mth.clamp(selectedTabIndex, 0, tabs.size - 1)
 

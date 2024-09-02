@@ -6,6 +6,7 @@ import com.ebicep.chatplus.events.Event
 import com.ebicep.chatplus.events.Events
 import com.ebicep.chatplus.features.chattabs.ChatTab
 import com.ebicep.chatplus.features.chattabs.ChatTabs.DefaultTab
+import com.ebicep.chatplus.features.chattabs.ChatTabs.createDefaultTab
 import com.ebicep.chatplus.features.chatwindows.ChatWindow
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.screens.ChatScreen
@@ -24,7 +25,7 @@ object ChatManager {
                 return DefaultTab
             }
             if (selectedWindow.tabSettings.tabs.isEmpty()) {
-                selectedWindow.tabSettings.tabs.add(DefaultTab)
+                selectedWindow.tabSettings.tabs.add(createDefaultTab())
                 selectedWindow.tabSettings.selectedTabIndex = 0
                 queueUpdateConfig = true
             }

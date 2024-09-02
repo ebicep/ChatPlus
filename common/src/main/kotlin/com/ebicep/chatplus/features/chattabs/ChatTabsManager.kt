@@ -18,7 +18,11 @@ const val CHAT_TAB_X_SPACE = 1 // space between categories
 
 object ChatTabs {
 
-    val DefaultTab: ChatTab = ChatTab("All", "(?s).*", alwaysAdd = true)
+    val DefaultTab: ChatTab = createDefaultTab()
+
+    fun createDefaultTab(): ChatTab {
+        return ChatTab("All", "(?s).*", alwaysAdd = true)
+    }
 
     init {
         EventBus.register<ChatPlusTickEvent> {
