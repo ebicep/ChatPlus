@@ -34,6 +34,7 @@ class TabSettings {
     var tabs: MutableList<ChatTab> = mutableListOf()
         set(value) {
             field = value
+            value.forEach { it.chatWindow = chatWindow }
             resetSortedChatTabs()
         }
 

@@ -6,6 +6,7 @@ package com.ebicep.chatplus.config
 
 import com.ebicep.chatplus.ChatPlus
 import com.ebicep.chatplus.MOD_ID
+import com.ebicep.chatplus.config.migration.MigrationManager
 import com.ebicep.chatplus.config.serializers.KeySerializer
 import com.ebicep.chatplus.config.serializers.KeyWithModifier
 import com.ebicep.chatplus.features.FilterMessages
@@ -24,12 +25,12 @@ import net.minecraft.util.Mth
 import java.awt.Color
 import java.io.File
 
-private val json = Json {
+const val CONFIG_NAME = "${MOD_ID}-v2.json"
+val json = Json {
     encodeDefaults = true
     ignoreUnknownKeys = true
     prettyPrint = true
 }
-const val CONFIG_NAME = "${MOD_ID}-v2.json"
 val configDirectoryPath: String
     get() = ConfigDirectory.getConfigDirectory().toString() + "/chatplus"
 var queueUpdateConfig = false
@@ -49,21 +50,21 @@ object Config {
 
     fun load() {
         ChatPlus.LOGGER.info("Config Directory: ${ConfigDirectory.getConfigDirectory().toAbsolutePath().normalize()}/chatplus")
-        val configDirectory = File(configDirectoryPath)
+        val configDirectory: File = File(configDirectoryPath)
         if (!configDirectory.exists()) {
             configDirectory.mkdir()
         }
-        val configFile = File(configDirectory, CONFIG_NAME)
+        val configFile: File = File(configDirectory, CONFIG_NAME)
         if (!configFile.exists()) {
-            configFile.createNewFile()
-            configFile.writeText(json.encodeToString(ConfigVariables.serializer(), values))
+            ChatPlus.LOGGER.info("No config file found, checking migration")
+            if (!MigrationManager.tryMigration(configDirectory, configFile)) {
+                ChatPlus.LOGGER.info("No migration found, creating new config")
+                configFile.createNewFile()
+                configFile.writeText(json.encodeToString(ConfigVariables.serializer(), values))
+            }
+        } else {
+            values = json.decodeFromString(ConfigVariables.serializer(), configFile.readText())
         }
-        val json = Json {
-            prettyPrint = true
-            ignoreUnknownKeys = true
-            encodeDefaults = true
-        }
-        values = json.decodeFromString(ConfigVariables.serializer(), configFile.readText())
         correctValues()
         loadValues()
     }
@@ -133,7 +134,7 @@ data class ConfigVariables(
     var moveToTabWhenCycling: Boolean = true,
     var chatWindows: MutableList<ChatWindow> = mutableListOf(),
     // moving chat
-    var movableChatEnabled: Boolean = true,
+    var movableChatEnabled: Boolean = false,
     var movableChatShowEnabledOnScreen: Boolean = true,
     var movableChatToggleKey: InputConstants.Key = InputConstants.getKey("key.keyboard.right.control"),
     // filter highlight
