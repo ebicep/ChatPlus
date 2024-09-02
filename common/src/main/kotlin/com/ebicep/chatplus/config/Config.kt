@@ -100,6 +100,7 @@ object Config {
 data class ConfigVariables(
     // general
     var enabled: Boolean = true,
+    var vanillaInputBox: Boolean = false,
     var maxMessages: Int = 1000,
     var maxCommandSuggestions: Int = 15,
     var chatTimestampMode: TimestampMode = TimestampMode.HR_12_SECOND,
@@ -125,6 +126,7 @@ data class ConfigVariables(
     var animationDisableOnFocus: Boolean = false,
     var animationNewMessageTransitionTime: Int = 200,
     // windows
+    var chatWindowsTabsEnabled: Boolean = true,
     var scrollCycleTabEnabled: Boolean = true,
     var arrowCycleTabEnabled: Boolean = true,
     var moveToTabWhenCycling: Boolean = true,
@@ -196,16 +198,6 @@ data class ConfigVariables(
     var speechToTextTranslateToInputBox: Boolean = true,
     var speechToTextTranslateLang: String = "English",
 ) {
-
-    // tabs
-    var chatWindowsTabsEnabled: Boolean = true
-        set(newY) {
-            if (field == newY) {
-                return
-            }
-            field = newY
-            queueUpdateConfig = true
-        }
 
     // speech to text
     var speechToTextSampleRate: Int = 48000

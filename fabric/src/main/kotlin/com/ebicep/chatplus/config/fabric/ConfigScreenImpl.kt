@@ -68,6 +68,7 @@ object ConfigScreenImpl {
     private fun addGeneralOptions(builder: ConfigBuilder, entryBuilder: ConfigEntryBuilder) {
         val general = builder.getOrCreateCategory(Component.translatable("chatPlus.general").withColor(MOD_COLOR))
         general.addEntry(entryBuilder.booleanToggle("chatPlus.chatSettings.toggle", Config.values.enabled) { Config.values.enabled = it })
+        general.addEntry(entryBuilder.booleanToggle("chatPlus.vanillaInputBox.toggle", Config.values.vanillaInputBox) { Config.values.vanillaInputBox = it })
         general.addEntry(
             entryBuilder.intSlider(
                 "chatPlus.chatSettings.maxMessages",

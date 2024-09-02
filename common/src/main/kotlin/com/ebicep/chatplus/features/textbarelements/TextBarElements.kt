@@ -1,6 +1,7 @@
 package com.ebicep.chatplus.features.textbarelements
 
 import com.ebicep.chatplus.IChatScreen
+import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.events.Event
 import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.features.FindMessage
@@ -14,7 +15,7 @@ import net.minecraft.client.gui.screens.ChatScreen
 object TextBarElements {
 
     const val PADDING = 6
-    private const val SPACER = 2 // space between text box / find / translate
+    private const val SPACER = 1 // space between text box / find / translate
 
     private lateinit var chatPlusScreen: ChatScreen
     private var textBarElements: MutableList<TextBarElement> = mutableListOf()
@@ -31,6 +32,9 @@ object TextBarElements {
             textBarElements.forEach { element ->
                 val calculatedWidth = element.getPaddedWidth() + SPACER
                 (chatPlusScreen as IChatScreen).chatPlusWidth -= calculatedWidth
+            }
+            if (textBarElements.isNotEmpty() && Config.values.vanillaInputBox) {
+                (chatPlusScreen as IChatScreen).chatPlusWidth -= 2
             }
             cacheTextBarElementXs()
         }

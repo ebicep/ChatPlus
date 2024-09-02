@@ -9,6 +9,7 @@ import com.ebicep.chatplus.features.textbarelements.AddTextBarElementEvent
 import com.ebicep.chatplus.features.textbarelements.FindToggleEvent
 import com.ebicep.chatplus.features.textbarelements.TranslateSpeakTextBarElement
 import com.ebicep.chatplus.hud.*
+import com.ebicep.chatplus.hud.ChatPlusScreen.EDIT_BOX_DISPLAY_HEIGHT
 import com.ebicep.chatplus.hud.ChatPlusScreen.EDIT_BOX_HEIGHT
 import com.ebicep.chatplus.mixin.IMixinChatScreen
 import com.ebicep.chatplus.mixin.IMixinScreen
@@ -56,10 +57,10 @@ object TranslateMessage {
                 screen.input?.x = 68
                 inputTranslatePrefix = EditBox(
                     screen.minecraft!!.fontFilterFishy,
-                    3,
-                    screen.height - EDIT_BOX_HEIGHT + 4,
+                    if (Config.values.vanillaInputBox) 4 else 3,
+                    screen.height - EDIT_BOX_HEIGHT + (if (Config.values.vanillaInputBox) 2 else 4),
                     63,
-                    EDIT_BOX_HEIGHT,
+                    EDIT_BOX_DISPLAY_HEIGHT,
                     Component.translatable("chatPlus.editBox")
                 )
                 val editBox = inputTranslatePrefix as EditBox
@@ -108,17 +109,17 @@ object TranslateMessage {
             val height = screen.height
             val minecraft = screen.minecraft!!
             guiGraphics.fill(
-                0,
+                if (Config.values.vanillaInputBox) 2 else 0,
                 height - EDIT_BOX_HEIGHT,
                 65,
-                height,
+                height - (if (Config.values.vanillaInputBox) 2 else 0),
                 minecraft.options.getBackgroundColor(Int.MIN_VALUE)
             )
             guiGraphics.renderOutline(
-                0,
+                if (Config.values.vanillaInputBox) 2 else 0,
                 height - EDIT_BOX_HEIGHT,
-                65,
-                EDIT_BOX_HEIGHT - 1,
+                if (Config.values.vanillaInputBox) 63 else 65,
+                EDIT_BOX_DISPLAY_HEIGHT,
                 0xFF55FF55.toInt()
             )
             val mouseX = it.mouseX

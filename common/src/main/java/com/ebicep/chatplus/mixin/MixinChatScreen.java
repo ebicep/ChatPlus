@@ -75,17 +75,23 @@ public abstract class MixinChatScreen extends Screen implements IMixinChatScreen
     }
 
     @ModifyArg(method = "init", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/ChatScreen$1;<init>(Lnet/minecraft/client/gui/screens/ChatScreen;Lnet/minecraft/client/gui/Font;IIIILnet/minecraft/network/chat/Component;)V"), index = 2)
-    private int modifyChatScreenStartX(int width) {
+    private int modifyChatScreenStartX(int x) {
         if (!Config.INSTANCE.getValues().getEnabled()) {
-            return width;
+            return x;
+        }
+        if (Config.INSTANCE.getValues().getVanillaInputBox()) {
+            return x;
         }
         return 2;
     }
 
     @ModifyArg(method = "init", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/ChatScreen$1;<init>(Lnet/minecraft/client/gui/screens/ChatScreen;Lnet/minecraft/client/gui/Font;IIIILnet/minecraft/network/chat/Component;)V"), index = 3)
-    private int modifyChatScreenStartY(int height) {
+    private int modifyChatScreenStartY(int y) {
         if (!Config.INSTANCE.getValues().getEnabled()) {
-            return height;
+            return y;
+        }
+        if (Config.INSTANCE.getValues().getVanillaInputBox()) {
+            return y;
         }
         return this.height - ChatPlusScreen.EDIT_BOX_HEIGHT + 4;
     }
@@ -101,6 +107,9 @@ public abstract class MixinChatScreen extends Screen implements IMixinChatScreen
     @ModifyArg(method = "init", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/ChatScreen$1;<init>(Lnet/minecraft/client/gui/screens/ChatScreen;Lnet/minecraft/client/gui/Font;IIIILnet/minecraft/network/chat/Component;)V"), index = 5)
     private int modifyChatScreenHeight(int height) {
         if (!Config.INSTANCE.getValues().getEnabled()) {
+            return height;
+        }
+        if (Config.INSTANCE.getValues().getVanillaInputBox()) {
             return height;
         }
         return ChatPlusScreen.EDIT_BOX_HEIGHT;
@@ -255,21 +264,30 @@ public abstract class MixinChatScreen extends Screen implements IMixinChatScreen
     }
 
     @ModifyArg(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;fill(IIIII)V"), index = 0)
-    private int renderFillStartY(int y) {
+    private int renderFillStartX(int x) {
         if (!Config.INSTANCE.getValues().getEnabled()) {
-            return y;
+            return x;
         }
         if (LanguageManager.INSTANCE.getLanguageSpeakEnabled()) {
+            if (Config.INSTANCE.getValues().getVanillaInputBox()) {
+                return 65 + x;
+            }
             return 65;
         } else {
+            if (Config.INSTANCE.getValues().getVanillaInputBox()) {
+                return x;
+            }
             return 0;
         }
     }
 
     @ModifyArg(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;fill(IIIII)V"), index = 1)
-    private int renderFillStartX(int x) {
+    private int renderFillStartY(int y) {
         if (!Config.INSTANCE.getValues().getEnabled()) {
-            return x;
+            return y;
+        }
+        if (Config.INSTANCE.getValues().getVanillaInputBox()) {
+            return y;
         }
         return height - ChatPlusScreen.EDIT_BOX_HEIGHT;
     }
@@ -285,6 +303,9 @@ public abstract class MixinChatScreen extends Screen implements IMixinChatScreen
     @ModifyArg(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;fill(IIIII)V"), index = 3)
     private int renderFillHeight(int y) {
         if (!Config.INSTANCE.getValues().getEnabled()) {
+            return y;
+        }
+        if (Config.INSTANCE.getValues().getVanillaInputBox()) {
             return y;
         }
         return height;

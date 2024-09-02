@@ -26,6 +26,8 @@
   "chatPlus.chatSettings.tooltip": "Change chat settings similar to vanilla Minecraft.",
   "chatPlus.chatSettings.toggle": "Enabled",
   "chatPlus.chatSettings.toggle.tooltip": "Enables/Disables ChatPlus.",
+  "chatPlus.vanillaInputBox.toggle": "Vanilla Input Box",
+  "chatPlus.vanillaInputBox.toggle.tooltip": "Enables/Disables using the vanilla input box appearance.",
   "chatPlus.chatSettings.maxMessages": "Max Messages",
   "chatPlus.chatSettings.maxMessages.tooltip": "The maximum number of messages to store. Minecraft's default is 100. Increasing this will increase memory usage.",
   "chatPlus.chatSettings.maxCommandSuggestions": "Max Command Suggestions",

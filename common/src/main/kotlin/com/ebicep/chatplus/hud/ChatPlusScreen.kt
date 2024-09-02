@@ -1,5 +1,6 @@
 package com.ebicep.chatplus.hud
 
+import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.events.Event
 import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.client.gui.screens.ChatScreen
@@ -8,6 +9,9 @@ import org.apache.commons.lang3.StringUtils
 object ChatPlusScreen {
 
     const val EDIT_BOX_HEIGHT = 14
+    const val EDIT_BOX_HEIGHT_VANILLA = 12
+    val EDIT_BOX_DISPLAY_HEIGHT: Int
+        get() = if (Config.values.vanillaInputBox) EDIT_BOX_HEIGHT_VANILLA else EDIT_BOX_HEIGHT
 
     var lastMouseX = 0
     var lastMouseY = 0
