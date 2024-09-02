@@ -5,8 +5,8 @@ import net.minecraft.network.chat.Component
 
 @Serializable
 enum class MessageDirection(key: String) : EnumTranslatableName {
-    TOP_DOWN("chatPlus.chatWindow.messageDirection.topDown"),
-    BOTTOM_UP("chatPlus.chatWindow.messageDirection.bottomUp"),
+    TOP_DOWN("chatPlus.chatWindow.generalSettings.messageDirection.topDown"),
+    BOTTOM_UP("chatPlus.chatWindow.generalSettings.messageDirection.bottomUp"),
 
     ;
 

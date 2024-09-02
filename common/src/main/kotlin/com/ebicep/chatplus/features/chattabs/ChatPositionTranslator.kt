@@ -14,59 +14,6 @@ import net.minecraft.network.chat.Style
 import net.minecraft.util.Mth
 import kotlin.math.min
 
-
-data class ChatTabGetMessageAtEvent(
-    val chatTab: ChatTab,
-    val messageAtType: MessageAtType,
-    val chatWindow: ChatWindow = chatTab.chatWindow,
-    var mouseOperators: MutableList<OperatorXY> = mutableListOf(),
-    var chatOperators: MutableList<OperatorXY> = mutableListOf(),
-    var finalMouse: ValuesXY = ValuesXY(0.0, 0.0),
-    var finalChat: ValuesXY = ValuesXY(0.0, 0.0),
-) : Event {
-
-    fun addMouseOperator(operator: OperatorXY) {
-        mouseOperators.add(operator)
-    }
-
-    fun addChatOperator(operator: OperatorXY) {
-        chatOperators.add(operator)
-    }
-
-    fun calculateFinalPositions(
-        mX: Double,
-        mY: Double
-    ) {
-        val originalMouse = ValuesXY(mX, mY)
-        finalMouse = ValuesXY(mX, mY)
-        mouseOperators.forEach { operator -> operator.apply(originalMouse, finalMouse) }
-
-        val originalChat = ValuesXY(screenToChatX(chatTab, finalMouse.x), screenToChatY(chatTab, finalMouse.y))
-        finalChat = ValuesXY(originalChat.x, originalChat.y)
-        chatOperators.forEach { operator -> operator.apply(originalChat, finalChat) }
-    }
-
-}
-
-class ValuesXY(var x: Double, var y: Double)
-
-fun interface OperatorXY {
-    fun apply(original: ValuesXY, current: ValuesXY)
-}
-
-
-enum class MessageAtType {
-
-    HOVER,
-    COMPONENT,
-    INDEX,
-    ADJUSTED,
-
-}
-
-data class MessageAtResult(val messageAtEvent: ChatTabGetMessageAtEvent, val messageLine: ChatPlusGuiMessageLine?)
-
-
 object ChatPositionTranslator {
 
     fun getHoveredOverMessageLine(chatTab: ChatTab): MessageAtResult {
@@ -131,7 +78,7 @@ object ChatPositionTranslator {
     fun screenToChatY(chatTab: ChatTab, pY: Double): Double {
         val chatWindow = chatTab.chatWindow
         val yDiff: Double = chatWindow.renderer.internalY - pY
-        return when (chatWindow.messageDirection) {
+        return when (chatWindow.generalSettings.messageDirection) {
             MessageDirection.TOP_DOWN -> chatWindow.renderer.rescaledLinesPerPage - yDiff / (chatWindow.renderer.scale * chatWindow.renderer.lineHeight.toDouble())
             MessageDirection.BOTTOM_UP -> yDiff / (chatWindow.renderer.scale * chatWindow.renderer.lineHeight.toDouble())
         }
@@ -171,4 +118,52 @@ object ChatPositionTranslator {
         }
     }
 
+}
+
+data class ChatTabGetMessageAtEvent(
+    val chatTab: ChatTab,
+    val messageAtType: MessageAtType,
+    val chatWindow: ChatWindow = chatTab.chatWindow,
+    var mouseOperators: MutableList<OperatorXY> = mutableListOf(),
+    var chatOperators: MutableList<OperatorXY> = mutableListOf(),
+    var finalMouse: ValuesXY = ValuesXY(0.0, 0.0),
+    var finalChat: ValuesXY = ValuesXY(0.0, 0.0),
+) : Event {
+
+    fun addMouseOperator(operator: OperatorXY) {
+        mouseOperators.add(operator)
+    }
+
+    fun addChatOperator(operator: OperatorXY) {
+        chatOperators.add(operator)
+    }
+
+    fun calculateFinalPositions(
+        mX: Double,
+        mY: Double
+    ) {
+        val originalMouse = ValuesXY(mX, mY)
+        finalMouse = ValuesXY(mX, mY)
+        mouseOperators.forEach { operator -> operator.apply(originalMouse, finalMouse) }
+
+        val originalChat = ValuesXY(screenToChatX(chatTab, finalMouse.x), screenToChatY(chatTab, finalMouse.y))
+        finalChat = ValuesXY(originalChat.x, originalChat.y)
+        chatOperators.forEach { operator -> operator.apply(originalChat, finalChat) }
+    }
+
+}
+
+data class MessageAtResult(val messageAtEvent: ChatTabGetMessageAtEvent, val messageLine: ChatPlusGuiMessageLine?)
+
+data class ValuesXY(var x: Double, var y: Double)
+
+fun interface OperatorXY {
+    fun apply(original: ValuesXY, current: ValuesXY)
+}
+
+enum class MessageAtType {
+    HOVER,
+    COMPONENT,
+    INDEX,
+    ADJUSTED,
 }

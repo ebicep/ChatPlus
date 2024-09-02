@@ -3,10 +3,14 @@ package com.ebicep.chatplus.features
 import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.events.Events
-import com.ebicep.chatplus.features.chattabs.*
+import com.ebicep.chatplus.features.chattabs.ChatTab
+import com.ebicep.chatplus.features.chattabs.ChatTabAddDisplayMessageEvent
+import com.ebicep.chatplus.features.chattabs.ChatTabRefreshDisplayMessages
+import com.ebicep.chatplus.features.chattabs.ChatTabRewrapDisplayMessages
+import com.ebicep.chatplus.features.chatwindows.ChatTabSwitchEvent
+import com.ebicep.chatplus.features.textbarelements.AddTextBarElementEvent
 import com.ebicep.chatplus.features.textbarelements.FindTextBarElement
 import com.ebicep.chatplus.features.textbarelements.FindToggleEvent
-import com.ebicep.chatplus.features.textbarelements.TextBarElements
 import com.ebicep.chatplus.features.textbarelements.TranslateToggleEvent
 import com.ebicep.chatplus.hud.*
 import com.ebicep.chatplus.mixin.IMixinChatScreen
@@ -24,7 +28,7 @@ object FindMessage {
 
     init {
         var lastMovedToMessage: Pair<Pair<ChatTab.ChatPlusGuiMessage, Int>, Long>? = null // <linked message, wrapped index>, tick
-        EventBus.register<TextBarElements.AddTextBarElementEvent>({ 100 }) {
+        EventBus.register<AddTextBarElementEvent>({ 100 }) {
             if (!Config.values.findMessageEnabled) {
                 return@register
             }

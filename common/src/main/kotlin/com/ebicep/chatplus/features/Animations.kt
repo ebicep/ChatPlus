@@ -25,13 +25,13 @@ object Animations {
     }
 
     private fun getAnimationMessageTransitionOffset(chatWindow: ChatWindow): Int {
-        val timeAlive: Long = System.currentTimeMillis() - chatWindow.selectedTab.lastMessageTime
+        val timeAlive: Long = System.currentTimeMillis() - chatWindow.tabSettings.selectedTab.lastMessageTime
         val fadeTime = Config.values.animationNewMessageTransitionTime.toFloat()
         if (timeAlive >= fadeTime || globalSelectedTab.chatScrollbarPos != 0) {
             return 0
         }
         val offset = chatWindow.renderer.lineHeight - Mth.lerp(timeAlive / fadeTime, 0.0f, chatWindow.renderer.lineHeight.toFloat()).toInt()
-        return when (chatWindow.messageDirection) {
+        return when (chatWindow.generalSettings.messageDirection) {
             MessageDirection.TOP_DOWN -> -offset
             MessageDirection.BOTTOM_UP -> offset
         }

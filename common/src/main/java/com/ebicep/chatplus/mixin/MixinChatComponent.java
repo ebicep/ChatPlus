@@ -7,7 +7,7 @@ import com.ebicep.chatplus.features.chattabs.AddNewMessageEvent;
 import com.ebicep.chatplus.features.chattabs.ChatTab;
 import com.ebicep.chatplus.features.chattabs.ChatTabs;
 import com.ebicep.chatplus.features.chatwindows.ChatWindow;
-import com.ebicep.chatplus.features.chatwindows.ChatWindows;
+import com.ebicep.chatplus.features.chatwindows.ChatWindowsManager;
 import net.minecraft.client.GuiMessageTag;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.ChatComponent;
@@ -29,7 +29,7 @@ public class MixinChatComponent {
         if (!ChatPlus.INSTANCE.isEnabled()) {
             return;
         }
-        ChatWindows.INSTANCE.renderAll(guiGraphics, i, j, k);
+        ChatWindowsManager.INSTANCE.renderAll(guiGraphics, i, j, k);
         ci.cancel();
     }
 
@@ -44,7 +44,7 @@ public class MixinChatComponent {
         } else {
             for (ChatWindow window : Config.INSTANCE.getValues().getChatWindows()) {
                 Integer lastPriority = null;
-                for (ChatTab chatTab : window.getSortedTabs()) {
+                for (ChatTab chatTab : window.getTabSettings().getSortedTabs()) {
                     int priority = chatTab.getPriority();
                     boolean alwaysAdd = chatTab.getAlwaysAdd();
                     if (lastPriority != null && lastPriority > priority && !alwaysAdd) {

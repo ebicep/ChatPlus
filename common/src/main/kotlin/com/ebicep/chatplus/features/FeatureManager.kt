@@ -1,7 +1,7 @@
 package com.ebicep.chatplus.features
 
 import com.ebicep.chatplus.features.chattabs.ChatTabs
-import com.ebicep.chatplus.features.chatwindows.ChatWindows
+import com.ebicep.chatplus.features.chatwindows.ChatWindowsManager
 import com.ebicep.chatplus.features.internal.Debug
 import com.ebicep.chatplus.features.internal.OnScreenDisplay
 import com.ebicep.chatplus.features.speechtotext.SpeechToText
@@ -28,7 +28,7 @@ object FeatureManager {
         ScrollBar
         BookmarkMessages
         Animations
-        ChatWindows
+        ChatWindowsManager
         HideChat
         Debug
         OnScreenDisplay

@@ -13,27 +13,6 @@ import net.minecraft.client.gui.screens.ChatScreen
 const val MIN_HEIGHT = 8
 const val MIN_WIDTH = 130
 
-data class GetMaxWidthEvent(
-    var chatWindow: ChatWindow,
-    var maxWidth: Int
-) : Event
-
-data class GetDefaultYEvent(
-    var chatWindow: ChatWindow,
-    var y: Int
-) : Event
-
-data class GetMaxHeightEvent(
-    var chatWindow: ChatWindow,
-    val heightType: HeightType,
-    var maxHeight: Int
-) : Event
-
-data class GetMaxYEvent(
-    var chatWindow: ChatWindow,
-    var maxY: Int
-) : Event
-
 object ChatManager {
 
     val sentMessages: MutableList<String> = ArrayList()
@@ -44,12 +23,12 @@ object ChatManager {
             if (!Config.values.chatWindowsTabsEnabled) {
                 return DefaultTab
             }
-            if (selectedWindow.tabs.isEmpty()) {
-                selectedWindow.tabs.add(DefaultTab)
-                selectedWindow.selectedTabIndex = 0
+            if (selectedWindow.tabSettings.tabs.isEmpty()) {
+                selectedWindow.tabSettings.tabs.add(DefaultTab)
+                selectedWindow.tabSettings.selectedTabIndex = 0
                 queueUpdateConfig = true
             }
-            return selectedWindow.selectedTab
+            return selectedWindow.tabSettings.selectedTab
         }
 
     init {
@@ -80,7 +59,28 @@ object ChatManager {
     }
 
     fun rescaleAll() {
-        Config.values.chatWindows.forEach { window -> window.tabs.forEach { tab -> tab.rescaleChat() } }
+        Config.values.chatWindows.forEach { window -> window.tabSettings.tabs.forEach { tab -> tab.rescaleChat() } }
     }
 
 }
+
+data class GetMaxWidthEvent(
+    var chatWindow: ChatWindow,
+    var maxWidth: Int
+) : Event
+
+data class GetDefaultYEvent(
+    var chatWindow: ChatWindow,
+    var y: Int
+) : Event
+
+data class GetMaxHeightEvent(
+    var chatWindow: ChatWindow,
+    val heightType: HeightType,
+    var maxHeight: Int
+) : Event
+
+data class GetMaxYEvent(
+    var chatWindow: ChatWindow,
+    var maxY: Int
+) : Event

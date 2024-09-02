@@ -22,7 +22,7 @@ object AlignMessage {
 
     init {
         EventBus.register<ChatRenderLineTextEvent> {
-            val alignment = it.chatWindow.messageAlignment
+            val alignment = it.chatWindow.generalSettings.messageAlignment
             var xTranslation = alignment.translation(it.chatWindow.renderer, it.chatPlusGuiMessageLine.line.content)
             if (alignment == Alignment.RIGHT && Config.values.scrollbarEnabled) {
                 xTranslation -= max(0, Config.values.scrollbarWidth)
@@ -31,7 +31,7 @@ object AlignMessage {
         }
         EventBus.register<ChatTabAddDisplayMessageEvent>({ -1 }) {
             val chatWindow = it.chatWindow
-            if (chatWindow.messageAlignment == Alignment.CENTER) {
+            if (chatWindow.generalSettings.messageAlignment == Alignment.CENTER) {
                 it.maxWidth -= 5
             }
         }
@@ -43,7 +43,7 @@ object AlignMessage {
             val chatWindow = chatTab.chatWindow
             it.addChatOperator { _, current ->
                 val messageLine = ChatPositionTranslator.getMessageAtLineRelative(it.chatTab, current.x, current.y) ?: return@addChatOperator
-                current.x -= chatWindow.messageAlignment.translation(chatWindow.renderer, messageLine.line.content)
+                current.x -= chatWindow.generalSettings.messageAlignment.translation(chatWindow.renderer, messageLine.line.content)
             }
         }
         EventBus.register<ChatRenderLineTextEvent> {
@@ -72,15 +72,15 @@ object AlignMessage {
     @Serializable
     enum class Alignment(val key: String, val translation: (renderer: ChatRenderer, text: FormattedCharSequence) -> Double) : EnumTranslatableName {
         LEFT(
-            "chatPlus.chatWindow.messageAlignment.left",
+            "chatPlus.chatWindow.generalSettings.messageAlignment.left",
             { _, _ -> 0.0 }
         ),
         CENTER(
-            "chatPlus.chatWindow.messageAlignment.center",
+            "chatPlus.chatWindow.generalSettings.messageAlignment.center",
             { renderer, text -> renderer.rescaledWidth / 2.0 - Minecraft.getInstance().font.width(text) / 2.0 }
         ),
         RIGHT(
-            "chatPlus.chatWindow.messageAlignment.right",
+            "chatPlus.chatWindow.generalSettings.messageAlignment.right",
             { renderer, text -> renderer.rescaledWidth - Minecraft.getInstance().font.width(text).toDouble() - 1 }
         ),
 

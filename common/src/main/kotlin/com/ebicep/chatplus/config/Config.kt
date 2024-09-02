@@ -11,11 +11,11 @@ import com.ebicep.chatplus.config.serializers.KeyWithModifier
 import com.ebicep.chatplus.features.FilterMessages
 import com.ebicep.chatplus.features.HoverHighlight
 import com.ebicep.chatplus.features.chatwindows.ChatWindow
-import com.ebicep.chatplus.features.chatwindows.ChatWindows.DefaultWindow
+import com.ebicep.chatplus.features.chatwindows.ChatWindowsManager.DefaultWindow
 import com.ebicep.chatplus.features.internal.MessageFilter
+import com.ebicep.chatplus.features.internal.MessageFilterFormatted
 import com.ebicep.chatplus.features.speechtotext.SpeechToText
 import com.ebicep.chatplus.translator.LanguageManager
-import com.ebicep.chatplus.translator.RegexMatch
 import com.mojang.blaze3d.platform.InputConstants
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.UseSerializers
@@ -29,6 +29,7 @@ private val json = Json {
     ignoreUnknownKeys = true
     prettyPrint = true
 }
+const val CONFIG_NAME = "${MOD_ID}-v2.json"
 val configDirectoryPath: String
     get() = ConfigDirectory.getConfigDirectory().toString() + "/chatplus"
 var queueUpdateConfig = false
@@ -42,7 +43,7 @@ object Config {
         if (!configDirectory.exists()) {
             configDirectory.mkdir()
         }
-        val configFile = File(configDirectory, "$MOD_ID.json")
+        val configFile = File(configDirectory, CONFIG_NAME)
         configFile.writeText(json.encodeToString(ConfigVariables.serializer(), values))
     }
 
@@ -52,7 +53,7 @@ object Config {
         if (!configDirectory.exists()) {
             configDirectory.mkdir()
         }
-        val configFile = File(configDirectory, "$MOD_ID.json")
+        val configFile = File(configDirectory, CONFIG_NAME)
         if (!configFile.exists()) {
             configFile.createNewFile()
             configFile.writeText(json.encodeToString(ConfigVariables.serializer(), values))
@@ -124,18 +125,14 @@ data class ConfigVariables(
     var animationDisableOnFocus: Boolean = false,
     var animationNewMessageTransitionTime: Int = 200,
     // windows
+    var scrollCycleTabEnabled: Boolean = true,
+    var arrowCycleTabEnabled: Boolean = true,
+    var moveToTabWhenCycling: Boolean = true,
     var chatWindows: MutableList<ChatWindow> = mutableListOf(),
     // moving chat
     var movableChatEnabled: Boolean = true,
     var movableChatShowEnabledOnScreen: Boolean = true,
     var movableChatToggleKey: InputConstants.Key = InputConstants.getKey("key.keyboard.right.control"),
-
-    // tabs
-//    var chatTabs: MutableList<ChatTab> = mutableListOf(defaultTab),
-//    var selectedTab: Int = 0,
-    var scrollCycleTabEnabled: Boolean = true,
-    var arrowCycleTabEnabled: Boolean = true,
-    var moveToTabWhenCycling: Boolean = true,
     // filter highlight
     var filterMessagesEnabled: Boolean = true,
     var filterMessagesLinePriority: Int = 150,
@@ -152,7 +149,7 @@ data class ConfigVariables(
     var bookmarkKey: KeyWithModifier = KeyWithModifier(InputConstants.getKey("key.keyboard.b"), 2),
     var bookmarkTextBarElementEnabled: Boolean = true,
     var bookmarkTextBarElementKey: KeyWithModifier = KeyWithModifier(InputConstants.getKey("key.keyboard.b"), 2),
-    var autoBookMarkPatterns: MutableList<MessageFilter> = mutableListOf(),
+    var autoBookMarkPatterns: MutableList<MessageFilterFormatted> = mutableListOf(),
     // find message
     var findMessageEnabled: Boolean = true,
     var findMessageLinePriority: Int = 250,
@@ -182,7 +179,7 @@ data class ConfigVariables(
     // translator
     var translatorEnabled: Boolean = true,
     var translatorTextBarElementEnabled: Boolean = true,
-    var translatorRegexes: MutableList<RegexMatch> = mutableListOf(),
+    var translatorRegexes: MutableList<MessageFilter> = mutableListOf(),
     var translateTo: String = "Auto Detect",
     var translateSelf: String = "Auto Detect",
     var translateSpeak: String = "English",
@@ -207,7 +204,6 @@ data class ConfigVariables(
                 return
             }
             field = newY
-//            ChatRenderer.updateCachedDimension()
             queueUpdateConfig = true
         }
 

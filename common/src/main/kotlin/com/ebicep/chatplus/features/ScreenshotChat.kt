@@ -6,9 +6,9 @@ import com.ebicep.chatplus.ChatPlus
 import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.events.Events
+import com.ebicep.chatplus.features.textbarelements.AddTextBarElementEvent
 import com.ebicep.chatplus.features.textbarelements.ScreenShotChatElement
 import com.ebicep.chatplus.features.textbarelements.ScreenShotChatEvent
-import com.ebicep.chatplus.features.textbarelements.TextBarElements
 import com.ebicep.chatplus.hud.*
 import com.ebicep.chatplus.util.GraphicsUtil.createPose
 import com.ebicep.chatplus.util.GraphicsUtil.fill0
@@ -68,7 +68,7 @@ object ScreenshotChat {
 
     init {
         // full chat screenshot
-        EventBus.register<TextBarElements.AddTextBarElementEvent>({ 150 }) {
+        EventBus.register<AddTextBarElementEvent>({ 150 }) {
             if (!Config.values.screenshotChatEnabled) {
                 return@register
             }

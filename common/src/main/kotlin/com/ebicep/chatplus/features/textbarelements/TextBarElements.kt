@@ -14,12 +14,7 @@ import net.minecraft.client.gui.screens.ChatScreen
 object TextBarElements {
 
     const val PADDING = 6
-    const val SPACER = 2 // space between text box / find / translate
-
-    data class AddTextBarElementEvent(
-        val screen: ChatScreen,
-        val elements: MutableList<TextBarElement>
-    ) : Event
+    private const val SPACER = 2 // space between text box / find / translate
 
     private lateinit var chatPlusScreen: ChatScreen
     private var textBarElements: MutableList<TextBarElement> = mutableListOf()
@@ -90,5 +85,10 @@ object TextBarElements {
         }
     }
 
-
 }
+
+data class AddTextBarElementEvent(
+    val screen: ChatScreen,
+    val elements: MutableList<TextBarElement>
+) : Event
+

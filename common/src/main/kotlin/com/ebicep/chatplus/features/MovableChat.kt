@@ -4,10 +4,14 @@ import com.ebicep.chatplus.ChatPlus
 import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.config.queueUpdateConfig
 import com.ebicep.chatplus.events.EventBus
-import com.ebicep.chatplus.features.chattabs.*
+import com.ebicep.chatplus.features.chattabs.CHAT_TAB_X_SPACE
+import com.ebicep.chatplus.features.chattabs.CHAT_TAB_Y_OFFSET
+import com.ebicep.chatplus.features.chattabs.ChatTab
 import com.ebicep.chatplus.features.chattabs.ChatTab.Companion.TAB_HEIGHT
+import com.ebicep.chatplus.features.chatwindows.ChatTabClickedEvent
+import com.ebicep.chatplus.features.chatwindows.ChatTabRenderEvent
 import com.ebicep.chatplus.features.chatwindows.ChatWindow
-import com.ebicep.chatplus.features.chatwindows.ChatWindows
+import com.ebicep.chatplus.features.chatwindows.ChatWindowsManager
 import com.ebicep.chatplus.features.internal.Debug.debug
 import com.ebicep.chatplus.features.internal.OnScreenDisplayEvent
 import com.ebicep.chatplus.hud.*
@@ -175,7 +179,7 @@ object MovableChat {
             val chatWindow = it.chatWindow
             // for when there are no messages
             moving = ChatManager.isChatFocused() && Config.values.movableChatEnabled
-            val messagesToDisplay = chatWindow.selectedTab.displayedMessages.size
+            val messagesToDisplay = chatWindow.tabSettings.selectedTab.displayedMessages.size
             if (messagesToDisplay > 0) {
                 return@register
             }
@@ -188,7 +192,7 @@ object MovableChat {
                     renderer.internalY - renderer.getTotalLineHeight(),
                     renderer.backgroundWidthEndX.toFloat(),
                     renderer.internalY.toFloat(),
-                    chatWindow.getUpdatedBackgroundColor()
+                    chatWindow.generalSettings.getUpdatedBackgroundColor()
                 )
                 if (it.chatWindow == ChatManager.selectedWindow) {
                     renderMoving(
@@ -217,7 +221,7 @@ object MovableChat {
                 startY,
                 renderer.rescaledEndX,
                 startY + (renderer.getLinesPerPageScaled() - it.displayMessageIndex) * renderer.lineHeight,
-                chatWindow.getUpdatedBackgroundColor()
+                chatWindow.generalSettings.getUpdatedBackgroundColor()
             )
             if (it.chatWindow == ChatManager.selectedWindow) {
                 val poseStack = guiGraphics.pose()
@@ -308,7 +312,7 @@ object MovableChat {
                 return@register
             }
             val selectedTab = ChatManager.globalSelectedTab
-            val movingTabIndex: Int = chatWindow.tabs.indexOf(selectedTab)
+            val movingTabIndex: Int = chatWindow.tabSettings.tabs.indexOf(selectedTab)
             if (movingTabIndex == -1) {
                 return@register
             }
@@ -325,18 +329,18 @@ object MovableChat {
                 }
             } else {
                 // moving tabs within the same window
-                for (otherTab in chatWindow.tabs) {
+                for (otherTab in chatWindow.tabSettings.tabs) {
                     if (otherTab === selectedTab) {
                         continue
                     }
-                    val tabIndex = chatWindow.tabs.indexOf(otherTab)
+                    val tabIndex = chatWindow.tabSettings.tabs.indexOf(otherTab)
                     val movingLeft = tabIndex < movingTabIndex
                     val otherTabMiddleX = otherTab.xStart + otherTab.width / 2.0
                     val leftSwap = movingLeft && selectedTab.xStart < otherTabMiddleX
                     val rightSwap = !movingLeft && selectedTab.xEnd > otherTabMiddleX
                     if (leftSwap || rightSwap) {
-                        chatWindow.tabs.add(tabIndex, chatWindow.tabs.removeAt(movingTabIndex))
-                        chatWindow.selectedTabIndex = tabIndex
+                        chatWindow.tabSettings.tabs.add(tabIndex, chatWindow.tabSettings.tabs.removeAt(movingTabIndex))
+                        chatWindow.tabSettings.selectedTabIndex = tabIndex
                         queueUpdateConfig = true
                         break
                     }
@@ -365,7 +369,7 @@ object MovableChat {
 
         val newWindow = chatWindow.clone()
         selectedTab.chatWindow = newWindow
-        newWindow.tabs = mutableListOf(selectedTab)
+        newWindow.tabSettings.tabs = mutableListOf(selectedTab)
 
         // creates new window with same x/y as window separated from
         val newRenderer = newWindow.renderer
@@ -409,24 +413,24 @@ object MovableChat {
     ) {
         removeTabFromWindow(ChatManager.selectedWindow, selectedTab)
 
-        val newStartX = windowMovedTo.tabs.last().xEnd + CHAT_TAB_X_SPACE
-        val oldWidth = windowMovedTo.getTabBarWidth()
+        val newStartX = windowMovedTo.tabSettings.tabs.last().xEnd + CHAT_TAB_X_SPACE
+        val oldWidth = windowMovedTo.tabSettings.getTabBarWidth()
 
         selectedTab.chatWindow = windowMovedTo
         selectedTab.rescaleChat()
-        windowMovedTo.tabs.add(selectedTab)
-        windowMovedTo.selectedTabIndex = windowMovedTo.tabs.size - 1
-        ChatWindows.selectWindow(windowMovedTo)
+        windowMovedTo.tabSettings.tabs.add(selectedTab)
+        windowMovedTo.tabSettings.selectedTabIndex = windowMovedTo.tabSettings.tabs.size - 1
+        ChatWindowsManager.selectWindow(windowMovedTo)
 
         // make sure tab is viewed in same place but with offset based on new window
         movingTabMouseXStart = windowMovedTo.renderer.internalX + oldWidth + CHAT_TAB_X_SPACE + innerTabXOffset
         movingTabMouseYStart = windowMovedTo.renderer.internalY + innerTabYOffset + CHAT_TAB_Y_OFFSET
         movingTabXStart = newStartX
-        movingTabYStart = windowMovedTo.tabs.first().yStart
+        movingTabYStart = windowMovedTo.tabSettings.tabs.first().yStart
         movingTabXOffset = (mouseX - movingTabMouseXStart).roundToInt()
         movingTabYOffset = (mouseY - movingTabMouseYStart).roundToInt()
         selectedTab.xStart = newStartX
-        selectedTab.yStart = windowMovedTo.tabs.last().yStart
+        selectedTab.yStart = windowMovedTo.tabSettings.tabs.last().yStart
         movingChatBox = false
     }
 
@@ -500,7 +504,7 @@ object MovableChat {
             // exit tab bar
             Config.values.chatWindows.forEach { window ->
                 val smallWidth = window === ChatManager.selectedWindow && isSingleTabWindow(window)
-                val width = if (smallWidth) window.getTabBarWidth() else window.renderer.rescaledEndX - window.renderer.internalX
+                val width = if (smallWidth) window.tabSettings.getTabBarWidth() else window.renderer.rescaledEndX - window.renderer.internalX
                 guiGraphics.renderOutline(
                     window.renderer.internalX - MOVE_PADDING_X,
                     getTabStartY(window) - MOVE_PADDING_Y,
@@ -512,7 +516,7 @@ object MovableChat {
             // enter tab bar
             Config.values.chatWindows.forEach { window ->
                 val selected = window === ChatManager.selectedWindow && isSingleTabWindow(window)
-                val width = if (selected) window.getTabBarWidth() else window.renderer.rescaledEndX - window.renderer.internalX
+                val width = if (selected) window.tabSettings.getTabBarWidth() else window.renderer.rescaledEndX - window.renderer.internalX
                 guiGraphics.renderOutline(
                     window.renderer.internalX,
                     getTabStartY(window),
@@ -613,7 +617,7 @@ object MovableChat {
         }
         val renderer = chatWindow.renderer
         val barStartX = renderer.internalX - paddingX
-        val barEndX = (if (isSingleTabWindow(chatWindow)) renderer.internalX + chatWindow.getTabBarWidth() else renderer.rescaledEndX).toFloat() + paddingX
+        val barEndX = (if (isSingleTabWindow(chatWindow)) renderer.internalX + chatWindow.tabSettings.getTabBarWidth() else renderer.rescaledEndX).toFloat() + paddingX
         val barStartY = getTabStartY(chatWindow) - paddingY
         val barEndY = getTabEndY(chatWindow) + paddingY
         when {
@@ -625,7 +629,7 @@ object MovableChat {
         return RelativeMouseTabBarPosition.INSIDE
     }
 
-    private fun isSingleTabWindow(chatWindow: ChatWindow) = chatWindow.tabs.size == 1
+    private fun isSingleTabWindow(chatWindow: ChatWindow) = chatWindow.tabSettings.tabs.size == 1
 
     private fun getWindowMovedTo(
         chatWindow: ChatWindow,
@@ -650,12 +654,12 @@ object MovableChat {
         chatWindow: ChatWindow,
         selectedTab: ChatTab
     ) {
-        chatWindow.tabs.remove(selectedTab)
-        if (chatWindow.tabs.isEmpty()) {
+        chatWindow.tabSettings.tabs.remove(selectedTab)
+        if (chatWindow.tabSettings.tabs.isEmpty()) {
             Config.values.chatWindows.remove(chatWindow)
         } else {
-            chatWindow.selectedTabIndex = max(0, chatWindow.selectedTabIndex - 1)
-            chatWindow.startRenderTabIndex = Mth.clamp(chatWindow.startRenderTabIndex, 0, chatWindow.tabs.size - 1)
+            chatWindow.tabSettings.selectedTabIndex = max(0, chatWindow.tabSettings.selectedTabIndex - 1)
+            chatWindow.tabSettings.startRenderTabIndex = Mth.clamp(chatWindow.tabSettings.startRenderTabIndex, 0, chatWindow.tabSettings.tabs.size - 1)
         }
     }
 

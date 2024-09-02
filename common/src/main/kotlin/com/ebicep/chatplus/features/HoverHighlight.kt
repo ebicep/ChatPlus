@@ -4,7 +4,10 @@ import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.config.EnumTranslatableName
 import com.ebicep.chatplus.events.Event
 import com.ebicep.chatplus.events.EventBus
-import com.ebicep.chatplus.hud.*
+import com.ebicep.chatplus.hud.ChatManager
+import com.ebicep.chatplus.hud.ChatRenderPreLineAppearanceEvent
+import com.ebicep.chatplus.hud.ChatScreenCloseEvent
+import com.ebicep.chatplus.hud.ChatScreenRenderEvent
 import com.ebicep.chatplus.util.KotlinUtil.brighter2
 import kotlinx.serialization.Serializable
 import net.minecraft.client.GuiMessage
@@ -14,11 +17,6 @@ import java.awt.Color
 import kotlin.math.pow
 
 object HoverHighlight {
-
-    data class HoverHighlightRenderEvent(
-        val line: GuiMessage.Line,
-        var cancelled: Boolean = false
-    ) : Event
 
     init {
         var hoveredOverMessage: GuiMessage.Line? = null
@@ -71,6 +69,8 @@ object HoverHighlight {
             hoveredOverMessage = null
         }
     }
+
+    data class HoverHighlightRenderEvent(val line: GuiMessage.Line, var cancelled: Boolean = false) : Event
 
     @Serializable
     enum class HighlightMode(key: String) : EnumTranslatableName {

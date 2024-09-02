@@ -142,7 +142,7 @@ object PlayerHeadChatDisplay {
     }
 
     private fun getMessageOffset(chatWindow: ChatWindow): Int {
-        return when (chatWindow.messageAlignment) {
+        return when (chatWindow.generalSettings.messageAlignment) {
             AlignMessage.Alignment.LEFT -> HEAD_WIDTH_PADDED
             AlignMessage.Alignment.CENTER -> HEAD_WIDTH_PADDED_HALF
             AlignMessage.Alignment.RIGHT -> 0

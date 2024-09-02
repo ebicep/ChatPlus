@@ -5,8 +5,8 @@ import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.features.chattabs.AddNewMessageEvent
 import com.ebicep.chatplus.features.chattabs.ChatTab
+import com.ebicep.chatplus.features.textbarelements.AddTextBarElementEvent
 import com.ebicep.chatplus.features.textbarelements.FindToggleEvent
-import com.ebicep.chatplus.features.textbarelements.TextBarElements
 import com.ebicep.chatplus.features.textbarelements.TranslateSpeakTextBarElement
 import com.ebicep.chatplus.hud.*
 import com.ebicep.chatplus.hud.ChatPlusScreen.EDIT_BOX_HEIGHT
@@ -31,13 +31,11 @@ import net.minecraft.network.chat.HoverEvent
 
 object TranslateMessage {
 
-    const val TRANSLATE_COLOR = 0xFFFFFF55
     var languageSpeakEnabled = false
-
     var inputTranslatePrefix: EditBox? = null
 
     init {
-        EventBus.register<TextBarElements.AddTextBarElementEvent>({ 0 }) {
+        EventBus.register<AddTextBarElementEvent>({ 0 }) {
             if (!Config.values.translatorEnabled) {
                 return@register
             }

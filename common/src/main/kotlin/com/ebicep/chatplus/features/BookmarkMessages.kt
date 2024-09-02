@@ -3,9 +3,10 @@ package com.ebicep.chatplus.features
 import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.features.chattabs.*
+import com.ebicep.chatplus.features.chatwindows.ChatTabSwitchEvent
+import com.ebicep.chatplus.features.textbarelements.AddTextBarElementEvent
 import com.ebicep.chatplus.features.textbarelements.ShowBookmarksBarElement
 import com.ebicep.chatplus.features.textbarelements.ShowBookmarksToggleEvent
-import com.ebicep.chatplus.features.textbarelements.TextBarElements
 import com.ebicep.chatplus.hud.*
 import com.ebicep.chatplus.mixin.IMixinChatScreen
 import com.ebicep.chatplus.mixin.IMixinScreen
@@ -15,10 +16,10 @@ import java.util.*
 object BookmarkMessages {
 
     private val bookmarkedMessages: MutableSet<ChatTab.ChatPlusGuiMessage> = Collections.newSetFromMap(IdentityHashMap())
-    var showingBoomarks = false
+    var showingBookmarks = false
 
     init {
-        EventBus.register<TextBarElements.AddTextBarElementEvent>({ 50 }) {
+        EventBus.register<AddTextBarElementEvent>({ 50 }) {
             if (!Config.values.bookmarkEnabled) {
                 return@register
             }
@@ -61,27 +62,27 @@ object BookmarkMessages {
             }
         }
         EventBus.register<ChatScreenCloseEvent> {
-            if (showingBoomarks) {
-                showingBoomarks = false
+            if (showingBookmarks) {
+                showingBookmarks = false
                 ChatManager.globalSelectedTab.resetFilter()
             }
         }
         EventBus.register<ChatTabRewrapDisplayMessages> {
-            showingBoomarks = false
+            showingBookmarks = false
             ChatManager.globalSelectedTab.resetFilter()
         }
         EventBus.register<ChatTabRefreshDisplayMessages> {
-            if (showingBoomarks && bookmarkedMessages.isNotEmpty()) {
+            if (showingBookmarks && bookmarkedMessages.isNotEmpty()) {
                 it.predicates.add { guiMessage -> bookmarkedMessages.contains(guiMessage) }
             }
         }
         EventBus.register<ChatTabSwitchEvent> {
-            if (showingBoomarks) {
+            if (showingBookmarks) {
                 ChatManager.globalSelectedTab.queueRefreshDisplayedMessages(false)
             }
         }
         EventBus.register<ChatTabAddDisplayMessageEvent> {
-            if (showingBoomarks && ChatManager.isChatFocused()) {
+            if (showingBookmarks && ChatManager.isChatFocused()) {
                 it.filtered = true
                 it.addMessage = bookmarkedMessages.contains(it.linkedMessage)
             }
@@ -95,9 +96,9 @@ object BookmarkMessages {
             if (it.button != 0) {
                 return@register
             }
-            if (showingBoomarks) {
+            if (showingBookmarks) {
                 ChatManager.globalSelectedTab.getHoveredOverMessageLine(it.mouseX, it.mouseY)?.let { message ->
-                    showingBoomarks = false
+                    showingBookmarks = false
                     ChatManager.globalSelectedTab.moveToMessage(it.screen, message)
                 }
             }
@@ -113,12 +114,12 @@ object BookmarkMessages {
     }
 
     fun toggle(chatScreen: ChatScreen) {
-        if (!showingBoomarks && bookmarkedMessages.isEmpty()) {
+        if (!showingBookmarks && bookmarkedMessages.isEmpty()) {
             return
         }
-        showingBoomarks = !showingBoomarks
-        EventBus.post(ShowBookmarksToggleEvent(!showingBoomarks))
-        if (!showingBoomarks) {
+        showingBookmarks = !showingBookmarks
+        EventBus.post(ShowBookmarksToggleEvent(!showingBookmarks))
+        if (!showingBookmarks) {
             ChatManager.globalSelectedTab.resetFilter()
         } else {
             ChatManager.globalSelectedTab.queueRefreshDisplayedMessages(false)

@@ -7,7 +7,7 @@ import com.ebicep.chatplus.events.Event
 import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.events.Events
 import com.ebicep.chatplus.features.chatwindows.ChatWindow
-import com.ebicep.chatplus.features.internal.MessageFilter
+import com.ebicep.chatplus.features.internal.MessageFilterFormatted
 import com.ebicep.chatplus.hud.ChatManager
 import com.ebicep.chatplus.hud.ChatPlusScreen
 import com.ebicep.chatplus.mixin.IMixinScreen
@@ -30,73 +30,8 @@ import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentHashMap.KeySetView
 
-data class AddNewMessageEvent(
-    var mutableComponent: MutableComponent,
-    val rawComponent: Component,
-    var senderUUID: UUID?,
-    val signature: MessageSignature?,
-    val addedTime: Int,
-    val tag: GuiMessageTag?,
-    var returnFunction: Boolean = false
-) : Event
-
-data class ChatTabAddNewMessageEvent(
-    val chatWindow: ChatWindow,
-    val chatTab: ChatTab,
-    val chatPlusGuiMessage: ChatTab.ChatPlusGuiMessage,
-    var mutableComponent: MutableComponent,
-    val rawComponent: Component,
-    val signature: MessageSignature?,
-    val addedTime: Int,
-    val tag: GuiMessageTag?,
-    var returnFunction: Boolean = false
-) : Event
-
-data class ChatTabAddDisplayMessageEvent(
-    val chatWindow: ChatWindow,
-    val chatTab: ChatTab,
-    val component: Component,
-    val addedTime: Int,
-    val tag: GuiMessageTag?,
-    val linkedMessage: ChatTab.ChatPlusGuiMessage,
-    var maxWidth: Int,
-    var addMessage: Boolean = true,
-    var filtered: Boolean = false,
-) : Event
-
-data class ChatTabRemoveMessageEvent(
-    val chatWindow: ChatWindow,
-    val chatTab: ChatTab,
-    val guiMessage: ChatTab.ChatPlusGuiMessage,
-    var returnFunction: Boolean = false
-) : Event
-
-data class ChatTabRemoveDisplayMessageEvent(
-    val chatWindow: ChatWindow,
-    val chatTab: ChatTab,
-    val chatPlusGuiMessageLine: ChatTab.ChatPlusGuiMessageLine,
-    var returnFunction: Boolean = false
-) : Event
-
-data class ChatTabRescale(
-    val chatWindow: ChatWindow,
-    val chatTab: ChatTab
-) : Event
-
-data class ChatTabRewrapDisplayMessages(
-    val chatWindow: ChatWindow,
-    val chatTab: ChatTab,
-) : Event
-
-data class ChatTabRefreshDisplayMessages(
-    val chatWindow: ChatWindow,
-    val chatTab: ChatTab,
-    val rescale: Boolean,
-    val predicates: MutableList<Predicate<ChatTab.ChatPlusGuiMessage>> = mutableListOf(),
-) : Event
-
 @Serializable
-class ChatTab : MessageFilter {
+class ChatTab : MessageFilterFormatted {
 
     class ChatPlusGuiMessage(
         var rawComponent: Component? = null,
@@ -377,7 +312,7 @@ class ChatTab : MessageFilter {
     }
 
     private fun isSelectedInAnyWindow(): Boolean {
-        return Config.values.chatWindows.any { it.selectedTab == this }
+        return Config.values.chatWindows.any { it.tabSettings.selectedTab == this }
     }
 
     fun refreshDisplayMessages() {
@@ -529,3 +464,68 @@ class ChatTab : MessageFilter {
     }
 
 }
+
+data class AddNewMessageEvent(
+    var mutableComponent: MutableComponent,
+    val rawComponent: Component,
+    var senderUUID: UUID?,
+    val signature: MessageSignature?,
+    val addedTime: Int,
+    val tag: GuiMessageTag?,
+    var returnFunction: Boolean = false
+) : Event
+
+data class ChatTabAddNewMessageEvent(
+    val chatWindow: ChatWindow,
+    val chatTab: ChatTab,
+    val chatPlusGuiMessage: ChatTab.ChatPlusGuiMessage,
+    var mutableComponent: MutableComponent,
+    val rawComponent: Component,
+    val signature: MessageSignature?,
+    val addedTime: Int,
+    val tag: GuiMessageTag?,
+    var returnFunction: Boolean = false
+) : Event
+
+data class ChatTabAddDisplayMessageEvent(
+    val chatWindow: ChatWindow,
+    val chatTab: ChatTab,
+    val component: Component,
+    val addedTime: Int,
+    val tag: GuiMessageTag?,
+    val linkedMessage: ChatTab.ChatPlusGuiMessage,
+    var maxWidth: Int,
+    var addMessage: Boolean = true,
+    var filtered: Boolean = false,
+) : Event
+
+data class ChatTabRemoveMessageEvent(
+    val chatWindow: ChatWindow,
+    val chatTab: ChatTab,
+    val guiMessage: ChatTab.ChatPlusGuiMessage,
+    var returnFunction: Boolean = false
+) : Event
+
+data class ChatTabRemoveDisplayMessageEvent(
+    val chatWindow: ChatWindow,
+    val chatTab: ChatTab,
+    val chatPlusGuiMessageLine: ChatTab.ChatPlusGuiMessageLine,
+    var returnFunction: Boolean = false
+) : Event
+
+data class ChatTabRescale(
+    val chatWindow: ChatWindow,
+    val chatTab: ChatTab
+) : Event
+
+data class ChatTabRewrapDisplayMessages(
+    val chatWindow: ChatWindow,
+    val chatTab: ChatTab,
+) : Event
+
+data class ChatTabRefreshDisplayMessages(
+    val chatWindow: ChatWindow,
+    val chatTab: ChatTab,
+    val rescale: Boolean,
+    val predicates: MutableList<Predicate<ChatTab.ChatPlusGuiMessage>> = mutableListOf(),
+) : Event

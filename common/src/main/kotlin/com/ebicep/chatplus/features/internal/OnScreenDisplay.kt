@@ -9,9 +9,6 @@ import dev.architectury.event.events.client.ClientGuiEvent
 import net.minecraft.client.Minecraft
 import net.minecraft.network.chat.Component
 
-
-data class OnScreenDisplayEvent(val components: MutableList<Component> = mutableListOf()) : Event
-
 object OnScreenDisplay {
 
     init {
@@ -40,3 +37,5 @@ object OnScreenDisplay {
     }
 
 }
+
+data class OnScreenDisplayEvent(val components: MutableList<Component> = mutableListOf()) : Event

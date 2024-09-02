@@ -10,9 +10,11 @@ import com.ebicep.chatplus.util.GraphicsUtil.guiForward
 import com.ebicep.chatplus.util.GraphicsUtil.translate0
 import net.minecraft.client.gui.GuiGraphics
 
-object ChatWindows {
+object ChatWindowsManager {
 
-    val DefaultWindow = ChatWindow()
+    val DefaultWindow = ChatWindow().also {
+        it.tabSettings.hideTabs = true
+    }
 
     init {
         EventBus.register<ChatScreenMouseClickedEvent>({ 10000 }) {
@@ -26,14 +28,14 @@ object ChatWindows {
         }
         EventBus.register<ChatRenderPreLinesEvent> {
             val chatWindow = it.chatWindow
-            val outline = chatWindow.outline
-            if (!outline.showWhenChatNotOpen) {
+            val outline = chatWindow.outlineSettings
+            if (!ChatManager.isChatFocused() && !(!ChatManager.isChatFocused() && outline.showWhenChatNotOpen)) {
                 return@register
             }
             if (!outline.enabled) {
                 return@register
             }
-            val selectedTab = chatWindow.selectedTab
+            val selectedTab = chatWindow.tabSettings.selectedTab
             val renderer = chatWindow.renderer
             val guiGraphics = it.guiGraphics
             val poseStack = guiGraphics.pose()
@@ -42,19 +44,19 @@ object ChatWindows {
                 val outlineBoxType = outline.outlineBoxType
                 val outlineTabType = outline.outlineTabType
                 outlineBoxType.render(outlineTabType, guiGraphics, chatWindow, selectedTab, renderer)
-                if (!chatWindow.hideTabs) {
+                if (!chatWindow.tabSettings.hideTabs) {
                     outlineTabType.render(outlineBoxType, guiGraphics, chatWindow, selectedTab, renderer)
                 }
             }
         }
         EventBus.register<GetMaxYEvent> {
-            if (it.chatWindow.hideTabs) {
+            if (it.chatWindow.tabSettings.hideTabs) {
                 return@register
             }
             it.maxY -= CHAT_TAB_HEIGHT
         }
         EventBus.register<GetDefaultYEvent> {
-            if (it.chatWindow.hideTabs) {
+            if (it.chatWindow.tabSettings.hideTabs) {
                 return@register
             }
             it.y -= CHAT_TAB_HEIGHT
@@ -67,7 +69,7 @@ object ChatWindows {
         val endX = startX + renderer.getUpdatedWidthValue()
         val startY = renderer.getUpdatedY() - renderer.getTotalLineHeight()
         var endY = renderer.getUpdatedY()
-        if (!chatWindow.hideTabs) {
+        if (!chatWindow.tabSettings.hideTabs) {
             endY += CHAT_TAB_HEIGHT + CHAT_TAB_Y_OFFSET
         }
         return startX < x && x < endX && startY < y && y < endY

@@ -130,7 +130,7 @@ class ChatRenderer {
             field = newWidth
             queueUpdateConfig = true
             internalWidth = newWidth
-            chatWindow.tabs.forEach { it.rescaleChat() }
+            chatWindow.tabSettings.tabs.forEach { it.rescaleChat() }
         }
     var height: Int = MIN_HEIGHT
         set(newHeight) {
@@ -208,7 +208,7 @@ class ChatRenderer {
     }
 
     fun updateCachedDimension() {
-        l1 = (-8.0 * (chatWindow.lineSpacing + 1.0) + 4.0 * chatWindow.lineSpacing).roundToInt()
+        l1 = (-8.0 * (chatWindow.generalSettings.lineSpacing + 1.0) + 4.0 * chatWindow.generalSettings.lineSpacing).roundToInt()
         scale = getUpdatedScale()
         lineHeight = getUpdatedLineHeight()
         internalX = getUpdatedX(x)
@@ -221,7 +221,7 @@ class ChatRenderer {
             if (updateWidthStatus == UpdateWidthStatus.LOWER_MIN_WITH_SPACE || updateWidthStatus == UpdateWidthStatus.LESS_THAN_ZERO) {
                 width = MIN_WIDTH
             }
-            chatWindow.selectedTab.rescaleChat()
+            chatWindow.tabSettings.selectedTab.rescaleChat()
         }
         backgroundWidthEndX = internalX + internalWidth
         rescaledX = internalX / scale
@@ -247,20 +247,20 @@ class ChatRenderer {
         }
         chatFocused = preLinesEvent.chatFocused
 
-        val messagesToDisplay = chatWindow.selectedTab.displayedMessages.size
+        val messagesToDisplay = chatWindow.tabSettings.selectedTab.displayedMessages.size
         poseStack.pushPose()
         poseStack.scale(scale, scale, 1.0f)
         var displayMessageIndex = 0
         var linesPerPage = rescaledLinesPerPage
         if (!chatFocused) {
-            linesPerPage = (linesPerPage * chatWindow.unfocusedHeight).roundToInt()
+            linesPerPage = (linesPerPage * chatWindow.generalSettings.unfocusedHeight).roundToInt()
         }
         EventBus.post(ChatRenderPreLinesRenderEvent(guiGraphics, chatWindow, guiTicks))
-        val updatedTextOpacity = chatWindow.getUpdatedTextOpacity()
-        val updatedBackgroundColor = chatWindow.getUpdatedBackgroundColor()
-        while (displayMessageIndex + chatWindow.selectedTab.chatScrollbarPos < messagesToDisplay && displayMessageIndex < linesPerPage) {
-            val messageIndex = messagesToDisplay - displayMessageIndex - chatWindow.selectedTab.chatScrollbarPos
-            val chatPlusGuiMessageLine: ChatTab.ChatPlusGuiMessageLine = chatWindow.selectedTab.displayedMessages[messageIndex - 1]
+        val updatedTextOpacity = chatWindow.generalSettings.getUpdatedTextOpacity()
+        val updatedBackgroundColor = chatWindow.generalSettings.getUpdatedBackgroundColor()
+        while (displayMessageIndex + chatWindow.tabSettings.selectedTab.chatScrollbarPos < messagesToDisplay && displayMessageIndex < linesPerPage) {
+            val messageIndex = messagesToDisplay - displayMessageIndex - chatWindow.tabSettings.selectedTab.chatScrollbarPos
+            val chatPlusGuiMessageLine: ChatTab.ChatPlusGuiMessageLine = chatWindow.tabSettings.selectedTab.displayedMessages[messageIndex - 1]
             val line: GuiMessage.Line = chatPlusGuiMessageLine.line
             val ticksLived: Int = guiTicks - line.addedTime()
             if (ticksLived >= 200 && !chatFocused) {
@@ -271,7 +271,7 @@ class ChatRenderer {
             val textOpacity = (255.0 * fadeOpacity * updatedTextOpacity).toInt()
             var backgroundColor = updatedBackgroundColor
             // how high chat is from input bar, if changed need to change queue offset
-            val verticalChatOffset: Float = when (chatWindow.messageDirection) {
+            val verticalChatOffset: Float = when (chatWindow.generalSettings.messageDirection) {
                 MessageDirection.TOP_DOWN -> (rescaledY - rescaledLinesPerPage * lineHeight + lineHeight) + displayMessageIndex * lineHeight
                 MessageDirection.BOTTOM_UP -> rescaledY - displayMessageIndex * lineHeight
             }
@@ -375,7 +375,7 @@ class ChatRenderer {
         if (heightChanged || widthChanged) {
             updateCachedDimension()
             if (widthChanged) {
-                chatWindow.tabs.forEach { it.rescaleChat() }
+                chatWindow.tabSettings.tabs.forEach { it.rescaleChat() }
             }
         }
     }
@@ -479,7 +479,7 @@ class ChatRenderer {
     }
 
     fun getUpdatedLineHeight(): Int {
-        return (9.0 * (chatWindow.lineSpacing + 1.0)).toInt()
+        return (9.0 * (chatWindow.generalSettings.lineSpacing + 1.0)).toInt()
     }
 
     fun getLinesPerPage(heightType: HeightType = HeightType.ADJUSTED): Int {
@@ -494,7 +494,7 @@ class ChatRenderer {
         val lineCount = if (Config.values.movableChatEnabled) {
             getLinesPerPageScaled(HeightType.ADJUSTED)
         } else {
-            min(chatWindow.selectedTab.displayedMessages.size, getLinesPerPageScaled(HeightType.ADJUSTED))
+            min(chatWindow.tabSettings.selectedTab.displayedMessages.size, getLinesPerPageScaled(HeightType.ADJUSTED))
         }
         val totalLineHeight = lineCount * lineHeight * scale
         return EventBus.post(GetTotalLineHeightEvent(chatWindow, totalLineHeight)).totalLineHeight
@@ -514,7 +514,7 @@ class ChatRenderer {
     }
 
     fun getUpdatedScale(): Float {
-        val scale = chatWindow.scale
+        val scale = chatWindow.generalSettings.scale
         if (scale <= 0) {
             return .001f
         }

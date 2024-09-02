@@ -16,7 +16,7 @@ object SelectChat {
     var selectedMessages: MutableMap<ChatTab, MutableSet<ChatTab.ChatPlusGuiMessageLine>> = mutableMapOf()//Collections.newSetFromMap(IdentityHashMap())
 
     fun getSelectedMessagesOrdered(): List<ChatTab.ChatPlusGuiMessageLine> {
-        val chatTabs: List<ChatTab> = Config.values.chatWindows.flatMap { it.tabs }.toList()
+        val chatTabs: List<ChatTab> = Config.values.chatWindows.flatMap { it.tabSettings.tabs }.toList()
         // return sorted based chatTabs index
         return chatTabs.flatMap { tab ->
             selectedMessages[tab]?.sortedWith(
@@ -93,7 +93,7 @@ object SelectChat {
             }
         }
         EventBus.register<ChatRenderPreLineAppearanceEvent>({ Config.values.selectChatLinePriority }) {
-            val selectedTab = it.chatWindow.selectedTab
+            val selectedTab = it.chatWindow.tabSettings.selectedTab
             val selected = getTabSelectedMessages(selectedTab)
             if (selected.contains(it.chatPlusGuiMessageLine)) {
                 it.backgroundColor = SELECT_COLOR

@@ -9,19 +9,11 @@ import com.ebicep.chatplus.hud.*
 import com.ebicep.chatplus.util.GraphicsUtil.fill0
 import com.ebicep.chatplus.util.GraphicsUtil.translate0
 import com.ebicep.chatplus.util.KotlinUtil.reduceAlpha
-import kotlinx.serialization.Serializable
 import net.minecraft.client.GuiMessage
 import kotlin.math.max
 import kotlin.math.roundToInt
 
 object ChatPadding {
-
-    @Serializable
-    data class Padding(var left: Int = 0, var right: Int = 0, var bottom: Int = 0) {
-        fun clone(): Padding {
-            return Padding(left, right, bottom)
-        }
-    }
 
     init {
         EventBus.register<ChatRenderLineTextEvent>({ 10 }) {
@@ -56,7 +48,7 @@ object ChatPadding {
             }
             val renderer = chatWindow.renderer
             val chatFocused = ChatManager.isChatFocused()
-            val chatPlusGuiMessageLine: ChatTab.ChatPlusGuiMessageLine = chatWindow.selectedTab.displayedMessages.lastOrNull() ?: return@register
+            val chatPlusGuiMessageLine: ChatTab.ChatPlusGuiMessageLine = chatWindow.tabSettings.selectedTab.displayedMessages.lastOrNull() ?: return@register
             val line: GuiMessage.Line = chatPlusGuiMessageLine.line
             val ticksLived: Int = it.guiTicks - line.addedTime()
             if (ticksLived >= 200 && !chatFocused) {
@@ -68,8 +60,8 @@ object ChatPadding {
                 renderer.rescaledX,
                 renderer.rescaledY,
                 renderer.rescaledEndX,
-                renderer.rescaledY - (bottomPadding / chatWindow.scale),
-                reduceAlpha(chatWindow.getUpdatedBackgroundColor(), fadeOpacity)
+                renderer.rescaledY - (bottomPadding / chatWindow.generalSettings.scale),
+                reduceAlpha(chatWindow.generalSettings.getUpdatedBackgroundColor(), fadeOpacity)
             )
 //            // top padding
 //            if (chatFocused) {
@@ -79,7 +71,7 @@ object ChatPadding {
 //                    renderer.rescaledY - renderer.getTotalLineHeight(),
 //                    renderer.rescaledEndX,
 //                    renderer.rescaledY - renderer.getTotalLineHeight() + (renderer.getLinesPerPageScaled() - min(
-//                        chatWindow.selectedTab.displayedMessages.size,
+//                        chatWindow.tabSettings.selectedTab.displayedMessages.size,
 //                        linesPerPage
 //                    )) * renderer
 //                        .lineHeight,
@@ -92,14 +84,14 @@ object ChatPadding {
             if (bottomPadding == 0) {
                 return@register
             }
-            it.guiGraphics.pose().translate0(y = -bottomPadding / it.chatWindow.scale)
+            it.guiGraphics.pose().translate0(y = -bottomPadding / it.chatWindow.generalSettings.scale)
         }
         EventBus.register<ChatRenderLineTextEvent>({ 100 }) {
             val bottomPadding = it.chatWindow.padding.bottom
             if (bottomPadding == 0) {
                 return@register
             }
-            it.guiGraphics.pose().translate0(y = -bottomPadding / it.chatWindow.scale)
+            it.guiGraphics.pose().translate0(y = -bottomPadding / it.chatWindow.generalSettings.scale)
         }
         EventBus.register<GetHeightEvent> {
             if (it.heightType != HeightType.ADJUSTED && it.heightType != HeightType.RENDERED_LINES) {
@@ -115,7 +107,7 @@ object ChatPadding {
 //            }
             val renderer = chatWindow.renderer
             val lineHeightScaled = renderer.lineHeight * renderer.scale
-            val newHeight = it.startingHeight - (bottomPadding * chatWindow.scale).roundToInt()
+            val newHeight = it.startingHeight - (bottomPadding * chatWindow.generalSettings.scale).roundToInt()
             it.startingHeight = (newHeight - (newHeight % lineHeightScaled) + lineHeightScaled).toInt()
         }
         EventBus.register<GetTotalLineHeightEvent> {
@@ -132,7 +124,7 @@ object ChatPadding {
 
     private fun getXTranslation(chatWindow: ChatWindow): Int {
         val padding = chatWindow.padding
-        return when (chatWindow.messageAlignment) {
+        return when (chatWindow.generalSettings.messageAlignment) {
             AlignMessage.Alignment.LEFT -> padding.left
             AlignMessage.Alignment.CENTER -> padding.left
             AlignMessage.Alignment.RIGHT -> -padding.right
@@ -140,3 +132,4 @@ object ChatPadding {
     }
 
 }
+

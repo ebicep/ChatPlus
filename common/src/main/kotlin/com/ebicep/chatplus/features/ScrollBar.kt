@@ -118,7 +118,7 @@ object ScrollBar {
             if (!Config.values.scrollbarEnabled) {
                 return@register
             }
-            if (ChatManager.selectedWindow.messageAlignment != AlignMessage.Alignment.RIGHT) {
+            if (ChatManager.selectedWindow.generalSettings.messageAlignment != AlignMessage.Alignment.RIGHT) {
                 return@register
             }
             it.addChatOperator { _, current ->
