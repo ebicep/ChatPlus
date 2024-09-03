@@ -95,14 +95,15 @@ class OutlineSettings {
         TEXT_BOX("chatPlus.chatWindow.outlineSettings.outlineBoxType.textBox") {
             override fun render(outlineTabType: OutlineTabType, guiGraphics: GuiGraphics, chatWindow: ChatWindow, selectedTab: ChatTab, renderer: ChatRenderer) {
                 val h = renderer.getTotalLineHeight()
+                val bottom = chatWindow.tabSettings.hideTabs || outlineTabType != OutlineTabType.SELECTED_TAB_OPEN_TOP
                 guiGraphics.renderOutlineSetPos(
                     renderer.internalX.toFloat() - THICKNESS,
                     renderer.internalY.toFloat() - h - THICKNESS,
                     renderer.internalX.toFloat() + renderer.internalWidth.toFloat() + THICKNESS,
-                    renderer.internalY.toFloat() + THICKNESS,
+                    renderer.internalY.toFloat() + THICKNESS + (if (!bottom) THICKNESS else 0),
                     chatWindow.outlineSettings.getUpdatedOutlineColor(chatWindow),
                     THICKNESS.toFloat(),
-                    bottom = chatWindow.tabSettings.hideTabs || outlineTabType != OutlineTabType.SELECTED_TAB_OPEN_TOP
+                    bottom = bottom
                 )
                 if (chatWindow.tabSettings.hideTabs) {
                     return
@@ -141,7 +142,7 @@ class OutlineSettings {
                 )
                 if (outlineTabType == OutlineTabType.SELECTED_TAB_OPEN_TOP) {
                     guiGraphics.drawHorizontalLine(
-                        renderer.internalX,
+                        renderer.internalX - THICKNESS,
                         selectedTab.xStart - THICKNESS,
                         renderer.internalY,
                         chatWindow.outlineSettings.getUpdatedOutlineColor(chatWindow),
@@ -149,7 +150,7 @@ class OutlineSettings {
                     )
                     guiGraphics.drawHorizontalLine(
                         selectedTab.xEnd + THICKNESS,
-                        renderer.backgroundWidthEndX,
+                        renderer.backgroundWidthEndX + THICKNESS,
                         renderer.internalY,
                         chatWindow.outlineSettings.getUpdatedOutlineColor(chatWindow),
                         THICKNESS
