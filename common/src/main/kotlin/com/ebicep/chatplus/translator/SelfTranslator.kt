@@ -17,6 +17,8 @@ class SelfTranslator(val toTranslate: String, val prefix: String) : Thread() {
             ChatManager.addSentMessage(translatedMessage)
             if (prefix.isEmpty()) {
                 Minecraft.getInstance().player!!.connection.sendChat(translatedMessage)
+            } else if (prefix.startsWith("/")) {
+                Minecraft.getInstance().player!!.connection.sendCommand("${prefix.substring(1)} $translatedMessage")
             } else {
                 Minecraft.getInstance().player!!.connection.sendChat("$prefix $translatedMessage")
             }

@@ -1,11 +1,16 @@
 package com.ebicep.chatplus.events.neoforge
 
+import com.ebicep.chatplus.ChatPlus
+import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.config.ConfigScreen
+import com.ebicep.chatplus.features.internal.Debug
 import com.ebicep.chatplus.hud.ChatManager
 import com.mojang.brigadier.Command
 import com.mojang.brigadier.builder.LiteralArgumentBuilder
+import net.minecraft.ChatFormatting
 import net.minecraft.commands.CommandSourceStack
 import net.minecraft.commands.Commands
+import net.minecraft.network.chat.Component
 import net.neoforged.bus.api.SubscribeEvent
 import net.neoforged.fml.common.EventBusSubscriber
 import net.neoforged.fml.common.Mod
@@ -25,8 +30,25 @@ object ClientCommandRegistration {
         Commands.literal(commandName)
             .then(Commands.literal("clear")
                 .executes {
-                    ChatManager.selectedTab.clear()
+                    ChatManager.globalSelectedTab.clear()
                     Command.SINGLE_SUCCESS
+                }
+            )
+            .then(Commands.literal("hide")
+                .executes {
+                    Config.values.hideChatEnabled = !Config.values.hideChatEnabled
+                    Command.SINGLE_SUCCESS
+                }
+            )
+            .then(
+                Commands.literal("debug")
+                    .executes {
+                        Debug.debug = !Debug.debug
+                        ChatPlus.sendMessage(
+                            Component.literal("Debug ${if (Debug.debug) "Enabled" else "Disabled"}")
+                                .withStyle(if (Debug.debug) ChatFormatting.GREEN else ChatFormatting.RED)
+                        )
+                        Command.SINGLE_SUCCESS
                 }
             )
             .executes {

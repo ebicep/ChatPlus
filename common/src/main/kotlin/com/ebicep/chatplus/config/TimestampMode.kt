@@ -4,7 +4,7 @@ import kotlinx.serialization.Serializable
 import net.minecraft.network.chat.Component
 
 @Serializable
-enum class TimestampMode(key: String, val format: String) {
+enum class TimestampMode(key: String, val format: String) : EnumTranslatableName {
     NONE("chatPlus.chatSettings.chatTimestampMode.off", ""),
     HR_12("chatPlus.chatSettings.chatTimestampMode.hr_12", "[hh:mm a]"),
     HR_12_SECOND("chatPlus.chatSettings.chatTimestampMode.hr_12_second", "[hh:mm:ss a]"),
@@ -14,5 +14,9 @@ enum class TimestampMode(key: String, val format: String) {
     ;
 
     val translatable: Component = Component.translatable(key)
+
+    override fun getTranslatableName(): Component {
+        return translatable
+    }
 
 }

@@ -1,11 +1,11 @@
 package com.ebicep.chatplus.features
 
 import com.ebicep.chatplus.config.Config
+import com.ebicep.chatplus.config.EnumTranslatableName
 import com.ebicep.chatplus.events.Event
 import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.hud.ChatManager
 import com.ebicep.chatplus.hud.ChatRenderPreLineAppearanceEvent
-
 import com.ebicep.chatplus.hud.ChatScreenCloseEvent
 import com.ebicep.chatplus.hud.ChatScreenRenderEvent
 import com.ebicep.chatplus.util.KotlinUtil.brighter2
@@ -18,18 +18,26 @@ import kotlin.math.pow
 
 object HoverHighlight {
 
-    data class HoverHighlightRenderEvent(
-        val line: GuiMessage.Line,
-        var cancelled: Boolean = false
-    ) : Event
-
     init {
         var hoveredOverMessage: GuiMessage.Line? = null
         EventBus.register<ChatScreenRenderEvent> {
             if (!Config.values.hoverHighlightEnabled) {
                 return@register
             }
-            hoveredOverMessage = ChatManager.selectedTab.getHoveredOverMessageLine()?.line
+            hoveredOverMessage = ChatManager.globalSelectedTab.getHoveredOverMessageLine()?.line
+//            if (Debug.debug && hoveredOverMessage != null) {
+//                val guiGraphics = it.guiGraphics
+//                val poseStack = guiGraphics.pose()
+//                poseStack.createPose {
+//                    guiGraphics.drawString(
+//                        Minecraft.getInstance().font,
+//                        hoveredOverMessage!!.content,
+//                        ChatPlusScreen.lastMouseX + 10,
+//                        ChatPlusScreen.lastMouseY + 10,
+//                        0xFFFFFF
+//                    )
+//                }
+//            }
         }
         EventBus.register<ChatRenderPreLineAppearanceEvent>({ Config.values.hoverHighlightLinePriority }) {
             if (it.line !== hoveredOverMessage) {
@@ -62,14 +70,20 @@ object HoverHighlight {
         }
     }
 
+    data class HoverHighlightRenderEvent(val line: GuiMessage.Line, var cancelled: Boolean = false) : Event
+
     @Serializable
-    enum class HighlightMode(key: String) {
+    enum class HighlightMode(key: String) : EnumTranslatableName {
         BRIGHTER("chatPlus.hoverHighlight.mode.brighter"),
         CUSTOM_COLOR("chatPlus.hoverHighlight.mode.customColor"),
 
         ;
 
         val translatable: Component = Component.translatable(key)
+
+        override fun getTranslatableName(): Component {
+            return translatable
+        }
 
     }
 

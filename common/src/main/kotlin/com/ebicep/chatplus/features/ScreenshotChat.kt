@@ -6,11 +6,12 @@ import com.ebicep.chatplus.ChatPlus
 import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.events.Events
+import com.ebicep.chatplus.features.textbarelements.AddTextBarElementEvent
 import com.ebicep.chatplus.features.textbarelements.ScreenShotChatElement
 import com.ebicep.chatplus.features.textbarelements.ScreenShotChatEvent
-import com.ebicep.chatplus.features.textbarelements.TextBarElements
 import com.ebicep.chatplus.hud.*
 import com.ebicep.chatplus.util.GraphicsUtil.createPose
+import com.ebicep.chatplus.util.GraphicsUtil.fill0
 import com.ebicep.chatplus.util.GraphicsUtil.guiForward
 import com.ebicep.chatplus.util.GraphicsUtil.translate0
 import com.ebicep.chatplus.util.TimeStampedLines
@@ -67,7 +68,7 @@ object ScreenshotChat {
 
     init {
         // full chat screenshot
-        EventBus.register<TextBarElements.AddTextBarElementEvent>({ 150 }) {
+        EventBus.register<AddTextBarElementEvent>({ 150 }) {
             if (!Config.values.screenshotChatEnabled) {
                 return@register
             }
@@ -80,7 +81,7 @@ object ScreenshotChat {
             if (!Config.values.screenshotChatEnabled) {
                 return@register
             }
-            if (ChatManager.selectedTab.displayedMessages.isEmpty()) {
+            if (ChatManager.globalSelectedTab.displayedMessages.isEmpty()) {
                 return@register
             }
             resetScreenShotTick()
@@ -91,24 +92,26 @@ object ScreenshotChat {
                 return@register
             }
             screenshotMode = ScreenshotMode.NONE
+            val chatWindow = ChatManager.selectedWindow
+            val renderer = chatWindow.renderer
             // fill background to change to transparent later
             val guiGraphics = it.guiGraphics
             guiGraphics.pose().guiForward(100.0)
-            guiGraphics.fill(
-                ChatRenderer.rescaledX - 10,
-                ChatRenderer.rescaledY - ChatRenderer.rescaledHeight - 10,
-                ChatRenderer.rescaledEndX + 10,
-                ChatRenderer.rescaledY + 10,
+            guiGraphics.fill0(
+                renderer.rescaledX - 10,
+                renderer.rescaledY - renderer.rescaledHeight - 10,
+                renderer.rescaledEndX + 10,
+                renderer.rescaledY + 10,
                 SCREENSHOT_TRANSPARENCY_COLOR
             )
             screenshotUnscaledPadded(
-                ChatRenderer.x.toDouble(),
-                ChatRenderer.y.toDouble() + 2,
-                ChatRenderer.width.toDouble(),
+                renderer.internalX.toDouble(),
+                renderer.internalY.toDouble() + 2,
+                renderer.internalWidth.toDouble(),
                 min(
                     it.displayMessageIndex,
-                    ChatRenderer.rescaledLinesPerPage
-                ) * ChatManager.getLineHeight() * ChatRenderer.scale.toDouble() + 2
+                    renderer.rescaledLinesPerPage
+                ) * 9 * renderer.scale.toDouble() + 2
             )
         }
         // line screenshot
@@ -121,12 +124,12 @@ object ScreenshotChat {
             if (!lineScreenShotted) {
                 return@register
             }
-            val hoveredOverMessage = ChatManager.selectedTab.getHoveredOverMessageLine()
+            val hoveredOverMessage = ChatManager.globalSelectedTab.getHoveredOverMessageLine()
             if (hoveredOverMessage != null) {
                 resetScreenShotTick()
                 screenshotMode = ScreenshotMode.LINE
                 lastLinesScreenShotted = TimeStampedLines(hoveredOverMessage, Events.currentTick + 60)
-            } else if (SelectChat.selectedMessages.isNotEmpty()) {
+            } else if (SelectChat.getAllSelectedMessages().isNotEmpty()) {
                 resetScreenShotTick()
                 screenshotMode = ScreenshotMode.SELECTED
                 lastLinesScreenShotted = TimeStampedLines(SelectChat.getSelectedMessagesOrdered().toMutableList(), Events.currentTick + 60)
@@ -152,16 +155,18 @@ object ScreenshotChat {
                 return@register
             }
             screenshotMode = ScreenshotMode.NONE
+            val chatWindow = ChatManager.selectedWindow
+            val renderer = chatWindow.renderer
             val guiGraphics = it.guiGraphics
             val poseStack = guiGraphics.pose()
             val line = lastLinesScreenShotted!!.lines
             poseStack.createPose {
                 poseStack.guiForward(1000.0)
-                poseStack.scale(ChatRenderer.scale, ChatRenderer.scale, 1f)
+                poseStack.scale(renderer.scale, renderer.scale, 1f)
                 guiGraphics.fill(
                     0,
                     0,
-                    ChatRenderer.rescaledWidth + 10,
+                    renderer.rescaledWidth + 10,
                     20 * line.size,
                     SCREENSHOT_TRANSPARENCY_COLOR
                 )
@@ -182,9 +187,9 @@ object ScreenshotChat {
                 }
                 screenshotUnscaledPadded(
                     0.0,
-                    16.0 * ChatRenderer.scale + ((line.size - 1) * 10.0 * ChatRenderer.scale),
-                    ChatRenderer.width + PADDING.toDouble() * ChatRenderer.scale,
-                    10.0 * ChatRenderer.scale * line.size
+                    16.0 * renderer.scale + ((line.size - 1) * 10.0 * renderer.scale),
+                    renderer.internalWidth + PADDING.toDouble() * renderer.scale,
+                    10.0 * renderer.scale * line.size
                 )
             }
         }
@@ -198,14 +203,14 @@ object ScreenshotChat {
         lastScreenShotTick = Events.currentTick
     }
 
-    private fun screenshot(y: Int, h: Int) {
-        val window = Minecraft.getInstance().window
-        val guiScale = window.guiScale
+    private fun screenshot(renderer: ChatRenderer, y: Int, h: Int) {
+        val chatWindow = Minecraft.getInstance().window
+        val guiScale = chatWindow.guiScale
 
         screenshot(
-            (ChatRenderer.x * guiScale).roundToInt() - 1,
-            ((window.guiScaledHeight - y) * guiScale).roundToInt() - 6,
-            (ChatRenderer.width * guiScale).roundToInt() + 3,
+            (renderer.internalX * guiScale).roundToInt() - 1,
+            ((chatWindow.guiScaledHeight - y) * guiScale).roundToInt() - 6,
+            (renderer.internalWidth * guiScale).roundToInt() + 3,
             (h * guiScale).roundToInt() + 2
         )
     }
@@ -222,14 +227,14 @@ object ScreenshotChat {
         lateralPadding: Double = 1.5,
         verticalPadding: Double = 0.5,
     ) {
-        val window = Minecraft.getInstance().window
-        val guiScale = window.guiScale
+        val chatWindow = Minecraft.getInstance().window
+        val guiScale = chatWindow.guiScale
         val xPadded = x - lateralPadding
         val widthPadded = width + verticalPadding * 2
         val heightPadded = height + verticalPadding * 2
         screenshot(
             xPadded * guiScale,
-            window.height - y * guiScale,
+            chatWindow.height - y * guiScale,
             widthPadded * guiScale,
             heightPadded * guiScale
         )
@@ -237,15 +242,15 @@ object ScreenshotChat {
 
     private fun screenshot(x: Int, y: Int, width: Int, height: Int) {
 //        ChatPlus.LOGGER.info("Screenshotting $x, $y, $width, $height")
-        val window = Minecraft.getInstance().window
+        val chatWindow = Minecraft.getInstance().window
         val byteBuffer: ByteBuffer = ByteBuffer.allocateDirect(width * height * 4)
         GL11.glPixelStorei(GL11.GL_PACK_ALIGNMENT, 1)
         GL11.glPixelStorei(GL11.GL_UNPACK_ALIGNMENT, 1)
         GL11.glReadPixels(
-            Mth.clamp(x, 0, window.width),
-            Mth.clamp(y, 0, window.height),
-            Mth.clamp(width, 0, window.width - x),
-            Mth.clamp(height, 0, window.height - y),
+            Mth.clamp(x, 0, chatWindow.width),
+            Mth.clamp(y, 0, chatWindow.height),
+            Mth.clamp(width, 0, chatWindow.width - x),
+            Mth.clamp(height, 0, chatWindow.height - y),
             GL11.GL_RGBA,
             GL11.GL_UNSIGNED_BYTE,
             byteBuffer
@@ -561,7 +566,7 @@ object ScreenshotChat {
 ////            GL11.glPixelStorei(GL11.GL_PACK_ALIGNMENT, 1)
 ////            GL11.glPixelStorei(GL11.GL_UNPACK_ALIGNMENT, 1)
 //
-//            ChatRenderer.render(GuiGraphics(Minecraft.getInstance(), Minecraft.getInstance().renderBuffers().bufferSource()), 0, 0, 0)
+//            renderer.render(GuiGraphics(Minecraft.getInstance(), Minecraft.getInstance().renderBuffers().bufferSource()), 0, 0, 0)
 //
 //            bindRead()
 ////            GL11.glGetTexImage(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, pixelBuffer)
@@ -676,7 +681,7 @@ object ScreenshotChat {
 ////            }
 ////            guiGraphics.flush()
 //
-////            ChatRenderer.render(GuiGraphics(Minecraft.getInstance(), Minecraft.getInstance().renderBuffers().bufferSource()), 0, 0, 0)
+////            renderer.render(GuiGraphics(Minecraft.getInstance(), Minecraft.getInstance().renderBuffers().bufferSource()), 0, 0, 0)
 //
 ////            screenshot()
 //

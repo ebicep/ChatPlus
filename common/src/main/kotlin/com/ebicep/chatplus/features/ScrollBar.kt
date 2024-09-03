@@ -3,9 +3,11 @@ package com.ebicep.chatplus.features
 import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.features.chattabs.ChatTabAddDisplayMessageEvent
+import com.ebicep.chatplus.features.chattabs.ChatTabGetMessageAtEvent
 import com.ebicep.chatplus.hud.*
 import com.ebicep.chatplus.util.GraphicsUtil.createPose
 import com.ebicep.chatplus.util.GraphicsUtil.fill0
+import kotlin.math.max
 import kotlin.math.roundToInt
 
 object ScrollBar {
@@ -28,7 +30,7 @@ object ScrollBar {
             if (!Config.values.scrollbarEnabled) {
                 return@register
             }
-            it.maxWidth -= barWidth
+            it.maxWidth -= max(0, barWidth)
         }
         EventBus.register<ChatRenderPostLinesEvent> {
             if (!Config.values.scrollbarEnabled) {
@@ -37,30 +39,35 @@ object ScrollBar {
             if (!ChatManager.isChatFocused()) {
                 return@register
             }
-            val messageCount = ChatManager.selectedTab.displayedMessages.size
-            val linesPerPage = ChatRenderer.rescaledLinesPerPage
+            val chatWindow = it.chatWindow
+            if (chatWindow !== ChatManager.selectedWindow) {
+                return@register
+            }
+            val renderer = chatWindow.renderer
+            val messageCount = ChatManager.globalSelectedTab.displayedMessages.size
+            val linesPerPage = renderer.rescaledLinesPerPage
             if (messageCount <= linesPerPage) {
                 return@register
             }
             val guiGraphics = it.guiGraphics
             val poseStack = guiGraphics.pose()
             poseStack.createPose {
-                val chatScrollbarPos = ChatManager.selectedTab.chatScrollbarPos
-                val lineHeight = ChatRenderer.lineHeight
+                val chatScrollbarPos = ChatManager.globalSelectedTab.chatScrollbarPos
+                val lineHeight = renderer.lineHeight
                 val displayHeight = linesPerPage * lineHeight
-                barStartX = (ChatRenderer.rescaledEndX - barWidth).toFloat()
+                barStartX = renderer.rescaledEndX - barWidth
                 barEndX = barStartX + barWidth
-                barBottomY = -(chatScrollbarPos * displayHeight / messageCount.toFloat() - ChatRenderer.rescaledY)
-                var barHeight = (displayHeight * displayHeight / (messageCount * lineHeight.toFloat()))
+                barBottomY = -(chatScrollbarPos * displayHeight / messageCount.toFloat() - renderer.rescaledY)
+                var barHeight = displayHeight * displayHeight / (messageCount * lineHeight.toFloat())
                 barTopY = barBottomY - barHeight
-                scrollPerY = -(displayHeight.toDouble() / messageCount - ChatRenderer.rescaledY) - ChatRenderer.rescaledY
+                scrollPerY = -(displayHeight.toDouble() / messageCount - renderer.rescaledY) - renderer.rescaledY
 
                 if (barHeight < HALF_MIN_HEIGHT) {
                     barHeight = MIN_HEIGHT
                     barBottomY += HALF_MIN_HEIGHT
                     barTopY = barBottomY - barHeight
-                    barBottomY = barBottomY.coerceAtMost(ChatRenderer.rescaledY.toFloat())
-                    barTopY = barTopY.coerceAtLeast((ChatRenderer.rescaledY - displayHeight).toFloat())
+                    barBottomY = barBottomY.coerceAtMost(renderer.rescaledY)
+                    barTopY = barTopY.coerceAtLeast(renderer.rescaledY - displayHeight)
                 }
 
                 guiGraphics.fill0(
@@ -68,7 +75,7 @@ object ScrollBar {
                     barBottomY,
                     barEndX,
                     barTopY,
-                    200, // z
+                    1000, // z
                     Config.values.scrollbarColor
                 )
             }
@@ -77,8 +84,10 @@ object ScrollBar {
             if (!Config.values.scrollbarEnabled) {
                 return@register
             }
-            val rescaledX: Double = it.mouseX / ChatRenderer.scale
-            val rescaledY: Double = it.mouseY / ChatRenderer.scale
+            val chatWindow = ChatManager.selectedWindow
+            val renderer = chatWindow.renderer
+            val rescaledX: Double = it.mouseX / renderer.scale
+            val rescaledY: Double = it.mouseY / renderer.scale
             val min: Double = minOf(barStartX, barEndX).toDouble()
             val max: Double = maxOf(barStartX, barEndX).toDouble()
             if (rescaledX in min..max &&
@@ -86,7 +95,7 @@ object ScrollBar {
             ) {
                 scrolling = true
                 lastMouseY = rescaledY
-                lastScrollPos = ChatManager.selectedTab.chatScrollbarPos
+                lastScrollPos = ChatManager.globalSelectedTab.chatScrollbarPos
             }
         }
         EventBus.register<ChatScreenMouseReleasedEvent> {
@@ -97,10 +106,23 @@ object ScrollBar {
         }
         EventBus.register<ChatScreenMouseDraggedEvent> {
             if (scrolling) {
-                val yOffset = lastMouseY - it.mouseY / ChatRenderer.scale
+                val chatWindow = ChatManager.selectedWindow
+                val renderer = chatWindow.renderer
+                val yOffset = lastMouseY - it.mouseY / renderer.scale
                 val scrollOffset = yOffset / scrollPerY
                 val newScrollPos = lastScrollPos - scrollOffset
-                ChatManager.selectedTab.setScrollPos(newScrollPos.roundToInt())
+                ChatManager.globalSelectedTab.setScrollPos(newScrollPos.roundToInt())
+            }
+        }
+        EventBus.register<ChatTabGetMessageAtEvent> {
+            if (!Config.values.scrollbarEnabled) {
+                return@register
+            }
+            if (ChatManager.selectedWindow.generalSettings.messageAlignment != AlignMessage.Alignment.RIGHT) {
+                return@register
+            }
+            it.addChatOperator { _, current ->
+                current.x += max(0, barWidth)
             }
         }
     }

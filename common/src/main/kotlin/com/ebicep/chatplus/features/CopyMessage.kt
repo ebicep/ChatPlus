@@ -10,8 +10,11 @@ import com.ebicep.chatplus.hud.ChatScreenKeyPressedEvent
 import com.ebicep.chatplus.util.TimeStampedLines
 import net.minecraft.ChatFormatting
 import net.minecraft.client.Minecraft
+import java.awt.Color
 
 object CopyMessage {
+
+    val DEFAULT_COLOR = Color(255, 0, 255, 255).rgb
 
     init {
         var lastCopied: TimeStampedLines? = null
@@ -24,11 +27,12 @@ object CopyMessage {
                 return@register
             }
             val copied: MutableList<ChatTab.ChatPlusGuiMessageLine> = mutableListOf()
-            val hoveredOverMessage = ChatManager.selectedTab.getHoveredOverMessageLine()
-            if (hoveredOverMessage != null && SelectChat.selectedMessages.isEmpty()) {
+            val hoveredOverMessage = ChatManager.globalSelectedTab.getHoveredOverMessageLine()
+            val selectedMessages = SelectChat.getAllSelectedMessages()
+            if (hoveredOverMessage != null && selectedMessages.isEmpty()) {
                 copied.add(hoveredOverMessage)
                 copyToClipboard(hoveredOverMessage)
-            } else if (SelectChat.selectedMessages.isNotEmpty()) {
+            } else if (selectedMessages.isNotEmpty()) {
                 copyToClipboard(SelectChat.getSelectedMessagesOrdered().joinToString("\n") { line ->
                     copied.add(line)
                     line.content
