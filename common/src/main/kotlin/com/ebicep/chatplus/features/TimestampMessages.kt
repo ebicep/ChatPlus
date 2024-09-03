@@ -48,8 +48,11 @@ object TimestampMessages {
             } else {
                 when (flatComponent.style.hoverEvent?.action) {
                     HoverEvent.Action.SHOW_TEXT -> {
-                        val hoverValue = flatComponent.style.hoverEvent?.getValue(HoverEvent.Action.SHOW_TEXT)
+                        val hoverValue = flatComponent.style.hoverEvent?.getValue(HoverEvent.Action.SHOW_TEXT) as MutableComponent?
                         if (hoverValue != null && !timestampedHoverComponents.containsReference(hoverValue)) {
+                            if (hoverValue.siblings.javaClass.getName().contains("Immutable")) {
+                                hoverValue.siblings = ArrayList(hoverValue.siblings)
+                            }
                             hoverValue.siblings.add(lastTimestampNewLine)
                             timestampedHoverComponents.add(hoverValue)
                         }
