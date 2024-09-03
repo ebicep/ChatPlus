@@ -34,6 +34,7 @@ object V1 : Migrator<SchemaV1> {
             it.generalSettings.lineSpacing = old.lineSpacing
             it.generalSettings.messageDirection = old.messageDirection
 
+            old.chatTabs.forEach { it.updateRegex() }
             it.tabSettings.tabs = old.chatTabs
         })
         values.translatorRegexes = old.translatorRegexes.map { MessageFilter(it.match) }.toMutableList()
