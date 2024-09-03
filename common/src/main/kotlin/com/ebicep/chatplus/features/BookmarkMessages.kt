@@ -3,23 +3,23 @@ package com.ebicep.chatplus.features
 import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.features.chattabs.*
+import com.ebicep.chatplus.features.chatwindows.ChatTabSwitchEvent
+import com.ebicep.chatplus.features.textbarelements.AddTextBarElementEvent
 import com.ebicep.chatplus.features.textbarelements.ShowBookmarksBarElement
 import com.ebicep.chatplus.features.textbarelements.ShowBookmarksToggleEvent
-import com.ebicep.chatplus.features.textbarelements.TextBarElements
 import com.ebicep.chatplus.hud.*
 import com.ebicep.chatplus.mixin.IMixinChatScreen
 import com.ebicep.chatplus.mixin.IMixinScreen
-import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.screens.ChatScreen
 import java.util.*
 
 object BookmarkMessages {
 
     private val bookmarkedMessages: MutableSet<ChatTab.ChatPlusGuiMessage> = Collections.newSetFromMap(IdentityHashMap())
-    var showingBoomarks = false
+    var showingBookmarks = false
 
     init {
-        EventBus.register<TextBarElements.AddTextBarElementEvent>({ 50 }) {
+        EventBus.register<AddTextBarElementEvent>({ 50 }) {
             if (!Config.values.bookmarkEnabled) {
                 return@register
             }
@@ -31,10 +31,10 @@ object BookmarkMessages {
             bookmarkedMessages.remove(it.guiMessage)
         }
         EventBus.register<ChatTabAddNewMessageEvent> {
-            val content = it.component.string
+            val content = it.rawComponent.string
             for (autoBookMarkPattern in Config.values.autoBookMarkPatterns) {
                 if (autoBookMarkPattern.matches(content)) {
-                    bookmarkedMessages.add(it.guiMessage)
+                    bookmarkedMessages.add(it.chatPlusGuiMessage)
                     return@register
                 }
             }
@@ -43,12 +43,13 @@ object BookmarkMessages {
         EventBus.register<ChatScreenKeyPressedEvent>({ 1 }, { showBookmarkShortcutUsed }) {
             var toggledBookmarkMessage = false
             if (Config.values.bookmarkKey.isDown()) {
-                val hoveredOverMessage = ChatManager.selectedTab.getHoveredOverMessageLine()
-                if (hoveredOverMessage != null && SelectChat.selectedMessages.isEmpty()) {
+                val hoveredOverMessage = ChatManager.globalSelectedTab.getHoveredOverMessageLine()
+                val selectedMessages = SelectChat.getAllSelectedMessages()
+                if (hoveredOverMessage != null && selectedMessages.isEmpty()) {
                     toggleMessageBookmark(hoveredOverMessage.linkedMessage)
                     toggledBookmarkMessage = true
                 } else if (SelectChat.selectedMessages.isNotEmpty()) {
-                    SelectChat.selectedMessages.forEach {
+                    selectedMessages.forEach {
                         toggleMessageBookmark(it.linkedMessage)
                     }
                     toggledBookmarkMessage = true
@@ -61,28 +62,27 @@ object BookmarkMessages {
             }
         }
         EventBus.register<ChatScreenCloseEvent> {
-            if (showingBoomarks) {
-                showingBoomarks = false
-                ChatManager.selectedTab.resetFilter()
+            if (showingBookmarks) {
+                showingBookmarks = false
+                ChatManager.globalSelectedTab.resetFilter()
             }
         }
         EventBus.register<ChatTabRewrapDisplayMessages> {
-            showingBoomarks = false
-            ChatManager.selectedTab.resetFilter()
+            showingBookmarks = false
+            ChatManager.globalSelectedTab.resetFilter()
         }
         EventBus.register<ChatTabRefreshDisplayMessages> {
-            if (showingBoomarks && bookmarkedMessages.isNotEmpty()) {
+            if (showingBookmarks && bookmarkedMessages.isNotEmpty()) {
                 it.predicates.add { guiMessage -> bookmarkedMessages.contains(guiMessage) }
             }
         }
         EventBus.register<ChatTabSwitchEvent> {
-            if (showingBoomarks) {
-                ChatManager.selectedTab.queueRefreshDisplayedMessages(false)
+            if (showingBookmarks) {
+                ChatManager.globalSelectedTab.queueRefreshDisplayedMessages(false)
             }
         }
         EventBus.register<ChatTabAddDisplayMessageEvent> {
-            val screen = Minecraft.getInstance().screen
-            if (showingBoomarks && screen is ChatScreen) {
+            if (showingBookmarks && ChatManager.isChatFocused()) {
                 it.filtered = true
                 it.addMessage = bookmarkedMessages.contains(it.linkedMessage)
             }
@@ -96,10 +96,10 @@ object BookmarkMessages {
             if (it.button != 0) {
                 return@register
             }
-            if (showingBoomarks) {
-                ChatManager.selectedTab.getMessageLineAt(it.mouseX, it.mouseY)?.let { message ->
-                    showingBoomarks = false
-                    ChatManager.selectedTab.moveToMessage(it.screen, message)
+            if (showingBookmarks) {
+                ChatManager.globalSelectedTab.getHoveredOverMessageLine(it.mouseX, it.mouseY)?.let { message ->
+                    showingBookmarks = false
+                    ChatManager.globalSelectedTab.moveToMessage(it.screen, message)
                 }
             }
         }
@@ -114,15 +114,15 @@ object BookmarkMessages {
     }
 
     fun toggle(chatScreen: ChatScreen) {
-        if (!showingBoomarks && bookmarkedMessages.isEmpty()) {
+        if (!showingBookmarks && bookmarkedMessages.isEmpty()) {
             return
         }
-        showingBoomarks = !showingBoomarks
-        EventBus.post(ShowBookmarksToggleEvent(!showingBoomarks))
-        if (!showingBoomarks) {
-            ChatManager.selectedTab.resetFilter()
+        showingBookmarks = !showingBookmarks
+        EventBus.post(ShowBookmarksToggleEvent(!showingBookmarks))
+        if (!showingBookmarks) {
+            ChatManager.globalSelectedTab.resetFilter()
         } else {
-            ChatManager.selectedTab.queueRefreshDisplayedMessages(false)
+            ChatManager.globalSelectedTab.queueRefreshDisplayedMessages(false)
         }
         chatScreen as IMixinChatScreen
         chatScreen.initial = chatScreen.input!!.value

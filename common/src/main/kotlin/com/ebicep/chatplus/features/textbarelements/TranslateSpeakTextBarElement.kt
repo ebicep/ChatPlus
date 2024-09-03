@@ -11,10 +11,6 @@ import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.client.gui.screens.ChatScreen
 import net.minecraft.network.chat.Component
 
-data class TranslateToggleEvent(
-    val enabled: Boolean
-) : Event
-
 class TranslateSpeakTextBarElement(private val chatPlusScreen: ChatScreen) : TextBarElement {
 
     companion object {
@@ -59,3 +55,5 @@ class TranslateSpeakTextBarElement(private val chatPlusScreen: ChatScreen) : Tex
     }
 
 }
+
+data class TranslateToggleEvent(val enabled: Boolean) : Event

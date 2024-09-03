@@ -1,10 +1,16 @@
 package com.ebicep.chatplus.util
 
 import com.ebicep.chatplus.mixin.IMixinGuiGraphics
-import com.mojang.blaze3d.vertex.PoseStack
+import com.mojang.blaze3d.systems.RenderSystem
+import com.mojang.blaze3d.vertex.*
+import net.minecraft.client.gui.Font
 import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.renderer.GameRenderer
 import net.minecraft.client.renderer.RenderType
+import net.minecraft.resources.ResourceLocation
 import net.minecraft.util.FastColor
+import net.minecraft.util.FormattedCharSequence
+import org.joml.Matrix4f
 
 object GraphicsUtil {
 
@@ -37,6 +43,10 @@ object GraphicsUtil {
         this.fill0(RenderType.gui(), i, j, k, l, m, n)
     }
 
+    fun GuiGraphics.fill0(i: Float, j: Float, k: Float, l: Float, n: Int) {
+        this.fill0(RenderType.gui(), i, j, k, l, 0, n)
+    }
+
     fun GuiGraphics.fill0(renderType: RenderType, i: Float, j: Float, k: Float, l: Float, m: Int, n: Int) {
         this as IMixinGuiGraphics
         val matrix4f = this.pose().last().pose()
@@ -64,7 +74,206 @@ object GraphicsUtil {
         vertexConsumer.vertex(matrix4f, i, l, m.toFloat()).color(g, h, p, f).endVertex()
         vertexConsumer.vertex(matrix4f, k, l, m.toFloat()).color(g, h, p, f).endVertex()
         vertexConsumer.vertex(matrix4f, k, j, m.toFloat()).color(g, h, p, f).endVertex()
-        this.`chatPlus$flushIfUnmanaged`()
+        this.callFlushIfUnmanaged()
+    }
+
+    fun GuiGraphics.renderOutline(
+        startX: Float,
+        startY: Float,
+        width: Float,
+        height: Float,
+        color: Int,
+        thickness: Float = 1f,
+        top: Boolean = true,
+        bottom: Boolean = true,
+        left: Boolean = true,
+        right: Boolean = true
+    ) {
+        renderOutlineSetPos(startX, startY, startX + width, startY + height, color, thickness, top, bottom, left, right)
+    }
+
+    fun GuiGraphics.renderOutlineSetPos(
+        startX: Float,
+        startY: Float,
+        endX: Float,
+        endY: Float,
+        color: Int,
+        thickness: Float = 1f,
+        top: Boolean = true,
+        bottom: Boolean = true,
+        left: Boolean = true,
+        right: Boolean = true
+    ) {
+        if (top) {
+            this.fill0(startX, startY, endX, startY + thickness, color)
+        }
+        if (bottom) {
+            this.fill0(startX, endY - thickness, endX, endY, color)
+        }
+        if (left) {
+            this.fill0(startX, startY + thickness, startX + thickness, endY - thickness, color)
+        }
+        if (right) {
+            this.fill0(endX - thickness, startY + thickness, endX, endY - thickness, color)
+        }
+    }
+
+    fun GuiGraphics.renderOutline(
+        startX: Int,
+        startY: Int,
+        width: Int,
+        height: Int,
+        color: Int,
+        thickness: Int = 1,
+        top: Boolean = true,
+        bottom: Boolean = true,
+        left: Boolean = true,
+        right: Boolean = true
+    ) {
+        renderOutlineSetPos(startX, startY, startX + width, startY + height, color, thickness, top, bottom, left, right)
+    }
+
+    fun GuiGraphics.renderOutlineSetPos(
+        startX: Int,
+        startY: Int,
+        endX: Int,
+        endY: Int,
+        color: Int,
+        thickness: Int = 1,
+        top: Boolean = true,
+        bottom: Boolean = true,
+        left: Boolean = true,
+        right: Boolean = true
+    ) {
+        if (top) {
+            this.fill(startX, startY, endX, startY + thickness, color)
+        }
+        if (bottom) {
+            this.fill(startX, endY - thickness, endX, endY, color)
+        }
+        if (left) {
+            this.fill(startX, startY + thickness, startX + thickness, endY - thickness, color)
+        }
+        if (right) {
+            this.fill(endX - thickness, startY + thickness, endX, endY - thickness, color)
+        }
+    }
+
+
+    fun GuiGraphics.drawHorizontalLine(x1: Int, x2: Int, y: Int, color: Int) {
+        this.fill(x1, y, x2, y + 1, color)
+    }
+
+    fun GuiGraphics.drawHorizontalLine(x1: Float, x2: Float, y: Float, color: Int, thickness: Float = 1f) {
+        this.fill0(x1, y, x2, y + thickness, color)
+    }
+
+    fun GuiGraphics.drawHorizontalLine(x1: Int, x2: Int, y: Int, color: Int, thickness: Int = 1) {
+        this.fill(x1, y, x2, y + thickness, color)
+    }
+
+    fun GuiGraphics.drawVerticalLine(x: Int, y1: Int, y2: Int, color: Int, thickness: Int = 1) {
+        this.fill(x, y1, x + thickness, y2, color)
+    }
+
+    fun GuiGraphics.drawString0(font: Font, string: String, x: Float, y: Float, color: Int): Int {
+        return this.drawString0(font, string, x, y, color, true)
+    }
+
+    fun GuiGraphics.drawString0(font: Font, string: String, x: Float, y: Float, color: Int, bl: Boolean): Int {
+        this as IMixinGuiGraphics
+        val l = font.drawInBatch(
+            string,
+            x,
+            y,
+            color,
+            bl,
+            this.pose().last().pose(),
+            this.bufferSource(),
+            Font.DisplayMode.NORMAL,
+            0,
+            0xF000F0,
+            font.isBidirectional
+        )
+        this.callFlushIfUnmanaged()
+        return l
+    }
+
+    fun GuiGraphics.drawString0(font: Font, formattedCharSequence: FormattedCharSequence, x: Float, y: Float, color: Int): Int {
+        return this.drawString0(font, formattedCharSequence, x, y, color, true)
+    }
+
+    fun GuiGraphics.drawString0(font: Font, formattedCharSequence: FormattedCharSequence, x: Float, y: Float, color: Int, bl: Boolean): Int {
+        this as IMixinGuiGraphics
+        val l = font.drawInBatch(
+            formattedCharSequence,
+            x,
+            y,
+            color,
+            bl,
+            this.pose().last().pose(),
+            this.bufferSource(),
+            Font.DisplayMode.NORMAL,
+            0,
+            0xF000F0
+        )
+        this.callFlushIfUnmanaged()
+        return l
+    }
+
+    fun playerFaceRendererDraw(guiGraphics: GuiGraphics, resourceLocation: ResourceLocation, i: Float, j: Float, k: Float) {
+        this.playerFaceRendererDraw(guiGraphics, resourceLocation, i, j, k, true, false)
+    }
+
+    fun playerFaceRendererDraw(guiGraphics: GuiGraphics, resourceLocation: ResourceLocation, i: Float, j: Float, k: Float, bl: Boolean, bl2: Boolean) {
+        val l = 8 + (if (bl2) 8 else 0)
+        val m = 8 * (if (bl2) -1 else 1)
+        guiGraphics.blit0(resourceLocation, i, j, k, k, 8.0f, l.toFloat(), 8f, m.toFloat(), 64f, 64f)
+        if (bl) {
+            playerFaceRendererDrawHat(guiGraphics, resourceLocation, i, j, k, bl2)
+        }
+    }
+
+    private fun GuiGraphics.blit0(resourceLocation: ResourceLocation, i: Float, j: Float, k: Float, l: Float, f: Float, g: Float, m: Float, n: Float, o: Float, p: Float) {
+        blit0(resourceLocation, i, i + k, j, j + l, 0f, m, n, f, g, o, p)
+    }
+
+    private fun GuiGraphics.blit0(
+        resourceLocation: ResourceLocation,
+        i: Float,
+        j: Float,
+        k: Float,
+        l: Float,
+        m: Float,
+        n: Float,
+        o: Float,
+        f: Float,
+        g: Float,
+        p: Float,
+        q: Float
+    ) {
+        innerBlit0(resourceLocation, i, j, k, l, m, (f + 0.0f) / p, (f + n) / p, (g + 0.0f) / q, (g + o) / q)
+    }
+
+    private fun playerFaceRendererDrawHat(guiGraphics: GuiGraphics, resourceLocation: ResourceLocation, i: Float, j: Float, k: Float, bl: Boolean) {
+        val l = 8 + (if (bl) 8 else 0)
+        val m = 8 * (if (bl) -1 else 1)
+        RenderSystem.enableBlend()
+        guiGraphics.blit0(resourceLocation, i, j, k, k, 40.0f, l.toFloat(), 8f, m.toFloat(), 64f, 64f)
+        RenderSystem.disableBlend()
+    }
+
+    private fun GuiGraphics.innerBlit0(resourceLocation: ResourceLocation, i: Float, j: Float, k: Float, l: Float, m: Float, f: Float, g: Float, h: Float, n: Float) {
+        RenderSystem.setShaderTexture(0, resourceLocation)
+        RenderSystem.setShader { GameRenderer.getPositionTexShader() }
+        val matrix4f: Matrix4f = this.pose().last().pose()
+        val bufferBuilder = Tesselator.getInstance().builder
+        bufferBuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX)
+        bufferBuilder.vertex(matrix4f, i, k, m).uv(f, h).endVertex()
+        bufferBuilder.vertex(matrix4f, i, l, m).uv(f, n).endVertex()
+        bufferBuilder.vertex(matrix4f, j, l, m).uv(g, n).endVertex()
+        bufferBuilder.vertex(matrix4f, j, k, m).uv(g, h).endVertex()
+        BufferUploader.drawWithShader(bufferBuilder.end())
     }
 
 }

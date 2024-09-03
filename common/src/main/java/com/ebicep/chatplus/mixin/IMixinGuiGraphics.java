@@ -13,6 +13,6 @@ public interface IMixinGuiGraphics {
     MultiBufferSource.BufferSource getBufferSource();
 
     @Invoker("flushIfUnmanaged")
-    void chatPlus$flushIfUnmanaged();
+    void callFlushIfUnmanaged();
 
 }

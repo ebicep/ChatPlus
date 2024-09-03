@@ -3,11 +3,13 @@ package com.ebicep.chatplus.features
 import com.ebicep.chatplus.ChatPlus
 import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.events.EventBus
+import com.ebicep.chatplus.features.chattabs.AddNewMessageEvent
 import com.ebicep.chatplus.features.chattabs.ChatTab
+import com.ebicep.chatplus.features.textbarelements.AddTextBarElementEvent
 import com.ebicep.chatplus.features.textbarelements.FindToggleEvent
-import com.ebicep.chatplus.features.textbarelements.TextBarElements
 import com.ebicep.chatplus.features.textbarelements.TranslateSpeakTextBarElement
 import com.ebicep.chatplus.hud.*
+import com.ebicep.chatplus.hud.ChatPlusScreen.EDIT_BOX_DISPLAY_HEIGHT
 import com.ebicep.chatplus.hud.ChatPlusScreen.EDIT_BOX_HEIGHT
 import com.ebicep.chatplus.mixin.IMixinChatScreen
 import com.ebicep.chatplus.mixin.IMixinScreen
@@ -19,9 +21,9 @@ import dev.architectury.event.events.client.ClientChatEvent
 import dev.architectury.event.events.client.ClientRawInputEvent
 import dev.architectury.event.events.client.ClientSystemMessageEvent
 import net.minecraft.ChatFormatting
+import net.minecraft.client.GuiMessageTag
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.components.EditBox
-import net.minecraft.client.gui.screens.ChatScreen
 import net.minecraft.client.gui.screens.Screen
 import net.minecraft.network.chat.ChatType
 import net.minecraft.network.chat.Component
@@ -30,13 +32,11 @@ import net.minecraft.network.chat.HoverEvent
 
 object TranslateMessage {
 
-    const val TRANSLATE_COLOR = 0xFFFFFF55
     var languageSpeakEnabled = false
-
     var inputTranslatePrefix: EditBox? = null
 
     init {
-        EventBus.register<TextBarElements.AddTextBarElementEvent>({ 0 }) {
+        EventBus.register<AddTextBarElementEvent>({ 0 }) {
             if (!Config.values.translatorEnabled) {
                 return@register
             }
@@ -57,10 +57,10 @@ object TranslateMessage {
                 screen.input?.x = 68
                 inputTranslatePrefix = EditBox(
                     screen.minecraft!!.fontFilterFishy,
-                    3,
-                    screen.height - EDIT_BOX_HEIGHT + 4,
+                    if (Config.values.vanillaInputBox) 4 else 3,
+                    screen.height - EDIT_BOX_HEIGHT + (if (Config.values.vanillaInputBox) 2 else 4),
                     63,
-                    EDIT_BOX_HEIGHT,
+                    EDIT_BOX_DISPLAY_HEIGHT,
                     Component.translatable("chatPlus.editBox")
                 )
                 val editBox = inputTranslatePrefix as EditBox
@@ -109,17 +109,17 @@ object TranslateMessage {
             val height = screen.height
             val minecraft = screen.minecraft!!
             guiGraphics.fill(
-                0,
+                if (Config.values.vanillaInputBox) 2 else 0,
                 height - EDIT_BOX_HEIGHT,
                 65,
-                height,
+                height - (if (Config.values.vanillaInputBox) 2 else 0),
                 minecraft.options.getBackgroundColor(Int.MIN_VALUE)
             )
             guiGraphics.renderOutline(
-                0,
+                if (Config.values.vanillaInputBox) 2 else 0,
                 height - EDIT_BOX_HEIGHT,
-                65,
-                EDIT_BOX_HEIGHT - 1,
+                if (Config.values.vanillaInputBox) 63 else 65,
+                EDIT_BOX_DISPLAY_HEIGHT,
                 0xFF55FF55.toInt()
             )
             val mouseX = it.mouseX
@@ -157,7 +157,7 @@ object TranslateMessage {
             CompoundEventResult.pass()
         }
         ClientRawInputEvent.KEY_PRESSED.register { _, keyCode, _, _, modifiers ->
-            if (Minecraft.getInstance().screen is ChatScreen) {
+            if (ChatManager.isChatFocused()) {
                 return@register EventResult.pass()
             }
             if (keyCode != Config.values.translateKey.key.value || modifiers != Config.values.translateKey.modifier.toInt()) {
@@ -183,11 +183,11 @@ object TranslateMessage {
             if (System.currentTimeMillis() - translateClickCooldown < 2_000) {
                 return@register
             }
-            ChatManager.selectedTab.getMessageLineAt(it.mouseX, it.mouseY)?.let { message ->
+            ChatManager.globalSelectedTab.getHoveredOverMessageLine(it.mouseX, it.mouseY)?.let { message ->
                 translateClickCooldown = System.currentTimeMillis()
                 // selected message compatibility, sends one translate request with all selected messages split by § then sends the
                 // translated messages unsplit
-                val selectedMessages = SelectChat.selectedMessages
+                val selectedMessages = SelectChat.getAllSelectedMessages()
                 val messages: List<ChatTab.ChatPlusGuiMessage> = if (selectedMessages.contains(message)) {
                     SelectChat.getSelectedMessagesOrdered().map { it.linkedMessage }
                 } else {
@@ -236,11 +236,20 @@ object TranslateMessage {
 
         override fun onTranslate(matchedRegex: String?, translatedMessage: TranslateResult, fromLanguage: String?) {
             translatedMessage.translatedText.split("§").forEachIndexed { index, it ->
-                Minecraft.getInstance().player?.sendSystemMessage(
-                    ComponentUtil.literal(
-                        (matchedRegex ?: "") + it.trim() + " (" + (fromLanguage ?: "Unknown") + ")",
-                        ChatFormatting.GREEN,
-                        HoverEvent(HoverEvent.Action.SHOW_TEXT, line[index].guiMessage.content.copy())
+                val component = ComponentUtil.literal(
+                    (matchedRegex ?: "") + it.trim() + " (" + (fromLanguage ?: "Unknown") + ")",
+                    ChatFormatting.GREEN,
+                    HoverEvent(HoverEvent.Action.SHOW_TEXT, line[index].guiMessage.content.copy())
+                )
+                ChatManager.globalSelectedTab.addNewMessage(
+                    AddNewMessageEvent(
+                        component.copy(),
+                        component,
+                        null,
+                        null,
+                        Minecraft.getInstance().gui.guiTicks,
+                        GuiMessageTag.system(),
+                        false
                     )
                 )
             }

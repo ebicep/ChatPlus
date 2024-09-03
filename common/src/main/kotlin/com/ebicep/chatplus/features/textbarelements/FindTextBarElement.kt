@@ -8,10 +8,6 @@ import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.client.gui.screens.ChatScreen
 import net.minecraft.network.chat.Component
 
-data class FindToggleEvent(
-    val enabled: Boolean
-) : Event
-
 class FindTextBarElement(private val chatPlusScreen: ChatScreen) : TextBarElement {
 
     override fun getWidth(): Int {
@@ -44,3 +40,5 @@ class FindTextBarElement(private val chatPlusScreen: ChatScreen) : TextBarElemen
     }
 
 }
+
+data class FindToggleEvent(val enabled: Boolean) : Event

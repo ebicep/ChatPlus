@@ -4,8 +4,8 @@ import com.ebicep.chatplus.ChatPlus
 import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.config.SoundWrapper
 import com.ebicep.chatplus.events.EventBus
-import com.ebicep.chatplus.features.chattabs.ChatTabAddNewMessageEvent
-import com.ebicep.chatplus.features.internal.MessageFilter
+import com.ebicep.chatplus.features.chattabs.AddNewMessageEvent
+import com.ebicep.chatplus.features.internal.MessageFilterFormatted
 import com.ebicep.chatplus.hud.ChatRenderPreLineAppearanceEvent
 import kotlinx.serialization.Serializable
 import net.minecraft.client.Minecraft
@@ -20,11 +20,11 @@ object FilterMessages {
     val DEFAULT_COLOR = Color(0, 200, 0, 50).rgb
 
     init {
-        EventBus.register<ChatTabAddNewMessageEvent> {
+        EventBus.register<AddNewMessageEvent> {
             if (!Config.values.filterMessagesEnabled) {
                 return@register
             }
-            val message = it.guiMessage.guiMessage.content.string
+            val message = it.rawComponent.string
             for (filterHighlight in Config.values.filterMessagesPatterns) {
                 if (!filterHighlight.playSound || !filterHighlight.matches(message)) {
                     continue
@@ -69,7 +69,7 @@ object FilterMessages {
     }
 
     @Serializable
-    class Filter : MessageFilter {
+    class Filter : MessageFilterFormatted {
 
         var changeColor: Boolean = true
         var color: Int = DEFAULT_COLOR

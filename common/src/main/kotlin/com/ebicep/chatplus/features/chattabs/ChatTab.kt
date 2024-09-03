@@ -3,20 +3,14 @@ package com.ebicep.chatplus.features.chattabs
 import com.ebicep.chatplus.ChatPlus
 import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.config.JumpToMessageMode
-import com.ebicep.chatplus.config.MessageDirection
-import com.ebicep.chatplus.config.TimestampMode
 import com.ebicep.chatplus.events.Event
 import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.events.Events
-import com.ebicep.chatplus.features.CompactMessages.literalIgnored
-import com.ebicep.chatplus.features.internal.MessageFilter
+import com.ebicep.chatplus.features.chatwindows.ChatWindow
+import com.ebicep.chatplus.features.internal.MessageFilterFormatted
 import com.ebicep.chatplus.hud.ChatManager
 import com.ebicep.chatplus.hud.ChatPlusScreen
-import com.ebicep.chatplus.hud.ChatRenderer
-import com.ebicep.chatplus.hud.ChatRenderer.lineHeight
-import com.ebicep.chatplus.hud.ChatRenderer.rescaledLinesPerPage
 import com.ebicep.chatplus.mixin.IMixinScreen
-import com.ebicep.chatplus.util.KotlinUtil.containsReference
 import com.google.common.base.Predicate
 import com.google.common.collect.Lists
 import kotlinx.serialization.Serializable
@@ -32,78 +26,20 @@ import net.minecraft.locale.Language
 import net.minecraft.network.chat.*
 import net.minecraft.util.FormattedCharSequence
 import net.minecraft.util.Mth
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentHashMap.KeySetView
-import kotlin.math.min
-
-
-data class ChatTabAddNewMessageEvent(
-    val chatTab: ChatTab,
-    val guiMessage: ChatTab.ChatPlusGuiMessage,
-    val componentWithTimeStamp: MutableComponent,
-    val component: Component,
-    val signature: MessageSignature?,
-    val addedTime: Int,
-    val tag: GuiMessageTag?,
-    var returnFunction: Boolean = false
-) : Event
-
-
-data class ChatTabAddDisplayMessageEvent(
-    val chatTab: ChatTab,
-    val component: Component,
-    val addedTime: Int,
-    val tag: GuiMessageTag?,
-    val linkedMessage: ChatTab.ChatPlusGuiMessage,
-    var maxWidth: Int,
-    var addMessage: Boolean = true,
-    var filtered: Boolean = false,
-) : Event
-
-data class ChatTabRemoveMessageEvent(
-    val chatTab: ChatTab,
-    val guiMessage: ChatTab.ChatPlusGuiMessage,
-    var returnFunction: Boolean = false
-) : Event
-
-data class ChatTabRemoveDisplayMessageEvent(
-    val chatTab: ChatTab,
-    val chatPlusGuiMessageLine: ChatTab.ChatPlusGuiMessageLine,
-    var returnFunction: Boolean = false
-) : Event
-
-data class ChatTabGetMessageAtEvent(
-    val chatTab: ChatTab,
-    var chatX: Double,
-    var chatY: Double,
-) : Event
-
-data class ChatTabRescale(
-    val chatTab: ChatTab
-) : Event
-
-data class ChatTabRewrapDisplayMessages(
-    val chatTab: ChatTab,
-) : Event
-
-data class ChatTabRefreshDisplayMessages(
-    val chatTab: ChatTab,
-    val rescale: Boolean,
-    val predicates: MutableList<Predicate<ChatTab.ChatPlusGuiMessage>> = mutableListOf(),
-) : Event
 
 @Serializable
-class ChatTab : MessageFilter {
+class ChatTab : MessageFilterFormatted {
 
-    data class ChatPlusGuiMessage(
-        var rawComponent: Component?,
-        val guiMessage: GuiMessage,
+    class ChatPlusGuiMessage(
+        var rawComponent: Component? = null,
         var timesRepeated: Int = 1,
         var senderUUID: UUID? = null
-    )
+    ) {
+        lateinit var guiMessage: GuiMessage
+    }
 
     data class ChatPlusGuiMessageLine(
         val line: GuiMessage.Line,
@@ -128,6 +64,13 @@ class ChatTab : MessageFilter {
 
     // if true then tab loop will break if message is added to this tab, overrides alwaysAdds
     var skipOthers: Boolean = false
+
+    constructor(chatWindow: ChatWindow, name: String, pattern: String, autoPrefix: String = "", alwaysAdd: Boolean = false) : super(pattern) {
+        this.chatWindow = chatWindow
+        this.name = name
+        this.autoPrefix = autoPrefix
+        this.alwaysAdd = alwaysAdd
+    }
 
     constructor(name: String, pattern: String, autoPrefix: String = "", alwaysAdd: Boolean = false) : super(pattern) {
         this.name = name
@@ -178,39 +121,42 @@ class ChatTab : MessageFilter {
         }
 
     @Transient
-    var xStart: Double = 0.0
+    var xStart: Int = 0
         set(value) {
             field = value
             xEnd = field + width
         }
 
     @Transient
-    var xEnd: Double = 0.0
+    var xEnd: Int = 0
 
     @Transient
-    var y: Double = 0.0
+    var yStart: Int = 0
 
     @Transient
     var lastMessageTime: Long = 0
 
+    @Transient
+    lateinit var chatWindow: ChatWindow
 
-    fun addNewMessage(
-        component: Component,
-        signature: MessageSignature?,
-        addedTime: Int,
-        tag: GuiMessageTag?
-    ) {
-        val componentWithTimeStamp: MutableComponent = getTimeStampedMessage(component)
-        val chatPlusGuiMessage = ChatPlusGuiMessage(
-            if (Config.values.compactMessagesIgnoreTimestamps) component else null,
-            GuiMessage(addedTime, componentWithTimeStamp, signature, tag)
-        )
+    override fun toString(): String {
+        return "ChatTab($name)"
+    }
+
+    fun addNewMessage(addNewMessageEvent: AddNewMessageEvent) {
+        val mutableComponent = addNewMessageEvent.mutableComponent
+        val rawComponent = addNewMessageEvent.rawComponent
+        val signature = addNewMessageEvent.signature
+        val addedTime = addNewMessageEvent.addedTime
+        val tag = addNewMessageEvent.tag
+        val chatPlusGuiMessage = ChatPlusGuiMessage(senderUUID = addNewMessageEvent.senderUUID)
         if (EventBus.post(
                 ChatTabAddNewMessageEvent(
+                    chatWindow,
                     this,
                     chatPlusGuiMessage,
-                    componentWithTimeStamp,
-                    component,
+                    mutableComponent,
+                    rawComponent,
                     signature,
                     addedTime,
                     tag,
@@ -219,62 +165,24 @@ class ChatTab : MessageFilter {
         ) {
             return
         }
+        chatPlusGuiMessage.guiMessage = GuiMessage(addedTime, mutableComponent, signature, tag)
         this.messages.add(chatPlusGuiMessage)
         this.lastMessageTime = System.currentTimeMillis()
         while (this.messages.size > Config.values.maxMessages) {
-            EventBus.post(ChatTabRemoveMessageEvent(this, this.messages.removeFirst()))
+            EventBus.post(ChatTabRemoveMessageEvent(chatWindow, this, this.messages.removeFirst()))
         }
-        this.addNewDisplayMessage(componentWithTimeStamp, addedTime, tag, chatPlusGuiMessage)
+        this.addNewDisplayMessage(mutableComponent, addedTime, tag, chatPlusGuiMessage)
     }
 
-    private fun getTimeStampedMessage(component: Component): MutableComponent {
-        if (Config.values.chatTimestampMode == TimestampMode.NONE) {
-            return component.copy() as MutableComponent
-        }
-        val componentWithTimeStamp: MutableComponent = Component.empty()
-        val timestampedHoverComponents = HashSet<Any>()
-        component.toFlatList().forEach {
-            val flatComponent = it as MutableComponent
-            if (flatComponent.style.hoverEvent == null) {
-                flatComponent.withStyle {
-                    val hoverValue = getTimestamp(false)
-                    timestampedHoverComponents.add(hoverValue)
-                    it.withHoverEvent(HoverEvent(HoverEvent.Action.SHOW_TEXT, hoverValue))
-                }
-            } else {
-                when (flatComponent.style.hoverEvent?.action) {
-                    HoverEvent.Action.SHOW_TEXT -> {
-                        val hoverValue = (flatComponent.style.hoverEvent?.getValue(HoverEvent.Action.SHOW_TEXT) as MutableComponent?)
-                        if (hoverValue != null && !timestampedHoverComponents.containsReference(hoverValue)) {
-                            if (hoverValue.siblings.javaClass.getName().contains("Immutable")) {
-                                hoverValue.siblings = ArrayList(hoverValue.siblings)
-                            }
-                            hoverValue.siblings.add(getTimestamp(true))
-                            timestampedHoverComponents.add(hoverValue)
-                        }
-                    }
-                    HoverEvent.Action.SHOW_ENTITY -> {
-                        val hoverValue = flatComponent.style.hoverEvent?.getValue(HoverEvent.Action.SHOW_ENTITY)
-                        if (hoverValue != null && !timestampedHoverComponents.containsReference(hoverValue.tooltipLines)) {
-                            hoverValue.tooltipLines.add(getTimestamp(false))
-                            timestampedHoverComponents.add(hoverValue.tooltipLines)
-                        }
-                    }
-                }
-            }
-            componentWithTimeStamp.append(flatComponent)
-        }
-        return componentWithTimeStamp
-    }
-
-    fun addNewDisplayMessage(
+    private fun addNewDisplayMessage(
         component: MutableComponent,
         addedTime: Int,
         tag: GuiMessageTag?,
         linkedMessage: ChatPlusGuiMessage
     ) {
-        val maxWidth = Mth.floor(ChatManager.getBackgroundWidth())
-        val displayMessageEvent = EventBus.post(ChatTabAddDisplayMessageEvent(this, component, addedTime, tag, linkedMessage, maxWidth))
+        val maxWidth = Mth.floor(this.chatWindow.renderer.getBackgroundWidth())
+        val displayMessageEvent =
+            EventBus.post(ChatTabAddDisplayMessageEvent(chatWindow, this, component, addedTime, tag, linkedMessage, maxWidth))
         addWrappedComponents(component, displayMessageEvent, addedTime, tag, linkedMessage, -1)
         while (
             !displayMessageEvent.filtered &&
@@ -282,7 +190,7 @@ class ChatTab : MessageFilter {
             this.displayedMessages.isNotEmpty() &&
             this.messages[0] !== this.displayedMessages[0].linkedMessage
         ) {
-            EventBus.post(ChatTabRemoveDisplayMessageEvent(this, this.displayedMessages.removeFirst()))
+            EventBus.post(ChatTabRemoveDisplayMessageEvent(chatWindow, this, this.displayedMessages.removeFirst()))
             if (wasFiltered) {
                 unfilteredDisplayedMessages.removeFirst()
             }
@@ -336,80 +244,10 @@ class ChatTab : MessageFilter {
         }
     }
 
-    private fun getTimestamp(newLine: Boolean): Component {
-        return literalIgnored((if (newLine) "\n" else "") + "Sent at ")
-            .withStyle {
-                it.withColor(ChatFormatting.GRAY)
-            }
-            .append(Component.literal(getCurrentTime())
-                .withStyle {
-                    it.withColor(ChatFormatting.YELLOW)
-                })
-            .append(Component.literal("."))
-    }
-
-    private fun getCurrentTime(): String {
-        return LocalDateTime.now().format(DateTimeFormatter.ofPattern(Config.values.chatTimestampMode.format))
-    }
-
     fun clear() {
         messages.clear()
         displayedMessages.clear()
         unfilteredDisplayedMessages.clear()
-    }
-
-    fun getHoveredOverMessageLine(): ChatPlusGuiMessageLine? {
-        return getMessageLineAt(ChatPlusScreen.lastMouseX.toDouble(), ChatPlusScreen.lastMouseY.toDouble())
-    }
-
-    fun getMessageLineAt(pMouseX: Double, pMouseY: Double): ChatPlusGuiMessageLine? {
-        val x = screenToChatX(pMouseX)
-        val y = screenToChatY(pMouseY)
-        return getMessageAtLineRelative(x, y)
-    }
-
-    fun getMessageAtLineRelative(x: Double, y: Double): ChatPlusGuiMessageLine? {
-        val i = getMessageLineIndexAtRelative(x, y)
-        val size = this.displayedMessages.size
-        return if (i in 0 until size) {
-            return this.displayedMessages[size - i - 1]
-        } else {
-            null
-        }
-    }
-
-    private fun screenToChatX(pX: Double): Double {
-        return (pX - ChatRenderer.x) / ChatRenderer.scale
-    }
-
-    private fun screenToChatY(pY: Double): Double {
-        val yDiff: Double = ChatRenderer.y - pY
-        return when (Config.values.messageDirection) {
-            MessageDirection.TOP_DOWN -> rescaledLinesPerPage - yDiff / (ChatRenderer.scale * lineHeight.toDouble())
-            MessageDirection.BOTTOM_UP -> yDiff / (ChatRenderer.scale * lineHeight.toDouble())
-        }
-    }
-
-    private fun getMessageLineIndexAt(pMouseX: Double, pMouseY: Double): Int {
-        return getMessageLineIndexAtRelative(screenToChatX(pMouseX), screenToChatY(pMouseY))
-    }
-
-    private fun getMessageLineIndexAtRelative(pMouseX: Double, pMouseY: Double): Int {
-        if (!ChatManager.isChatFocused() || Minecraft.getInstance().options.hideGui) {
-            return -1
-        }
-        if (!(0.0 <= pMouseX && pMouseX <= Mth.floor(ChatRenderer.rescaledWidth.toDouble()))) {
-            return -1
-        }
-        val i = min(rescaledLinesPerPage, this.displayedMessages.size)
-        if (!(0.0 <= pMouseY && pMouseY < i.toDouble())) {
-            return -1
-        }
-        val j = Mth.floor(pMouseY + chatScrollbarPos.toDouble())
-        if (j < 0 || j >= this.displayedMessages.size) {
-            return -1
-        }
-        return j
     }
 
     fun resetChatScroll() {
@@ -423,7 +261,7 @@ class ChatTab : MessageFilter {
 
     fun setScrollPos(newPosition: Int) {
         var pos = newPosition
-        val maxScroll = displayedMessages.size - ChatManager.getLinesPerPageScaled()
+        val maxScroll = displayedMessages.size - chatWindow.renderer.getLinesPerPageScaled()
         if (pos > maxScroll) {
             pos = maxScroll
         }
@@ -437,10 +275,11 @@ class ChatTab : MessageFilter {
     fun moveToMessage(chatScreen: ChatScreen, message: ChatPlusGuiMessageLine) {
         val linkedMessage = message.linkedMessage
         val moveIndex = when (Config.values.jumpToMessageMode) {
-            JumpToMessageMode.TOP -> rescaledLinesPerPage
-            JumpToMessageMode.MIDDLE -> ChatManager.getLinesPerPageScaled() / 2 + 1
+            JumpToMessageMode.TOP -> this.chatWindow.renderer.rescaledLinesPerPage
+            JumpToMessageMode.MIDDLE -> this.chatWindow.renderer.getLinesPerPageScaled() / 2 + 1
             JumpToMessageMode.BOTTOM -> 1
-            JumpToMessageMode.CURSOR -> getMessageLineIndexAt(
+            JumpToMessageMode.CURSOR -> ChatPositionTranslator.getMessageLineIndexAt(
+                this,
                 ChatPlusScreen.lastMouseX.toDouble(),
                 ChatPlusScreen.lastMouseY.toDouble()
             ) - chatScrollbarPos + 1
@@ -449,33 +288,36 @@ class ChatTab : MessageFilter {
         filterChat = true
         refreshDisplayMessages()
         (chatScreen as IMixinScreen).callRebuildWidgets()
-        val displayIndex = ChatManager.selectedTab.displayedMessages.indexOfFirst { line -> line.linkedMessage === linkedMessage }
-        val scrollTo = ChatManager.selectedTab.displayedMessages.size - displayIndex - moveIndex
-        ChatManager.selectedTab.scrollChat(scrollTo)
+        val displayIndex = ChatManager.globalSelectedTab.displayedMessages.indexOfFirst { line -> line.linkedMessage === linkedMessage }
+        val scrollTo = ChatManager.globalSelectedTab.displayedMessages.size - displayIndex - moveIndex
+        ChatManager.globalSelectedTab.scrollChat(scrollTo)
     }
 
     fun rescaleChat() {
-        ChatPlus.LOGGER.info("Rescale chat")
-        EventBus.post(ChatTabRescale(this))
+        ChatPlus.LOGGER.info("$this Rescale")
+        EventBus.post(ChatTabRescale(chatWindow, this))
         resetChatScroll()
         queueRefreshDisplayedMessages(true)
-        ChatRenderer.updateCachedDimension()
     }
 
     fun queueRefreshDisplayedMessages(reason: Boolean) {
-        ChatPlus.LOGGER.info("Queueing refresh - $reason")
+        ChatPlus.LOGGER.info("$this Queueing refresh - $reason")
         if (reason) {
             rescaleChat = true
-            resetDisplayMessageAtTick = Events.currentTick + 20
+            resetDisplayMessageAtTick = Events.currentTick + (if (!isSelectedInAnyWindow()) 60 else 20)
         } else {
             filterChat = true
             resetDisplayMessageAtTick = Events.currentTick + 15
         }
     }
 
+    private fun isSelectedInAnyWindow(): Boolean {
+        return Config.values.chatWindows.any { it.tabSettings.selectedTab == this }
+    }
+
     fun refreshDisplayMessages() {
         if (refreshing) {
-            ChatPlus.LOGGER.info("Next refreshing")
+            ChatPlus.LOGGER.info("$this Next refreshing")
             queueRefreshDisplayedMessages(rescaleChat)
             return
         }
@@ -485,8 +327,8 @@ class ChatTab : MessageFilter {
         val start = System.currentTimeMillis()
 
         if (rescaleChat) {
-            ChatPlus.LOGGER.info("Rewrapping messages")
-            EventBus.post(ChatTabRewrapDisplayMessages(this))
+            ChatPlus.LOGGER.info("$this Rewrapping messages")
+            EventBus.post(ChatTabRewrapDisplayMessages(chatWindow, this))
 
             rescaleChat = false
 
@@ -503,23 +345,23 @@ class ChatTab : MessageFilter {
                 )
             }
             wasFiltered = false
-            ChatPlus.LOGGER.info("Added ${displayedMessages.size} messages")
-            ChatPlus.LOGGER.info("Rewrapping time taken: ${System.currentTimeMillis() - start}ms")
+            ChatPlus.LOGGER.info("$this Added ${displayedMessages.size} messages")
+            ChatPlus.LOGGER.info("$this Rewrapping time taken: ${System.currentTimeMillis() - start}ms")
         } else if (filterChat) {
             val filterStart = System.currentTimeMillis()
             filterChat = false
-            val refreshEvent = EventBus.post(ChatTabRefreshDisplayMessages(this, false))
+            val refreshEvent = EventBus.post(ChatTabRefreshDisplayMessages(chatWindow, this, false))
             val filters = refreshEvent.predicates
             if (filters.isEmpty()) {
                 resetFilter()
             } else {
-                ChatPlus.LOGGER.info("Filtering - $wasFiltered")
+                ChatPlus.LOGGER.info("$this Filtering - $wasFiltered")
                 if (!wasFiltered) {
                     unfilteredDisplayedMessages = displayedMessages.toMutableList()
-                    ChatPlus.LOGGER.info("Saved ${unfilteredDisplayedMessages.size} messages")
+                    ChatPlus.LOGGER.info("$this Saved ${unfilteredDisplayedMessages.size} messages")
                 } else {
                     displayedMessages = unfilteredDisplayedMessages.toMutableList()
-                    ChatPlus.LOGGER.info("Loaded ${displayedMessages.size} messages")
+                    ChatPlus.LOGGER.info("$this Loaded ${displayedMessages.size} messages")
                 }
                 wasFiltered = true
                 val oldDisplayedMessageSize = displayedMessages.size
@@ -549,13 +391,13 @@ class ChatTab : MessageFilter {
                     it?.join()
                 }
                 val newMessages = displayedMessages.subList(oldDisplayedMessageSize, displayedMessages.size)
-                ChatPlus.LOGGER.info("New messages: ${newMessages.size} - $oldDisplayedMessageSize - ${displayedMessages.size}")
+                ChatPlus.LOGGER.info("$this New messages: ${newMessages.size} - $oldDisplayedMessageSize - ${displayedMessages.size}")
                 displayedMessages.clear()
                 threadMessages.toSortedMap().forEach { (_, value) ->
                     displayedMessages.addAll(value)
                 }
             }
-            ChatPlus.LOGGER.info("Filter time taken: ${System.currentTimeMillis() - filterStart}ms")
+            ChatPlus.LOGGER.info("$this Filter time taken: ${System.currentTimeMillis() - filterStart}ms")
         }
         resetChatScroll()
 //        ChatPlus.LOGGER.info("Refresh time taken: ${System.currentTimeMillis() - start}ms")
@@ -564,41 +406,35 @@ class ChatTab : MessageFilter {
     }
 
     fun resetFilter() {
-        ChatPlus.LOGGER.info("Reset Filter -  $wasFiltered")
+        ChatPlus.LOGGER.info("$this Reset Filter -  $wasFiltered")
         if (wasFiltered) {
             if (unfilteredDisplayedMessages.size < 100) {
-                ChatPlus.LOGGER.error("NO MESSAGES")
+                ChatPlus.LOGGER.error("$this NO MESSAGES")
             }
             displayedMessages = unfilteredDisplayedMessages.toMutableList()
             unfilteredDisplayedMessages.clear()
             wasFiltered = false
-            ChatPlus.LOGGER.info("Reloaded ${displayedMessages.size} messages")
+            ChatPlus.LOGGER.info("$this Reloaded ${displayedMessages.size} messages")
         }
     }
 
-    fun getComponentStyleAt(pMouseX: Double, pMouseY: Double): Style? {
-        val messageAtEvent = EventBus.post(
-            ChatTabGetMessageAtEvent(
-                this,
-                screenToChatX(pMouseX),
-                screenToChatY(pMouseY)
-            )
-        )
-        val x = messageAtEvent.chatX
-        val y = messageAtEvent.chatY
-        val i = getMessageLineIndexAtRelative(x, y)
-        val size = this.displayedMessages.size
-        return if (i in 0 until size) {
-            val guiMessageLine: GuiMessage.Line = this.displayedMessages[size - i - 1].line
-            Minecraft.getInstance().font.splitter.componentStyleAtWidth(guiMessageLine.content(), Mth.floor(x))
-        } else {
-            null
-        }
+    fun getHoveredOverMessageLine(): ChatPlusGuiMessageLine? {
+        return ChatPositionTranslator.getHoveredOverMessageLineInternal(this)
+    }
+
+    fun getHoveredOverMessageLine(mouseX: Double, mouseY: Double): ChatPlusGuiMessageLine? {
+        return ChatPositionTranslator.getHoveredOverMessageLineInternal(this, mouseX, mouseY)
+    }
+
+    fun getComponentStyleAt(mouseX: Double, mouseY: Double): Style? {
+        return ChatPositionTranslator.getComponentStyleAt(this, mouseX, mouseY)
     }
 
     companion object {
 
         const val PADDING = 2
+        const val TAB_HEIGHT = 9 + PADDING * 2
+        private val INDENT: FormattedCharSequence = FormattedCharSequence.codepoint(32, Style.EMPTY)
 
         private fun stripColor(pText: String): String? {
             return if (Minecraft.getInstance().options.chatColors().get()) pText else ChatFormatting.stripFormatting(pText)
@@ -611,14 +447,24 @@ class ChatTab : MessageFilter {
                 Optional.empty<Any?>()
             }, Style.EMPTY)
             val list: MutableList<Pair<FormattedCharSequence, String>> = Lists.newArrayList()
+            val indent = Config.values.wrappedMessageLineIndent // todo fix wrapping issue
             font.splitter.splitLines(
                 componentCollector.resultOrEmpty,
                 maxWidth,
                 Style.EMPTY
             ) { formattedText: FormattedText, isNewLine: Boolean ->
                 val formattedCharSequence = Language.getInstance().getVisualOrder(formattedText)
-                // note: removed new line indent
-                list.add(Pair(formattedCharSequence, formattedText.string))
+                if (indent > 0 && isNewLine) {
+                    val sequenceList: MutableList<FormattedCharSequence> = mutableListOf()
+                    for (i in 0 until indent) {
+                        sequenceList.add(INDENT)
+                    }
+                    sequenceList.add(formattedCharSequence)
+                    list.add(Pair(FormattedCharSequence.composite(sequenceList), formattedText.string))
+                } else {
+                    // note: removed new line indent
+                    list.add(Pair(formattedCharSequence, formattedText.string))
+                }
             }
             return if (list.isEmpty()) {
                 mutableListOf(Pair(FormattedCharSequence.EMPTY, ""))
@@ -629,3 +475,68 @@ class ChatTab : MessageFilter {
     }
 
 }
+
+data class AddNewMessageEvent(
+    var mutableComponent: MutableComponent,
+    val rawComponent: Component,
+    var senderUUID: UUID?,
+    val signature: MessageSignature?,
+    val addedTime: Int,
+    val tag: GuiMessageTag?,
+    var returnFunction: Boolean = false
+) : Event
+
+data class ChatTabAddNewMessageEvent(
+    val chatWindow: ChatWindow,
+    val chatTab: ChatTab,
+    val chatPlusGuiMessage: ChatTab.ChatPlusGuiMessage,
+    var mutableComponent: MutableComponent,
+    val rawComponent: Component,
+    val signature: MessageSignature?,
+    val addedTime: Int,
+    val tag: GuiMessageTag?,
+    var returnFunction: Boolean = false
+) : Event
+
+data class ChatTabAddDisplayMessageEvent(
+    val chatWindow: ChatWindow,
+    val chatTab: ChatTab,
+    val component: Component,
+    val addedTime: Int,
+    val tag: GuiMessageTag?,
+    val linkedMessage: ChatTab.ChatPlusGuiMessage,
+    var maxWidth: Int,
+    var addMessage: Boolean = true,
+    var filtered: Boolean = false,
+) : Event
+
+data class ChatTabRemoveMessageEvent(
+    val chatWindow: ChatWindow,
+    val chatTab: ChatTab,
+    val guiMessage: ChatTab.ChatPlusGuiMessage,
+    var returnFunction: Boolean = false
+) : Event
+
+data class ChatTabRemoveDisplayMessageEvent(
+    val chatWindow: ChatWindow,
+    val chatTab: ChatTab,
+    val chatPlusGuiMessageLine: ChatTab.ChatPlusGuiMessageLine,
+    var returnFunction: Boolean = false
+) : Event
+
+data class ChatTabRescale(
+    val chatWindow: ChatWindow,
+    val chatTab: ChatTab
+) : Event
+
+data class ChatTabRewrapDisplayMessages(
+    val chatWindow: ChatWindow,
+    val chatTab: ChatTab,
+) : Event
+
+data class ChatTabRefreshDisplayMessages(
+    val chatWindow: ChatWindow,
+    val chatTab: ChatTab,
+    val rescale: Boolean,
+    val predicates: MutableList<Predicate<ChatTab.ChatPlusGuiMessage>> = mutableListOf(),
+) : Event

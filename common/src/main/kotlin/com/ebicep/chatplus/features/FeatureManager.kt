@@ -1,6 +1,9 @@
 package com.ebicep.chatplus.features
 
 import com.ebicep.chatplus.features.chattabs.ChatTabs
+import com.ebicep.chatplus.features.chatwindows.ChatWindowsManager
+import com.ebicep.chatplus.features.internal.Debug
+import com.ebicep.chatplus.features.internal.OnScreenDisplay
 import com.ebicep.chatplus.features.speechtotext.SpeechToText
 import com.ebicep.chatplus.features.textbarelements.TextBarElements
 
@@ -25,6 +28,13 @@ object FeatureManager {
         ScrollBar
         BookmarkMessages
         Animations
+        ChatWindowsManager
+        HideChat
+        Debug
+        OnScreenDisplay
+        TimestampMessages
+        ChatPadding
+        WrappedMessageLineIndent
 //        AlternatingColorBackground
     }
 
