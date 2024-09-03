@@ -9,7 +9,6 @@ import com.ebicep.chatplus.features.chatwindows.ChatWindowsManager.DefaultWindow
 import com.ebicep.chatplus.hud.*
 import com.ebicep.chatplus.hud.ChatManager.selectedWindow
 import com.ebicep.chatplus.mixin.IMixinChatScreen
-import net.minecraft.util.Mth
 
 
 const val CHAT_TAB_HEIGHT = 15
@@ -54,16 +53,6 @@ object ChatTabs {
             } else if (keyCode == 262) { // right arrow
                 selectedWindow.tabSettings.scrollTab(1)
             }
-        }
-        EventBus.register<ChatScreenMouseScrolledEvent> {
-            if (!Config.values.chatWindowsTabsEnabled || !Config.values.scrollCycleTabEnabled) {
-                return@register
-            }
-            val amountX = it.amountX
-            if (amountX == 0.0) {
-                return@register
-            }
-            selectedWindow.tabSettings.scrollTab(Mth.clamp(-amountX.toInt(), -1, 1))
         }
         EventBus.register<ChatScreenMouseClickedEvent> {
             if (selectedWindow.tabSettings.hideTabs) {

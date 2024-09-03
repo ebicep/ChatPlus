@@ -212,11 +212,6 @@ object ConfigScreenImpl {
             ) { Config.values.chatWindowsTabsEnabled = it })
         category.addEntry(
             entryBuilder.booleanToggle(
-                "chatPlus.chatWindow.tabSettings.chatTabs.scrollCycleTabEnabled.toggle",
-                Config.values.scrollCycleTabEnabled
-            ) { Config.values.scrollCycleTabEnabled = it })
-        category.addEntry(
-            entryBuilder.booleanToggle(
                 "chatPlus.chatWindow.tabSettings.chatTabs.arrowCycleTabEnabled.toggle",
                 Config.values.arrowCycleTabEnabled
             ) { Config.values.arrowCycleTabEnabled = it })
