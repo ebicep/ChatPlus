@@ -122,7 +122,7 @@ class ChatRenderer {
             field = newY
             internalY = newY
         }
-    var width: Int = MIN_WIDTH
+    var width: Int = 80
         set(newWidth) {
             if (field == newWidth) {
                 return
@@ -132,7 +132,7 @@ class ChatRenderer {
             internalWidth = newWidth
             chatWindow.tabSettings.tabs.forEach { it.rescaleChat() }
         }
-    var height: Int = MIN_HEIGHT
+    var height: Int = 160
         set(newHeight) {
             if (field == newHeight) {
                 return
@@ -149,14 +149,10 @@ class ChatRenderer {
     var internalY: Int = -CHAT_TAB_HEIGHT - EDIT_BOX_HEIGHT
 
     @Transient
-    var internalWidth: Int = MIN_WIDTH
+    var internalWidth: Int = 80
 
     @Transient
-    var internalHeight: Int = MIN_HEIGHT
-        set(newHeight) {
-            val lineHeightScaled = lineHeight * scale
-            field = newHeight//(newHeight - (newHeight % lineHeightScaled)).toInt()
-        }
+    var internalHeight: Int = 160
 
     @Transient
     lateinit var chatWindow: ChatWindow
