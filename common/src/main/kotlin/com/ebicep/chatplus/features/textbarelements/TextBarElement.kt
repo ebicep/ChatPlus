@@ -1,6 +1,6 @@
 package com.ebicep.chatplus.features.textbarelements
 
-import com.ebicep.chatplus.hud.ChatPlusScreen.EDIT_BOX_HEIGHT
+import com.ebicep.chatplus.hud.ChatPlusScreen.EDIT_BOX_DISPLAY_HEIGHT
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphics
 
@@ -33,7 +33,7 @@ interface TextBarElement {
             currentX,
             currentY,
             currentX + getPaddedWidth(),
-            currentY + EDIT_BOX_HEIGHT,
+            currentY + EDIT_BOX_DISPLAY_HEIGHT,
             Minecraft.getInstance().options.getBackgroundColor(Int.MIN_VALUE)
         )
     }
@@ -44,7 +44,7 @@ interface TextBarElement {
                 Minecraft.getInstance().font,
                 it,
                 currentX + getPaddedWidth() / 2,
-                currentY + EDIT_BOX_HEIGHT / 4,
+                currentY + EDIT_BOX_DISPLAY_HEIGHT / 4,
                 color
             )
         }
@@ -55,7 +55,7 @@ interface TextBarElement {
             currentX,
             currentY,
             getPaddedWidth(),
-            EDIT_BOX_HEIGHT - 1,
+            EDIT_BOX_DISPLAY_HEIGHT,
             color
         )
     }

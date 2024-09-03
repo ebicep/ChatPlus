@@ -2,22 +2,24 @@ package com.ebicep.chatplus.mixin;
 
 import com.ebicep.chatplus.ChatPlus;
 import com.ebicep.chatplus.config.Config;
+import com.ebicep.chatplus.events.EventBus;
+import com.ebicep.chatplus.features.chattabs.AddNewMessageEvent;
 import com.ebicep.chatplus.features.chattabs.ChatTab;
 import com.ebicep.chatplus.features.chattabs.ChatTabs;
-import com.ebicep.chatplus.hud.ChatRenderer;
+import com.ebicep.chatplus.features.chatwindows.ChatWindow;
+import com.ebicep.chatplus.features.chatwindows.ChatWindowsManager;
 import net.minecraft.client.GuiMessageTag;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.ChatComponent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MessageSignature;
-import net.minecraft.world.entity.player.Player;
-import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Mixin(ChatComponent.class)
 public class MixinChatComponent {
@@ -31,7 +33,7 @@ public class MixinChatComponent {
         if (!ChatPlus.INSTANCE.isEnabled()) {
             return;
         }
-        ChatRenderer.INSTANCE.render(guiGraphics, i, j, k);
+        ChatWindowsManager.INSTANCE.renderAll(guiGraphics, i, j, k);
         ci.cancel();
     }
 
@@ -40,26 +42,47 @@ public class MixinChatComponent {
         if (!ChatPlus.INSTANCE.isEnabled()) {
             return;
         }
-        if (Config.INSTANCE.getValues().getChatTabsEnabled()) {
-            Integer lastPriority = null;
-            for (ChatTab chatTab : Config.INSTANCE.getValues().getSortedChatTabs()) {
-                int priority = chatTab.getPriority();
-                boolean alwaysAdd = chatTab.getAlwaysAdd();
-                if (lastPriority != null && lastPriority > priority && !alwaysAdd) {
-                    continue;
-                }
-                if (chatTab.matches(component.getString())) {
-                    chatTab.addNewMessage(component, messageSignature, this.minecraft.gui.getGuiTicks(), guiMessageTag);
-                    if (chatTab.getSkipOthers()) {
-                        break;
+        List<ChatTab> addMessagesTo = new ArrayList<>();
+        if (!Config.INSTANCE.getValues().getChatWindowsTabsEnabled()) {
+            addMessagesTo.add(ChatTabs.INSTANCE.getDefaultTab());
+        } else {
+            for (ChatWindow window : Config.INSTANCE.getValues().getChatWindows()) {
+                Integer lastPriority = null;
+                for (ChatTab chatTab : window.getTabSettings().getSortedTabs()) {
+                    int priority = chatTab.getPriority();
+                    boolean alwaysAdd = chatTab.getAlwaysAdd();
+                    if (lastPriority != null && lastPriority > priority && !alwaysAdd) {
+                        continue;
                     }
-                    if (!alwaysAdd) {
-                        lastPriority = priority;
+                    if (chatTab.matches(component.getString())) {
+                        addMessagesTo.add(chatTab);
+                        if (chatTab.getSkipOthers()) {
+                            break;
+                        }
+                        if (!alwaysAdd) {
+                            lastPriority = priority;
+                        }
                     }
                 }
             }
-        } else {
-            ChatTabs.INSTANCE.getDefaultTab().addNewMessage(component, messageSignature, this.minecraft.gui.getGuiTicks(), guiMessageTag);
+        }
+        if (!addMessagesTo.isEmpty()) {
+            AddNewMessageEvent messageEvent = new AddNewMessageEvent(
+                    component.copy(),
+                    component,
+                    null,
+                    messageSignature,
+                    this.minecraft.gui.getGuiTicks(),
+                    guiMessageTag,
+                    false
+            );
+            EventBus.INSTANCE.post(AddNewMessageEvent.class, messageEvent);
+            if (messageEvent.getReturnFunction()) {
+                return;
+            }
+            for (ChatTab chatTab : addMessagesTo) {
+                chatTab.addNewMessage(messageEvent);
+            }
         }
     }
 

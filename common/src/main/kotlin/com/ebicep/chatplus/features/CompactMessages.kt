@@ -5,7 +5,6 @@ import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.features.chattabs.ChatTab
 import com.ebicep.chatplus.features.chattabs.ChatTabAddDisplayMessageEvent
 import com.ebicep.chatplus.features.chattabs.ChatTabAddNewMessageEvent
-import com.ebicep.chatplus.hud.ChatManager
 import net.minecraft.ChatFormatting
 import net.minecraft.network.chat.*
 import net.minecraft.util.Mth
@@ -28,6 +27,9 @@ object CompactMessages {
             if (!Config.values.compactMessagesEnabled) {
                 return@register
             }
+            if (Config.values.compactMessagesIgnoreTimestamps) {
+                it.chatPlusGuiMessage.rawComponent = it.rawComponent
+            }
             val chatTab = it.chatTab
             val messages = chatTab.messages
             val displayedMessages = chatTab.displayedMessages
@@ -38,13 +40,13 @@ object CompactMessages {
                 val message = messages[i]
                 val guiMessage = message.guiMessage
                 if (Config.values.compactMessagesIgnoreTimestamps) {
-                    if (message.rawComponent != it.component) {
+                    if (message.rawComponent != it.rawComponent) {
                         continue
                     }
                 } else {
                     val content = guiMessage.content.copy()
                     content.siblings.removeIf { component -> component.contents is LiteralContentsIgnored } // remove repeated component
-                    if (!content.equals(it.componentWithTimeStamp)) {
+                    if (!content.equals(it.mutableComponent)) {
                         continue
                     }
                 }
@@ -66,20 +68,21 @@ object CompactMessages {
                 if (addIndex == -1 || oldDisplayMessage == null) {
                     break
                 }
-                it.componentWithTimeStamp.siblings.add(literalIgnored(" (${message.timesRepeated})").withStyle(COMPACT_STYLE))
+                it.mutableComponent.siblings.add(literalIgnored(" (${message.timesRepeated})").withStyle(COMPACT_STYLE))
                 val addedTime = if (Config.values.compactMessagesRefreshAddedTime) it.addedTime else oldDisplayMessage.line.addedTime
                 val displayMessageEvent = EventBus.post(
                     ChatTabAddDisplayMessageEvent(
+                        it.chatWindow,
                         chatTab,
-                        it.componentWithTimeStamp,
+                        it.mutableComponent,
                         addedTime,
                         oldDisplayMessage.line.tag,
                         message,
-                        Mth.floor(ChatManager.getBackgroundWidth())
+                        Mth.floor(it.chatWindow.renderer.getBackgroundWidth())
                     )
                 )
                 chatTab.addWrappedComponents(
-                    it.componentWithTimeStamp,
+                    it.mutableComponent,
                     displayMessageEvent,
                     addedTime,
                     oldDisplayMessage.line.tag,
