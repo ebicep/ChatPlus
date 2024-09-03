@@ -8,6 +8,7 @@ import com.ebicep.chatplus.features.chattabs.CHAT_TAB_X_SPACE
 import com.ebicep.chatplus.features.chattabs.CHAT_TAB_Y_OFFSET
 import com.ebicep.chatplus.features.chattabs.ChatTab
 import com.ebicep.chatplus.features.chattabs.ChatTab.Companion.TAB_HEIGHT
+import com.ebicep.chatplus.features.chattabs.ChatTabGetMessageAtEvent
 import com.ebicep.chatplus.features.chatwindows.ChatTabClickedEvent
 import com.ebicep.chatplus.features.chatwindows.ChatTabRenderEvent
 import com.ebicep.chatplus.features.chatwindows.ChatWindow
@@ -87,6 +88,11 @@ object MovableChat {
                     Component.literal("Movable Chat ${if (Config.values.movableChatEnabled) "Enabled" else "Disabled"}")
                         .withStyle(if (Config.values.movableChatEnabled) ChatFormatting.GREEN else ChatFormatting.RED)
                 )
+                it.returnFunction = true
+            }
+        }
+        EventBus.register<ChatTabGetMessageAtEvent> {
+            if (movingChat) {
                 it.returnFunction = true
             }
         }

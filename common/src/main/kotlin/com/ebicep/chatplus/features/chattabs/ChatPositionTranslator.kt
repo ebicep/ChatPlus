@@ -30,6 +30,9 @@ object ChatPositionTranslator {
 
     fun getHoveredOverMessageLineInternal(chatTab: ChatTab, mX: Double, mY: Double): ChatPlusGuiMessageLine? {
         val messageAtEvent = EventBus.post(ChatTabGetMessageAtEvent(chatTab, MessageAtType.ADJUSTED))
+        if (messageAtEvent.returnFunction) {
+            return null
+        }
         messageAtEvent.calculateFinalPositions(mX, mY)
         return getMessageAtLineRelative(
             chatTab,
@@ -41,6 +44,9 @@ object ChatPositionTranslator {
 
     fun getMessageLineAt(chatTab: ChatTab, messageAtType: MessageAtType, mX: Double, mY: Double): MessageAtResult {
         val messageAtEvent = EventBus.post(ChatTabGetMessageAtEvent(chatTab, messageAtType))
+        if (messageAtEvent.returnFunction) {
+            return MessageAtResult(messageAtEvent, null)
+        }
         messageAtEvent.calculateFinalPositions(mX, mY)
         return getMessageAtLineRelative(
             chatTab,
@@ -128,6 +134,7 @@ data class ChatTabGetMessageAtEvent(
     var chatOperators: MutableList<OperatorXY> = mutableListOf(),
     var finalMouse: ValuesXY = ValuesXY(0.0, 0.0),
     var finalChat: ValuesXY = ValuesXY(0.0, 0.0),
+    var returnFunction: Boolean = false
 ) : Event {
 
     fun addMouseOperator(operator: OperatorXY) {
