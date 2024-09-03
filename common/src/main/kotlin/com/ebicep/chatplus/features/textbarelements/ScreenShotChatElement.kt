@@ -10,8 +10,6 @@ import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.client.gui.screens.ChatScreen
 import net.minecraft.network.chat.Component
 
-class ScreenShotChatEvent : Event
-
 class ScreenShotChatElement(private val chatPlusScreen: ChatScreen) : TextBarElement {
 
     override fun getWidth(): Int {
@@ -48,3 +46,5 @@ class ScreenShotChatElement(private val chatPlusScreen: ChatScreen) : TextBarEle
     }
 
 }
+
+class ScreenShotChatEvent : Event

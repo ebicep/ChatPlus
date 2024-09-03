@@ -9,10 +9,6 @@ import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.client.gui.screens.ChatScreen
 import net.minecraft.network.chat.Component
 
-data class ShowBookmarksToggleEvent(
-    val enabled: Boolean
-) : Event
-
 class ShowBookmarksBarElement(private val chatPlusScreen: ChatScreen) : TextBarElement {
 
     override fun getWidth(): Int {
@@ -38,10 +34,12 @@ class ShowBookmarksBarElement(private val chatPlusScreen: ChatScreen) : TextBarE
 
     override fun onRender(guiGraphics: GuiGraphics, currentX: Int, currentY: Int, mouseX: Int, mouseY: Int) {
         fill(guiGraphics, currentX, currentY)
-        drawCenteredString(guiGraphics, currentX, currentY, if (BookmarkMessages.showingBoomarks) Config.values.bookmarkColor else -1)
-        if (BookmarkMessages.showingBoomarks) {
+        drawCenteredString(guiGraphics, currentX, currentY, if (BookmarkMessages.showingBookmarks) Config.values.bookmarkColor else -1)
+        if (BookmarkMessages.showingBookmarks) {
             renderOutline(guiGraphics, currentX, currentY, Config.values.bookmarkColor)
         }
     }
 
 }
+
+data class ShowBookmarksToggleEvent(val enabled: Boolean) : Event

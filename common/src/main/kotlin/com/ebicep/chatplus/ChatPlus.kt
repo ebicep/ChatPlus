@@ -3,7 +3,6 @@ package com.ebicep.chatplus
 import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.events.Events
 import com.ebicep.chatplus.features.FeatureManager
-import com.ebicep.chatplus.hud.ChatManager
 import com.ebicep.chatplus.translator.LanguageManager
 import net.minecraft.ChatFormatting
 import net.minecraft.client.Minecraft
@@ -12,6 +11,7 @@ import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 
 const val MOD_ID = "chatplus"
+const val MOD_COLOR = 0xFF12e3DB.toInt()
 
 object ChatPlus {
 
@@ -27,7 +27,7 @@ object ChatPlus {
 
     fun doTest() {
         for (i in 1..500_000) {
-            ChatManager.selectedTab.addNewMessage(Component.literal("Test $i"), null, 0, null)
+//            ChatManager.globalSelectedTab.addNewMessage(Component.literal("Test $i"), null, 0, null)
         }
     }
 
@@ -39,7 +39,7 @@ object ChatPlus {
         // rgb(18, 227, 219)
         Minecraft.getInstance().player?.sendSystemMessage(
             Component.literal("ChatPlus").withStyle {
-                it.withColor(0xFF12e3DB.toInt())
+                it.withColor(MOD_COLOR)
             }.append(Component.literal(" > ").withStyle {
                 it.withColor(ChatFormatting.DARK_GRAY)
             }).append(component)

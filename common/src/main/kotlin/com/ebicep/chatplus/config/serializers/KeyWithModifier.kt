@@ -1,8 +1,8 @@
 package com.ebicep.chatplus.config.serializers
 
+import com.ebicep.chatplus.util.KeyUtil.isDown
 import com.mojang.blaze3d.platform.InputConstants
 import kotlinx.serialization.Serializable
-import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.screens.Screen
 
 @Serializable
@@ -13,7 +13,7 @@ data class KeyWithModifier(
 ) {
 
     fun isDown(): Boolean {
-        val keyDown = InputConstants.isKeyDown(Minecraft.getInstance().window.window, key.value)
+        val keyDown = key.isDown()
         val modifierDown = modifier == 0.toShort() ||
                 modifier == 1.toShort() && Screen.hasAltDown() ||
                 modifier == 2.toShort() && Screen.hasControlDown() ||

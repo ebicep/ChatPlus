@@ -15,32 +15,21 @@ open class Translator(val message: String, val from: Language?, val to: Language
         ChatPlus.LOGGER.debug("Translating message: $message | $from -> $to | filtered: $filtered")
 
         var matchedRegex: String? = null
-        var senderName: String? = null
         var text = message
 
         if (filtered) {
             for (regexMatch in Config.values.translatorRegexes) {
-                var regexFixed: String = regexMatch.match
-                if (regexFixed.isEmpty()) {
+                val pattern: String = regexMatch.pattern
+                if (pattern.isEmpty()) {
                     continue
                 }
-                if (!regexFixed.contains("^")) {
-                    regexFixed = "^$regexFixed"
-                }
-                val matcher: Matcher = Pattern.compile(regexFixed).matcher(text)
+                val matcher: Matcher = Pattern.compile(pattern).matcher(text)
                 if (matcher.find()) {
-                    if (matchedRegex == null) {
-                        matchedRegex = matcher.group(0)
-                        senderName = matcher.group(regexMatch.senderNameGroupIndex)
-                    } else if (matchedRegex.length < matcher.group(0).length) {
-                        matchedRegex = matcher.group(0)
-                    }
+                    matchedRegex = matcher.group(0)
+                    continue
                 }
             }
             if (matchedRegex == null) {
-                return
-            }
-            if (senderName == null) {
                 return
             }
             text = text.replace(matchedRegex, "").trim()

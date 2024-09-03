@@ -1,5 +1,7 @@
 package com.ebicep.chatplus.events
 
+import com.ebicep.chatplus.config.Config
+
 interface Event
 
 object EventBus {
@@ -21,6 +23,9 @@ object EventBus {
         }
 
         fun <E> post(data: E): E {
+            if (!Config.values.enabled) {
+                return data
+            }
             for (it in subscribers) {
                 it.callback.invoke(data as T)
                 if (it.skipOtherCallbacks()) {

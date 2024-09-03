@@ -28,7 +28,7 @@ object ChatPlusScreenAdapter {
 
     fun handleRemoved(chatScreen: ChatScreen) {
         EventBus.post(ChatScreenCloseEvent(chatScreen))
-        ChatManager.selectedTab.resetChatScroll()
+        ChatManager.globalSelectedTab.resetChatScroll()
 //        ChatManager.selectedTab.refreshDisplayedMessage()
     }
 
@@ -36,15 +36,20 @@ object ChatPlusScreenAdapter {
         return EventBus.post(ChatScreenInputBoxEditEvent(chatScreen, str)).returnFunction
     }
 
-    fun handleKeyPressed(chatScreen: ChatScreen, pKeyCode: Int, pScanCode: Int, pModifiers: Int): Boolean {
-        return EventBus.post(ChatScreenKeyPressedEvent(chatScreen, pKeyCode, pScanCode, pModifiers)).returnFunction
+    fun handleKeyPressed(chatScreen: ChatScreen, keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
+        return EventBus.post(ChatScreenKeyPressedEvent(chatScreen, keyCode, scanCode, modifiers)).returnFunction
+    }
+
+    fun handleKeyReleased(chatScreen: ChatScreen, keyCode: Int, scanCode: Int, modifiers: Int) {
+        EventBus.post(ChatScreenKeyReleasedEvent(chatScreen, keyCode, scanCode, modifiers))
     }
 
     fun handlePageUpDown(up: Boolean) {
+        val globalSelectedTab = ChatManager.globalSelectedTab
         if (up) {
-            ChatManager.selectedTab.scrollChat(ChatManager.getLinesPerPage() - 1)
+            globalSelectedTab.scrollChat(globalSelectedTab.chatWindow.renderer.getLinesPerPage() - 1)
         } else {
-            ChatManager.selectedTab.scrollChat(-ChatManager.getLinesPerPage() + 1)
+            globalSelectedTab.scrollChat(-globalSelectedTab.chatWindow.renderer.getLinesPerPage() + 1)
         }
     }
 
@@ -66,7 +71,7 @@ object ChatPlusScreenAdapter {
         } else if (!InputConstants.isKeyDown(window, Config.values.keyFineScroll.value)) {
             delta *= 7.0
         }
-        ChatManager.selectedTab.scrollChat(delta.toInt())
+        ChatManager.globalSelectedTab.scrollChat(delta.toInt())
         return false
     }
 
