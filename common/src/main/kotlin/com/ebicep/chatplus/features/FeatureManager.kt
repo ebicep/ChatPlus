@@ -34,6 +34,7 @@ object FeatureManager {
         OnScreenDisplay
         TimestampMessages
         ChatPadding
+        WrappedMessageLineIndent
 //        AlternatingColorBackground
     }
 
