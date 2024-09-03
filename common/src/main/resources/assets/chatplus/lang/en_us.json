@@ -203,7 +203,7 @@
   "chatPlus.hoverHighlight.toggle": "Hover Highlight",
   "chatPlus.hoverHighlight.toggle.tooltip": "Enables/Disables highlighting the message line your mouse is over.",
   "chatPlus.hoverHighlight.mode": "Hover Highlight Mode",
-  "chatPlus.hoverHighlight.mode.tooltip": "The mode of the hover highlight. Brighter will make the message brighter, Custom Color will use the custom color.",
+  "chatPlus.hoverHighlight.mode.tooltip": "The mode of the hover highlight.\n \nBrighter will make the message background brighter.\n \nCustom Color will use the custom color.",
   "chatPlus.hoverHighlight.mode.brighter": "Brighter",
   "chatPlus.hoverHighlight.mode.customColor": "Custom Color",
   "chatPlus.hoverHighlight.color": "Custom Color",
