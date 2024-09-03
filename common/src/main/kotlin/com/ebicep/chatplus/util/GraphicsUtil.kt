@@ -267,13 +267,12 @@ object GraphicsUtil {
         RenderSystem.setShaderTexture(0, resourceLocation)
         RenderSystem.setShader { GameRenderer.getPositionTexShader() }
         val matrix4f: Matrix4f = this.pose().last().pose()
-        val bufferBuilder = Tesselator.getInstance().builder
-        bufferBuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX)
-        bufferBuilder.vertex(matrix4f, i, k, m).uv(f, h).endVertex()
-        bufferBuilder.vertex(matrix4f, i, l, m).uv(f, n).endVertex()
-        bufferBuilder.vertex(matrix4f, j, l, m).uv(g, n).endVertex()
-        bufferBuilder.vertex(matrix4f, j, k, m).uv(g, h).endVertex()
-        BufferUploader.drawWithShader(bufferBuilder.end())
+        val bufferBuilder = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX)
+        bufferBuilder.addVertex(matrix4f, i, k, m).setUv(f, h)
+        bufferBuilder.addVertex(matrix4f, i, l, m).setUv(f, n)
+        bufferBuilder.addVertex(matrix4f, j, l, m).setUv(g, n)
+        bufferBuilder.addVertex(matrix4f, j, k, m).setUv(g, h)
+        BufferUploader.drawWithShader(bufferBuilder.buildOrThrow())
     }
 
 }
