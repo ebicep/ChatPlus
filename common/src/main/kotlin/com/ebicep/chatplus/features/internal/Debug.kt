@@ -26,7 +26,7 @@ object Debug {
             val mouseX = ChatPlusScreen.lastMouseX
             val mouseY = ChatPlusScreen.lastMouseY
             pose.createPose {
-                pose.guiForward(amount = 5000.0)
+                pose.guiForward(amount = 500.0)
                 guiGraphics.drawString(
                     Minecraft.getInstance().font,
                     "$mouseX,$mouseY",

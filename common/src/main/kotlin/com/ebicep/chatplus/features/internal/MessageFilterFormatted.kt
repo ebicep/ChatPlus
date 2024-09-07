@@ -15,6 +15,9 @@ open class MessageFilterFormatted : MessageFilter {
     }
 
     fun matches(message: String): Boolean {
+        if (pattern == "(?s).*" || pattern == "(.*?)") {
+            return true
+        }
         return if (formatted) {
             regex.matches(message.replace("§", "&"))
         } else {

@@ -12,7 +12,7 @@ import com.ebicep.chatplus.config.serializers.KeyWithModifier
 import com.ebicep.chatplus.features.FilterMessages
 import com.ebicep.chatplus.features.HoverHighlight
 import com.ebicep.chatplus.features.chatwindows.ChatWindow
-import com.ebicep.chatplus.features.chatwindows.ChatWindowsManager.DefaultWindow
+import com.ebicep.chatplus.features.chatwindows.ChatWindowsManager.createDefaultWindow
 import com.ebicep.chatplus.features.internal.MessageFilter
 import com.ebicep.chatplus.features.internal.MessageFilterFormatted
 import com.ebicep.chatplus.features.speechtotext.SpeechToText
@@ -85,7 +85,7 @@ object Config {
         values.maxMessages = Mth.clamp(values.maxMessages, 1000, 10_000_000)
         values.maxCommandSuggestions = Mth.clamp(values.maxCommandSuggestions, 10, 30)
         if (values.chatWindows.isEmpty()) {
-            values.chatWindows.add(DefaultWindow)
+            values.chatWindows.add(createDefaultWindow())
         }
         LanguageManager.findLanguageFromName(values.translateTo).let { if (it == null) values.translateTo = "Auto Detect" }
         LanguageManager.findLanguageFromName(values.translateSelf).let { if (it == null) values.translateSelf = "Auto Detect" }
@@ -128,7 +128,6 @@ data class ConfigVariables(
     var animationDisableOnFocus: Boolean = false,
     var animationNewMessageTransitionTime: Int = 200,
     // windows
-    var chatWindowsTabsEnabled: Boolean = true,
     var scrollCycleTabEnabled: Boolean = true,
     var arrowCycleTabEnabled: Boolean = true,
     var moveToTabWhenCycling: Boolean = true,
