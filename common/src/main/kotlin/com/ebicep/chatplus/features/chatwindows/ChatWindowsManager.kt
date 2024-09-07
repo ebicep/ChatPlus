@@ -40,7 +40,7 @@ object ChatWindowsManager {
             val guiGraphics = it.guiGraphics
             val poseStack = guiGraphics.pose()
             poseStack.createPose {
-                poseStack.guiForward(if (ChatManager.globalSelectedTab == selectedTab) 700.0 else 500.0)
+                poseStack.guiForward(if (ChatManager.globalSelectedTab == selectedTab) 70.0 else 50.0)
                 val outlineBoxType = outline.outlineBoxType
                 val outlineTabType = outline.outlineTabType
                 outlineBoxType.render(outlineTabType, guiGraphics, chatWindow, selectedTab, renderer)

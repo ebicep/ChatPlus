@@ -7,6 +7,7 @@ import com.ebicep.chatplus.features.chattabs.ChatTabGetMessageAtEvent
 import com.ebicep.chatplus.hud.*
 import com.ebicep.chatplus.util.GraphicsUtil.createPose
 import com.ebicep.chatplus.util.GraphicsUtil.fill0
+import com.ebicep.chatplus.util.GraphicsUtil.guiForward
 import kotlin.math.max
 import kotlin.math.roundToInt
 
@@ -70,12 +71,13 @@ object ScrollBar {
                     barTopY = barTopY.coerceAtLeast(renderer.rescaledY - displayHeight)
                 }
 
+                poseStack.guiForward()
                 guiGraphics.fill0(
                     barStartX,
                     barBottomY,
                     barEndX,
                     barTopY,
-                    1000, // z
+                    // z
                     Config.values.scrollbarColor
                 )
             }

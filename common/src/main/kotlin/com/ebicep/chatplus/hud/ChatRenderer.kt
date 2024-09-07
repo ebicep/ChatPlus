@@ -274,7 +274,7 @@ class ChatRenderer {
             val verticalTextOffset: Float = verticalChatOffset + l1 // align text with background
             var textColor: Int = 16777215 + (textOpacity shl 24)
             poseStack.createPose {
-                poseStack.guiForward(amount = 50.0)
+                poseStack.guiForward()
                 val lineAppearanceEvent = ChatRenderPreLineAppearanceEvent(
                     guiGraphics,
                     chatWindow,
@@ -293,7 +293,6 @@ class ChatRenderer {
                     verticalChatOffset - lineHeight.toFloat(),
                     rescaledEndX,
                     verticalChatOffset,
-                    200,
                     backgroundColor
                 )
             }
@@ -302,7 +301,8 @@ class ChatRenderer {
                 continue
             }
             poseStack.createPose {
-                poseStack.guiForward(amount = 300.0)
+                poseStack.guiForward()
+                poseStack.guiForward()
                 EventBus.post(
                     ChatRenderLineTextEvent(
                         guiGraphics,
@@ -335,7 +335,7 @@ class ChatRenderer {
 
         if (chatFocused && Debug.debug && chatWindow == ChatManager.selectedWindow) {
             poseStack.createPose {
-                poseStack.guiForward(amount = 500.0)
+                poseStack.guiForward(amount = 50.0)
                 guiGraphics.drawString(Minecraft.getInstance().font, "$height", lastMouseX - 15, lastMouseY + 5, 0x3eeff)
                 guiGraphics.drawString(Minecraft.getInstance().font, "$rescaledHeight", lastMouseX - 15, lastMouseY + 15, 0x3eeff)
                 guiGraphics.drawString(Minecraft.getInstance().font, "$lineHeight", lastMouseX - 15, lastMouseY + 25, 0x3eeff)
