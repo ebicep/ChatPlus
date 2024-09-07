@@ -12,8 +12,10 @@ import net.minecraft.client.gui.GuiGraphics
 
 object ChatWindowsManager {
 
-    val DefaultWindow = ChatWindow().also {
-        it.tabSettings.hideTabs = true
+    fun createDefaultWindow(): ChatWindow {
+        return ChatWindow().also {
+            it.tabSettings.hideTabs = true
+        }
     }
 
     init {

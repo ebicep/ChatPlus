@@ -207,11 +207,6 @@ object ConfigScreenImpl {
         val category = builder.getOrCreateCategory(Component.translatable("chatPlus.chatWindowsTabs.title").withStyle(ChatFormatting.GOLD))
         category.addEntry(
             entryBuilder.booleanToggle(
-                "chatPlus.chatWindowsTabs.toggle",
-                Config.values.chatWindowsTabsEnabled
-            ) { Config.values.chatWindowsTabsEnabled = it })
-        category.addEntry(
-            entryBuilder.booleanToggle(
                 "chatPlus.chatWindow.tabSettings.chatTabs.scrollCycleTabEnabled.toggle",
                 Config.values.scrollCycleTabEnabled
             ) { Config.values.scrollCycleTabEnabled = it })
