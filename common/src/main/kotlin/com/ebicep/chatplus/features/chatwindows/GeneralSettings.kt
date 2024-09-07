@@ -12,6 +12,7 @@ import java.awt.Color
 @Serializable
 class GeneralSettings {
 
+    var disabled: Boolean = false
     var backgroundColor: Int = Color(0f, 0f, 0f, .5f).rgb
     var unfocusedBackgroundColorOpacityMultiplier: Float = .4f
     var scale: Float = 1f

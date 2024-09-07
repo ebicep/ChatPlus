@@ -5,7 +5,6 @@ import com.ebicep.chatplus.config.Config;
 import com.ebicep.chatplus.events.EventBus;
 import com.ebicep.chatplus.features.chattabs.AddNewMessageEvent;
 import com.ebicep.chatplus.features.chattabs.ChatTab;
-import com.ebicep.chatplus.features.chattabs.ChatTabs;
 import com.ebicep.chatplus.features.chatwindows.ChatWindow;
 import com.ebicep.chatplus.features.chatwindows.ChatWindowsManager;
 import net.minecraft.client.GuiMessageTag;
@@ -39,25 +38,22 @@ public class MixinChatComponent {
             return;
         }
         List<ChatTab> addMessagesTo = new ArrayList<>();
-        if (!Config.INSTANCE.getValues().getChatWindowsTabsEnabled()) {
-            addMessagesTo.add(ChatTabs.INSTANCE.getDefaultTab());
-        } else {
-            for (ChatWindow window : Config.INSTANCE.getValues().getChatWindows()) {
-                Integer lastPriority = null;
-                for (ChatTab chatTab : window.getTabSettings().getSortedTabs()) {
-                    int priority = chatTab.getPriority();
-                    boolean alwaysAdd = chatTab.getAlwaysAdd();
-                    if (lastPriority != null && lastPriority > priority && !alwaysAdd) {
-                        continue;
+
+        for (ChatWindow window : Config.INSTANCE.getValues().getChatWindows()) {
+            Integer lastPriority = null;
+            for (ChatTab chatTab : window.getTabSettings().getSortedTabs()) {
+                int priority = chatTab.getPriority();
+                boolean alwaysAdd = chatTab.getAlwaysAdd();
+                if (lastPriority != null && lastPriority > priority && !alwaysAdd) {
+                    continue;
+                }
+                if (chatTab.matches(component.getString())) {
+                    addMessagesTo.add(chatTab);
+                    if (chatTab.getSkipOthers()) {
+                        break;
                     }
-                    if (chatTab.matches(component.getString())) {
-                        addMessagesTo.add(chatTab);
-                        if (chatTab.getSkipOthers()) {
-                            break;
-                        }
-                        if (!alwaysAdd) {
-                            lastPriority = priority;
-                        }
+                    if (!alwaysAdd) {
+                        lastPriority = priority;
                     }
                 }
             }

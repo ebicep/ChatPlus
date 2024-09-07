@@ -22,7 +22,7 @@ object OnScreenDisplay {
             val poseStack = guiGraphics.pose()
             components.forEachIndexed { index, it ->
                 poseStack.createPose {
-                    poseStack.guiForward(amount = 5000.0)
+                    poseStack.guiForward(amount = 2000.0)
                     poseStack.translate0(y = index * 10.0)
                     guiGraphics.drawCenteredString(
                         Minecraft.getInstance().font,
