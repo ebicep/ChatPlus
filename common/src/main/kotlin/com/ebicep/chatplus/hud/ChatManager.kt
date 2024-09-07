@@ -5,7 +5,6 @@ import com.ebicep.chatplus.config.queueUpdateConfig
 import com.ebicep.chatplus.events.Event
 import com.ebicep.chatplus.events.Events
 import com.ebicep.chatplus.features.chattabs.ChatTab
-import com.ebicep.chatplus.features.chattabs.ChatTabs.DefaultTab
 import com.ebicep.chatplus.features.chattabs.ChatTabs.createDefaultTab
 import com.ebicep.chatplus.features.chatwindows.ChatWindow
 import net.minecraft.client.Minecraft
@@ -21,9 +20,6 @@ object ChatManager {
         get() = Config.values.chatWindows.last()
     val globalSelectedTab: ChatTab
         get() {
-            if (!Config.values.chatWindowsTabsEnabled) {
-                return DefaultTab
-            }
             if (selectedWindow.tabSettings.tabs.isEmpty()) {
                 selectedWindow.tabSettings.tabs.add(createDefaultTab())
                 selectedWindow.tabSettings.selectedTabIndex = 0

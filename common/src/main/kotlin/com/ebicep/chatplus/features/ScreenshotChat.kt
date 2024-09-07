@@ -96,7 +96,7 @@ object ScreenshotChat {
             val renderer = chatWindow.renderer
             // fill background to change to transparent later
             val guiGraphics = it.guiGraphics
-            guiGraphics.pose().guiForward(100.0)
+            guiGraphics.pose().guiForward(10.0)
             guiGraphics.fill0(
                 renderer.rescaledX - 10,
                 renderer.rescaledY - renderer.rescaledHeight - 10,

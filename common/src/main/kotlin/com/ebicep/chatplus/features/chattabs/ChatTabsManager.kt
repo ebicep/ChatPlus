@@ -5,10 +5,10 @@ import com.ebicep.chatplus.events.ChatPlusTickEvent
 import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.events.Events
 import com.ebicep.chatplus.features.chatwindows.ChatWindow
-import com.ebicep.chatplus.features.chatwindows.ChatWindowsManager.DefaultWindow
 import com.ebicep.chatplus.hud.*
 import com.ebicep.chatplus.hud.ChatManager.selectedWindow
 import com.ebicep.chatplus.mixin.IMixinChatScreen
+import net.minecraft.util.Mth
 
 
 const val CHAT_TAB_HEIGHT = 15
@@ -25,12 +25,8 @@ object ChatTabs {
 
     init {
         EventBus.register<ChatPlusTickEvent> {
-            if (!Config.values.chatWindowsTabsEnabled) {
-                checkTabRefresh(DefaultWindow, DefaultTab)
-            } else {
-                Config.values.chatWindows.forEach { window ->
-                    window.tabSettings.tabs.forEach { checkTabRefresh(window, it) }
-                }
+            Config.values.chatWindows.forEach { window ->
+                window.tabSettings.tabs.forEach { checkTabRefresh(window, it) }
             }
         }
         EventBus.register<ChatRenderPreLinesEvent>({ 100 }) {
@@ -40,7 +36,7 @@ object ChatTabs {
             }
         }
         EventBus.register<ChatScreenKeyPressedEvent> {
-            if (!Config.values.chatWindowsTabsEnabled || !Config.values.arrowCycleTabEnabled) {
+            if (!Config.values.arrowCycleTabEnabled) {
                 return@register
             }
             it.screen as IMixinChatScreen

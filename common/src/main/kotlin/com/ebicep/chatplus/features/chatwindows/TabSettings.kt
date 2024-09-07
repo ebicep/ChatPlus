@@ -149,7 +149,7 @@ class TabSettings {
                     it.xStart = translateX
                     it.yStart = translatedY
 
-                    if (!hideTabs) {
+                    if (!hideTabs && !chatWindow.generalSettings.disabled) {
                         renderTab(it, guiGraphics)
                     }
 
@@ -203,7 +203,7 @@ class TabSettings {
         }
 
         poseStack.createPose {
-            poseStack.guiForward(if (isGlobalSelected) 650.0 else 550.0)
+            poseStack.guiForward(if (isGlobalSelected) 65.0 else 55.0)
             guiGraphics.fill(
                 0,
                 startY,
