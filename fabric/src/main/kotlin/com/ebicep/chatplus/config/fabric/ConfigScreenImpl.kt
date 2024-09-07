@@ -399,6 +399,12 @@ object ConfigScreenImpl {
     ): SubCategoryBuilder {
         val generalCategory = entryBuilder.startSubCategory(Component.translatable("chatPlus.chatWindow.generalSettings"))
         generalCategory.add(
+            entryBuilder.booleanToggle(
+                "chatPlus.chatWindow.generalSettings.disabled",
+                window.generalSettings.disabled
+            ) { window.generalSettings.disabled = it }
+        )
+        generalCategory.add(
             entryBuilder.alphaField(
                 "chatPlus.chatWindow.generalSettings.backgroundColor",
                 window.generalSettings.backgroundColor

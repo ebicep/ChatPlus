@@ -85,6 +85,8 @@
   "chatPlus.chatWindowsTabs.toggle": "Enabled",
   "chatPlus.chatWindowsTabs.toggle.tooltip": "Enables/Disables chat windows/tabs.",
   "chatPlus.chatWindow.generalSettings": "General",
+  "chatPlus.chatWindow.generalSettings.disabled": "Disabled",
+  "chatPlus.chatWindow.generalSettings.disabled.tooltip": "Enables/Disables the rendering the whole chat window, even when focused.",
   "chatPlus.chatWindow.generalSettings.backgroundColor": "Background Color",
   "chatPlus.chatWindow.generalSettings.backgroundColor.tooltip": "Background color of the chat window.",
   "chatPlus.chatWindow.generalSettings.unfocusedBackgroundColorOpacityReduction": "Unfocused Background Opacity Reduction",

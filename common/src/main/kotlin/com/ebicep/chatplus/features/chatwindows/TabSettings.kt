@@ -149,7 +149,7 @@ class TabSettings {
                     it.xStart = translateX
                     it.yStart = translatedY
 
-                    if (!hideTabs) {
+                    if (!hideTabs && !chatWindow.generalSettings.disabled) {
                         renderTab(it, guiGraphics)
                     }
 

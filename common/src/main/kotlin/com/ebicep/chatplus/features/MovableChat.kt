@@ -647,6 +647,7 @@ object MovableChat {
         Config.values.chatWindows
             .reversed()
             .filter { it !== chatWindow }
+            .filter { !it.generalSettings.disabled }
             .forEach { otherWindow ->
                 val otherRenderer = otherWindow.renderer
                 val insideX = otherRenderer.internalX < mouseX && mouseX < otherRenderer.backgroundWidthEndX
