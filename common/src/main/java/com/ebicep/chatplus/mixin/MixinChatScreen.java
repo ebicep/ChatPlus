@@ -131,6 +131,14 @@ public abstract class MixinChatScreen extends Screen implements IMixinChatScreen
         return true;
     }
 
+    @ModifyArg(method = "init", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/CommandSuggestions;<init>(Lnet/minecraft/client/Minecraft;Lnet/minecraft/client/gui/screens/Screen;Lnet/minecraft/client/gui/components/EditBox;Lnet/minecraft/client/gui/Font;ZZIIZI)V"), index = 7)
+    private int modifyChatScreenCommandSuggestionsMaxHeight(int maxSuggestions) {
+        if (!Config.INSTANCE.getValues().getEnabled()) {
+            return maxSuggestions;
+        }
+        return Config.INSTANCE.getValues().getMaxCommandSuggestions();
+    }
+
     @Inject(method = "removed", at = @At("HEAD"))
     private void removed(CallbackInfo ci) {
         if (!Config.INSTANCE.getValues().getEnabled()) {
@@ -158,14 +166,6 @@ public abstract class MixinChatScreen extends Screen implements IMixinChatScreen
             cir.setReturnValue(true);
             cir.cancel();
         }
-    }
-
-    @Override
-    public boolean keyReleased(int i, int j, int k) {
-        if (Config.INSTANCE.getValues().getEnabled()) {
-            ChatPlusScreenAdapter.INSTANCE.handleKeyReleased(thisScreen(), i, j, k);
-        }
-        return super.keyReleased(i, j, k);
     }
 
     @Inject(method = "keyPressed", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/ChatComponent;scrollChat(I)V", ordinal = 0))
@@ -244,6 +244,14 @@ public abstract class MixinChatScreen extends Screen implements IMixinChatScreen
             return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
         }
         return true;
+    }
+
+    @Override
+    public boolean keyReleased(int i, int j, int k) {
+        if (Config.INSTANCE.getValues().getEnabled()) {
+            ChatPlusScreenAdapter.INSTANCE.handleKeyReleased(thisScreen(), i, j, k);
+        }
+        return super.keyReleased(i, j, k);
     }
 
     @Inject(method = "moveInHistory", at = @At("HEAD"), cancellable = true)
