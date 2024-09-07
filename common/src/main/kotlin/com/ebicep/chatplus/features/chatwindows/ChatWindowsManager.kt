@@ -12,22 +12,32 @@ import net.minecraft.client.gui.GuiGraphics
 
 object ChatWindowsManager {
 
-    val DefaultWindow = ChatWindow().also {
-        it.tabSettings.hideTabs = true
+    fun createDefaultWindow(): ChatWindow {
+        return ChatWindow().also {
+            it.tabSettings.hideTabs = true
+        }
     }
 
     init {
         EventBus.register<ChatScreenMouseClickedEvent>({ 10000 }) {
             // check if mouse in inside widows starting from last
-            for (i in Config.values.chatWindows.size - 1 downTo 0) {
-                if (insideWindow(Config.values.chatWindows[i], it.mouseX, it.mouseY)) {
-                    selectWindow(Config.values.chatWindows[i])
+            val chatWindows = Config.values.chatWindows
+            for (i in chatWindows.size - 1 downTo 0) {
+                val chatWindow = chatWindows[i]
+                if (chatWindow.generalSettings.disabled) {
+                    continue
+                }
+                if (insideWindow(chatWindow, it.mouseX, it.mouseY)) {
+                    selectWindow(chatWindow)
                     return@register
                 }
             }
         }
         EventBus.register<ChatRenderPreLinesEvent> {
             val chatWindow = it.chatWindow
+            if (chatWindow.generalSettings.disabled) {
+                return@register
+            }
             val outline = chatWindow.outlineSettings
             if (!ChatManager.isChatFocused() && !(!ChatManager.isChatFocused() && outline.showWhenChatNotOpen)) {
                 return@register
@@ -40,7 +50,7 @@ object ChatWindowsManager {
             val guiGraphics = it.guiGraphics
             val poseStack = guiGraphics.pose()
             poseStack.createPose {
-                poseStack.guiForward(if (ChatManager.globalSelectedTab == selectedTab) 700.0 else 500.0)
+                poseStack.guiForward(if (ChatManager.globalSelectedTab == selectedTab) 70.0 else 50.0)
                 val outlineBoxType = outline.outlineBoxType
                 val outlineTabType = outline.outlineTabType
                 outlineBoxType.render(outlineTabType, guiGraphics, chatWindow, selectedTab, renderer)
@@ -82,6 +92,9 @@ object ChatWindowsManager {
 
     fun renderAll(guiGraphics: GuiGraphics, i: Int, j: Int, k: Int) {
         Config.values.chatWindows.forEachIndexed { index, it ->
+            if (it.generalSettings.disabled) {
+                return@forEachIndexed
+            }
             val poseStack = guiGraphics.pose()
             poseStack.createPose {
                 poseStack.translate0(z = index * 1000)

@@ -449,7 +449,7 @@ object MovableChat {
         val poseStack = guiGraphics.pose()
         poseStack.createPose {
             // below cursor - if tab is outside tab bar
-            poseStack.guiForward(amount = 100.0)
+            poseStack.guiForward(amount = 10.0)
             guiGraphics.drawString(
                 Minecraft.getInstance().font,
                 "$outsideTabBar",
@@ -572,22 +572,22 @@ object MovableChat {
     ) {
         poseStack.createPose {
             if (movingChatWidth) {
+                poseStack.guiForward()
                 guiGraphics.fill0(
                     x + backgroundWidth - RENDER_MOVING_SIZE,
                     y - height.toFloat(),
                     x + backgroundWidth.toFloat(),
                     y.toFloat(),
-                    2000,
                     0xFFFFFFFF.toInt()
                 )
             }
             if (movingChatHeight) {
+                poseStack.guiForward()
                 guiGraphics.fill0(
                     x.toFloat(),
                     y - height.toFloat(),
                     x + backgroundWidth.toFloat(),
                     y - height + RENDER_MOVING_SIZE,
-                    2000,
                     0xFFFFFFFF.toInt()
                 )
             }
@@ -647,6 +647,7 @@ object MovableChat {
         Config.values.chatWindows
             .reversed()
             .filter { it !== chatWindow }
+            .filter { !it.generalSettings.disabled }
             .forEach { otherWindow ->
                 val otherRenderer = otherWindow.renderer
                 val insideX = otherRenderer.internalX < mouseX && mouseX < otherRenderer.backgroundWidthEndX
