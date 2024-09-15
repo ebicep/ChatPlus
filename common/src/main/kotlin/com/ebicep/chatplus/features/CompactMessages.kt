@@ -104,14 +104,10 @@ object CompactMessages {
         return MutableComponent.create(LiteralContentsIgnored(string))
     }
 
-    class LiteralContentsIgnored(val text: String) : ComponentContents {
+    class LiteralContentsIgnored(val text: String) : PlainTextContents {
 
         override fun <T> visit(arg: FormattedText.ContentConsumer<T>): Optional<T> {
             return arg.accept(this.text)
-        }
-
-        override fun type(): ComponentContents.Type<*> {
-            return PlainTextContents.TYPE
         }
 
         override fun <T> visit(arg: FormattedText.StyledContentConsumer<T>, arg2: Style): Optional<T> {
@@ -120,6 +116,10 @@ object CompactMessages {
 
         override fun toString(): String {
             return "literalIgnored{" + this.text + "}"
+        }
+
+        override fun text(): String {
+            return text
         }
 
         override fun equals(other: Any?): Boolean {
