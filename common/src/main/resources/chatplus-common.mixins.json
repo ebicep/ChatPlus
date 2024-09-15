@@ -15,6 +15,7 @@
     "NativeImagePointerAccessor"
   ],
   "mixins": [
+    "MixinComponentSerializer"
   ],
   "injectors": {
     "defaultRequire": 1
