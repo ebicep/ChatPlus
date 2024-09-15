@@ -171,6 +171,8 @@
   "chatPlus.chatWindow.tabSettings.chatTabs.alwaysAdd.tooltip": "Always add messages to this tab regardless of priority, this tab's priority is also ignored.",
   "chatPlus.chatWindow.tabSettings.chatTabs.skipOthers": "Skip Others",
   "chatPlus.chatWindow.tabSettings.chatTabs.skipOthers.tooltip": "Skip other tabs if this tab is matched. Overrides Always Add.",
+  "chatPlus.chatWindow.tabSettings.chatTabs.commandsOverrideAutoPrefix": "Commands Override Auto Prefix",
+  "chatPlus.chatWindow.tabSettings.chatTabs.commandsOverrideAutoPrefix.tooltip": "If enabled, auto prefix will not be prepended to sent commands.",
   "chatPlus.movableChat.title": "Movable Chat",
   "chatPlus.movableChat.toggle": "Enabled",
   "chatPlus.movableChat.toggle.tooltip": "Enables/Disables making the chat movable.\n \nClick and drag the chat/tab to move it.\n \nClick and drag the top edge/right edge/top right corner of the chat to rescale it.",
