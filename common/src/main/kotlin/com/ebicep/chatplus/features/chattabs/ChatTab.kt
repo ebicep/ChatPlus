@@ -65,6 +65,8 @@ class ChatTab : MessageFilterFormatted {
     // if true then tab loop will break if message is added to this tab, overrides alwaysAdds
     var skipOthers: Boolean = false
 
+    var commandsOverrideAutoPrefix: Boolean = true
+
     constructor(chatWindow: ChatWindow, name: String, pattern: String, autoPrefix: String = "", alwaysAdd: Boolean = false) : super(pattern) {
         this.chatWindow = chatWindow
         this.name = name
