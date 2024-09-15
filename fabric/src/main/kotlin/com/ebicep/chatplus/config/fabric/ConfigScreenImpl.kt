@@ -347,6 +347,10 @@ object ConfigScreenImpl {
                             "chatPlus.chatWindow.tabSettings.chatTabs.skipOthers",
                             value.skipOthers
                         ) { value.skipOthers = it },
+                        entryBuilder.booleanToggle(
+                            "chatPlus.chatWindow.tabSettings.chatTabs.commandsOverrideAutoPrefix",
+                            value.commandsOverrideAutoPrefix
+                        ) { value.commandsOverrideAutoPrefix = it },
                     )
                 },
                 { Component.literal(it.name) },
