@@ -146,7 +146,7 @@ class ChatTab : MessageFilterFormatted {
     }
 
     fun addNewMessage(addNewMessageEvent: AddNewMessageEvent) {
-        val mutableComponent = addNewMessageEvent.mutableComponent
+        val mutableComponent = addNewMessageEvent.mutableComponent.copy()
         val rawComponent = addNewMessageEvent.rawComponent
         val signature = addNewMessageEvent.signature
         val addedTime = addNewMessageEvent.addedTime
@@ -183,8 +183,18 @@ class ChatTab : MessageFilterFormatted {
         linkedMessage: ChatPlusGuiMessage
     ) {
         val maxWidth = Mth.floor(this.chatWindow.renderer.getBackgroundWidth())
-        val displayMessageEvent =
-            EventBus.post(ChatTabAddDisplayMessageEvent(chatWindow, this, component, addedTime, tag, linkedMessage, maxWidth))
+        val displayMessageEvent = EventBus.post(
+            ChatTabAddDisplayMessageEvent(
+                AddDisplayMessageType.TAB,
+                chatWindow,
+                this,
+                component,
+                addedTime,
+                tag,
+                linkedMessage,
+                maxWidth
+            )
+        )
         addWrappedComponents(component, displayMessageEvent, addedTime, tag, linkedMessage, -1)
         while (
             !displayMessageEvent.filtered &&
@@ -501,9 +511,10 @@ data class ChatTabAddNewMessageEvent(
 ) : Event
 
 data class ChatTabAddDisplayMessageEvent(
+    val addDisplayMessageType: AddDisplayMessageType,
     val chatWindow: ChatWindow,
     val chatTab: ChatTab,
-    val component: Component,
+    val component: MutableComponent,
     val addedTime: Int,
     val tag: GuiMessageTag?,
     val linkedMessage: ChatTab.ChatPlusGuiMessage,
@@ -511,6 +522,11 @@ data class ChatTabAddDisplayMessageEvent(
     var addMessage: Boolean = true,
     var filtered: Boolean = false,
 ) : Event
+
+enum class AddDisplayMessageType {
+    TAB,
+    COMPACT,
+}
 
 data class ChatTabRemoveMessageEvent(
     val chatWindow: ChatWindow,

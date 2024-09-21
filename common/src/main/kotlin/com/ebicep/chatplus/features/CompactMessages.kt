@@ -2,6 +2,7 @@ package com.ebicep.chatplus.features
 
 import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.events.EventBus
+import com.ebicep.chatplus.features.chattabs.AddDisplayMessageType
 import com.ebicep.chatplus.features.chattabs.ChatTab
 import com.ebicep.chatplus.features.chattabs.ChatTabAddDisplayMessageEvent
 import com.ebicep.chatplus.features.chattabs.ChatTabAddNewMessageEvent
@@ -71,6 +72,7 @@ object CompactMessages {
                 val addedTime = if (Config.values.compactMessagesRefreshAddedTime) it.addedTime else oldDisplayMessage.line.addedTime
                 val displayMessageEvent = EventBus.post(
                     ChatTabAddDisplayMessageEvent(
+                        AddDisplayMessageType.COMPACT,
                         it.chatWindow,
                         chatTab,
                         it.mutableComponent,
@@ -95,6 +97,17 @@ object CompactMessages {
             val removeRawComponentStartIndex = max(0, messages.size - Config.values.compactMessagesSearchAmount - 1)
             for (i in removeRawComponentStartIndex downTo max(0, removeRawComponentStartIndex - 25)) {
                 messages[i].rawComponent = null
+            }
+        }
+        EventBus.register<ChatTabAddDisplayMessageEvent> {
+            if (it.addDisplayMessageType != AddDisplayMessageType.TAB) {
+                return@register
+            }
+            if (it.linkedMessage.timesRepeated <= 1) {
+                return@register
+            }
+            if (it.component.siblings.none { component -> component.contents is LiteralContentsIgnored }) {
+                it.component.siblings.add(literalIgnored(" (${it.linkedMessage.timesRepeated})").withStyle(COMPACT_STYLE))
             }
         }
     }
