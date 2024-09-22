@@ -71,7 +71,6 @@ object Config {
     }
 
     private fun loadValues() {
-//        values.chatWindows.forEach { it.init() }
         values.filterMessagesPatterns.forEach {
             it.regex = Regex(it.pattern)
         }
