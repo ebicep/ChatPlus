@@ -9,6 +9,7 @@ import com.ebicep.chatplus.MOD_ID
 import com.ebicep.chatplus.config.migration.MigrationManager
 import com.ebicep.chatplus.config.serializers.KeySerializer
 import com.ebicep.chatplus.config.serializers.KeyWithModifier
+import com.ebicep.chatplus.features.CompactMessages
 import com.ebicep.chatplus.features.FilterMessages
 import com.ebicep.chatplus.features.HoverHighlight
 import com.ebicep.chatplus.features.chatwindows.ChatWindow
@@ -116,8 +117,9 @@ data class ConfigVariables(
     // compact messages
     var compactMessagesEnabled: Boolean = true,
     var compactMessagesRefreshAddedTime: Boolean = false,
-    var compactMessagesIgnoreTimestamps: Boolean = false,
     var compactMessagesSearchAmount: Int = 1,
+    var compactMessageComparatorMode: CompactMessages.CompactComparatorMode = CompactMessages.CompactComparatorMode.VANILLA,
+    var compactMessageSettings: CompactMessages.CompactMessageCustomSettings = CompactMessages.CompactMessageCustomSettings(),
     // scrollbar
     var scrollbarEnabled: Boolean = true,
     var invertedScrolling: Boolean = false,

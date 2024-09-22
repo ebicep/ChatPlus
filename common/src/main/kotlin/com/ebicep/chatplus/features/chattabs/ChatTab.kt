@@ -34,7 +34,6 @@ import java.util.concurrent.ConcurrentHashMap.KeySetView
 class ChatTab : MessageFilterFormatted {
 
     class ChatPlusGuiMessage(
-        var rawComponent: Component? = null,
         var timesRepeated: Int = 1,
         var senderUUID: UUID? = null
     ) {

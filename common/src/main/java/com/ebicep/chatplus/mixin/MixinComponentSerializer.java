@@ -1,6 +1,6 @@
 package com.ebicep.chatplus.mixin;
 
-import com.ebicep.chatplus.features.CompactMessages;
+import com.ebicep.chatplus.util.ComponentUtil;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSerializationContext;
@@ -34,7 +34,7 @@ public class MixinComponentSerializer {
             @Local ComponentContents componentContents,
             @Local JsonObject jsonObject
     ) {
-        if (componentContents instanceof CompactMessages.LiteralContentsIgnored literalContentsIgnored) {
+        if (componentContents instanceof ComponentUtil.LiteralContentsIgnored literalContentsIgnored) {
             jsonObject.addProperty("text", literalContentsIgnored.getText());
             cir.setReturnValue(jsonObject);
             cir.cancel();
