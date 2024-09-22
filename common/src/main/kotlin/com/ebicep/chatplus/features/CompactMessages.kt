@@ -150,7 +150,7 @@ object CompactMessages {
     ) {
 
         @Transient
-        private val filterComponents: (Component) -> Boolean = filterComponents@{
+        private val filterComponents: (Component) -> Boolean = {
             if (isCompactContents(it)) {
                 false
             } else if (ignoreTimestamps && isTimestampContents(it)) {

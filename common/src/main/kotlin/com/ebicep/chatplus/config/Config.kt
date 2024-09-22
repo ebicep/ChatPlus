@@ -26,7 +26,7 @@ import net.minecraft.util.Mth
 import java.awt.Color
 import java.io.File
 
-const val CONFIG_NAME = "${MOD_ID}-v2.json"
+const val CONFIG_NAME = "${MOD_ID}-v2.1.0.json"
 val json = Json {
     encodeDefaults = true
     ignoreUnknownKeys = true
