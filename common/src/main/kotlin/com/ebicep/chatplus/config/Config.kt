@@ -113,6 +113,8 @@ data class ConfigVariables(
     var hideChatShowWhenFocused: Boolean = true,
     var hideChatShowHiddenOnScreen: Boolean = true,
     var hideChatToggleKey: KeyWithModifier = KeyWithModifier(InputConstants.getKey("key.keyboard.unknown"), 0),
+    var alwaysShowChat: Boolean = false,
+    var alwaysShowChatToggleKey: KeyWithModifier = KeyWithModifier(InputConstants.getKey("key.keyboard.unknown"), 0),
     // compact messages
     var compactMessagesEnabled: Boolean = true,
     var compactMessagesRefreshAddedTime: Boolean = false,

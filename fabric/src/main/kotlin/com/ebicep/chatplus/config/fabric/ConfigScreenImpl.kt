@@ -133,6 +133,17 @@ object ConfigScreenImpl {
                 Config.values.hideChatToggleKey
             )
         )
+        hideChat.addEntry(
+            entryBuilder.booleanToggle(
+                "chatPlus.hideChat.alwaysShowChat.toggle",
+                Config.values.alwaysShowChat
+            ) { Config.values.alwaysShowChat = it })
+        hideChat.addEntry(
+            entryBuilder.keyCodeOptionWithModifier(
+                "chatPlus.hideChat.alwaysShowChat.key",
+                Config.values.alwaysShowChatToggleKey
+            )
+        )
     }
 
     private fun addCompactMessagesOptions(builder: ConfigBuilder, entryBuilder: ConfigEntryBuilder) {
