@@ -10,6 +10,7 @@ import com.ebicep.chatplus.features.chattabs.ChatTab.Companion.TAB_HEIGHT
 import com.ebicep.chatplus.features.chattabs.ChatTabs.createDefaultTab
 import com.ebicep.chatplus.features.internal.Debug
 import com.ebicep.chatplus.hud.ChatManager
+import com.ebicep.chatplus.hud.ChatManager.resetGlobalSortedTabs
 import com.ebicep.chatplus.util.GraphicsUtil.createPose
 import com.ebicep.chatplus.util.GraphicsUtil.guiForward
 import com.ebicep.chatplus.util.GraphicsUtil.translate0
@@ -56,7 +57,6 @@ class TabSettings {
         tabs.forEach {
             it.regex = Regex(it.pattern)
         }
-        resetSortedChatTabs()
     }
 
     fun clone(): TabSettings {
@@ -73,8 +73,11 @@ class TabSettings {
         return "(${tabs.joinToString(",") { it.name }})"
     }
 
-    fun resetSortedChatTabs() {
+    fun resetSortedChatTabs(resetGlobal: Boolean = true) {
         sortedTabs = tabs.sortedBy { -it.priority }
+        if (resetGlobal) {
+            resetGlobalSortedTabs()
+        }
     }
 
     // negative = scroll left , positive = scroll right

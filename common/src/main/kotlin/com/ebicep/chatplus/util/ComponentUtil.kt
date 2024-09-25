@@ -2,15 +2,66 @@ package com.ebicep.chatplus.util
 
 import net.minecraft.ChatFormatting
 import net.minecraft.client.Minecraft
-import net.minecraft.network.chat.Component
-import net.minecraft.network.chat.HoverEvent
-import net.minecraft.network.chat.MutableComponent
-import net.minecraft.network.chat.Style
+import net.minecraft.network.chat.*
 import java.awt.Color
 import java.util.*
 
 
 object ComponentUtil {
+
+
+    fun literalIgnored(string: String, ignoredType: LiteralIgnoredType): MutableComponent {
+        return MutableComponent.create(LiteralContentsIgnored(string, ignoredType))
+    }
+
+    class LiteralContentsIgnored(val text: String, private val ignoredType: LiteralIgnoredType) : ComponentContents {
+
+        override fun <T> visit(arg: FormattedText.ContentConsumer<T>): Optional<T> {
+            return arg.accept(this.text)
+        }
+
+        override fun <T> visit(arg: FormattedText.StyledContentConsumer<T>, arg2: Style): Optional<T> {
+            return arg.accept(arg2, this.text)
+        }
+
+        override fun toString(): String {
+            return "literalIgnored{" + this.text + "}"
+        }
+
+        override fun equals(other: Any?): Boolean {
+            return if (this === other) {
+                true
+            } else if (other !is LiteralContentsIgnored) {
+                false
+            } else {
+                this.text == other.text
+            }
+        }
+
+        override fun hashCode(): Int {
+            return text.hashCode()
+        }
+
+        fun isType(type: LiteralIgnoredType): Boolean {
+            return ignoredType == type
+        }
+
+    }
+
+    enum class LiteralIgnoredType {
+        TIMESTAMP,
+        COMPACT
+    }
+
+
+    fun componentIsType(component: Component, type: LiteralIgnoredType): Boolean {
+        return component.contents is LiteralContentsIgnored && (component.contents as LiteralContentsIgnored).isType(type)
+    }
+
+    fun isTimestampContents(it: Component) = componentIsType(it, LiteralIgnoredType.TIMESTAMP)
+
+    fun isCompactContents(it: Component) = componentIsType(it, LiteralIgnoredType.COMPACT)
+
 
     fun literal(text: String, color: ChatFormatting, hoverEvent: HoverEvent? = null): MutableComponent {
         return Component.literal(text).withStyle {

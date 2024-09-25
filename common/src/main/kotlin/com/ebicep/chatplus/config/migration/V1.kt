@@ -38,6 +38,7 @@ object V1 : Migrator<SchemaV1> {
             it.tabSettings.tabs = old.chatTabs
         })
         values.translatorRegexes = old.translatorRegexes.map { MessageFilter(it.match) }.toMutableList()
+        values.compactMessageSettings.ignoreTimestamps = old.compactMessagesIgnoreTimestamps
     }
 
 }
@@ -59,7 +60,9 @@ data class SchemaV1(
 
     var chatTabs: MutableList<ChatTab> = mutableListOf(),
 
-    var translatorRegexes: MutableList<SchemaV0TranslatorRegex> = mutableListOf()
+    var translatorRegexes: MutableList<SchemaV0TranslatorRegex> = mutableListOf(),
+
+    var compactMessagesIgnoreTimestamps: Boolean = false
 
 )
 
