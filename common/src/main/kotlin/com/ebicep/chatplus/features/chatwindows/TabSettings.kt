@@ -57,6 +57,7 @@ class TabSettings {
         tabs.forEach {
             it.regex = Regex(it.pattern)
         }
+        resetSortedChatTabs(false)
     }
 
     fun clone(): TabSettings {
