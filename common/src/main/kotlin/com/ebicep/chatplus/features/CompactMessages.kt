@@ -125,7 +125,7 @@ object CompactMessages {
         return when (Config.values.compactMessageComparatorMode) {
             CompactComparatorMode.VANILLA -> {
                 var c1 = component1
-                var c2 = component1
+                var c2 = component2
                 if (component1 != null) {
                     c1 = c1!!.copy()
                     c1.siblings.removeIf { component -> isCompactContents(component) }
