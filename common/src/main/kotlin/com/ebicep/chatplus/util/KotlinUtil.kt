@@ -15,6 +15,25 @@ object KotlinUtil {
         return false
     }
 
+    fun <T> areListsEqual(
+        list1: List<T>,
+        list2: List<T>,
+        comparator: (T, T) -> Boolean
+    ): Boolean {
+        // Check if the lists are of the same size
+        if (list1.size != list2.size) {
+            return false
+        }
+
+        // Compare each element using the custom comparator
+        for (i in list1.indices) {
+            if (!comparator(list1[i], list2[i])) {
+                return false
+            }
+        }
+        return true
+    }
+
     private const val FACTOR: Double = 0.9
 
     fun Color.brighter2(): Color {

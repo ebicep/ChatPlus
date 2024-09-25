@@ -9,6 +9,7 @@ import com.ebicep.chatplus.MOD_ID
 import com.ebicep.chatplus.config.migration.MigrationManager
 import com.ebicep.chatplus.config.serializers.KeySerializer
 import com.ebicep.chatplus.config.serializers.KeyWithModifier
+import com.ebicep.chatplus.features.CompactMessages
 import com.ebicep.chatplus.features.FilterMessages
 import com.ebicep.chatplus.features.HoverHighlight
 import com.ebicep.chatplus.features.chatwindows.ChatWindow
@@ -25,7 +26,7 @@ import net.minecraft.util.Mth
 import java.awt.Color
 import java.io.File
 
-const val CONFIG_NAME = "${MOD_ID}-v2.json"
+const val CONFIG_NAME = "${MOD_ID}-v2.1.0.json"
 val json = Json {
     encodeDefaults = true
     ignoreUnknownKeys = true
@@ -70,7 +71,6 @@ object Config {
     }
 
     private fun loadValues() {
-//        values.chatWindows.forEach { it.init() }
         values.filterMessagesPatterns.forEach {
             it.regex = Regex(it.pattern)
         }
@@ -113,11 +113,14 @@ data class ConfigVariables(
     var hideChatShowWhenFocused: Boolean = true,
     var hideChatShowHiddenOnScreen: Boolean = true,
     var hideChatToggleKey: KeyWithModifier = KeyWithModifier(InputConstants.getKey("key.keyboard.unknown"), 0),
+    var alwaysShowChat: Boolean = false,
+    var alwaysShowChatToggleKey: KeyWithModifier = KeyWithModifier(InputConstants.getKey("key.keyboard.unknown"), 0),
     // compact messages
     var compactMessagesEnabled: Boolean = true,
     var compactMessagesRefreshAddedTime: Boolean = false,
-    var compactMessagesIgnoreTimestamps: Boolean = false,
     var compactMessagesSearchAmount: Int = 1,
+    var compactMessageComparatorMode: CompactMessages.CompactComparatorMode = CompactMessages.CompactComparatorMode.VANILLA,
+    var compactMessageSettings: CompactMessages.CompactMessageCustomSettings = CompactMessages.CompactMessageCustomSettings(),
     // scrollbar
     var scrollbarEnabled: Boolean = true,
     var invertedScrolling: Boolean = false,
