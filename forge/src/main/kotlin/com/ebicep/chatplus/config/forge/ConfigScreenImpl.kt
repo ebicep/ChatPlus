@@ -133,6 +133,17 @@ object ConfigScreenImpl {
                 Config.values.hideChatToggleKey
             )
         )
+        hideChat.addEntry(
+            entryBuilder.booleanToggle(
+                "chatPlus.hideChat.alwaysShowChat.toggle",
+                Config.values.alwaysShowChat
+            ) { Config.values.alwaysShowChat = it })
+        hideChat.addEntry(
+            entryBuilder.keyCodeOptionWithModifier(
+                "chatPlus.hideChat.alwaysShowChat.key",
+                Config.values.alwaysShowChatToggleKey
+            )
+        )
     }
 
     private fun addCompactMessagesOptions(builder: ConfigBuilder, entryBuilder: ConfigEntryBuilder) {
@@ -143,13 +154,7 @@ object ConfigScreenImpl {
         compactChat.addEntry(entryBuilder.booleanToggle(
             "chatPlus.compactMessages.refreshFadeTime.toggle",
             Config.values.compactMessagesRefreshAddedTime
-        )
-        { Config.values.compactMessagesRefreshAddedTime = it })
-        compactChat.addEntry(entryBuilder.booleanToggle(
-            "chatPlus.compactMessages.ignoreTimestamps.toggle",
-            Config.values.compactMessagesIgnoreTimestamps
-        )
-        { Config.values.compactMessagesIgnoreTimestamps = it })
+        ) { Config.values.compactMessagesRefreshAddedTime = it })
         compactChat.addEntry(
             entryBuilder.intSlider(
                 "chatPlus.compactMessages.searchAmount",
@@ -157,6 +162,94 @@ object ConfigScreenImpl {
                 1,
                 25
             ) { Config.values.compactMessagesSearchAmount = it })
+        compactChat.addEntry(
+            entryBuilder.enumSelector(
+                "chatPlus.compactMessages.comparatorMode",
+                CompactMessages.CompactComparatorMode::class.java,
+                Config.values.compactMessageComparatorMode
+            ) { Config.values.compactMessageComparatorMode = it })
+        val compactSettings = entryBuilder.startSubCategory(Component.translatable("chatPlus.compactMessages.comparatorSettings"))
+        compactSettings.add(
+            entryBuilder.booleanToggle(
+                "chatPlus.compactMessages.compactMessageSettings.ignoreTimestamps",
+                Config.values.compactMessageSettings.ignoreTimestamps
+            ) { Config.values.compactMessageSettings.ignoreTimestamps = it }
+        )
+        compactSettings.add(
+            entryBuilder.booleanToggle(
+                "chatPlus.compactMessages.compactMessageSettings.contents",
+                Config.values.compactMessageSettings.contents
+            ) { Config.values.compactMessageSettings.contents = it }
+        )
+        compactSettings.add(
+            entryBuilder.booleanToggle(
+                "chatPlus.compactMessages.compactMessageSettings.style",
+                Config.values.compactMessageSettings.style
+            ) { Config.values.compactMessageSettings.style = it }
+        )
+        val compactStyleSettings = entryBuilder.startSubCategory(Component.translatable("chatPlus.compactMessages.compactMessageSettings.styleSettings"))
+        compactStyleSettings.add(
+            entryBuilder.booleanToggle(
+                "chatPlus.compactMessages.compactMessageSettings.styleSettings.color",
+                Config.values.compactMessageSettings.styleSettings.color
+            ) { Config.values.compactMessageSettings.styleSettings.color = it }
+        )
+        compactStyleSettings.add(
+            entryBuilder.booleanToggle(
+                "chatPlus.compactMessages.compactMessageSettings.styleSettings.bold",
+                Config.values.compactMessageSettings.styleSettings.bold
+            ) { Config.values.compactMessageSettings.styleSettings.bold = it }
+        )
+        compactStyleSettings.add(
+            entryBuilder.booleanToggle(
+                "chatPlus.compactMessages.compactMessageSettings.styleSettings.italic",
+                Config.values.compactMessageSettings.styleSettings.italic
+            ) { Config.values.compactMessageSettings.styleSettings.italic = it }
+        )
+        compactStyleSettings.add(
+            entryBuilder.booleanToggle(
+                "chatPlus.compactMessages.compactMessageSettings.styleSettings.underlined",
+                Config.values.compactMessageSettings.styleSettings.underlined
+            ) { Config.values.compactMessageSettings.styleSettings.underlined = it }
+        )
+        compactStyleSettings.add(
+            entryBuilder.booleanToggle(
+                "chatPlus.compactMessages.compactMessageSettings.styleSettings.strikethrough",
+                Config.values.compactMessageSettings.styleSettings.strikethrough
+            ) { Config.values.compactMessageSettings.styleSettings.strikethrough = it }
+        )
+        compactStyleSettings.add(
+            entryBuilder.booleanToggle(
+                "chatPlus.compactMessages.compactMessageSettings.styleSettings.obfuscated",
+                Config.values.compactMessageSettings.styleSettings.obfuscated
+            ) { Config.values.compactMessageSettings.styleSettings.obfuscated = it }
+        )
+        compactStyleSettings.add(
+            entryBuilder.booleanToggle(
+                "chatPlus.compactMessages.compactMessageSettings.styleSettings.clickEvent",
+                Config.values.compactMessageSettings.styleSettings.clickEvent
+            ) { Config.values.compactMessageSettings.styleSettings.clickEvent = it }
+        )
+        compactStyleSettings.add(
+            entryBuilder.booleanToggle(
+                "chatPlus.compactMessages.compactMessageSettings.styleSettings.hoverEvent",
+                Config.values.compactMessageSettings.styleSettings.hoverEvent
+            ) { Config.values.compactMessageSettings.styleSettings.hoverEvent = it }
+        )
+        compactStyleSettings.add(
+            entryBuilder.booleanToggle(
+                "chatPlus.compactMessages.compactMessageSettings.styleSettings.insertion",
+                Config.values.compactMessageSettings.styleSettings.insertion
+            ) { Config.values.compactMessageSettings.styleSettings.insertion = it }
+        )
+        compactStyleSettings.add(
+            entryBuilder.booleanToggle(
+                "chatPlus.compactMessages.compactMessageSettings.styleSettings.font",
+                Config.values.compactMessageSettings.styleSettings.font
+            ) { Config.values.compactMessageSettings.styleSettings.font = it }
+        )
+        compactSettings.add(compactStyleSettings.build())
+        compactChat.addEntry(compactSettings.build())
     }
 
     private fun addScrollbarOption(builder: ConfigBuilder, entryBuilder: ConfigEntryBuilder) {

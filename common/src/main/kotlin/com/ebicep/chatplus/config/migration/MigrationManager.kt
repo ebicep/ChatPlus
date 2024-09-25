@@ -1,6 +1,7 @@
 package com.ebicep.chatplus.config.migration
 
 import com.ebicep.chatplus.ChatPlus
+import com.ebicep.chatplus.config.CONFIG_NAME
 import com.ebicep.chatplus.config.Config.values
 import com.ebicep.chatplus.config.ConfigVariables
 import com.ebicep.chatplus.config.json
@@ -10,6 +11,7 @@ import java.io.File
 object MigrationManager {
 
     private val migrators: List<Migrator<*>> = listOf(
+        V2,
         V1
     )
 
@@ -19,7 +21,7 @@ object MigrationManager {
             val oldConfigFileName = "${it.getFileNameVersion()}.json"
             val oldConfig = File(configDirectory, oldConfigFileName)
             if (oldConfig.exists()) {
-                ChatPlus.LOGGER.info("Migrating config from $oldConfigFileName")
+                ChatPlus.LOGGER.info("Migrating config from $oldConfigFileName to $CONFIG_NAME")
                 // update current values with old values
                 values = json.decodeFromString(ConfigVariables.serializer(), oldConfig.readText())
                 // update the config with migrated values

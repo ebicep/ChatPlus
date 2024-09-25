@@ -21,4 +21,8 @@ data class KeyWithModifier(
         return keyDown && modifierDown
     }
 
+    fun isDown(keyCode: Int, modifier: Int): Boolean {
+        return key.value == keyCode && (this.modifier == 0.toShort() || this.modifier == modifier.toShort())
+    }
+
 }
