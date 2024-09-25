@@ -7,7 +7,6 @@ import com.ebicep.chatplus.features.chattabs.CHAT_TAB_Y_OFFSET
 import com.ebicep.chatplus.hud.*
 import com.ebicep.chatplus.util.GraphicsUtil.createPose
 import com.ebicep.chatplus.util.GraphicsUtil.guiForward
-import com.ebicep.chatplus.util.GraphicsUtil.translate0
 import net.minecraft.client.gui.GuiGraphics
 
 object ChatWindowsManager {
@@ -97,7 +96,7 @@ object ChatWindowsManager {
             }
             val poseStack = guiGraphics.pose()
             poseStack.createPose {
-                poseStack.translate0(z = index * 1000)
+                poseStack.guiForward(amount = index.toDouble() * 100)
                 it.renderer.render(it, guiGraphics, i, j, k)
             }
         }

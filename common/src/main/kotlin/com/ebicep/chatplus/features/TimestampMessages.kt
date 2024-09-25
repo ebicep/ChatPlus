@@ -3,8 +3,9 @@ package com.ebicep.chatplus.features
 import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.config.TimestampMode
 import com.ebicep.chatplus.events.EventBus
-import com.ebicep.chatplus.features.CompactMessages.literalIgnored
 import com.ebicep.chatplus.features.chattabs.AddNewMessageEvent
+import com.ebicep.chatplus.util.ComponentUtil
+import com.ebicep.chatplus.util.ComponentUtil.literalIgnored
 import com.ebicep.chatplus.util.KotlinUtil.containsReference
 import net.minecraft.ChatFormatting
 import net.minecraft.network.chat.Component
@@ -74,9 +75,9 @@ object TimestampMessages {
     }
 
     private fun getTimestamp(newLine: Boolean): Component {
-        return literalIgnored((if (newLine) "\n" else "") + "Sent at ").withStyle(ChatFormatting.GRAY)
-            .append(Component.literal(getCurrentTime()).withStyle(ChatFormatting.YELLOW))
-            .append(Component.literal("."))
+        return literalIgnored((if (newLine) "\n" else "") + "Sent at ", ComponentUtil.LiteralIgnoredType.TIMESTAMP).withStyle(ChatFormatting.GRAY)
+            .append(literalIgnored(getCurrentTime(), ComponentUtil.LiteralIgnoredType.TIMESTAMP).withStyle(ChatFormatting.YELLOW))
+            .append(literalIgnored(".", ComponentUtil.LiteralIgnoredType.TIMESTAMP))
     }
 
     private fun getCurrentTime(): String {

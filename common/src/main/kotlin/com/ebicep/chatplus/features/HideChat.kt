@@ -19,6 +19,10 @@ object HideChat {
         var hidden = false
         EventBus.register<ChatRenderPreLinesEvent>({ 200 }, { hidden }) {
             hidden = false
+            if (Config.values.alwaysShowChat) {
+                it.chatFocused = true
+                return@register
+            }
             if (!Config.values.hideChatEnabled) {
                 return@register
             }
@@ -33,7 +37,9 @@ object HideChat {
             if (ChatManager.isChatFocused()) {
                 return@register EventResult.pass()
             }
-            if (keyCode != Config.values.hideChatToggleKey.key.value || modifiers != Config.values.hideChatToggleKey.modifier.toInt()) {
+            val hideKeyDown = Config.values.hideChatToggleKey.isDown(keyCode, modifiers)
+            val alwaysShowChatDown = Config.values.alwaysShowChatToggleKey.isDown(keyCode, modifiers)
+            if (!hideKeyDown && !alwaysShowChatDown) {
                 return@register EventResult.pass()
             }
             if (action == 0) { // release
@@ -44,7 +50,13 @@ object HideChat {
                 return@register EventResult.pass()
             }
             onCooldown = true
-            Config.values.hideChatEnabled = !Config.values.hideChatEnabled
+            if (hideKeyDown) {
+                Config.values.hideChatEnabled = !Config.values.hideChatEnabled
+                Config.values.alwaysShowChat = false
+            } else {
+                Config.values.alwaysShowChat = !Config.values.alwaysShowChat
+                Config.values.hideChatEnabled = false
+            }
             EventResult.interruptTrue()
         }
         EventBus.register<OnScreenDisplayEvent> {

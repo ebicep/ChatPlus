@@ -1,12 +1,11 @@
 package com.ebicep.chatplus.mixin;
 
 import com.ebicep.chatplus.ChatPlus;
-import com.ebicep.chatplus.config.Config;
 import com.ebicep.chatplus.events.EventBus;
 import com.ebicep.chatplus.features.chattabs.AddNewMessageEvent;
 import com.ebicep.chatplus.features.chattabs.ChatTab;
-import com.ebicep.chatplus.features.chatwindows.ChatWindow;
 import com.ebicep.chatplus.features.chatwindows.ChatWindowsManager;
+import com.ebicep.chatplus.hud.ChatManager;
 import net.minecraft.client.GuiMessageTag;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -46,22 +45,20 @@ public class MixinChatComponent {
         }
         List<ChatTab> addMessagesTo = new ArrayList<>();
 
-        for (ChatWindow window : Config.INSTANCE.getValues().getChatWindows()) {
-            Integer lastPriority = null;
-            for (ChatTab chatTab : window.getTabSettings().getSortedTabs()) {
-                int priority = chatTab.getPriority();
-                boolean alwaysAdd = chatTab.getAlwaysAdd();
-                if (lastPriority != null && lastPriority > priority && !alwaysAdd) {
-                    continue;
+        Integer lastPriority = null;
+        for (ChatTab chatTab : ChatManager.INSTANCE.getGlobalSortedTabs()) {
+            int priority = chatTab.getPriority();
+            boolean alwaysAdd = chatTab.getAlwaysAdd();
+            if (lastPriority != null && lastPriority > priority && !alwaysAdd) {
+                continue;
+            }
+            if (chatTab.matches(component.getString())) {
+                addMessagesTo.add(chatTab);
+                if (chatTab.getSkipOthers()) {
+                    break;
                 }
-                if (chatTab.matches(component.getString())) {
-                    addMessagesTo.add(chatTab);
-                    if (chatTab.getSkipOthers()) {
-                        break;
-                    }
-                    if (!alwaysAdd) {
-                        lastPriority = priority;
-                    }
+                if (!alwaysAdd) {
+                    lastPriority = priority;
                 }
             }
         }

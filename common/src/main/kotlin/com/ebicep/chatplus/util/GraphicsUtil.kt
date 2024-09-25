@@ -33,10 +33,10 @@ object GraphicsUtil {
     }
 
     /**
-     * Moves the pose stack forward by default 50 (anything new rendered will be on top)
+     * Moves the pose stack forward by default 5 (anything new rendered will be on top)
      */
     fun PoseStack.guiForward(amount: Double = 5.0) {
-        translate(0.0, 0.0, amount)
+        translate(0.0, 0.0, amount / 100)
     }
 
     fun GuiGraphics.fill0(i: Float, j: Float, k: Float, l: Float, n: Int) {

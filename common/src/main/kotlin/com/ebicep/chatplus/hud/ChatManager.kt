@@ -1,6 +1,8 @@
 package com.ebicep.chatplus.hud
 
+import com.ebicep.chatplus.ChatPlus
 import com.ebicep.chatplus.config.Config
+import com.ebicep.chatplus.config.Config.values
 import com.ebicep.chatplus.config.queueUpdateConfig
 import com.ebicep.chatplus.events.Event
 import com.ebicep.chatplus.events.Events
@@ -27,10 +29,21 @@ object ChatManager {
             }
             return selectedWindow.tabSettings.selectedTab
         }
+    var globalSortedTabs: List<ChatTab> = ArrayList()
 
     init {
         sentMessages.addAll(Minecraft.getInstance().commandHistory().history())
+        resetGlobalSortedTabs()
     }
+
+    fun resetGlobalSortedTabs() {
+        globalSortedTabs = values
+            .chatWindows
+            .flatMap { it.tabSettings.sortedTabs }
+            .toList()
+        ChatPlus.LOGGER.info("Reset global sorted tabs: $globalSortedTabs")
+    }
+
     /**
      * Gets the list of messages previously sent through the chat GUI
      */
