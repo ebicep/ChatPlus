@@ -108,7 +108,6 @@ object CompactMessages {
         }
     }
 
-    class LiteralContentsIgnored(val text: String) : PlainTextContents {
     enum class CompactComparatorMode(key: String) : EnumTranslatableName {
         VANILLA("chatPlus.compactMessages.comparatorMode.vanilla"),
         CUSTOM("chatPlus.compactMessages.comparatorMode.custom"),
@@ -212,6 +211,5 @@ object CompactMessages {
         var insertion: Boolean = true,
         var font: Boolean = true,
     )
-
 
 }

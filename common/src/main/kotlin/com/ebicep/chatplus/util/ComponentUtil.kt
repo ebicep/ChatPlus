@@ -3,6 +3,7 @@ package com.ebicep.chatplus.util
 import net.minecraft.ChatFormatting
 import net.minecraft.client.Minecraft
 import net.minecraft.network.chat.*
+import net.minecraft.network.chat.contents.PlainTextContents
 import java.awt.Color
 import java.util.*
 
@@ -14,7 +15,11 @@ object ComponentUtil {
         return MutableComponent.create(LiteralContentsIgnored(string, ignoredType))
     }
 
-    class LiteralContentsIgnored(val text: String, private val ignoredType: LiteralIgnoredType) : ComponentContents {
+    class LiteralContentsIgnored(val text: String, private val ignoredType: LiteralIgnoredType) : PlainTextContents {
+
+        override fun text(): String {
+            return text
+        }
 
         override fun <T> visit(arg: FormattedText.ContentConsumer<T>): Optional<T> {
             return arg.accept(this.text)
