@@ -13,6 +13,7 @@ import com.ebicep.chatplus.features.internal.MessageFilter
 import com.ebicep.chatplus.features.internal.MessageFilterFormatted
 import com.ebicep.chatplus.features.speechtotext.SpeechToText
 import com.ebicep.chatplus.hud.ChatManager
+import com.ebicep.chatplus.hud.ChatManager.resetGlobalSortedTabs
 import com.ebicep.chatplus.translator.LanguageManager
 import com.ebicep.chatplus.util.ComponentUtil
 import com.ebicep.chatplus.util.ComponentUtil.withColor
@@ -40,6 +41,7 @@ object ConfigScreenImpl {
             .setSavingRunnable {
                 Config.save()
                 ChatManager.rescaleAll()
+                resetGlobalSortedTabs()
             }
             .transparentBackground()
         builder.setGlobalized(true)
