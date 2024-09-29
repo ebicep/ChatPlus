@@ -5,6 +5,7 @@
 package com.ebicep.chatplus.config
 
 import com.ebicep.chatplus.ChatPlus
+import com.ebicep.chatplus.ChatPlusPlatformInit
 import com.ebicep.chatplus.MOD_ID
 import com.ebicep.chatplus.config.migration.MigrationManager
 import com.ebicep.chatplus.config.serializers.KeySerializer
@@ -41,7 +42,7 @@ object Config {
     var values = ConfigVariables()
         get() {
             if (!ChatPlus.initialized) {
-                ChatPlus.init()
+                ChatPlusPlatformInit.platformInit()
             }
             return field
         }
