@@ -39,6 +39,13 @@ var queueUpdateConfig = false
 
 object Config {
     var values = ConfigVariables()
+        get() {
+            if (!ChatPlus.initialized) {
+                ChatPlus.init()
+            }
+            return field
+        }
+    var loaded = false
 
     fun save() {
         val configDirectory = File(configDirectoryPath)
@@ -68,6 +75,8 @@ object Config {
         }
         correctValues()
         loadValues()
+        loaded = true
+        ChatPlus.LOGGER.info("Config Loaded")
     }
 
     private fun loadValues() {
