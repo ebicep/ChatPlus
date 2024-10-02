@@ -76,7 +76,7 @@ class TabSettings {
 
     fun resetSortedChatTabs(resetGlobal: Boolean = true) {
         sortedTabs = tabs.sortedBy { -it.priority }
-        if (resetGlobal) {
+        if (resetGlobal && Config.loaded) {
             resetGlobalSortedTabs()
         }
     }
