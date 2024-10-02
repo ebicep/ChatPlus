@@ -1,5 +1,6 @@
 package com.ebicep.chatplus.features
 
+import com.ebicep.chatplus.ChatPlus
 import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.config.TimestampMode
 import com.ebicep.chatplus.events.EventBus
@@ -32,7 +33,12 @@ object TimestampMessages {
                 lastTimestamp = getTimestamp(false)
                 lastTimestampNewLine = getTimestamp(true)
             }
-            it.mutableComponent = getTimeStampedMessage(it.rawComponent)
+            try {
+                it.mutableComponent = getTimeStampedMessage(it.rawComponent)
+            } catch (e: Exception) {
+                ChatPlus.LOGGER.error(e)
+                it.mutableComponent = it.rawComponent.copy()
+            }
         }
     }
 

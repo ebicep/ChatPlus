@@ -5,6 +5,7 @@
 package com.ebicep.chatplus.config
 
 import com.ebicep.chatplus.ChatPlus
+import com.ebicep.chatplus.ChatPlusPlatformInit
 import com.ebicep.chatplus.MOD_ID
 import com.ebicep.chatplus.config.migration.MigrationManager
 import com.ebicep.chatplus.config.serializers.KeySerializer
@@ -39,6 +40,13 @@ var queueUpdateConfig = false
 
 object Config {
     var values = ConfigVariables()
+        get() {
+            if (!ChatPlus.initialized) {
+                ChatPlusPlatformInit.platformInit()
+            }
+            return field
+        }
+    var loaded = false
 
     fun save() {
         val configDirectory = File(configDirectoryPath)
@@ -68,6 +76,8 @@ object Config {
         }
         correctValues()
         loadValues()
+        loaded = true
+        ChatPlus.LOGGER.info("Config Loaded")
     }
 
     private fun loadValues() {
