@@ -40,6 +40,7 @@ object ChatManager {
         globalSortedTabs = values
             .chatWindows
             .flatMap { it.tabSettings.sortedTabs }
+            .sortedBy { -it.priority }
             .toList()
         ChatPlus.LOGGER.info("Reset global sorted tabs: $globalSortedTabs")
     }
