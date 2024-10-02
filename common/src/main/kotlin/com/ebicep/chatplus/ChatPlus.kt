@@ -16,13 +16,17 @@ const val MOD_COLOR = 0xFF12e3DB.toInt()
 object ChatPlus {
 
     val LOGGER: Logger = LogManager.getLogger(MOD_ID)
+    var initialized: Boolean = false
 
     fun init() {
+        initialized = true
+        LOGGER.info("Initializing ChatPlus")
         LanguageManager
         Config.load()
 
         Events
         FeatureManager
+        LOGGER.info("Done Initializing ChatPlus")
     }
 
     fun doTest() {
