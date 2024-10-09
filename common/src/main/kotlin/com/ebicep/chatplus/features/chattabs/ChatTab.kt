@@ -169,8 +169,10 @@ class ChatTab : MessageFilterFormatted {
         chatPlusGuiMessage.guiMessage = GuiMessage(addedTime, mutableComponent, signature, tag)
         this.messages.add(chatPlusGuiMessage)
         this.lastMessageTime = System.currentTimeMillis()
-        while (this.messages.size > Config.values.maxMessages) {
-            EventBus.post(ChatTabRemoveMessageEvent(chatWindow, this, this.messages.removeFirst()))
+        if (Config.values.maxMessages > 0) {
+            while (this.messages.size > Config.values.maxMessages) {
+                EventBus.post(ChatTabRemoveMessageEvent(chatWindow, this, this.messages.removeFirst()))
+            }
         }
         this.addNewDisplayMessage(mutableComponent, addedTime, tag, chatPlusGuiMessage)
     }

@@ -79,11 +79,9 @@ object ConfigScreenImpl {
                 5
             ) { Config.values.wrappedMessageLineIndent = it })
         general.addEntry(
-            entryBuilder.intSlider(
+            entryBuilder.intField(
                 "chatPlus.chatSettings.maxMessages",
-                Config.values.maxMessages,
-                1000,
-                10_000_000
+                Config.values.maxMessages
             ) { Config.values.maxMessages = it })
         general.addEntry(
             entryBuilder.intSlider(

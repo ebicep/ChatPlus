@@ -92,7 +92,6 @@ object Config {
     }
 
     private fun correctValues() {
-        values.maxMessages = Mth.clamp(values.maxMessages, 1000, 10_000_000)
         values.maxCommandSuggestions = Mth.clamp(values.maxCommandSuggestions, 10, 30)
         if (values.chatWindows.isEmpty()) {
             values.chatWindows.add(createDefaultWindow())
@@ -113,7 +112,7 @@ data class ConfigVariables(
     var enabled: Boolean = true,
     var vanillaInputBox: Boolean = false,
     var wrappedMessageLineIndent: Int = 0,
-    var maxMessages: Int = 1000,
+    var maxMessages: Int = -1,
     var maxCommandSuggestions: Int = 15,
     var chatTimestampMode: TimestampMode = TimestampMode.HR_12_SECOND,
     var jumpToMessageMode: JumpToMessageMode = JumpToMessageMode.CURSOR,

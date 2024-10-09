@@ -31,7 +31,7 @@
   "chatPlus.chatSettings.wrappedMessageLineIndent": "Wrapped Message Line Indent",
   "chatPlus.chatSettings.wrappedMessageLineIndent.tooltip": "Indentation of wrapped message lines.\nThis may cause some lines to overflow the width of the chat box.",
   "chatPlus.chatSettings.maxMessages": "Max Messages",
-  "chatPlus.chatSettings.maxMessages.tooltip": "The maximum number of messages to store. Minecraft's default is 100. Increasing this will increase memory usage.",
+  "chatPlus.chatSettings.maxMessages.tooltip": "The maximum number of messages to store. Minecraft's default is 100. Increasing this will increase memory usage.\n \nValues less than 1 = Unlimited messages stored.",
   "chatPlus.chatSettings.maxCommandSuggestions": "Max Command Suggestions",
   "chatPlus.chatSettings.maxCommandSuggestions.tooltip": "The maximum number of commands to suggest. Minecraft's default is 10. The suggestions might go past your screen height.",
   "chatPlus.chatSettings.chatTimestampMode": "Timestamp Format",
