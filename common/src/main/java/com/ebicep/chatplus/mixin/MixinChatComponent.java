@@ -86,7 +86,7 @@ public class MixinChatComponent {
                     component,
                     null,
                     messageSignature,
-                    i,
+                    this.minecraft.gui.getGuiTicks(),
                     guiMessageTag
             );
             EventBus.INSTANCE.post(SkipNewMessageEvent.class, messageEvent);
