@@ -9,6 +9,6 @@ enum class Resources(path: String, var width: Int, var height: Int) {
 
     ;
 
-    var resourceLocation: ResourceLocation = ResourceLocation(MOD_ID, path)
+    var resourceLocation: ResourceLocation = ResourceLocation.fromNamespaceAndPath(MOD_ID, path)
 
 }
