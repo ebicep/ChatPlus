@@ -451,6 +451,10 @@ object ConfigScreenImpl {
                             "chatPlus.chatWindow.tabSettings.chatTabs.commandsOverrideAutoPrefix",
                             value.commandsOverrideAutoPrefix
                         ) { value.commandsOverrideAutoPrefix = it },
+                        entryBuilder.booleanToggle(
+                            "chatPlus.chatWindow.tabSettings.chatTabs.temporary",
+                            value.temporary
+                        ) { value.temporary = it },
                     )
                 },
                 { Component.literal(it.name) },
@@ -503,6 +507,10 @@ object ConfigScreenImpl {
                             "chatPlus.chatWindow.autoTabCreator.autoTabOptions.commandsOverrideAutoPrefix",
                             value.commandsOverrideAutoPrefix
                         ) { value.commandsOverrideAutoPrefix = it },
+                        entryBuilder.booleanToggle(
+                            "chatPlus.chatWindow.autoTabCreator.autoTabOptions.temporary",
+                            value.temporary
+                        ) { value.temporary = it },
                     )
                     listOf(
                         entryBuilder.booleanToggle(
