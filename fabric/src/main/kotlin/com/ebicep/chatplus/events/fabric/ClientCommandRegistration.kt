@@ -50,6 +50,12 @@ object ClientCommandRegistration {
                     Command.SINGLE_SUCCESS
                 }
             )
+            .then(ClientCommandManager.literal("test")
+                .executes {
+//                    ChatPlus.doTest()
+                    Command.SINGLE_SUCCESS
+                }
+            )
             .executes {
                 ConfigScreen.open = true
                 Command.SINGLE_SUCCESS

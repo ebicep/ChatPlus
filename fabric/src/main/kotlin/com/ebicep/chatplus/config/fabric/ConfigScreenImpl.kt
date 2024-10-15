@@ -6,6 +6,7 @@ import com.ebicep.chatplus.config.serializers.KeyWithModifier
 import com.ebicep.chatplus.features.*
 import com.ebicep.chatplus.features.FilterMessages.DEFAULT_COLOR
 import com.ebicep.chatplus.features.MovableChat.MOVABLE_CHAT_COLOR
+import com.ebicep.chatplus.features.chattabs.AutoTabCreator
 import com.ebicep.chatplus.features.chattabs.ChatTab
 import com.ebicep.chatplus.features.chatwindows.ChatWindow
 import com.ebicep.chatplus.features.chatwindows.OutlineSettings
@@ -68,249 +69,207 @@ object ConfigScreenImpl {
     }
 
     private fun addGeneralOptions(builder: ConfigBuilder, entryBuilder: ConfigEntryBuilder) {
-        val general = builder.getOrCreateCategory(Component.translatable("chatPlus.general").withColor(MOD_COLOR))
-        general.addEntry(entryBuilder.booleanToggle("chatPlus.chatSettings.toggle", Config.values.enabled) { Config.values.enabled = it })
-        general.addEntry(entryBuilder.booleanToggle("chatPlus.vanillaInputBox.toggle", Config.values.vanillaInputBox) { Config.values.vanillaInputBox = it })
-        general.addEntry(
+        builder.getOrCreateCategory(Component.translatable("chatPlus.general").withColor(MOD_COLOR)).with(
+            entryBuilder.booleanToggle("chatPlus.chatSettings.toggle", Config.values.enabled) { Config.values.enabled = it },
+            entryBuilder.booleanToggle("chatPlus.vanillaInputBox.toggle", Config.values.vanillaInputBox) { Config.values.vanillaInputBox = it },
             entryBuilder.intSlider(
                 "chatPlus.chatSettings.wrappedMessageLineIndent",
                 Config.values.wrappedMessageLineIndent,
                 0,
                 5
-            ) { Config.values.wrappedMessageLineIndent = it })
-        general.addEntry(
-            entryBuilder.intSlider(
+            ) { Config.values.wrappedMessageLineIndent = it },
+            entryBuilder.intField(
                 "chatPlus.chatSettings.maxMessages",
-                Config.values.maxMessages,
-                1000,
-                10_000_000
-            ) { Config.values.maxMessages = it })
-        general.addEntry(
+                Config.values.maxMessages
+            ) { Config.values.maxMessages = it },
             entryBuilder.intSlider(
                 "chatPlus.chatSettings.maxCommandSuggestions",
                 Config.values.maxCommandSuggestions,
                 10,
                 30
-            ) { Config.values.maxCommandSuggestions = it })
-        general.addEntry(
+            ) { Config.values.maxCommandSuggestions = it },
             entryBuilder.enumSelector(
                 "chatPlus.chatSettings.chatTimestampMode",
                 TimestampMode::class.java,
                 Config.values.chatTimestampMode
-            ) { Config.values.chatTimestampMode = it }
-        )
-        general.addEntry(
+            ) { Config.values.chatTimestampMode = it },
             entryBuilder.enumSelector(
                 "chatPlus.chatSettings.jumpToMessageMode",
                 JumpToMessageMode::class.java,
                 Config.values.jumpToMessageMode
-            ) { Config.values.jumpToMessageMode = it }
-        )
-        general.addEntry(
+            ) { Config.values.jumpToMessageMode = it },
             entryBuilder.linePriorityField("chatPlus.linePriority.selectChat", Config.values.selectChatLinePriority)
-            { Config.values.selectChatLinePriority = it }
+            { Config.values.selectChatLinePriority = it },
         )
     }
 
     private fun addHideChatOptions(builder: ConfigBuilder, entryBuilder: ConfigEntryBuilder) {
-        val hideChat = builder.getOrCreateCategory(Component.translatable("chatPlus.hideChat.title").withStyle(ChatFormatting.DARK_BLUE))
-        hideChat.addEntry(
+        builder.getOrCreateCategory(Component.translatable("chatPlus.hideChat.title").withStyle(ChatFormatting.DARK_BLUE)).with(
             entryBuilder.booleanToggle(
                 "chatPlus.hideChat.toggle",
                 Config.values.hideChatEnabled
-            ) { Config.values.hideChatEnabled = it })
-        hideChat.addEntry(
+            ) { Config.values.hideChatEnabled = it },
             entryBuilder.booleanToggle(
                 "chatPlus.hideChat.showWhenFocused.toggle",
                 Config.values.hideChatShowWhenFocused
-            ) { Config.values.hideChatShowWhenFocused = it })
-        hideChat.addEntry(
+            ) { Config.values.hideChatShowWhenFocused = it },
             entryBuilder.booleanToggle(
                 "chatPlus.hideChat.showHiddenOnScreen.toggle",
                 Config.values.hideChatShowHiddenOnScreen
-            ) { Config.values.hideChatShowHiddenOnScreen = it })
-        hideChat.addEntry(
+            ) { Config.values.hideChatShowHiddenOnScreen = it },
             entryBuilder.keyCodeOptionWithModifier(
                 "chatPlus.hideChat.key",
                 Config.values.hideChatToggleKey
-            )
-        )
-        hideChat.addEntry(
+            ),
             entryBuilder.booleanToggle(
                 "chatPlus.hideChat.alwaysShowChat.toggle",
                 Config.values.alwaysShowChat
-            ) { Config.values.alwaysShowChat = it })
-        hideChat.addEntry(
+            ) { Config.values.alwaysShowChat = it },
             entryBuilder.keyCodeOptionWithModifier(
                 "chatPlus.hideChat.alwaysShowChat.key",
                 Config.values.alwaysShowChatToggleKey
-            )
+            ),
         )
     }
 
     private fun addCompactMessagesOptions(builder: ConfigBuilder, entryBuilder: ConfigEntryBuilder) {
-        val compactChat =
-            builder.getOrCreateCategory(Component.translatable("chatPlus.compactMessages.title").withStyle(ChatFormatting.GRAY))
-        compactChat.addEntry(entryBuilder.booleanToggle("chatPlus.compactMessages.toggle", Config.values.compactMessagesEnabled)
-        { Config.values.compactMessagesEnabled = it })
-        compactChat.addEntry(entryBuilder.booleanToggle(
-            "chatPlus.compactMessages.refreshFadeTime.toggle",
-            Config.values.compactMessagesRefreshAddedTime
-        ) { Config.values.compactMessagesRefreshAddedTime = it })
-        compactChat.addEntry(
+        builder.getOrCreateCategory(Component.translatable("chatPlus.compactMessages.title").withStyle(ChatFormatting.GRAY)).with(
+            entryBuilder.booleanToggle("chatPlus.compactMessages.toggle", Config.values.compactMessagesEnabled)
+            { Config.values.compactMessagesEnabled = it },
+            entryBuilder.booleanToggle(
+                "chatPlus.compactMessages.refreshFadeTime.toggle",
+                Config.values.compactMessagesRefreshAddedTime
+            ) { Config.values.compactMessagesRefreshAddedTime = it },
+
             entryBuilder.intSlider(
                 "chatPlus.compactMessages.searchAmount",
                 Config.values.compactMessagesSearchAmount,
                 1,
                 25
-            ) { Config.values.compactMessagesSearchAmount = it })
-        compactChat.addEntry(
+            ) { Config.values.compactMessagesSearchAmount = it },
             entryBuilder.enumSelector(
                 "chatPlus.compactMessages.comparatorMode",
                 CompactMessages.CompactComparatorMode::class.java,
                 Config.values.compactMessageComparatorMode
-            ) { Config.values.compactMessageComparatorMode = it })
-        val compactSettings = entryBuilder.startSubCategory(Component.translatable("chatPlus.compactMessages.comparatorSettings"))
-        compactSettings.add(
-            entryBuilder.booleanToggle(
-                "chatPlus.compactMessages.compactMessageSettings.ignoreTimestamps",
-                Config.values.compactMessageSettings.ignoreTimestamps
-            ) { Config.values.compactMessageSettings.ignoreTimestamps = it }
+            ) { Config.values.compactMessageComparatorMode = it },
+            entryBuilder.startSubCategory(Component.translatable("chatPlus.compactMessages.comparatorSettings")).with(
+                entryBuilder.booleanToggle(
+                    "chatPlus.compactMessages.compactMessageSettings.ignoreTimestamps",
+                    Config.values.compactMessageSettings.ignoreTimestamps
+                ) { Config.values.compactMessageSettings.ignoreTimestamps = it },
+                entryBuilder.booleanToggle(
+                    "chatPlus.compactMessages.compactMessageSettings.contents",
+                    Config.values.compactMessageSettings.contents
+                ) { Config.values.compactMessageSettings.contents = it },
+                entryBuilder.booleanToggle(
+                    "chatPlus.compactMessages.compactMessageSettings.style",
+                    Config.values.compactMessageSettings.style
+                ) { Config.values.compactMessageSettings.style = it },
+                entryBuilder.startSubCategory(Component.translatable("chatPlus.compactMessages.compactMessageSettings.styleSettings")).with(
+                    entryBuilder.booleanToggle(
+                        "chatPlus.compactMessages.compactMessageSettings.styleSettings.color",
+                        Config.values.compactMessageSettings.styleSettings.color
+                    ) { Config.values.compactMessageSettings.styleSettings.color = it },
+                    entryBuilder.booleanToggle(
+                        "chatPlus.compactMessages.compactMessageSettings.styleSettings.bold",
+                        Config.values.compactMessageSettings.styleSettings.bold
+                    ) { Config.values.compactMessageSettings.styleSettings.bold = it },
+                    entryBuilder.booleanToggle(
+                        "chatPlus.compactMessages.compactMessageSettings.styleSettings.italic",
+                        Config.values.compactMessageSettings.styleSettings.italic
+                    ) { Config.values.compactMessageSettings.styleSettings.italic = it },
+                    entryBuilder.booleanToggle(
+                        "chatPlus.compactMessages.compactMessageSettings.styleSettings.underlined",
+                        Config.values.compactMessageSettings.styleSettings.underlined
+                    ) { Config.values.compactMessageSettings.styleSettings.underlined = it },
+                    entryBuilder.booleanToggle(
+                        "chatPlus.compactMessages.compactMessageSettings.styleSettings.strikethrough",
+                        Config.values.compactMessageSettings.styleSettings.strikethrough
+                    ) { Config.values.compactMessageSettings.styleSettings.strikethrough = it },
+                    entryBuilder.booleanToggle(
+                        "chatPlus.compactMessages.compactMessageSettings.styleSettings.obfuscated",
+                        Config.values.compactMessageSettings.styleSettings.obfuscated
+                    ) { Config.values.compactMessageSettings.styleSettings.obfuscated = it },
+                    entryBuilder.booleanToggle(
+                        "chatPlus.compactMessages.compactMessageSettings.styleSettings.clickEvent",
+                        Config.values.compactMessageSettings.styleSettings.clickEvent
+                    ) { Config.values.compactMessageSettings.styleSettings.clickEvent = it },
+                    entryBuilder.booleanToggle(
+                        "chatPlus.compactMessages.compactMessageSettings.styleSettings.hoverEvent",
+                        Config.values.compactMessageSettings.styleSettings.hoverEvent
+                    ) { Config.values.compactMessageSettings.styleSettings.hoverEvent = it },
+                    entryBuilder.booleanToggle(
+                        "chatPlus.compactMessages.compactMessageSettings.styleSettings.insertion",
+                        Config.values.compactMessageSettings.styleSettings.insertion
+                    ) { Config.values.compactMessageSettings.styleSettings.insertion = it },
+                    entryBuilder.booleanToggle(
+                        "chatPlus.compactMessages.compactMessageSettings.styleSettings.font",
+                        Config.values.compactMessageSettings.styleSettings.font
+                    ) { Config.values.compactMessageSettings.styleSettings.font = it },
+                ).build(),
+            ).build()
         )
-        compactSettings.add(
-            entryBuilder.booleanToggle(
-                "chatPlus.compactMessages.compactMessageSettings.contents",
-                Config.values.compactMessageSettings.contents
-            ) { Config.values.compactMessageSettings.contents = it }
-        )
-        compactSettings.add(
-            entryBuilder.booleanToggle(
-                "chatPlus.compactMessages.compactMessageSettings.style",
-                Config.values.compactMessageSettings.style
-            ) { Config.values.compactMessageSettings.style = it }
-        )
-        val compactStyleSettings = entryBuilder.startSubCategory(Component.translatable("chatPlus.compactMessages.compactMessageSettings.styleSettings"))
-        compactStyleSettings.add(
-            entryBuilder.booleanToggle(
-                "chatPlus.compactMessages.compactMessageSettings.styleSettings.color",
-                Config.values.compactMessageSettings.styleSettings.color
-            ) { Config.values.compactMessageSettings.styleSettings.color = it }
-        )
-        compactStyleSettings.add(
-            entryBuilder.booleanToggle(
-                "chatPlus.compactMessages.compactMessageSettings.styleSettings.bold",
-                Config.values.compactMessageSettings.styleSettings.bold
-            ) { Config.values.compactMessageSettings.styleSettings.bold = it }
-        )
-        compactStyleSettings.add(
-            entryBuilder.booleanToggle(
-                "chatPlus.compactMessages.compactMessageSettings.styleSettings.italic",
-                Config.values.compactMessageSettings.styleSettings.italic
-            ) { Config.values.compactMessageSettings.styleSettings.italic = it }
-        )
-        compactStyleSettings.add(
-            entryBuilder.booleanToggle(
-                "chatPlus.compactMessages.compactMessageSettings.styleSettings.underlined",
-                Config.values.compactMessageSettings.styleSettings.underlined
-            ) { Config.values.compactMessageSettings.styleSettings.underlined = it }
-        )
-        compactStyleSettings.add(
-            entryBuilder.booleanToggle(
-                "chatPlus.compactMessages.compactMessageSettings.styleSettings.strikethrough",
-                Config.values.compactMessageSettings.styleSettings.strikethrough
-            ) { Config.values.compactMessageSettings.styleSettings.strikethrough = it }
-        )
-        compactStyleSettings.add(
-            entryBuilder.booleanToggle(
-                "chatPlus.compactMessages.compactMessageSettings.styleSettings.obfuscated",
-                Config.values.compactMessageSettings.styleSettings.obfuscated
-            ) { Config.values.compactMessageSettings.styleSettings.obfuscated = it }
-        )
-        compactStyleSettings.add(
-            entryBuilder.booleanToggle(
-                "chatPlus.compactMessages.compactMessageSettings.styleSettings.clickEvent",
-                Config.values.compactMessageSettings.styleSettings.clickEvent
-            ) { Config.values.compactMessageSettings.styleSettings.clickEvent = it }
-        )
-        compactStyleSettings.add(
-            entryBuilder.booleanToggle(
-                "chatPlus.compactMessages.compactMessageSettings.styleSettings.hoverEvent",
-                Config.values.compactMessageSettings.styleSettings.hoverEvent
-            ) { Config.values.compactMessageSettings.styleSettings.hoverEvent = it }
-        )
-        compactStyleSettings.add(
-            entryBuilder.booleanToggle(
-                "chatPlus.compactMessages.compactMessageSettings.styleSettings.insertion",
-                Config.values.compactMessageSettings.styleSettings.insertion
-            ) { Config.values.compactMessageSettings.styleSettings.insertion = it }
-        )
-        compactStyleSettings.add(
-            entryBuilder.booleanToggle(
-                "chatPlus.compactMessages.compactMessageSettings.styleSettings.font",
-                Config.values.compactMessageSettings.styleSettings.font
-            ) { Config.values.compactMessageSettings.styleSettings.font = it }
-        )
-        compactSettings.add(compactStyleSettings.build())
-        compactChat.addEntry(compactSettings.build())
     }
 
     private fun addScrollbarOption(builder: ConfigBuilder, entryBuilder: ConfigEntryBuilder) {
-        val scrollbar =
-            builder.getOrCreateCategory(Component.translatable("chatPlus.scrollbar.title").withColor(Config.values.scrollbarColor))
-        scrollbar.addEntry(
+        builder.getOrCreateCategory(Component.translatable("chatPlus.scrollbar.title").withColor(Config.values.scrollbarColor)).with(
             entryBuilder.booleanToggle(
                 "chatPlus.scrollbar.toggle",
                 Config.values.scrollbarEnabled
-            ) { Config.values.scrollbarEnabled = it })
-        scrollbar.addEntry(
+            ) { Config.values.scrollbarEnabled = it },
             entryBuilder.booleanToggle(
                 "chatPlus.scrollbar.invertedScrolling",
                 Config.values.invertedScrolling
-            ) { Config.values.invertedScrolling = it })
-        scrollbar.addEntry(
+            ) { Config.values.invertedScrolling = it },
             entryBuilder.alphaField(
                 "chatPlus.scrollbar.color",
                 Config.values.scrollbarColor
-            ) { Config.values.scrollbarColor = it })
-        scrollbar.addEntry(
-            entryBuilder.intField("chatPlus.scrollbar.width", Config.values.scrollbarWidth) { Config.values.scrollbarWidth = it }
+            ) { Config.values.scrollbarColor = it },
+            entryBuilder.intField("chatPlus.scrollbar.width", Config.values.scrollbarWidth) { Config.values.scrollbarWidth = it },
         )
     }
 
     private fun addAnimationOption(builder: ConfigBuilder, entryBuilder: ConfigEntryBuilder) {
-        val animation = builder.getOrCreateCategory(Component.translatable("chatPlus.animation.title").withStyle(ChatFormatting.AQUA))
-        animation.addEntry(
+        builder.getOrCreateCategory(Component.translatable("chatPlus.animation.title").withStyle(ChatFormatting.AQUA)).with(
             entryBuilder.booleanToggle(
                 "chatPlus.animation.toggle",
                 Config.values.animationEnabled
-            ) { Config.values.animationEnabled = it })
-        animation.addEntry(
+            ) { Config.values.animationEnabled = it },
             entryBuilder.booleanToggle(
                 "chatPlus.animation.disableOnFocus",
                 Config.values.animationDisableOnFocus
-            ) { Config.values.animationDisableOnFocus = it })
-        animation.addEntry(
+            ) { Config.values.animationDisableOnFocus = it },
             entryBuilder.intSlider(
                 "chatPlus.animation.newMessageTransitionTime",
                 Config.values.animationNewMessageTransitionTime,
                 0,
                 500
-            ) { Config.values.animationNewMessageTransitionTime = it })
+            ) { Config.values.animationNewMessageTransitionTime = it },
+        )
     }
 
     private fun addChatWindowsTabsOption(builder: ConfigBuilder, entryBuilder: ConfigEntryBuilder) {
-        val category = builder.getOrCreateCategory(Component.translatable("chatPlus.chatWindowsTabs.title").withStyle(ChatFormatting.GOLD))
-        category.addEntry(
+        builder.getOrCreateCategory(Component.translatable("chatPlus.chatWindowsTabs.title").withStyle(ChatFormatting.GOLD)).with(
             entryBuilder.booleanToggle(
                 "chatPlus.chatWindow.tabSettings.chatTabs.arrowCycleTabEnabled.toggle",
                 Config.values.arrowCycleTabEnabled
-            ) { Config.values.arrowCycleTabEnabled = it })
-        category.addEntry(
+            ) { Config.values.arrowCycleTabEnabled = it },
             entryBuilder.booleanToggle(
                 "chatPlus.chatWindow.tabSettings.chatTabs.moveToTabWhenCycling.toggle",
                 Config.values.moveToTabWhenCycling
-            ) { Config.values.moveToTabWhenCycling = it })
-        category.addEntry(
+            ) { Config.values.moveToTabWhenCycling = it },
+            entryBuilder.startSubCategory(Component.translatable("chatPlus.chatWindowsTabs.tabNotification.title")).also { subCategory ->
+                subCategory.with(
+                    entryBuilder.booleanToggle(
+                        "chatPlus.chatWindowsTabs.tabNotification.enabled",
+                        Config.values.tabNotificationSettings.enabled
+                    ) { Config.values.tabNotificationSettings.enabled = it },
+                    entryBuilder.percentSlider(
+                        "chatPlus.chatWindowsTabs.tabNotification.scale",
+                        Config.values.tabNotificationSettings.scale
+                    ) { Config.values.tabNotificationSettings.scale = it }
+                )
+            }.build(),
             getCustomListOption(
                 "chatPlus.chatWindowsTabs.title",
                 Config.values.chatWindows,
@@ -328,7 +287,8 @@ object ConfigScreenImpl {
                         getWindowGeneralCategory(entryBuilder, window).build(),
                         getWindowPaddingCategory(entryBuilder, window).build(),
                         getWindowOutlineCategory(entryBuilder, window).build(),
-                        getWindowTabsCategory(entryBuilder, window).build()
+                        getWindowTabsCategory(entryBuilder, window).build(),
+                        getAutoTabCreatorCategory(entryBuilder, window).build()
                     )
                 },
                 { Component.literal("Window").withColor(it.generalSettings.backgroundColor) }
@@ -340,81 +300,61 @@ object ConfigScreenImpl {
         entryBuilder: ConfigEntryBuilder,
         window: ChatWindow
     ): SubCategoryBuilder {
-        val outlineCategory = entryBuilder.startSubCategory(Component.translatable("chatPlus.chatWindow.outlineSettings.outline"))
-        outlineCategory.add(
+        return entryBuilder.startSubCategory(Component.translatable("chatPlus.chatWindow.outlineSettings.outline")).with(
             entryBuilder.booleanToggle(
                 "chatPlus.chatWindow.outlineSettings.outline.toggle",
                 window.outlineSettings.enabled
             ) { window.outlineSettings.enabled = it },
-        )
-        outlineCategory.add(
             entryBuilder.booleanToggle(
                 "chatPlus.chatWindow.generalSettings.showWhenChatNotOpen",
                 window.outlineSettings.showWhenChatNotOpen
             ) { window.outlineSettings.showWhenChatNotOpen = it },
-        )
-        outlineCategory.add(
             entryBuilder.alphaField(
                 "chatPlus.chatWindow.outlineSettings.outlineColor",
                 window.outlineSettings.outlineColor
-            ) { window.outlineSettings.outlineColor = it })
-        outlineCategory.add(
+            ) { window.outlineSettings.outlineColor = it },
             entryBuilder.enumSelector(
                 "chatPlus.chatWindow.outlineSettings.outlineBoxType",
                 OutlineSettings.OutlineBoxType::class.java,
                 window.outlineSettings.outlineBoxType
-            ) { window.outlineSettings.outlineBoxType = it })
-        outlineCategory.add(
+            ) { window.outlineSettings.outlineBoxType = it },
             entryBuilder.enumSelector(
                 "chatPlus.chatWindow.outlineSettings.outlineTabType",
                 OutlineSettings.OutlineTabType::class.java,
                 window.outlineSettings.outlineTabType
-            ) { window.outlineSettings.outlineTabType = it })
-        outlineCategory.add(
+            ) { window.outlineSettings.outlineTabType = it },
             entryBuilder.percentSlider(
                 "chatPlus.chatWindow.generalSettings.unfocusedOutlineColorOpacityReduction",
                 1 - window.outlineSettings.unfocusedOutlineColorOpacityMultiplier
             ) { window.outlineSettings.unfocusedOutlineColorOpacityMultiplier = 1 - it }
         )
-        return outlineCategory
     }
 
     private fun getWindowTabsCategory(
         entryBuilder: ConfigEntryBuilder,
         window: ChatWindow
     ): SubCategoryBuilder {
-        val tabsCategory = entryBuilder.startSubCategory(Component.translatable("chatPlus.chatWindow.tabSettings.chatTabs.title"))
-        tabsCategory.add(
+        return entryBuilder.startSubCategory(Component.translatable("chatPlus.chatWindow.tabSettings.chatTabs.title")).with(
             entryBuilder.booleanToggle(
                 "chatPlus.chatWindow.tabSettings.hideTabs",
                 window.tabSettings.hideTabs
-            ) { window.tabSettings.hideTabs = it }
-        )
-        tabsCategory.add(
+            ) { window.tabSettings.hideTabs = it },
             entryBuilder.booleanToggle(
                 "chatPlus.chatWindow.tabSettings.showTabsWhenChatNotOpen",
                 window.tabSettings.showTabsWhenChatNotOpen
-            ) { window.tabSettings.showTabsWhenChatNotOpen = it }
-        )
-        tabsCategory.add(
+            ) { window.tabSettings.showTabsWhenChatNotOpen = it },
             entryBuilder.percentSlider(
                 "chatPlus.chatWindow.tabSettings.unfocusedTabOpacityReduction",
                 1 - window.tabSettings.unfocusedTabOpacityMultiplier
-            ) { window.tabSettings.unfocusedTabOpacityMultiplier = 1 - it }
-        )
-        tabsCategory.add(
+            ) { window.tabSettings.unfocusedTabOpacityMultiplier = 1 - it },
             entryBuilder.alphaField(
                 "chatPlus.chatWindow.tabSettings.tabTextColorSelected",
                 window.tabSettings.tabTextColorSelected
-            ) { window.tabSettings.tabTextColorSelected = it }
-        )
-        tabsCategory.add(
+            ) { window.tabSettings.tabTextColorSelected = it },
             entryBuilder.alphaField(
                 "chatPlus.chatWindow.tabSettings.tabTextColorUnselected",
                 window.tabSettings.tabTextColorUnselected
-            ) { window.tabSettings.tabTextColorUnselected = it }
-        )
-        tabsCategory.add(
+            ) { window.tabSettings.tabTextColorUnselected = it },
             getCustomListOption(
                 "chatPlus.chatWindow.tabSettings.chatTabs.title",
                 window.tabSettings.tabs,
@@ -426,7 +366,7 @@ object ConfigScreenImpl {
                         entryBuilder.stringField("chatPlus.chatWindow.tabSettings.chatTabs.name", value.name) { value.name = it },
                         entryBuilder.stringField("chatPlus.chatWindow.tabSettings.chatTabs.pattern", value.pattern) { value.pattern = it },
                         entryBuilder.booleanToggle(
-                            "chatPlus.messageFilter.formatted.toggle",
+                            "chatPlus.chatWindow.tabSettings.chatTabs.formatted.toggle",
                             value.formatted
                         ) { value.formatted = it },
                         entryBuilder.stringField("chatPlus.chatWindow.tabSettings.chatTabs.autoPrefix", value.autoPrefix) { value.autoPrefix = it },
@@ -446,37 +386,104 @@ object ConfigScreenImpl {
                             "chatPlus.chatWindow.tabSettings.chatTabs.commandsOverrideAutoPrefix",
                             value.commandsOverrideAutoPrefix
                         ) { value.commandsOverrideAutoPrefix = it },
+                        entryBuilder.booleanToggle(
+                            "chatPlus.chatWindow.tabSettings.chatTabs.temporary",
+                            value.temporary
+                        ) { value.temporary = it },
                     )
                 },
                 { Component.literal(it.name) },
                 false
             )
         )
-        return tabsCategory
+    }
+
+    private fun getAutoTabCreatorCategory(
+        entryBuilder: ConfigEntryBuilder,
+        window: ChatWindow
+    ): SubCategoryBuilder {
+        return entryBuilder.startSubCategory(Component.translatable("chatPlus.chatWindow.autoTabCreator.title")).with(
+            getCustomListOption(
+                "chatPlus.chatWindow.autoTabCreator.autoTabs.title",
+                window.autoTabCreator.autoTabOptions,
+                { window.autoTabCreator.autoTabOptions = it },
+                window.autoTabCreator.autoTabOptions.size > 0,
+                { AutoTabCreator.AutoTabOptions("") },
+                { value ->
+                    val autoTabOptions: SubCategoryBuilder = entryBuilder.startSubCategory(Component.translatable("chatPlus.chatWindow.autoTabCreator.autoTabOptions.title"))
+                    autoTabOptions.with(
+                        entryBuilder.stringField(
+                            "chatPlus.chatWindow.autoTabCreator.autoTabOptions.regexFormatter",
+                            value.regexFormatter
+                        ) { value.regexFormatter = it },
+                        entryBuilder.stringField(
+                            "chatPlus.chatWindow.autoTabCreator.autoTabOptions.tabNameFormatter",
+                            value.tabNameFormatter
+                        ) { value.tabNameFormatter = it },
+                        entryBuilder.stringField(
+                            "chatPlus.chatWindow.autoTabCreator.autoTabOptions.autoPrefixFormatter",
+                            value.autoPrefixFormatter
+                        ) { value.autoPrefixFormatter = it },
+                        entryBuilder.intField(
+                            "chatPlus.chatWindow.autoTabCreator.autoTabOptions.priority",
+                            value.priority
+                        ) { value.priority = it },
+                        entryBuilder.booleanToggle(
+                            "chatPlus.chatWindow.autoTabCreator.autoTabOptions.alwaysAdd",
+                            value.alwaysAdd
+                        ) { value.alwaysAdd = it },
+                        entryBuilder.booleanToggle(
+                            "chatPlus.chatWindow.autoTabCreator.autoTabOptions.skipOthers",
+                            value.skipOthers
+                        ) { value.skipOthers = it },
+                        entryBuilder.booleanToggle(
+                            "chatPlus.chatWindow.autoTabCreator.autoTabOptions.commandsOverrideAutoPrefix",
+                            value.commandsOverrideAutoPrefix
+                        ) { value.commandsOverrideAutoPrefix = it },
+                        entryBuilder.booleanToggle(
+                            "chatPlus.chatWindow.autoTabCreator.autoTabOptions.temporary",
+                            value.temporary
+                        ) { value.temporary = it },
+                    )
+                    listOf(
+                        entryBuilder.booleanToggle(
+                            "chatPlus.chatWindow.autoTabCreator.autoTabOptions.skipOthersOnCreation",
+                            value.skipOthersOnCreation
+                        ) { value.skipOthersOnCreation = it },
+                        entryBuilder.stringField(
+                            "chatPlus.chatWindow.autoTabCreator.autoTabOptions.pattern",
+                            value.pattern
+                        ) { value.pattern = it },
+                        entryBuilder.booleanToggle(
+                            "chatPlus.chatWindow.autoTabCreator.autoTabOptions.formatted.toggle",
+                            value.formatted
+                        ) { value.formatted = it },
+                        autoTabOptions.build(),
+                    )
+                },
+                { Component.literal(it.pattern) },
+                false
+            )
+        )
     }
 
     private fun getWindowPaddingCategory(
         entryBuilder: ConfigEntryBuilder,
         window: ChatWindow
     ): SubCategoryBuilder {
-        val paddingCategory = entryBuilder.startSubCategory(Component.translatable("chatPlus.chatWindow.padding"))
-        paddingCategory.add(
+        return entryBuilder.startSubCategory(Component.translatable("chatPlus.chatWindow.padding")).with(
             entryBuilder.intSlider(
                 "chatPlus.chatWindow.padding.left",
                 window.padding.left,
                 0,
                 20
-            ) { window.padding.left = it }
-        )
-        paddingCategory.add(
+            ) { window.padding.left = it },
             entryBuilder.intSlider(
                 "chatPlus.chatWindow.padding.right",
                 window.padding.right,
                 0,
                 20
-            ) { window.padding.right = it }
-        )
-        paddingCategory.add(
+            ) { window.padding.right = it },
             entryBuilder.intSlider(
                 "chatPlus.chatWindow.padding.bottom",
                 window.padding.bottom,
@@ -484,109 +491,80 @@ object ConfigScreenImpl {
                 20
             ) { window.padding.bottom = it }
         )
-        return paddingCategory
     }
 
     private fun getWindowGeneralCategory(
         entryBuilder: ConfigEntryBuilder,
         window: ChatWindow
     ): SubCategoryBuilder {
-        val generalCategory = entryBuilder.startSubCategory(Component.translatable("chatPlus.chatWindow.generalSettings"))
-        generalCategory.add(
+        return entryBuilder.startSubCategory(Component.translatable("chatPlus.chatWindow.generalSettings")).with(
             entryBuilder.booleanToggle(
                 "chatPlus.chatWindow.generalSettings.disabled",
                 window.generalSettings.disabled
-            ) { window.generalSettings.disabled = it }
-        )
-        generalCategory.add(
+            ) { window.generalSettings.disabled = it },
             entryBuilder.alphaField(
                 "chatPlus.chatWindow.generalSettings.backgroundColor",
                 window.generalSettings.backgroundColor
-            ) { window.generalSettings.backgroundColor = it }
-        )
-        generalCategory.add(
+            ) { window.generalSettings.backgroundColor = it },
             entryBuilder.percentSlider(
                 "chatPlus.chatWindow.generalSettings.unfocusedBackgroundColorOpacityReduction",
                 1 - window.generalSettings.unfocusedBackgroundColorOpacityMultiplier
-            ) { window.generalSettings.unfocusedBackgroundColorOpacityMultiplier = 1 - it }
-        )
-        generalCategory.add(
+            ) { window.generalSettings.unfocusedBackgroundColorOpacityMultiplier = 1 - it },
             entryBuilder.percentSlider(
                 "chatPlus.chatWindow.generalSettings.chatTextSize",
                 window.generalSettings.scale
-            ) { window.generalSettings.scale = it }
-        )
-        generalCategory.add(
+            ) { window.generalSettings.scale = it },
             entryBuilder.percentSlider(
                 "chatPlus.chatWindow.generalSettings.textOpacity",
                 (window.generalSettings.textOpacity - .1f) / .9f
-            ) { window.generalSettings.textOpacity = (it * .9f) + .1f }
-        )
-        generalCategory.add(
+            ) { window.generalSettings.textOpacity = (it * .9f) + .1f },
             entryBuilder.percentSlider(
                 "chatPlus.chatWindow.generalSettings.unfocusedTextOpacityReduction",
                 1 - window.generalSettings.unfocusedTextOpacityMultiplier
-            ) { window.generalSettings.unfocusedTextOpacityMultiplier = 1 - it }
-        )
-        generalCategory.add(
+            ) { window.generalSettings.unfocusedTextOpacityMultiplier = 1 - it },
             entryBuilder.percentSlider(
                 "chatPlus.chatWindow.generalSettings.unfocusedHeight",
                 window.generalSettings.unfocusedHeight
-            ) { window.generalSettings.unfocusedHeight = it }
-        )
-        generalCategory.add(
+            ) { window.generalSettings.unfocusedHeight = it },
             entryBuilder.percentSlider(
                 "chatPlus.chatWindow.generalSettings.lineSpacing",
                 window.generalSettings.lineSpacing
-            ) { window.generalSettings.lineSpacing = it }
-        )
-        generalCategory.add(
+            ) { window.generalSettings.lineSpacing = it },
             entryBuilder.enumSelector(
                 "chatPlus.chatWindow.generalSettings.messageAlignment",
                 AlignMessage.Alignment::class.java,
                 window.generalSettings.messageAlignment
-            ) { window.generalSettings.messageAlignment = it }
-        )
-        generalCategory.add(
+            ) { window.generalSettings.messageAlignment = it },
             entryBuilder.enumSelector(
                 "chatPlus.chatWindow.generalSettings.messageDirection",
                 MessageDirection::class.java,
                 window.generalSettings.messageDirection
             ) { window.generalSettings.messageDirection = it }
         )
-        return generalCategory
     }
 
     private fun addMovableChatOption(builder: ConfigBuilder, entryBuilder: ConfigEntryBuilder) {
-        val category = builder.getOrCreateCategory(Component.translatable("chatPlus.movableChat.title").withColor(MOVABLE_CHAT_COLOR))
-        category.addEntry(
+        builder.getOrCreateCategory(Component.translatable("chatPlus.movableChat.title").withColor(MOVABLE_CHAT_COLOR)).with(
             entryBuilder.booleanToggle(
                 "chatPlus.movableChat.toggle",
                 Config.values.movableChatEnabled
-            ) { Config.values.movableChatEnabled = it }
-        )
-        category.addEntry(
+            ) { Config.values.movableChatEnabled = it },
             entryBuilder.booleanToggle(
                 "chatPlus.movableChat.showEnabledOnScreen.toggle",
                 Config.values.movableChatShowEnabledOnScreen
-            ) { Config.values.movableChatShowEnabledOnScreen = it })
-        category.addEntry(
+            ) { Config.values.movableChatShowEnabledOnScreen = it },
             entryBuilder.keyCodeOption("chatPlus.movableChat.toggleKey", Config.values.movableChatToggleKey) { Config.values.movableChatToggleKey = it }
         )
     }
 
     private fun addMessageFilterOption(builder: ConfigBuilder, entryBuilder: ConfigEntryBuilder) {
-        val messageFilter = builder.getOrCreateCategory(Component.translatable("chatPlus.messageFilter.title"))
-        messageFilter.addEntry(
+        builder.getOrCreateCategory(Component.translatable("chatPlus.messageFilter.title")).with(
             entryBuilder.booleanToggle(
                 "chatPlus.messageFilter.toggle",
                 Config.values.filterMessagesEnabled
-            ) { Config.values.filterMessagesEnabled = it })
-        messageFilter.addEntry(
+            ) { Config.values.filterMessagesEnabled = it },
             entryBuilder.linePriorityField("chatPlus.linePriority.messageFilter", Config.values.filterMessagesLinePriority)
-            { Config.values.filterMessagesLinePriority = it }
-        )
-        messageFilter.addEntry(
+            { Config.values.filterMessagesLinePriority = it },
             getCustomListOption(
                 "chatPlus.messageFilter.title",
                 Config.values.filterMessagesPatterns,
@@ -653,26 +631,18 @@ object ConfigScreenImpl {
     }
 
     private fun addHoverHighlightOption(builder: ConfigBuilder, entryBuilder: ConfigEntryBuilder) {
-        val hoverHighlight = builder.getOrCreateCategory(
-            Component.translatable("chatPlus.hoverHighlight.title").withColor(Config.values.hoverHighlightColor)
-        )
-        hoverHighlight.addEntry(
+        builder.getOrCreateCategory(Component.translatable("chatPlus.hoverHighlight.title").withColor(Config.values.hoverHighlightColor)).with(
             entryBuilder.booleanToggle(
                 "chatPlus.hoverHighlight.toggle",
                 Config.values.hoverHighlightEnabled
-            ) { Config.values.hoverHighlightEnabled = it })
-        hoverHighlight.addEntry(
+            ) { Config.values.hoverHighlightEnabled = it },
             entryBuilder.linePriorityField("chatPlus.linePriority.hoverHighlight", Config.values.hoverHighlightLinePriority)
-            { Config.values.hoverHighlightLinePriority = it }
-        )
-        hoverHighlight.addEntry(
+            { Config.values.hoverHighlightLinePriority = it },
             entryBuilder.enumSelector(
                 "chatPlus.hoverHighlight.mode",
                 HoverHighlight.HighlightMode::class.java,
                 Config.values.hoverHighlightMode
-            ) { Config.values.hoverHighlightMode = it }
-        )
-        hoverHighlight.addEntry(
+            ) { Config.values.hoverHighlightMode = it },
             entryBuilder.alphaField(
                 "chatPlus.hoverHighlight.color",
                 Config.values.hoverHighlightColor
@@ -681,40 +651,29 @@ object ConfigScreenImpl {
     }
 
     private fun addBookmarkOption(builder: ConfigBuilder, entryBuilder: ConfigEntryBuilder) {
-        val bookmark = builder.getOrCreateCategory(Component.translatable("chatPlus.bookmark.title").withColor(Config.values.bookmarkColor))
-        bookmark.addEntry(
+        builder.getOrCreateCategory(Component.translatable("chatPlus.bookmark.title").withColor(Config.values.bookmarkColor)).with(
             entryBuilder.booleanToggle(
                 "chatPlus.bookmark.toggle",
                 Config.values.bookmarkEnabled
-            ) { Config.values.bookmarkEnabled = it })
-        bookmark.addEntry(
+            ) { Config.values.bookmarkEnabled = it },
             entryBuilder.linePriorityField("chatPlus.linePriority.bookmark", Config.values.bookmarkLinePriority)
-            { Config.values.bookmarkLinePriority = it }
-        )
-        bookmark.addEntry(
+            { Config.values.bookmarkLinePriority = it },
             entryBuilder.alphaField(
                 "chatPlus.bookmark.color",
                 Config.values.bookmarkColor
             ) { Config.values.bookmarkColor = it },
-        )
-        bookmark.addEntry(
             entryBuilder.keyCodeOptionWithModifier(
                 "chatPlus.bookmark.key",
                 Config.values.bookmarkKey
-            )
-        )
-        bookmark.addEntry(
+            ),
             entryBuilder.booleanToggle(
                 "chatPlus.bookmark.textBarElement.toggle",
                 Config.values.bookmarkTextBarElementEnabled
-            ) { Config.values.bookmarkTextBarElementEnabled = it })
-        bookmark.addEntry(
+            ) { Config.values.bookmarkTextBarElementEnabled = it },
             entryBuilder.keyCodeOptionWithModifier(
                 "chatPlus.bookmark.show.key",
                 Config.values.bookmarkTextBarElementKey
-            )
-        )
-        bookmark.addEntry(
+            ),
             getCustomListOption(
                 "chatPlus.bookmark.auto.title",
                 Config.values.autoBookMarkPatterns,
@@ -736,28 +695,21 @@ object ConfigScreenImpl {
     }
 
     private fun addFindMessageOption(builder: ConfigBuilder, entryBuilder: ConfigEntryBuilder) {
-        val findMessage =
-            builder.getOrCreateCategory(Component.translatable("chatPlus.findMessage.title").withColor(FindMessage.FIND_COLOR))
-        findMessage.addEntry(
+        builder.getOrCreateCategory(Component.translatable("chatPlus.findMessage.title").withColor(FindMessage.FIND_COLOR)).with(
             entryBuilder.booleanToggle(
                 "chatPlus.findMessage.toggle",
                 Config.values.findMessageEnabled
-            ) { Config.values.findMessageEnabled = it })
-        findMessage.addEntry(
+            ) { Config.values.findMessageEnabled = it },
             entryBuilder.linePriorityField("chatPlus.linePriority.findMessage", Config.values.findMessageLinePriority)
-            { Config.values.findMessageLinePriority = it }
-        )
-        findMessage.addEntry(
+            { Config.values.findMessageLinePriority = it },
             entryBuilder.booleanToggle(
                 "chatPlus.findMessage.highlightInputBox.toggle",
                 Config.values.findMessageHighlightInputBox
-            ) { Config.values.findMessageHighlightInputBox = it })
-        findMessage.addEntry(
+            ) { Config.values.findMessageHighlightInputBox = it },
             entryBuilder.booleanToggle(
                 "chatPlus.findMessage.textBarElement.toggle",
                 Config.values.findMessageTextBarElementEnabled
-            ) { Config.values.findMessageTextBarElementEnabled = it })
-        findMessage.addEntry(
+            ) { Config.values.findMessageTextBarElementEnabled = it },
             entryBuilder.keyCodeOptionWithModifier(
                 "chatPlus.findMessage.key",
                 Config.values.findMessageKey
@@ -766,18 +718,13 @@ object ConfigScreenImpl {
     }
 
     private fun addCopyMessageOption(builder: ConfigBuilder, entryBuilder: ConfigEntryBuilder) {
-        val copyMessage =
-            builder.getOrCreateCategory(Component.translatable("chatPlus.copyMessage.title").withColor(CopyMessage.DEFAULT_COLOR))
-        copyMessage.addEntry(
+        builder.getOrCreateCategory(Component.translatable("chatPlus.copyMessage.title").withColor(CopyMessage.DEFAULT_COLOR)).with(
             entryBuilder.booleanToggle(
                 "chatPlus.copyMessage.noFormatting.toggle",
                 Config.values.copyNoFormatting
-            ) { Config.values.copyNoFormatting = it })
-        copyMessage.addEntry(
+            ) { Config.values.copyNoFormatting = it },
             entryBuilder.linePriorityField("chatPlus.linePriority.copyMessage", Config.values.copyMessageLinePriority)
-            { Config.values.copyMessageLinePriority = it }
-        )
-        copyMessage.addEntry(
+            { Config.values.copyMessageLinePriority = it },
             entryBuilder.keyCodeOptionWithModifier(
                 "chatPlus.copyMessage.key",
                 Config.values.copyMessageKey
@@ -786,85 +733,56 @@ object ConfigScreenImpl {
     }
 
     private fun addChatScreenShotOption(builder: ConfigBuilder, entryBuilder: ConfigEntryBuilder) {
-        val screenshot = builder.getOrCreateCategory(Component.translatable("chatPlus.screenshotChat.title"))
-        screenshot.addEntry(
+        builder.getOrCreateCategory(Component.translatable("chatPlus.screenshotChat.title")).with(
             entryBuilder.booleanToggle(
                 "chatPlus.screenshotChat.toggle",
                 Config.values.screenshotChatEnabled
-            ) { Config.values.screenshotChatEnabled = it })
-        screenshot.addEntry(
+            ) { Config.values.screenshotChatEnabled = it },
             entryBuilder.linePriorityField("chatPlus.linePriority.screenshotChat", Config.values.screenshotChatLinePriority)
-            { Config.values.screenshotChatLinePriority = it }
-        )
-        screenshot.addEntry(
-            entryBuilder.keyCodeOptionWithModifier("chatPlus.screenshotChat.line.key", Config.values.screenshotChatLine)
-        )
-        screenshot.addEntry(
+            { Config.values.screenshotChatLinePriority = it },
+            entryBuilder.keyCodeOptionWithModifier("chatPlus.screenshotChat.line.key", Config.values.screenshotChatLine),
             entryBuilder.booleanToggle(
                 "chatPlus.screenshotChatTextBarElement.toggle",
                 Config.values.screenshotChatTextBarElementEnabled
-            ) { Config.values.screenshotChatTextBarElementEnabled = it })
-        screenshot.addEntry(
+            ) { Config.values.screenshotChatTextBarElementEnabled = it },
             entryBuilder.booleanToggle(
                 "chatPlus.screenshotChatAutoUpload.toggle",
                 Config.values.screenshotChatAutoUpload
-            ) { Config.values.screenshotChatAutoUpload = it })
+            ) { Config.values.screenshotChatAutoUpload = it }
+        )
     }
 
     private fun addPlayerHeadChatDisplayOption(builder: ConfigBuilder, entryBuilder: ConfigEntryBuilder) {
-        val headDisplay = builder.getOrCreateCategory(
-            Component.translatable("chatPlus.playerHeadChatDisplay.title").withStyle(ChatFormatting.LIGHT_PURPLE)
-        )
-        headDisplay.addEntry(
+        builder.getOrCreateCategory(Component.translatable("chatPlus.playerHeadChatDisplay.title").withStyle(ChatFormatting.LIGHT_PURPLE)).with(
             entryBuilder.booleanToggle(
                 "chatPlus.playerHeadChatDisplayEnabled.toggle",
                 Config.values.playerHeadChatDisplayEnabled
-            ) { Config.values.playerHeadChatDisplayEnabled = it })
-        headDisplay.addEntry(
+            ) { Config.values.playerHeadChatDisplayEnabled = it },
             entryBuilder.booleanToggle(
                 "chatPlus.playerHeadChatDisplayShowOnWrapped.toggle",
                 Config.values.playerHeadChatDisplayShowOnWrapped
-            ) { Config.values.playerHeadChatDisplayShowOnWrapped = it })
-        headDisplay.addEntry(
+            ) { Config.values.playerHeadChatDisplayShowOnWrapped = it },
             entryBuilder.booleanToggle(
                 "chatPlus.playerHeadChatDisplayOffsetNonHeadMessages.toggle",
                 Config.values.playerHeadChatDisplayOffsetNonHeadMessages
-            ) { Config.values.playerHeadChatDisplayOffsetNonHeadMessages = it })
-        headDisplay.addEntry(
+            ) { Config.values.playerHeadChatDisplayOffsetNonHeadMessages = it },
             entryBuilder.booleanToggle(
                 "chatPlus.playerHeadChatDisplayOffsetNonHeadMessagesShowOnWrapped.toggle",
                 Config.values.playerHeadChatDisplayOffsetNonHeadMessagesShowOnWrapped
-            ) { Config.values.playerHeadChatDisplayOffsetNonHeadMessagesShowOnWrapped = it })
+            ) { Config.values.playerHeadChatDisplayOffsetNonHeadMessagesShowOnWrapped = it }
+        )
     }
 
     private fun addKeyBindOptions(builder: ConfigBuilder, entryBuilder: ConfigEntryBuilder) {
-        val keyBinds = builder.getOrCreateCategory(Component.translatable("chatPlus.chatKeyBinds").withStyle(ChatFormatting.DARK_GREEN))
-        keyBinds.addEntry(
-            entryBuilder.keyCodeOption("key.noScroll", Config.values.keyNoScroll) { Config.values.keyNoScroll = it }
-        )
-        keyBinds.addEntry(
-            entryBuilder.keyCodeOption("key.fineScroll", Config.values.keyFineScroll) { Config.values.keyFineScroll = it }
-        )
-        keyBinds.addEntry(
-            entryBuilder.keyCodeOption("key.largeScroll", Config.values.keyLargeScroll) { Config.values.keyLargeScroll = it }
-        )
-        keyBinds.addEntry(
+        builder.getOrCreateCategory(Component.translatable("chatPlus.chatKeyBinds").withStyle(ChatFormatting.DARK_GREEN)).with(
+            entryBuilder.keyCodeOption("key.noScroll", Config.values.keyNoScroll) { Config.values.keyNoScroll = it },
+            entryBuilder.keyCodeOption("key.fineScroll", Config.values.keyFineScroll) { Config.values.keyFineScroll = it },
+            entryBuilder.keyCodeOption("key.largeScroll", Config.values.keyLargeScroll) { Config.values.keyLargeScroll = it },
             entryBuilder.keyCodeOption("key.peekChat", Config.values.keyPeekChat) { Config.values.keyPeekChat = it }
         )
     }
 
     private fun addTranslatorOptions(builder: ConfigBuilder, entryBuilder: ConfigEntryBuilder) {
-        val translator = builder.getOrCreateCategory(Component.translatable("chatPlus.translator.title").withStyle(ChatFormatting.AQUA))
-        translator.addEntry(
-            entryBuilder.booleanToggle(
-                "chatPlus.translator.translatorToggle",
-                Config.values.translatorEnabled
-            ) { Config.values.translatorEnabled = it })
-        translator.addEntry(
-            entryBuilder.booleanToggle(
-                "chatPlus.translatorTextBarElement.toggle",
-                Config.values.translatorTextBarElementEnabled
-            ) { Config.values.translatorTextBarElementEnabled = it })
         val languageNamesSpeak: MutableList<String> = mutableListOf()
         val languageNames = LanguageManager.languages.map {
             val name = it.name
@@ -873,7 +791,15 @@ object ConfigScreenImpl {
             }
             name
         }
-        translator.addEntry(
+        builder.getOrCreateCategory(Component.translatable("chatPlus.translator.title").withStyle(ChatFormatting.AQUA)).with(
+            entryBuilder.booleanToggle(
+                "chatPlus.translator.translatorToggle",
+                Config.values.translatorEnabled
+            ) { Config.values.translatorEnabled = it },
+            entryBuilder.booleanToggle(
+                "chatPlus.translatorTextBarElement.toggle",
+                Config.values.translatorTextBarElementEnabled
+            ) { Config.values.translatorTextBarElementEnabled = it },
             entryBuilder.dropDown(
                 "chatPlus.translator.translateTo",
                 Config.values.translateTo,
@@ -884,9 +810,7 @@ object ConfigScreenImpl {
                     Config.values.translateTo = str
                     LanguageManager.updateTranslateLanguages()
                 }
-            )
-        )
-        translator.addEntry(
+            ),
             entryBuilder.dropDown(
                 "chatPlus.translator.translateSelf",
                 Config.values.translateSelf,
@@ -897,9 +821,7 @@ object ConfigScreenImpl {
                     Config.values.translateSelf = str
                     LanguageManager.updateTranslateLanguages()
                 }
-            )
-        )
-        translator.addEntry(
+            ),
             entryBuilder.dropDown(
                 "chatPlus.translator.translateSpeak",
                 Config.values.translateSpeak,
@@ -910,9 +832,7 @@ object ConfigScreenImpl {
                     Config.values.translateSpeak = str
                     LanguageManager.updateTranslateLanguages()
                 }
-            )
-        )
-        translator.addEntry(
+            ),
             getCustomListOption(
                 "chatPlus.translator.regexes",
                 Config.values.translatorRegexes,
@@ -925,26 +845,19 @@ object ConfigScreenImpl {
                     )
                 },
                 { Component.literal(it.regex.toString()) }
-            )
-        )
-        translator.addEntry(
+            ),
             entryBuilder.booleanToggle(
                 "chatPlus.translator.keepOnAfterChatClose.toggle",
                 Config.values.translateKeepOnAfterChatClose
-            ) { Config.values.translateKeepOnAfterChatClose = it })
-        translator.addEntry(
+            ) { Config.values.translateKeepOnAfterChatClose = it },
             entryBuilder.keyCodeOptionWithModifier(
                 "chatPlus.translator.translateKey",
                 Config.values.translateKey
-            )
-        )
-        translator.addEntry(
+            ),
             entryBuilder.keyCodeOptionWithModifier(
                 "chatPlus.translator.translateToggleKey",
                 Config.values.translateToggleKey
-            )
-        )
-        translator.addEntry(
+            ),
             entryBuilder.booleanToggle(
                 "chatPlus.translator.translateClick.toggle",
                 Config.values.translateClickEnabled
@@ -952,24 +865,30 @@ object ConfigScreenImpl {
     }
 
     private fun addSpeechToTextOptions(builder: ConfigBuilder, entryBuilder: ConfigEntryBuilder) {
-        val speechToText = builder.getOrCreateCategory(Component.translatable("chatPlus.speechToText").withStyle(ChatFormatting.RED))
-        speechToText.addEntry(entryBuilder.booleanToggle(
-            "chatPlus.speechToText.toggle",
-            Config.values.speechToTextEnabled
-        ) { Config.values.speechToTextEnabled = it })
-        speechToText.addEntry(entryBuilder.booleanToggle(
-            "chatPlus.speechToText.toInputBox.toggle",
-            Config.values.speechToTextToInputBox
-        ) { Config.values.speechToTextToInputBox = it })
-        speechToText.addEntry(
+        val microphoneNames = SpeechToText.getAllMicrophoneNames()
+        microphoneNames.add(0, "Default")
+        val models = SpeechToText.getAllPossibleModels()
+        models.add(0, "")
+        val languageNamesSpeak: MutableList<String> = mutableListOf()
+        LanguageManager.languages.map {
+            val name = it.name
+            if (name != "Auto Detect") {
+                languageNamesSpeak.add(name)
+            }
+            name
+        }
+        builder.getOrCreateCategory(Component.translatable("chatPlus.speechToText").withStyle(ChatFormatting.RED)).with(
+            entryBuilder.booleanToggle(
+                "chatPlus.speechToText.toggle",
+                Config.values.speechToTextEnabled
+            ) { Config.values.speechToTextEnabled = it }, entryBuilder.booleanToggle(
+                "chatPlus.speechToText.toInputBox.toggle",
+                Config.values.speechToTextToInputBox
+            ) { Config.values.speechToTextToInputBox = it },
             entryBuilder.intField(
                 "chatPlus.speechToText.speechToTextSampleRate",
                 Config.values.speechToTextSampleRate
-            ) { Config.values.speechToTextSampleRate = it }
-        )
-        val microphoneNames = SpeechToText.getAllMicrophoneNames()
-        microphoneNames.add(0, "Default")
-        speechToText.addEntry(
+            ) { Config.values.speechToTextSampleRate = it },
             entryBuilder.dropDown(
                 "chatPlus.speechToText.microphone",
                 Config.values.speechToTextMicrophone,
@@ -979,11 +898,7 @@ object ConfigScreenImpl {
                 { str: String ->
                     Config.values.speechToTextMicrophone = str
                 }
-            )
-        )
-        val models = SpeechToText.getAllPossibleModels()
-        models.add(0, "")
-        speechToText.addEntry(
+            ),
             entryBuilder.dropDown(
                 "chatPlus.speechToText.selectedAudioModel",
                 Config.values.speechToTextSelectedAudioModel,
@@ -993,37 +908,21 @@ object ConfigScreenImpl {
                 { str: String ->
                     Config.values.speechToTextSelectedAudioModel = str
                 }
-            )
-        )
-        speechToText.addEntry(
+            ),
             entryBuilder.keyCodeOption(
                 "key.speechToText.ptt",
                 Config.values.speechToTextMicrophoneKey
-            ) { Config.values.speechToTextMicrophoneKey = it }
-        )
-        speechToText.addEntry(
+            ) { Config.values.speechToTextMicrophoneKey = it },
             entryBuilder.keyCodeOption(
                 "key.speechToText.quickSend",
                 Config.values.speechToTextQuickSendKey
-            ) { Config.values.speechToTextQuickSendKey = it }
-        )
-        speechToText.addEntry(entryBuilder.booleanToggle(
-            "chatPlus.speechToText.speechToTextTranslateEnabled.toggle",
-            Config.values.speechToTextTranslateEnabled
-        ) { Config.values.speechToTextTranslateEnabled = it })
-        speechToText.addEntry(entryBuilder.booleanToggle(
-            "chatPlus.speechToText.speechToTextTranslateToInputBox.toggle",
-            Config.values.speechToTextTranslateToInputBox
-        ) { Config.values.speechToTextTranslateToInputBox = it })
-        val languageNamesSpeak: MutableList<String> = mutableListOf()
-        LanguageManager.languages.map {
-            val name = it.name
-            if (name != "Auto Detect") {
-                languageNamesSpeak.add(name)
-            }
-            name
-        }
-        speechToText.addEntry(
+            ) { Config.values.speechToTextQuickSendKey = it }, entryBuilder.booleanToggle(
+                "chatPlus.speechToText.speechToTextTranslateEnabled.toggle",
+                Config.values.speechToTextTranslateEnabled
+            ) { Config.values.speechToTextTranslateEnabled = it }, entryBuilder.booleanToggle(
+                "chatPlus.speechToText.speechToTextTranslateToInputBox.toggle",
+                Config.values.speechToTextTranslateToInputBox
+            ) { Config.values.speechToTextTranslateToInputBox = it },
             entryBuilder.dropDown(
                 "chatPlus.speechToText.speechToTextTranslateLang",
                 Config.values.speechToTextTranslateLang,
@@ -1267,6 +1166,16 @@ object ConfigScreenImpl {
             }
             .setSaveConsumer(saveConsumer)
             .build()
+    }
+
+    private fun SubCategoryBuilder.with(vararg entries: AbstractConfigListEntry<*>): SubCategoryBuilder {
+        entries.forEach { add(it) }
+        return this
+    }
+
+    private fun ConfigCategory.with(vararg entries: AbstractConfigListEntry<*>): ConfigCategory {
+        entries.forEach { addEntry(it) }
+        return this
     }
 
 }

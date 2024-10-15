@@ -4,7 +4,10 @@ import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.events.ChatPlusTickEvent
 import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.events.Events
+import com.ebicep.chatplus.features.MovableChatRemoveTabFromWindowEvent
+import com.ebicep.chatplus.features.chatwindows.ChatTabSwitchEvent
 import com.ebicep.chatplus.features.chatwindows.ChatWindow
+import com.ebicep.chatplus.features.chatwindows.WindowSwitchEvent
 import com.ebicep.chatplus.hud.*
 import com.ebicep.chatplus.hud.ChatManager.selectedWindow
 import com.ebicep.chatplus.mixin.IMixinChatScreen
@@ -39,6 +42,9 @@ object ChatTabs {
             if (!Config.values.arrowCycleTabEnabled) {
                 return@register
             }
+            if (Config.values.movableChatEnabled) {
+                return@register
+            }
             it.screen as IMixinChatScreen
             if (it.screen.input.value.isNotEmpty()) {
                 return@register
@@ -64,6 +70,17 @@ object ChatTabs {
                 return@register
             }
             it.message = ChatManager.globalSelectedTab.autoPrefix + it.message
+        }
+        EventBus.register<ChatTabSwitchEvent> {
+            it.newTab.read = true
+        }
+        EventBus.register<WindowSwitchEvent> {
+            it.newWindow.tabSettings.selectedTab.read = true
+        }
+        EventBus.register<MovableChatRemoveTabFromWindowEvent> {
+            if (!it.deleted) {
+                it.chatWindow.tabSettings.selectedTab.read = true
+            }
         }
     }
 
