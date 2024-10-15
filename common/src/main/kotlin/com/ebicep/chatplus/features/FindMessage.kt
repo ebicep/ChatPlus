@@ -8,6 +8,7 @@ import com.ebicep.chatplus.features.chattabs.ChatTabAddDisplayMessageEvent
 import com.ebicep.chatplus.features.chattabs.ChatTabRefreshDisplayMessages
 import com.ebicep.chatplus.features.chattabs.ChatTabRewrapDisplayMessages
 import com.ebicep.chatplus.features.chatwindows.ChatTabSwitchEvent
+import com.ebicep.chatplus.features.chatwindows.WindowSwitchEvent
 import com.ebicep.chatplus.features.textbarelements.AddTextBarElementEvent
 import com.ebicep.chatplus.features.textbarelements.FindTextBarElement
 import com.ebicep.chatplus.features.textbarelements.FindToggleEvent
@@ -64,7 +65,13 @@ object FindMessage {
                 }
             }
         }
+        // when switching tabs/windows, refresh filter
         EventBus.register<ChatTabSwitchEvent> {
+            if (findEnabled) {
+                ChatManager.globalSelectedTab.queueRefreshDisplayedMessages(false)
+            }
+        }
+        EventBus.register<WindowSwitchEvent> {
             if (findEnabled) {
                 ChatManager.globalSelectedTab.queueRefreshDisplayedMessages(false)
             }

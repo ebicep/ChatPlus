@@ -6,47 +6,42 @@ import com.ebicep.chatplus.util.ComponentUtil
 import kotlinx.serialization.Serializable
 import net.minecraft.ChatFormatting
 import net.minecraft.client.Minecraft
-import java.util.regex.Matcher
 import java.util.regex.Pattern
 
 open class Translator(val message: String, val from: Language?, val to: Language, val filtered: Boolean = true) : Thread() {
 
     override fun run() {
-        ChatPlus.LOGGER.debug("Translating message: $message | $from -> $to | filtered: $filtered")
+        ChatPlus.LOGGER.debug("Translating message: {} | {} -> {} | filtered: {}", message, from, to, filtered)
 
-        var matchedRegex: String? = null
-        var text = message
-
-        if (filtered) {
-            for (regexMatch in Config.values.translatorRegexes) {
-                val pattern: String = regexMatch.pattern
-                if (pattern.isEmpty()) {
-                    continue
-                }
-                val matcher: Matcher = Pattern.compile(pattern).matcher(text)
-                if (matcher.find()) {
-                    matchedRegex = matcher.group(0)
-                    continue
-                }
-            }
-            if (matchedRegex == null) {
-                return
-            }
-            text = text.replace(matchedRegex, "").trim()
+        val (matchedRegex, textToTranslate) = if (filtered) filterText(message) else null to message
+        if (filtered && matchedRegex == null) {
+            ChatPlus.LOGGER.debug("No regex match found for filtered message")
+            return
         }
-
-        val translatedMessage: TranslateResult = translate(text) ?: return
-        if (translatedMessage.translatedText.trim().equals(text, ignoreCase = true)) {
+        val translatedMessage = translate(textToTranslate) ?: run {
+            ChatPlus.LOGGER.debug("Translation failed for: $textToTranslate")
+            return
+        }
+        if (translatedMessage.translatedText.trim().equals(textToTranslate, ignoreCase = true)) {
             ChatPlus.LOGGER.debug("$message is the same after translation")
             onTranslateSameMessage()
             return
         }
-        var fromLanguage: String? = null
-        if (translatedMessage.from != null) {
-            fromLanguage = translatedMessage.from.name
-        }
         ChatPlus.LOGGER.debug("Translated message: ${translatedMessage.translatedText}")
-        onTranslate(matchedRegex, translatedMessage, fromLanguage)
+        onTranslate(matchedRegex, translatedMessage, translatedMessage.from?.name)
+    }
+
+    private fun filterText(text: String): Pair<String?, String> {
+        for (regexMatch in Config.values.translatorRegexes) {
+            val pattern = regexMatch.pattern.takeIf { it.isNotEmpty() } ?: continue
+            val matcher = Pattern.compile(pattern).matcher(text)
+            if (matcher.find()) {
+                val matchedRegex = matcher.group(0)
+                val filteredText = text.replace(matchedRegex, "").trim()
+                return matchedRegex to filteredText
+            }
+        }
+        return null to text
     }
 
     open fun onTranslateSameMessage() {
@@ -69,20 +64,20 @@ open class Translator(val message: String, val from: Language?, val to: Language
         if (text.trim().isEmpty()) {
             return null
         }
-        if (!GoogleRequester.accessDenied) {
-            //Use free ones later
-            val google = GoogleRequester()
-            val transRequest: RequestResult = if (from == null) google.translateAuto(text, to) else google.translate(text, from, to)
-            if (transRequest.code != 200) {
-                logException(transRequest)
-                return null
-            }
-            if (transRequest.from == null) {
-                return null
-            }
-            return TranslateResult(transRequest.message.trim(), transRequest.from)
+        if (GoogleRequester.accessDenied) {
+            return null
         }
-        return null
+        //Use free ones later
+        val google = GoogleRequester()
+        val transRequest: RequestResult = if (from == null) google.translateAuto(text, to) else google.performTranslationRequest(text, from, to)
+        if (transRequest.code != 200) {
+            logException(transRequest)
+            return null
+        }
+        if (transRequest.from == null) {
+            return null
+        }
+        return TranslateResult(transRequest.message.trim(), transRequest.from)
     }
 
     private fun logException(transRequest: RequestResult) {

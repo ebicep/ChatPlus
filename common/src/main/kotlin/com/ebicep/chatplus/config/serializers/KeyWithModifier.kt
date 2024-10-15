@@ -22,7 +22,7 @@ data class KeyWithModifier(
     }
 
     fun isDown(keyCode: Int, modifier: Int): Boolean {
-        return key.value == keyCode && (this.modifier == 0.toShort() || this.modifier == modifier.toShort())
+        return key.value != -1 && key.value == keyCode && (this.modifier == 0.toShort() || this.modifier == modifier.toShort())
     }
 
 }

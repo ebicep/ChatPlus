@@ -21,7 +21,7 @@ object ChatWindowsManager {
         EventBus.register<ChatScreenMouseClickedEvent>({ 10000 }) {
             // check if mouse in inside widows starting from last
             val chatWindows = Config.values.chatWindows
-            for (i in chatWindows.size - 1 downTo 0) {
+            for (i in chatWindows.size - 2 downTo 0) {
                 val chatWindow = chatWindows[i]
                 if (chatWindow.generalSettings.disabled) {
                     continue
@@ -84,9 +84,12 @@ object ChatWindowsManager {
         return startX < x && x < endX && startY < y && y < endY
     }
 
-    fun selectWindow(chatWindow: ChatWindow) {
-        Config.values.chatWindows.remove(chatWindow)
-        Config.values.chatWindows.add(chatWindow)
+    fun selectWindow(newWindow: ChatWindow) {
+        val oldWindow = ChatManager.selectedWindow
+        oldWindow.tabSettings.selectedTab.resetFilter()
+        Config.values.chatWindows.remove(newWindow)
+        Config.values.chatWindows.add(newWindow)
+        EventBus.post(WindowSwitchEvent(oldWindow, newWindow))
     }
 
     fun renderAll(guiGraphics: GuiGraphics, i: Int, j: Int, k: Int) {
@@ -103,3 +106,8 @@ object ChatWindowsManager {
     }
 
 }
+
+data class WindowSwitchEvent(
+    val oldWindow: ChatWindow,
+    val newWindow: ChatWindow
+)

@@ -1,0 +1,26 @@
+name: Bug Report
+description: Report a bug/issue
+labels: "bug"
+
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Describe your issue
+      placeholder: A clear and concise description of what the issue is.
+    validations:
+      required: true
+  - type: textarea
+    id: versions
+    attributes:
+      label: MC/Loader/ChatPlus Version
+    validations:
+      required: true
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: If applicable, add screenshots to help explain your problem.
+  - type: textarea
+    id: config
+    attributes:
+      label: If applicable, upload your config file to help reproduce the issue, name of config is latest possible version.

@@ -411,6 +411,8 @@ object MovableChat {
         movingTabMouseYStart = mouseY.roundToInt()
         movingTabXOffset = (mouseX - movingTabMouseXStart).roundToInt()
         movingTabYOffset = (mouseY - movingTabMouseYStart).roundToInt()
+
+        EventBus.post(MovableChatCreateNewWindowEvent(selectedTab, newWindow))
     }
 
     private fun moveTabToWindow(
@@ -441,6 +443,8 @@ object MovableChat {
         selectedTab.xStart = newStartX
         selectedTab.yStart = windowMovedTo.tabSettings.tabs.last().yStart
         movingChatBox = false
+
+        EventBus.post(MovableChatTabToWindowEvent(selectedTab, windowMovedTo))
     }
 
     private fun renderDebugTab(
@@ -666,13 +670,15 @@ object MovableChat {
         selectedTab: ChatTab
     ) {
         chatWindow.tabSettings.tabs.remove(selectedTab)
-        if (chatWindow.tabSettings.tabs.isEmpty()) {
+        val emptyWindow = chatWindow.tabSettings.tabs.isEmpty()
+        if (emptyWindow) {
             Config.values.chatWindows.remove(chatWindow)
         } else {
             chatWindow.tabSettings.selectedTabIndex = max(0, chatWindow.tabSettings.selectedTabIndex - 1)
             chatWindow.tabSettings.startRenderTabIndex = Mth.clamp(chatWindow.tabSettings.startRenderTabIndex, 0, chatWindow.tabSettings.tabs.size - 1)
             chatWindow.tabSettings.resetSortedChatTabs()
         }
+        EventBus.post(MovableChatRemoveTabFromWindowEvent(selectedTab, chatWindow, emptyWindow))
     }
 
     private fun getTabStartY(chatWindow: ChatWindow): Int {
@@ -694,5 +700,20 @@ object MovableChat {
 
     }
 
-
 }
+
+data class MovableChatTabToWindowEvent(
+    val chatTab: ChatTab,
+    val chatWindow: ChatWindow,
+)
+
+data class MovableChatCreateNewWindowEvent(
+    val chatTab: ChatTab,
+    val chatWindow: ChatWindow,
+)
+
+data class MovableChatRemoveTabFromWindowEvent(
+    val chatTab: ChatTab,
+    val chatWindow: ChatWindow,
+    val deleted: Boolean,
+)

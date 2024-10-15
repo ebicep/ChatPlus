@@ -4,6 +4,7 @@ import com.ebicep.chatplus.ChatPlus;
 import com.ebicep.chatplus.events.EventBus;
 import com.ebicep.chatplus.features.chattabs.AddNewMessageEvent;
 import com.ebicep.chatplus.features.chattabs.ChatTab;
+import com.ebicep.chatplus.features.chattabs.SkipNewMessageEvent;
 import com.ebicep.chatplus.features.chatwindows.ChatWindowsManager;
 import com.ebicep.chatplus.hud.ChatManager;
 import net.minecraft.client.GuiMessageTag;
@@ -79,6 +80,16 @@ public class MixinChatComponent {
             for (ChatTab chatTab : addMessagesTo) {
                 chatTab.addNewMessage(messageEvent);
             }
+        } else {
+            SkipNewMessageEvent messageEvent = new SkipNewMessageEvent(
+                    component.copy(),
+                    component,
+                    null,
+                    messageSignature,
+                    i,
+                    guiMessageTag
+            );
+            EventBus.INSTANCE.post(SkipNewMessageEvent.class, messageEvent);
         }
     }
 
