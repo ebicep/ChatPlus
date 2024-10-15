@@ -15,9 +15,6 @@ open class MessageFilter {
 
     constructor(pattern: String) {
         this.pattern = pattern
-    }
-
-    init {
         updateRegex()
     }
 

@@ -6,6 +6,7 @@ import com.ebicep.chatplus.config.serializers.KeyWithModifier
 import com.ebicep.chatplus.features.*
 import com.ebicep.chatplus.features.FilterMessages.DEFAULT_COLOR
 import com.ebicep.chatplus.features.MovableChat.MOVABLE_CHAT_COLOR
+import com.ebicep.chatplus.features.chattabs.AutoTabCreator
 import com.ebicep.chatplus.features.chattabs.ChatTab
 import com.ebicep.chatplus.features.chatwindows.ChatWindow
 import com.ebicep.chatplus.features.chatwindows.OutlineSettings
@@ -331,7 +332,8 @@ object ConfigScreenImpl {
                         getWindowGeneralCategory(entryBuilder, window).build(),
                         getWindowPaddingCategory(entryBuilder, window).build(),
                         getWindowOutlineCategory(entryBuilder, window).build(),
-                        getWindowTabsCategory(entryBuilder, window).build()
+                        getWindowTabsCategory(entryBuilder, window).build(),
+                        getAutoTabCreatorCategory(entryBuilder, window).build()
                     )
                 },
                 { Component.literal("Window").withColor(it.generalSettings.backgroundColor) }
@@ -429,7 +431,7 @@ object ConfigScreenImpl {
                         entryBuilder.stringField("chatPlus.chatWindow.tabSettings.chatTabs.name", value.name) { value.name = it },
                         entryBuilder.stringField("chatPlus.chatWindow.tabSettings.chatTabs.pattern", value.pattern) { value.pattern = it },
                         entryBuilder.booleanToggle(
-                            "chatPlus.messageFilter.formatted.toggle",
+                            "chatPlus.chatWindow.tabSettings.chatTabs.formatted.toggle",
                             value.formatted
                         ) { value.formatted = it },
                         entryBuilder.stringField("chatPlus.chatWindow.tabSettings.chatTabs.autoPrefix", value.autoPrefix) { value.autoPrefix = it },
@@ -456,6 +458,73 @@ object ConfigScreenImpl {
             )
         )
         return tabsCategory
+    }
+
+    private fun getAutoTabCreatorCategory(
+        entryBuilder: ConfigEntryBuilder,
+        window: ChatWindow
+    ): SubCategoryBuilder {
+        val autoTabCreator = entryBuilder.startSubCategory(Component.translatable("chatPlus.chatWindow.autoTabCreator.title"))
+        autoTabCreator.add(
+            getCustomListOption(
+                "chatPlus.chatWindow.autoTabCreator.autoTabs.title",
+                window.autoTabCreator.autoTabOptions,
+                { window.autoTabCreator.autoTabOptions = it },
+                window.autoTabCreator.autoTabOptions.size > 0,
+                { AutoTabCreator.AutoTabOptions("") },
+                { value ->
+                    val autoTabOptions: SubCategoryBuilder = entryBuilder.startSubCategory(Component.translatable("chatPlus.chatWindow.autoTabCreator.autoTabOptions.title"))
+                    autoTabOptions.with(
+                        entryBuilder.stringField(
+                            "chatPlus.chatWindow.autoTabCreator.autoTabOptions.regexFormatter",
+                            value.regexFormatter
+                        ) { value.regexFormatter = it },
+                        entryBuilder.stringField(
+                            "chatPlus.chatWindow.autoTabCreator.autoTabOptions.tabNameFormatter",
+                            value.tabNameFormatter
+                        ) { value.tabNameFormatter = it },
+                        entryBuilder.stringField(
+                            "chatPlus.chatWindow.autoTabCreator.autoTabOptions.autoPrefixFormatter",
+                            value.autoPrefixFormatter
+                        ) { value.autoPrefixFormatter = it },
+                        entryBuilder.intField(
+                            "chatPlus.chatWindow.autoTabCreator.autoTabOptions.priority",
+                            value.priority
+                        ) { value.priority = it },
+                        entryBuilder.booleanToggle(
+                            "chatPlus.chatWindow.autoTabCreator.autoTabOptions.alwaysAdd",
+                            value.alwaysAdd
+                        ) { value.alwaysAdd = it },
+                        entryBuilder.booleanToggle(
+                            "chatPlus.chatWindow.autoTabCreator.autoTabOptions.skipOthers",
+                            value.skipOthers
+                        ) { value.skipOthers = it },
+                        entryBuilder.booleanToggle(
+                            "chatPlus.chatWindow.autoTabCreator.autoTabOptions.commandsOverrideAutoPrefix",
+                            value.commandsOverrideAutoPrefix
+                        ) { value.commandsOverrideAutoPrefix = it },
+                    )
+                    listOf(
+                        entryBuilder.booleanToggle(
+                            "chatPlus.chatWindow.autoTabCreator.autoTabOptions.skipOthersOnCreation",
+                            value.skipOthersOnCreation
+                        ) { value.skipOthersOnCreation = it },
+                        entryBuilder.stringField(
+                            "chatPlus.chatWindow.autoTabCreator.autoTabOptions.pattern",
+                            value.pattern
+                        ) { value.pattern = it },
+                        entryBuilder.booleanToggle(
+                            "chatPlus.chatWindow.autoTabCreator.autoTabOptions.formatted.toggle",
+                            value.formatted
+                        ) { value.formatted = it },
+                        autoTabOptions.build(),
+                    )
+                },
+                { Component.literal(it.pattern) },
+                false
+            )
+        )
+        return autoTabCreator
     }
 
     private fun getWindowPaddingCategory(
@@ -1270,6 +1339,10 @@ object ConfigScreenImpl {
             }
             .setSaveConsumer(saveConsumer)
             .build()
+    }
+
+    private fun SubCategoryBuilder.with(vararg entries: AbstractConfigListEntry<*>) {
+        entries.forEach { add(it) }
     }
 
 }

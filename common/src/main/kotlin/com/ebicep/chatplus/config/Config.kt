@@ -82,10 +82,10 @@ object Config {
 
     private fun loadValues() {
         values.filterMessagesPatterns.forEach {
-            it.regex = Regex(it.pattern)
+            it.updateRegex()
         }
         values.autoBookMarkPatterns.forEach {
-            it.regex = Regex(it.pattern)
+            it.updateRegex()
         }
         LanguageManager.updateTranslateLanguages()
         SpeechToText.updateTranslateLanguage()

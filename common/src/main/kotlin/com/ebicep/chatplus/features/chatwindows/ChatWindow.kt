@@ -1,6 +1,7 @@
 package com.ebicep.chatplus.features.chatwindows
 
 import com.ebicep.chatplus.ChatPlus
+import com.ebicep.chatplus.features.chattabs.AutoTabCreator
 import com.ebicep.chatplus.hud.ChatRenderer
 import kotlinx.serialization.Serializable
 
@@ -12,6 +13,7 @@ class ChatWindow {
     var padding: Padding = Padding()
     val renderer = ChatRenderer()
     var tabSettings: TabSettings = TabSettings()
+    var autoTabCreator: AutoTabCreator = AutoTabCreator()
 
     init {
         ChatPlus.LOGGER.info("Create $this")
@@ -21,6 +23,7 @@ class ChatWindow {
             it.chatWindow = this
         }
         renderer.chatWindow = this
+        autoTabCreator.chatWindow = this
     }
 
     /**

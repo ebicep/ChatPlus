@@ -7,6 +7,7 @@ import com.ebicep.chatplus.features.chattabs.CHAT_TAB_X_SPACE
 import com.ebicep.chatplus.features.chattabs.CHAT_TAB_Y_OFFSET
 import com.ebicep.chatplus.features.chattabs.ChatTab
 import com.ebicep.chatplus.features.chattabs.ChatTab.Companion.TAB_HEIGHT
+import com.ebicep.chatplus.features.chattabs.ChatTabSerializer
 import com.ebicep.chatplus.features.chattabs.ChatTabs.createDefaultTab
 import com.ebicep.chatplus.features.internal.Debug
 import com.ebicep.chatplus.hud.ChatManager
@@ -32,6 +33,8 @@ class TabSettings {
     var tabTextColorSelected: Int = Color(255, 255, 255, 255).rgb
     var tabTextColorUnselected: Int = Color(153, 153, 153, 255).rgb
     var unfocusedTabOpacityMultiplier: Float = .4f
+
+    @Serializable(with = ChatTabSerializer::class)
     var tabs: MutableList<ChatTab> = mutableListOf()
         set(value) {
             field = value
@@ -56,7 +59,7 @@ class TabSettings {
         selectedTabIndex = Mth.clamp(selectedTabIndex, 0, tabs.size - 1)
 
         tabs.forEach {
-            it.regex = Regex(it.pattern)
+            it.updateRegex()
         }
         resetSortedChatTabs(false)
     }
