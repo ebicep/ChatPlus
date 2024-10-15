@@ -113,7 +113,7 @@ unifiedPublishing {
         println("(${project.name}) Publishing | ${rootProject.property("minecraft_version")} | ${project.name}")
         displayName.set("${rootProject.property("mod_name")} ${project.name.uppercaseFirstChar()} v${project.version}")
         changelog.set((project.ext.get("releaseChangeLog") as () -> String)())
-        gameVersions.set(listOf("${rootProject.property("minecraft_version")}"))
+        gameVersions.set("${rootProject.property("supported_minecraft_version")}".split(","))
         gameLoaders.set(listOf(project.name))
         releaseType.set("release")
 
