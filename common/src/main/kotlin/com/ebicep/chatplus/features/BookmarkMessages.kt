@@ -4,6 +4,7 @@ import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.features.chattabs.*
 import com.ebicep.chatplus.features.chatwindows.ChatTabSwitchEvent
+import com.ebicep.chatplus.features.chatwindows.WindowSwitchEvent
 import com.ebicep.chatplus.features.textbarelements.AddTextBarElementEvent
 import com.ebicep.chatplus.features.textbarelements.ShowBookmarksBarElement
 import com.ebicep.chatplus.features.textbarelements.ShowBookmarksToggleEvent
@@ -79,6 +80,11 @@ object BookmarkMessages {
         EventBus.register<ChatTabSwitchEvent> {
             if (showingBookmarks) {
                 ChatManager.globalSelectedTab.queueRefreshDisplayedMessages(false)
+            }
+        }
+        EventBus.register<WindowSwitchEvent> {
+            if (showingBookmarks) {
+                it.oldWindow.tabSettings.selectedTab.queueRefreshDisplayedMessages(false)
             }
         }
         EventBus.register<ChatTabAddDisplayMessageEvent> {

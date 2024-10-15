@@ -115,7 +115,6 @@ class TabSettings {
             oldTab.resetFilter()
             selectedTabIndex = tabs.indexOf(clickedTab)
             queueUpdateConfig = true
-            ChatManager.globalSelectedTab.queueRefreshDisplayedMessages(false)
             EventBus.post(ChatTabSwitchEvent(oldTab, clickedTab))
         }
     }
