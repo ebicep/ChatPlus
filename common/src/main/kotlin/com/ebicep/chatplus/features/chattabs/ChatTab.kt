@@ -182,6 +182,10 @@ class ChatTab : MessageFilterFormatted {
     var lastMessageTime: Long = 0
 
     @Transient
+    var read: Boolean = true
+
+
+    @Transient
     lateinit var chatWindow: ChatWindow
 
     override fun toString(): String {
@@ -219,6 +223,9 @@ class ChatTab : MessageFilterFormatted {
             }
         }
         this.addNewDisplayMessage(mutableComponent, addedTime, tag, chatPlusGuiMessage)
+        if (chatWindow.tabSettings.selectedTab != this) {
+            this.read = false
+        }
     }
 
     private fun addNewDisplayMessage(

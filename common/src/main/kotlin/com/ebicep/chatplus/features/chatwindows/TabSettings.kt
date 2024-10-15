@@ -13,9 +13,11 @@ import com.ebicep.chatplus.features.internal.Debug
 import com.ebicep.chatplus.hud.ChatManager
 import com.ebicep.chatplus.hud.ChatManager.resetGlobalSortedTabs
 import com.ebicep.chatplus.util.GraphicsUtil.createPose
+import com.ebicep.chatplus.util.GraphicsUtil.drawImage
 import com.ebicep.chatplus.util.GraphicsUtil.guiForward
 import com.ebicep.chatplus.util.GraphicsUtil.translate0
 import com.ebicep.chatplus.util.KotlinUtil.reduceAlpha
+import com.ebicep.chatplus.util.Resources
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import net.minecraft.client.Minecraft
@@ -103,7 +105,7 @@ class TabSettings {
             }
         }
         if (Config.values.moveToTabWhenCycling) {
-            selectedTabIndex = Mth.clamp(selectedTabIndex + amount, 0, tabs.size - 1)
+            switchToTab(tabs[Mth.clamp(selectedTabIndex + amount, 0, tabs.size - 1)])
         }
     }
 
@@ -111,12 +113,16 @@ class TabSettings {
         val clickedTab: ChatTab = getClickedTab(x, y) ?: return
         EventBus.post(ChatTabClickedEvent(clickedTab, x, y, clickedTab.xStart.toDouble(), clickedTab.yStart.toDouble()))
         if (clickedTab != ChatManager.globalSelectedTab) {
-            val oldTab = ChatManager.globalSelectedTab
-            oldTab.resetFilter()
-            selectedTabIndex = tabs.indexOf(clickedTab)
-            queueUpdateConfig = true
-            EventBus.post(ChatTabSwitchEvent(oldTab, clickedTab))
+            switchToTab(clickedTab)
         }
+    }
+
+    private fun switchToTab(newTab: ChatTab) {
+        val oldTab = ChatManager.globalSelectedTab
+        oldTab.resetFilter()
+        selectedTabIndex = tabs.indexOf(newTab)
+        queueUpdateConfig = true
+        EventBus.post(ChatTabSwitchEvent(oldTab, newTab))
     }
 
     fun getClickedTab(x: Double, y: Double): ChatTab? {
@@ -226,6 +232,19 @@ class TabSettings {
                 ChatTab.PADDING + ChatTab.PADDING / 2,
                 textColor
             )
+            // notification badge
+            if (Config.values.tabNotificationSettings.enabled && !chatTab.read) {
+                val scale = Config.values.tabNotificationSettings.scale
+                poseStack.createPose {
+                    poseStack.guiForward()
+                    poseStack.translate0(
+                        x = chatTab.width - Resources.NOTIFICATION_BADGE.width / 2 * scale,
+                        y = startY - Resources.NOTIFICATION_BADGE.height / 2 * scale
+                    )
+                    poseStack.scale(scale, scale, 1f)
+                    guiGraphics.drawImage(Resources.NOTIFICATION_BADGE)
+                }
+            }
         }
     }
 

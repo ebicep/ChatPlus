@@ -315,6 +315,20 @@ object ConfigScreenImpl {
                 Config.values.moveToTabWhenCycling
             ) { Config.values.moveToTabWhenCycling = it })
         category.addEntry(
+            entryBuilder.startSubCategory(Component.translatable("chatPlus.chatWindowsTabs.tabNotification.title")).also { subCategory ->
+                subCategory.with(
+                    entryBuilder.booleanToggle(
+                        "chatPlus.chatWindowsTabs.tabNotification.enabled",
+                        Config.values.tabNotificationSettings.enabled
+                    ) { Config.values.tabNotificationSettings.enabled = it },
+                    entryBuilder.percentSlider(
+                        "chatPlus.chatWindowsTabs.tabNotification.scale",
+                        Config.values.tabNotificationSettings.scale
+                    ) { Config.values.tabNotificationSettings.scale = it }
+                )
+            }.build()
+        )
+        category.addEntry(
             getCustomListOption(
                 "chatPlus.chatWindowsTabs.title",
                 Config.values.chatWindows,

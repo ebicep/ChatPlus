@@ -13,6 +13,7 @@ import com.ebicep.chatplus.config.serializers.KeyWithModifier
 import com.ebicep.chatplus.features.CompactMessages
 import com.ebicep.chatplus.features.FilterMessages
 import com.ebicep.chatplus.features.HoverHighlight
+import com.ebicep.chatplus.features.chattabs.TabNotificationSettings
 import com.ebicep.chatplus.features.chatwindows.ChatWindow
 import com.ebicep.chatplus.features.chatwindows.ChatWindowsManager.createDefaultWindow
 import com.ebicep.chatplus.features.internal.MessageFilter
@@ -143,6 +144,7 @@ data class ConfigVariables(
     var scrollCycleTabEnabled: Boolean = true,
     var arrowCycleTabEnabled: Boolean = true,
     var moveToTabWhenCycling: Boolean = true,
+    var tabNotificationSettings: TabNotificationSettings = TabNotificationSettings(),
     var chatWindows: MutableList<ChatWindow> = mutableListOf(),
     // moving chat
     var movableChatEnabled: Boolean = false,
