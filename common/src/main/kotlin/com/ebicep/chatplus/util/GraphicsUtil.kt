@@ -272,4 +272,19 @@ object GraphicsUtil {
         BufferUploader.drawWithShader(bufferBuilder.end())
     }
 
+    fun GuiGraphics.drawImage(resources: Resources) {
+        this.innerBlit0(
+            resources.resourceLocation,
+            0f,
+            resources.width.toFloat(),
+            0f,
+            resources.height.toFloat(),
+            0f,
+            0f,
+            1f,
+            0f,
+            1f
+        )
+    }
+
 }

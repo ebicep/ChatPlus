@@ -13,8 +13,13 @@ import com.ebicep.chatplus.hud.ChatPlusScreen
 import com.ebicep.chatplus.mixin.IMixinScreen
 import com.google.common.base.Predicate
 import com.google.common.collect.Lists
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
+import kotlinx.serialization.builtins.ListSerializer
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 import net.minecraft.ChatFormatting
 import net.minecraft.client.ComponentCollector
 import net.minecraft.client.GuiMessage
@@ -29,6 +34,20 @@ import net.minecraft.util.Mth
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentHashMap.KeySetView
+
+object ChatTabSerializer : KSerializer<MutableList<ChatTab>> {
+
+    override val descriptor: SerialDescriptor = ListSerializer(ChatTab.serializer()).descriptor
+
+    override fun serialize(encoder: Encoder, value: MutableList<ChatTab>) {
+        val filteredItems = value.filter { !it.temporary }
+        ListSerializer(ChatTab.serializer()).serialize(encoder, filteredItems)
+    }
+
+    override fun deserialize(decoder: Decoder): MutableList<ChatTab> {
+        return ListSerializer(ChatTab.serializer()).deserialize(decoder).toMutableList()
+    }
+}
 
 @Serializable
 class ChatTab : MessageFilterFormatted {
@@ -66,11 +85,32 @@ class ChatTab : MessageFilterFormatted {
 
     var commandsOverrideAutoPrefix: Boolean = true
 
-    constructor(chatWindow: ChatWindow, name: String, pattern: String, autoPrefix: String = "", alwaysAdd: Boolean = false) : super(pattern) {
+    var temporary = false
+
+    @Transient
+    var isAutoTab = false
+
+    constructor(
+        chatWindow: ChatWindow,
+        name: String,
+        pattern: String,
+        autoPrefix: String = "",
+        priority: Int = 0,
+        alwaysAdd: Boolean = false,
+        skipOthers: Boolean = false,
+        commandsOverrideAutoPrefix: Boolean = true,
+        temporary: Boolean = false,
+        isAutoTab: Boolean = false
+    ) : super(pattern) {
         this.chatWindow = chatWindow
         this.name = name
         this.autoPrefix = autoPrefix
+        this.priority = priority
         this.alwaysAdd = alwaysAdd
+        this.skipOthers = skipOthers
+        this.commandsOverrideAutoPrefix = commandsOverrideAutoPrefix
+        this.temporary = temporary
+        this.isAutoTab = isAutoTab
     }
 
     constructor(name: String, pattern: String, autoPrefix: String = "", alwaysAdd: Boolean = false) : super(pattern) {
@@ -78,6 +118,10 @@ class ChatTab : MessageFilterFormatted {
         this.autoPrefix = autoPrefix
         this.alwaysAdd = alwaysAdd
     }
+
+    constructor(pattern: String, formatted: Boolean) : super(pattern, formatted) {
+    }
+
 
     @Transient
     val messages: MutableList<ChatPlusGuiMessage> = ArrayList()
@@ -138,6 +182,10 @@ class ChatTab : MessageFilterFormatted {
     var lastMessageTime: Long = 0
 
     @Transient
+    var read: Boolean = true
+
+
+    @Transient
     lateinit var chatWindow: ChatWindow
 
     override fun toString(): String {
@@ -169,10 +217,15 @@ class ChatTab : MessageFilterFormatted {
         chatPlusGuiMessage.guiMessage = GuiMessage(addedTime, mutableComponent, signature, tag)
         this.messages.add(chatPlusGuiMessage)
         this.lastMessageTime = System.currentTimeMillis()
-        while (this.messages.size > Config.values.maxMessages) {
-            EventBus.post(ChatTabRemoveMessageEvent(chatWindow, this, this.messages.removeFirst()))
+        if (Config.values.maxMessages > 0) {
+            while (this.messages.size > Config.values.maxMessages) {
+                EventBus.post(ChatTabRemoveMessageEvent(chatWindow, this, this.messages.removeFirst()))
+            }
         }
         this.addNewDisplayMessage(mutableComponent, addedTime, tag, chatPlusGuiMessage)
+        if (chatWindow.tabSettings.selectedTab != this) {
+            this.read = false
+        }
     }
 
     private fun addNewDisplayMessage(
@@ -246,10 +299,13 @@ class ChatTab : MessageFilterFormatted {
                 }
                 this.unfilteredDisplayedMessages.add(line)
             } else {
-                if (displayMessageEvent.addMessage) {
+                // check if index is valid
+                if (displayMessageEvent.addMessage && wrappedIndex in 0..displayedMessages.size) {
                     this.displayedMessages.add(wrappedIndex, line)
                 }
-                this.unfilteredDisplayedMessages.add(wrappedIndex, line)
+                if (wrappedIndex in 0..unfilteredDisplayedMessages.size) {
+                    this.unfilteredDisplayedMessages.add(wrappedIndex, line)
+                }
                 wrappedIndex++
             }
         }
@@ -486,6 +542,15 @@ class ChatTab : MessageFilterFormatted {
     }
 
 }
+
+data class SkipNewMessageEvent(
+    var mutableComponent: MutableComponent,
+    val rawComponent: Component,
+    var senderUUID: UUID?,
+    val signature: MessageSignature?,
+    val addedTime: Int,
+    val tag: GuiMessageTag?
+) : Event
 
 data class AddNewMessageEvent(
     var mutableComponent: MutableComponent,

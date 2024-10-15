@@ -7,14 +7,17 @@ import com.ebicep.chatplus.features.chattabs.CHAT_TAB_X_SPACE
 import com.ebicep.chatplus.features.chattabs.CHAT_TAB_Y_OFFSET
 import com.ebicep.chatplus.features.chattabs.ChatTab
 import com.ebicep.chatplus.features.chattabs.ChatTab.Companion.TAB_HEIGHT
+import com.ebicep.chatplus.features.chattabs.ChatTabSerializer
 import com.ebicep.chatplus.features.chattabs.ChatTabs.createDefaultTab
 import com.ebicep.chatplus.features.internal.Debug
 import com.ebicep.chatplus.hud.ChatManager
 import com.ebicep.chatplus.hud.ChatManager.resetGlobalSortedTabs
 import com.ebicep.chatplus.util.GraphicsUtil.createPose
+import com.ebicep.chatplus.util.GraphicsUtil.drawImage
 import com.ebicep.chatplus.util.GraphicsUtil.guiForward
 import com.ebicep.chatplus.util.GraphicsUtil.translate0
 import com.ebicep.chatplus.util.KotlinUtil.reduceAlpha
+import com.ebicep.chatplus.util.Resources
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import net.minecraft.client.Minecraft
@@ -32,9 +35,12 @@ class TabSettings {
     var tabTextColorSelected: Int = Color(255, 255, 255, 255).rgb
     var tabTextColorUnselected: Int = Color(153, 153, 153, 255).rgb
     var unfocusedTabOpacityMultiplier: Float = .4f
+
+    @Serializable(with = ChatTabSerializer::class)
     var tabs: MutableList<ChatTab> = mutableListOf()
         set(value) {
             field = value
+            selectedTabIndex = Mth.clamp(selectedTabIndex, 0, tabs.size - 1)
             value.forEach { it.chatWindow = chatWindow }
             resetSortedChatTabs()
         }
@@ -55,7 +61,7 @@ class TabSettings {
         selectedTabIndex = Mth.clamp(selectedTabIndex, 0, tabs.size - 1)
 
         tabs.forEach {
-            it.regex = Regex(it.pattern)
+            it.updateRegex()
         }
         resetSortedChatTabs(false)
     }
@@ -99,7 +105,7 @@ class TabSettings {
             }
         }
         if (Config.values.moveToTabWhenCycling) {
-            selectedTabIndex = Mth.clamp(selectedTabIndex + amount, 0, tabs.size - 1)
+            switchToTab(tabs[Mth.clamp(selectedTabIndex + amount, 0, tabs.size - 1)])
         }
     }
 
@@ -107,13 +113,16 @@ class TabSettings {
         val clickedTab: ChatTab = getClickedTab(x, y) ?: return
         EventBus.post(ChatTabClickedEvent(clickedTab, x, y, clickedTab.xStart.toDouble(), clickedTab.yStart.toDouble()))
         if (clickedTab != ChatManager.globalSelectedTab) {
-            val oldTab = ChatManager.globalSelectedTab
-            oldTab.resetFilter()
-            selectedTabIndex = tabs.indexOf(clickedTab)
-            queueUpdateConfig = true
-            ChatManager.globalSelectedTab.queueRefreshDisplayedMessages(false)
-            EventBus.post(ChatTabSwitchEvent(oldTab, clickedTab))
+            switchToTab(clickedTab)
         }
+    }
+
+    private fun switchToTab(newTab: ChatTab) {
+        val oldTab = ChatManager.globalSelectedTab
+        oldTab.resetFilter()
+        selectedTabIndex = tabs.indexOf(newTab)
+        queueUpdateConfig = true
+        EventBus.post(ChatTabSwitchEvent(oldTab, newTab))
     }
 
     fun getClickedTab(x: Double, y: Double): ChatTab? {
@@ -223,6 +232,19 @@ class TabSettings {
                 ChatTab.PADDING + ChatTab.PADDING / 2,
                 textColor
             )
+            // notification badge
+            if (Config.values.tabNotificationSettings.enabled && !chatTab.read) {
+                val scale = Config.values.tabNotificationSettings.scale
+                poseStack.createPose {
+                    poseStack.guiForward()
+                    poseStack.translate0(
+                        x = chatTab.width - Resources.NOTIFICATION_BADGE.width / 2 * scale,
+                        y = startY - Resources.NOTIFICATION_BADGE.height / 2 * scale
+                    )
+                    poseStack.scale(scale, scale, 1f)
+                    guiGraphics.drawImage(Resources.NOTIFICATION_BADGE)
+                }
+            }
         }
     }
 
