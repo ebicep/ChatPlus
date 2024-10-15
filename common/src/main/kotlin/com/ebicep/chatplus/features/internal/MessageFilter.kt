@@ -10,7 +10,7 @@ open class MessageFilter {
     var pattern: String = ""
         set(value) {
             field = value
-            regex = Regex(value)
+            updateRegex()
         }
 
     constructor(pattern: String) {
