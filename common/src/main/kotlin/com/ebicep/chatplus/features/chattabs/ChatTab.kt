@@ -300,10 +300,10 @@ class ChatTab : MessageFilterFormatted {
                 this.unfilteredDisplayedMessages.add(line)
             } else {
                 // check if index is valid
-                if (displayMessageEvent.addMessage && wrappedIndex in 0..<displayedMessages.size) {
+                if (displayMessageEvent.addMessage && wrappedIndex in 0..displayedMessages.size) {
                     this.displayedMessages.add(wrappedIndex, line)
                 }
-                if (wrappedIndex in 0..<unfilteredDisplayedMessages.size) {
+                if (wrappedIndex in 0..unfilteredDisplayedMessages.size) {
                     this.unfilteredDisplayedMessages.add(wrappedIndex, line)
                 }
                 wrappedIndex++
