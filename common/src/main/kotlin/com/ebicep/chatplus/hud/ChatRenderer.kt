@@ -13,6 +13,7 @@ import com.ebicep.chatplus.features.internal.Debug
 import com.ebicep.chatplus.hud.ChatPlusScreen.EDIT_BOX_HEIGHT
 import com.ebicep.chatplus.hud.ChatPlusScreen.lastMouseX
 import com.ebicep.chatplus.hud.ChatPlusScreen.lastMouseY
+import com.ebicep.chatplus.util.GraphicsUtil
 import com.ebicep.chatplus.util.GraphicsUtil.createPose
 import com.ebicep.chatplus.util.GraphicsUtil.drawString0
 import com.ebicep.chatplus.util.GraphicsUtil.fill0
@@ -335,7 +336,7 @@ class ChatRenderer {
 
         if (chatFocused && Debug.debug && chatWindow == ChatManager.selectedWindow) {
             poseStack.createPose {
-                poseStack.guiForward(amount = 50.0)
+                poseStack.guiForward(GraphicsUtil.GuiForwardType.ChatRendererDebug)
                 guiGraphics.drawString(Minecraft.getInstance().font, "$height", lastMouseX - 15, lastMouseY + 5, 0x3eeff)
                 guiGraphics.drawString(Minecraft.getInstance().font, "$rescaledHeight", lastMouseX - 15, lastMouseY + 15, 0x3eeff)
                 guiGraphics.drawString(Minecraft.getInstance().font, "$lineHeight", lastMouseX - 15, lastMouseY + 25, 0x3eeff)

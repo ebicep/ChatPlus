@@ -10,6 +10,7 @@ import com.ebicep.chatplus.features.textbarelements.AddTextBarElementEvent
 import com.ebicep.chatplus.features.textbarelements.ScreenShotChatElement
 import com.ebicep.chatplus.features.textbarelements.ScreenShotChatEvent
 import com.ebicep.chatplus.hud.*
+import com.ebicep.chatplus.util.GraphicsUtil
 import com.ebicep.chatplus.util.GraphicsUtil.createPose
 import com.ebicep.chatplus.util.GraphicsUtil.fill0
 import com.ebicep.chatplus.util.GraphicsUtil.guiForward
@@ -96,7 +97,7 @@ object ScreenshotChat {
             val renderer = chatWindow.renderer
             // fill background to change to transparent later
             val guiGraphics = it.guiGraphics
-            guiGraphics.pose().guiForward(10.0)
+            guiGraphics.pose().guiForward(GraphicsUtil.GuiForwardType.ScreenshotChatFull)
             guiGraphics.fill0(
                 renderer.rescaledX - 10,
                 renderer.rescaledY - renderer.rescaledHeight - 10,
@@ -161,7 +162,7 @@ object ScreenshotChat {
             val poseStack = guiGraphics.pose()
             val line = lastLinesScreenShotted!!.lines
             poseStack.createPose {
-                poseStack.guiForward(1000.0)
+                poseStack.guiForward(GraphicsUtil.GuiForwardType.ScreenshotChatLines)
                 poseStack.scale(renderer.scale, renderer.scale, 1f)
                 guiGraphics.fill(
                     0,

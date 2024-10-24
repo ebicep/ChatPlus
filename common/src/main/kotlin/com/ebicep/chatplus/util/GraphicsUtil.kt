@@ -13,6 +13,40 @@ import net.minecraft.util.FormattedCharSequence
 import org.joml.Matrix4f
 
 object GraphicsUtil {
+    sealed class GuiForwardType<T>(val amount: Double) {
+
+        open fun getAmount(modifier: () -> T): Double {
+            return amount
+        }
+
+        data object OnScreenDisplay : GuiForwardType<Unit>(2000.0)
+        data object ScreenshotChatLines : GuiForwardType<Unit>(1000.0)
+        data object Debug : GuiForwardType<Unit>(500.0)
+        data object ChatWindows : GuiForwardType<Int>(100.0) {
+            override fun getAmount(modifier: () -> Int): Double {
+                return amount * modifier.invoke()
+            }
+        }
+
+        data object ChatWindowTab : GuiForwardType<Boolean>(55.0) {
+            override fun getAmount(modifier: () -> Boolean): Double {
+                return if (modifier.invoke()) amount + 10.0 else amount
+            }
+        }
+
+        data object ChatWindowOutline : GuiForwardType<Boolean>(50.0) {
+            override fun getAmount(modifier: () -> Boolean): Double {
+                return if (modifier.invoke()) amount + 20.0 else amount
+            }
+        }
+
+        data object ChatRendererDebug : GuiForwardType<Unit>(50.0)
+        data object MovableChatMoving : GuiForwardType<Unit>(40.0)
+        data object ScreenshotChatFull : GuiForwardType<Unit>(10.0)
+        data object MovableChatDebug : GuiForwardType<Unit>(10.0)
+        data object Default : GuiForwardType<Unit>(5.0)
+
+    }
 
     inline fun PoseStack.createPose(fn: () -> Unit) {
         pushPose()
@@ -35,8 +69,16 @@ object GraphicsUtil {
     /**
      * Moves the pose stack forward by default 5 (anything new rendered will be on top)
      */
-    fun PoseStack.guiForward(amount: Double = 5.0) {
-        translate(0.0, 0.0, amount / 100)
+//    fun PoseStack.guiForward(amount: Double = 5.0) {
+//        translate(0.0, 0.0, amount / 100)
+//    }
+
+    fun <T> PoseStack.guiForward(guiForwardType: GuiForwardType<T>, modifier: () -> T) {
+        translate(0.0, 0.0, guiForwardType.getAmount(modifier) / 100)
+    }
+
+    fun PoseStack.guiForward(guiForwardType: GuiForwardType<Unit> = GuiForwardType.Default) {
+        translate(0.0, 0.0, guiForwardType.getAmount {} / 100)
     }
 
     fun GuiGraphics.fill0(i: Float, j: Float, k: Float, l: Float, n: Int) {

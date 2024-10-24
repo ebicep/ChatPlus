@@ -4,6 +4,7 @@ import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.features.chattabs.ChatTabGetMessageAtEvent
 import com.ebicep.chatplus.features.chattabs.MessageAtType
 import com.ebicep.chatplus.hud.*
+import com.ebicep.chatplus.util.GraphicsUtil
 import com.ebicep.chatplus.util.GraphicsUtil.createPose
 import com.ebicep.chatplus.util.GraphicsUtil.drawString0
 import com.ebicep.chatplus.util.GraphicsUtil.guiForward
@@ -26,7 +27,7 @@ object Debug {
             val mouseX = ChatPlusScreen.lastMouseX
             val mouseY = ChatPlusScreen.lastMouseY
             pose.createPose {
-                pose.guiForward(amount = 500.0)
+                pose.guiForward(GraphicsUtil.GuiForwardType.Debug)
                 guiGraphics.drawString(
                     Minecraft.getInstance().font,
                     "$mouseX,$mouseY",

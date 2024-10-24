@@ -20,6 +20,7 @@ import com.ebicep.chatplus.hud.ChatPlusScreen.EDIT_BOX_HEIGHT
 import com.ebicep.chatplus.hud.ChatPlusScreen.lastMouseX
 import com.ebicep.chatplus.hud.ChatPlusScreen.lastMouseY
 import com.ebicep.chatplus.util.ComponentUtil.withColor
+import com.ebicep.chatplus.util.GraphicsUtil
 import com.ebicep.chatplus.util.GraphicsUtil.createPose
 import com.ebicep.chatplus.util.GraphicsUtil.fill0
 import com.ebicep.chatplus.util.GraphicsUtil.guiForward
@@ -223,7 +224,7 @@ object MovableChat {
             // area above highest chat line
             val poseStack = guiGraphics.pose()
             val startY = renderer.rescaledY - renderer.getTotalLineHeight() / renderer.scale
-            poseStack.guiForward(amount = 40.0)
+            poseStack.guiForward(GraphicsUtil.GuiForwardType.MovableChatMoving)
             guiGraphics.fill0(
                 renderer.rescaledX,
                 startY,
@@ -455,7 +456,7 @@ object MovableChat {
         val poseStack = guiGraphics.pose()
         poseStack.createPose {
             // below cursor - if tab is outside tab bar
-            poseStack.guiForward(amount = 10.0)
+            poseStack.guiForward(GraphicsUtil.GuiForwardType.MovableChatDebug)
             guiGraphics.drawString(
                 Minecraft.getInstance().font,
                 "$outsideTabBar",
