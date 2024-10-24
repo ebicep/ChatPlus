@@ -57,7 +57,7 @@ class AutoTabCreator {
         }
         autoTabOptions.forEach {
             // check matches and get group index
-            val matchResult: MatchResult = it.regex.find(text) ?: return@forEach
+            val matchResult: MatchResult = it.find(text) ?: return@forEach
             val tabName = formatRegex(it.tabNameFormatter, matchResult)
             val pattern = formatRegex(it.regexFormatter, matchResult)
             val autoPrefix = formatRegex(it.autoPrefixFormatter, matchResult)
