@@ -12,6 +12,7 @@ import com.ebicep.chatplus.features.chattabs.ChatTabs.createDefaultTab
 import com.ebicep.chatplus.features.internal.Debug
 import com.ebicep.chatplus.hud.ChatManager
 import com.ebicep.chatplus.hud.ChatManager.resetGlobalSortedTabs
+import com.ebicep.chatplus.util.GraphicsUtil
 import com.ebicep.chatplus.util.GraphicsUtil.createPose
 import com.ebicep.chatplus.util.GraphicsUtil.drawImage
 import com.ebicep.chatplus.util.GraphicsUtil.guiForward
@@ -216,7 +217,7 @@ class TabSettings {
         }
 
         poseStack.createPose {
-            poseStack.guiForward(if (isGlobalSelected) 65.0 else 55.0)
+            poseStack.guiForward(GraphicsUtil.GuiForwardType.ChatWindowTab) { isGlobalSelected }
             guiGraphics.fill(
                 0,
                 startY,
@@ -232,18 +233,18 @@ class TabSettings {
                 ChatTab.PADDING + ChatTab.PADDING / 2,
                 textColor
             )
-            // notification badge
-            if (Config.values.tabNotificationSettings.enabled && !chatTab.read) {
-                val scale = Config.values.tabNotificationSettings.scale
-                poseStack.createPose {
-                    poseStack.guiForward()
-                    poseStack.translate0(
-                        x = chatTab.width - Resources.NOTIFICATION_BADGE.width / 2 * scale,
-                        y = startY - Resources.NOTIFICATION_BADGE.height / 2 * scale
-                    )
-                    poseStack.scale(scale, scale, 1f)
-                    guiGraphics.drawImage(Resources.NOTIFICATION_BADGE)
-                }
+        }
+        // notification badge
+        if (Config.values.tabNotificationSettings.enabled && !chatTab.read) {
+            val scale = Config.values.tabNotificationSettings.scale
+            poseStack.createPose {
+                poseStack.guiForward(GraphicsUtil.GuiForwardType.ChatTabNotificationBadge)
+                poseStack.translate0(
+                    x = chatTab.width - Resources.NOTIFICATION_BADGE.width / 2 * scale,
+                    y = startY - Resources.NOTIFICATION_BADGE.height / 2 * scale
+                )
+                poseStack.scale(scale, scale, 1f)
+                guiGraphics.drawImage(Resources.NOTIFICATION_BADGE)
             }
         }
     }

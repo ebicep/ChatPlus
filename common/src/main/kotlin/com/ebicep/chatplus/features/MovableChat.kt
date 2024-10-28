@@ -20,6 +20,7 @@ import com.ebicep.chatplus.hud.ChatPlusScreen.EDIT_BOX_HEIGHT
 import com.ebicep.chatplus.hud.ChatPlusScreen.lastMouseX
 import com.ebicep.chatplus.hud.ChatPlusScreen.lastMouseY
 import com.ebicep.chatplus.util.ComponentUtil.withColor
+import com.ebicep.chatplus.util.GraphicsUtil
 import com.ebicep.chatplus.util.GraphicsUtil.createPose
 import com.ebicep.chatplus.util.GraphicsUtil.fill0
 import com.ebicep.chatplus.util.GraphicsUtil.guiForward
@@ -145,9 +146,11 @@ object MovableChat {
                     yDisplacement = mouseY - renderer.getUpdatedY()
                 } else {
                     if (mouseX > renderer.getUpdatedX() + renderer.getUpdatedWidthValue() - RENDER_MOVING_SIZE) {
+                        xDisplacement = renderer.getUpdatedX() + renderer.getUpdatedWidthValue() - mouseX
                         movingChatWidth = true
                     }
                     if (mouseY < renderer.getUpdatedY() - renderer.getTotalLineHeight() + RENDER_MOVING_SIZE) {
+                        yDisplacement = renderer.getUpdatedY() - renderer.getTotalLineHeight() - mouseY
                         movingChatHeight = true
                     }
                 }
@@ -200,16 +203,15 @@ object MovableChat {
                     renderer.internalY.toFloat(),
                     chatWindow.generalSettings.getUpdatedBackgroundColor()
                 )
-                if (it.chatWindow == ChatManager.selectedWindow) {
-                    renderMoving(
-                        guiGraphics.pose(),
-                        guiGraphics,
-                        renderer.internalX,
-                        renderer.internalY,
-                        renderer.getTotalLineHeight().roundToInt(),
-                        renderer.internalWidth
-                    )
-                }
+                renderMoving(
+                    guiGraphics.pose(),
+                    guiGraphics,
+                    renderer.internalX,
+                    renderer.internalY,
+                    renderer.getTotalLineHeight().roundToInt(),
+                    renderer.internalWidth,
+                    it.chatWindow == ChatManager.selectedWindow
+                )
             }
             it.returnFunction = true
         }
@@ -223,7 +225,7 @@ object MovableChat {
             // area above highest chat line
             val poseStack = guiGraphics.pose()
             val startY = renderer.rescaledY - renderer.getTotalLineHeight() / renderer.scale
-            poseStack.guiForward(amount = 40.0)
+            poseStack.guiForward(GraphicsUtil.GuiForwardType.MovableChatMoving)
             guiGraphics.fill0(
                 renderer.rescaledX,
                 startY,
@@ -231,20 +233,18 @@ object MovableChat {
                 startY + (renderer.getLinesPerPageScaled() - it.displayMessageIndex) * renderer.lineHeight,
                 chatWindow.generalSettings.getUpdatedBackgroundColor()
             )
-            if (it.chatWindow == ChatManager.selectedWindow) {
-                poseStack.guiForward()
-                poseStack.createPose {
-                    val unscaled = 1 / renderer.scale
-                    poseStack.scale(unscaled, unscaled, 1f)
-                    renderMoving(
-                        poseStack,
-                        guiGraphics,
-                        renderer.internalX,
-                        renderer.internalY,
-                        renderer.getTotalLineHeight().roundToInt(),
-                        renderer.internalWidth
-                    )
-                }
+            poseStack.createPose {
+                val unscaled = 1 / renderer.scale
+                poseStack.scale(unscaled, unscaled, 1f)
+                renderMoving(
+                    poseStack,
+                    guiGraphics,
+                    renderer.internalX,
+                    renderer.internalY,
+                    renderer.getTotalLineHeight().roundToInt(),
+                    renderer.internalWidth,
+                    it.chatWindow == ChatManager.selectedWindow
+                )
             }
         }
         EventBus.register<HoverHighlight.HoverHighlightRenderEvent> {
@@ -279,7 +279,7 @@ object MovableChat {
             val mouseY = it.mouseY.toDouble()
             if (movingChatWidth) {
                 val newWidth: Double = Mth.clamp(
-                    mouseX - renderer.getUpdatedX(),
+                    (mouseX + xDisplacement) - renderer.getUpdatedX(),
                     MIN_WIDTH.toDouble(),
                     Minecraft.getInstance().window.guiScaledWidth - renderer.getUpdatedX().toDouble()
                 )
@@ -288,7 +288,7 @@ object MovableChat {
             }
             if (movingChatHeight) {
                 val newHeight: Double = Mth.clamp(
-                    renderer.getUpdatedY() - mouseY,
+                    renderer.getUpdatedY() - (mouseY + yDisplacement),
                     renderer.getMinHeight().toDouble(),
                     renderer.getMaxHeightScaled(HeightType.RAW).toDouble()
                 )
@@ -455,7 +455,7 @@ object MovableChat {
         val poseStack = guiGraphics.pose()
         poseStack.createPose {
             // below cursor - if tab is outside tab bar
-            poseStack.guiForward(amount = 10.0)
+            poseStack.guiForward(GraphicsUtil.GuiForwardType.MovableChatDebug)
             guiGraphics.drawString(
                 Minecraft.getInstance().font,
                 "$outsideTabBar",
@@ -574,29 +574,28 @@ object MovableChat {
         x: Int,
         y: Int,
         height: Int,
-        backgroundWidth: Int
+        backgroundWidth: Int,
+        selectedWindow: Boolean
     ) {
         poseStack.createPose {
-            if (movingChatWidth) {
-                poseStack.guiForward()
-                guiGraphics.fill0(
-                    x + backgroundWidth - RENDER_MOVING_SIZE,
-                    y - height.toFloat(),
-                    x + backgroundWidth.toFloat(),
-                    y.toFloat(),
-                    0xFFFFFFFF.toInt()
-                )
-            }
-            if (movingChatHeight) {
-                poseStack.guiForward()
-                guiGraphics.fill0(
-                    x.toFloat(),
-                    y - height.toFloat(),
-                    x + backgroundWidth.toFloat(),
-                    y - height + RENDER_MOVING_SIZE,
-                    0xFFFFFFFF.toInt()
-                )
-            }
+            val movingWidth = movingChatWidth && selectedWindow
+            val movingHeight = movingChatHeight && selectedWindow
+            poseStack.guiForward()
+            guiGraphics.fill0(
+                x + backgroundWidth - RENDER_MOVING_SIZE,
+                y - height.toFloat(),
+                x + backgroundWidth.toFloat(),
+                y.toFloat(),
+                if (movingWidth) Config.values.movableChatSelectedColor else Config.values.movableChatColor
+            )
+            poseStack.guiForward(backwards = movingWidth && !movingHeight)
+            guiGraphics.fill0(
+                x.toFloat(),
+                y - height.toFloat(),
+                x + backgroundWidth.toFloat(),
+                y - height + RENDER_MOVING_SIZE,
+                if (movingHeight) Config.values.movableChatSelectedColor else Config.values.movableChatColor
+            )
         }
     }
 

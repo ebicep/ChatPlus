@@ -6,7 +6,6 @@ import com.ebicep.chatplus.features.internal.MessageFilterFormatted
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import net.minecraft.network.chat.Component
-import net.minecraft.network.chat.contents.LiteralContents
 
 @Serializable
 class AutoTabCreator {
@@ -20,7 +19,7 @@ class AutoTabCreator {
         autoTabOptions.forEach {
             it.updateRegex()
         }
-        EventBus.register<AddNewMessageEvent> {
+        EventBus.register<AddNewMessageEvent>({ -5 }) {
             handleNewMessage(it.rawComponent)?.let { data ->
                 data.chatTab.addNewMessage(it)
                 if (data.autoTabOptions.skipOthersOnCreation) {
@@ -46,9 +45,6 @@ class AutoTabCreator {
         if (autoTabOptions.isEmpty()) {
             return null
         }
-        if (component.contents !is LiteralContents) {
-            return null
-        }
         val text = component.string
         val tabSettings = chatWindow.tabSettings
         // check if already in other tab
@@ -57,7 +53,7 @@ class AutoTabCreator {
         }
         autoTabOptions.forEach {
             // check matches and get group index
-            val matchResult: MatchResult = it.regex.find(text) ?: return@forEach
+            val matchResult: MatchResult = it.find(text) ?: return@forEach
             val tabName = formatRegex(it.tabNameFormatter, matchResult)
             val pattern = formatRegex(it.regexFormatter, matchResult)
             val autoPrefix = formatRegex(it.autoPrefixFormatter, matchResult)
@@ -92,6 +88,7 @@ class AutoTabCreator {
             val groupValue = matchResult.groups[i]?.value ?: continue
             output = output.replace("%GROUP_$i%", groupValue)
         }
+        output = output.replace(Regex("%GROUP_*?\\d+%"), "")
         return output
     }
 

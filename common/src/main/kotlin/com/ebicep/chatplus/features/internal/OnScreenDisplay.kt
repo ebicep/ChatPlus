@@ -2,6 +2,7 @@ package com.ebicep.chatplus.features.internal
 
 import com.ebicep.chatplus.events.Event
 import com.ebicep.chatplus.events.EventBus
+import com.ebicep.chatplus.util.GraphicsUtil
 import com.ebicep.chatplus.util.GraphicsUtil.createPose
 import com.ebicep.chatplus.util.GraphicsUtil.guiForward
 import com.ebicep.chatplus.util.GraphicsUtil.translate0
@@ -22,7 +23,7 @@ object OnScreenDisplay {
             val poseStack = guiGraphics.pose()
             components.forEachIndexed { index, it ->
                 poseStack.createPose {
-                    poseStack.guiForward(amount = 2000.0)
+                    poseStack.guiForward(GraphicsUtil.GuiForwardType.OnScreenDisplay)
                     poseStack.translate0(y = index * 10.0)
                     guiGraphics.drawCenteredString(
                         Minecraft.getInstance().font,

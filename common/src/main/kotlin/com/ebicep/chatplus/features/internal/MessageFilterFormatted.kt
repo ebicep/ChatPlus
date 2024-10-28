@@ -25,4 +25,12 @@ open class MessageFilterFormatted : MessageFilter {
         }
     }
 
+    fun find(message: String): MatchResult? {
+        return if (formatted) {
+            regex.find(message.replace("§", "&"))
+        } else {
+            regex.find(ChatFormatting.stripFormatting(message)!!)
+        }
+    }
+
 }

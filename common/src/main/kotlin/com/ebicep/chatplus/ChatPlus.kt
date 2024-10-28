@@ -35,7 +35,9 @@ object ChatPlus {
     }
 
     fun doTest() {
-        val component = Component.literal("From [VIP] sumSmash: hello")
+        val component = Component.literal("[You -> Bob_123] hello")
+//        val component = Component.literal("[Bob_123 -> You] hello")
+//        val component = Component.literal("[GameManager] hello")
         val addMessagesTo: MutableList<ChatTab> = ArrayList()
         var lastPriority: Int? = null
         for (chatTab in globalSortedTabs) {

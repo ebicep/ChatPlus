@@ -17,7 +17,9 @@ import com.ebicep.chatplus.util.GraphicsUtil.translate0
 import com.mojang.blaze3d.systems.RenderSystem
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.components.PlayerFaceRenderer
+import net.minecraft.client.multiplayer.PlayerInfo
 import net.minecraft.resources.ResourceLocation
+import net.minecraft.world.entity.player.PlayerModelPart
 import java.util.*
 
 object PlayerHeadChatDisplay {
@@ -28,16 +30,22 @@ object PlayerHeadChatDisplay {
     private const val HEAD_WIDTH_PADDED_HALF = HEAD_WIDTH_PADDED / 2
     private val NAME_REGEX = Regex("(§.)|\\W")
     private val playerNameUUIDs = mutableMapOf<String, TimedUUID>()
-    private val playerHeads = mutableMapOf<UUID, ResourceLocation>()
+    private val playerHeads = mutableMapOf<UUID, HeadData>()
 
     data class TimedUUID(val uuid: UUID, val lastUsed: Long)
+
+    data class HeadData(val texture: ResourceLocation, val showHat: Boolean)
 
     init {
         EventBus.register<ChatPlusMinuteEvent> {
             if (it.minute % 10 == 0L) {
                 val currentTime = System.currentTimeMillis()
                 playerNameUUIDs.entries.removeIf { entry ->
-                    currentTime - entry.value.lastUsed > CACHE_EXPIRATION
+                    val remove = currentTime - entry.value.lastUsed > CACHE_EXPIRATION
+                    if (remove) {
+                        playerHeads.remove(entry.value.uuid)
+                    }
+                    remove
                 }
             }
         }
@@ -55,11 +63,11 @@ object PlayerHeadChatDisplay {
                     it.senderUUID = timedUUID.uuid
                     return@register
                 }
-                val playerInfo = connection.getPlayerInfo(word)
+                val playerInfo: PlayerInfo? = connection.getPlayerInfo(word)
                 if (playerInfo != null) {
                     val uuid = playerInfo.profile.id
                     playerNameUUIDs[word] = TimedUUID(uuid, System.currentTimeMillis())
-                    playerHeads[uuid] = playerInfo.skinLocation
+                    playerHeads[uuid] = HeadData(playerInfo.skinLocation, Minecraft.getInstance().level?.getPlayerByUUID(uuid)?.isModelPartShown(PlayerModelPart.HAT) == true)
                     it.senderUUID = uuid
                     return@register
                 }
@@ -87,8 +95,8 @@ object PlayerHeadChatDisplay {
                 }
                 return@register
             }
-            val resourceLocation = playerHeads[senderUUID]
-            if (resourceLocation == null) {
+            val headData: HeadData? = playerHeads[senderUUID]
+            if (headData == null) {
                 if (Config.values.playerHeadChatDisplayOffsetNonHeadMessages) {
                     poseStack.translate0(x = messageOffset)
                 }
@@ -102,10 +110,12 @@ object PlayerHeadChatDisplay {
                 RenderSystem.setShaderColor(1f, 1f, 1f, it.textColor / 255f)
                 playerFaceRendererDraw(
                     guiGraphics,
-                    resourceLocation,
+                    headData.texture,
                     it.chatWindow.renderer.rescaledX,
                     it.verticalTextOffset,
-                    PlayerFaceRenderer.SKIN_HEAD_WIDTH.toFloat()
+                    PlayerFaceRenderer.SKIN_HEAD_WIDTH.toFloat(),
+                    headData.showHat,
+                    false
                 )
                 RenderSystem.setShaderColor(1f, 1f, 1f, 1f)
                 RenderSystem.disableBlend()

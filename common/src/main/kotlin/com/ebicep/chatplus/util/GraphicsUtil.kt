@@ -14,6 +14,46 @@ import org.joml.Matrix4f
 
 object GraphicsUtil {
 
+    sealed class GuiForwardType<T>(val amount: Double) {
+
+        open fun getAmount(modifier: () -> T): Double {
+            return amount
+        }
+
+        data object OnScreenDisplay : GuiForwardType<Unit>(2000.0)
+        data object ScreenshotChatLines : GuiForwardType<Unit>(1000.0)
+        data object Debug : GuiForwardType<Unit>(500.0)
+        data object ChatWindows : GuiForwardType<Int>(100.0) {
+            override fun getAmount(modifier: () -> Int): Double {
+                return amount * modifier.invoke()
+            }
+        }
+
+        data object ChatTabNotificationBadge : GuiForwardType<Unit>(60.0)
+
+        data object ChatWindowTab : GuiForwardType<Boolean>(50.0) {
+            override fun getAmount(modifier: () -> Boolean): Double { // if global selected tab so renders above other outlines if moved over them
+                return if (modifier.invoke()) amount + 2.0 else amount
+            }
+        }
+
+        data object ChatWindowOutline : GuiForwardType<Boolean>(50.0) {
+            override fun getAmount(modifier: () -> Boolean): Double { // if global selected tab so renders above other tab text/outline if moved over them
+                return if (modifier.invoke()) amount + 4.0 else amount
+            }
+        }
+
+        data object ChatRendererDebug : GuiForwardType<Unit>(50.0)
+        data object MovableChatMoving : GuiForwardType<Unit>(40.0)
+        data object ScreenshotChatFull : GuiForwardType<Unit>(10.0)
+        data object MovableChatDebug : GuiForwardType<Unit>(10.0)
+        data object Default : GuiForwardType<Boolean>(0.5) {
+            override fun getAmount(modifier: () -> Boolean): Double {
+                return if (modifier.invoke()) -amount else amount
+            }
+        }
+    }
+
     inline fun PoseStack.createPose(fn: () -> Unit) {
         pushPose()
         fn()
@@ -35,8 +75,20 @@ object GraphicsUtil {
     /**
      * Moves the pose stack forward by default 5 (anything new rendered will be on top)
      */
-    fun PoseStack.guiForward(amount: Double = 5.0) {
-        translate(0.0, 0.0, amount / 100)
+//    fun PoseStack.guiForward(amount: Double = 5.0) {
+//        translate(0.0, 0.0, amount / 100)
+//    }
+
+    fun <T> PoseStack.guiForward(guiForwardType: GuiForwardType<T>, modifier: () -> T) {
+        translate(0.0, 0.0, guiForwardType.getAmount(modifier) / 100)
+    }
+
+    fun PoseStack.guiForward(guiForwardType: GuiForwardType<Unit>) {
+        translate(0.0, 0.0, guiForwardType.getAmount {} / 100)
+    }
+
+    fun PoseStack.guiForward(guiForwardType: GuiForwardType<Boolean> = GuiForwardType.Default, backwards: Boolean = false) {
+        translate(0.0, 0.0, guiForwardType.getAmount { backwards } / 100)
     }
 
     fun GuiGraphics.fill0(i: Float, j: Float, k: Float, l: Float, n: Int) {
@@ -218,15 +270,15 @@ object GraphicsUtil {
     }
 
     fun playerFaceRendererDraw(guiGraphics: GuiGraphics, resourceLocation: ResourceLocation, i: Float, j: Float, k: Float) {
-        this.playerFaceRendererDraw(guiGraphics, resourceLocation, i, j, k, true, false)
+        this.playerFaceRendererDraw(guiGraphics, resourceLocation, i, j, k, renderHat = true, renderUpsideDown = false)
     }
 
-    fun playerFaceRendererDraw(guiGraphics: GuiGraphics, resourceLocation: ResourceLocation, i: Float, j: Float, k: Float, bl: Boolean, bl2: Boolean) {
-        val l = 8 + (if (bl2) 8 else 0)
-        val m = 8 * (if (bl2) -1 else 1)
+    fun playerFaceRendererDraw(guiGraphics: GuiGraphics, resourceLocation: ResourceLocation, i: Float, j: Float, k: Float, renderHat: Boolean, renderUpsideDown: Boolean) {
+        val l = 8 + (if (renderUpsideDown) 8 else 0)
+        val m = 8 * (if (renderUpsideDown) -1 else 1)
         guiGraphics.blit0(resourceLocation, i, j, k, k, 8.0f, l.toFloat(), 8f, m.toFloat(), 64f, 64f)
-        if (bl) {
-            playerFaceRendererDrawHat(guiGraphics, resourceLocation, i, j, k, bl2)
+        if (renderHat) {
+            playerFaceRendererDrawHat(guiGraphics, resourceLocation, i, j, k, renderUpsideDown)
         }
     }
 
