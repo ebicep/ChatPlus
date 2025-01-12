@@ -785,7 +785,12 @@ object ConfigScreenImpl {
                     .replace("\n", "\\n")
                     .replace("\t", "\\t")
                     .replace("\r", "\\r")
-            ) { Config.values.copyMessageSeparator = it.translateEscapes() }
+            ) {
+                Config.values.copyMessageSeparator = it.replace("\\\\", "\\")
+                    .replace("\\n", "\n")
+                    .replace("\\t", "\t")
+                    .replace("\\r", "\r")
+            }
         )
     }
 
