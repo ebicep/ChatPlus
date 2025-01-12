@@ -5,6 +5,7 @@ import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.config.configDirectoryPath
 import com.ebicep.chatplus.events.ChatPlusTickEvent
 import com.ebicep.chatplus.events.EventBus
+import com.ebicep.chatplus.features.InputOverFlowAutoFill
 import com.ebicep.chatplus.hud.ChatManager
 import com.ebicep.chatplus.hud.ChatPlusScreen
 import com.ebicep.chatplus.hud.ChatScreenCloseEvent
@@ -235,7 +236,9 @@ class MicrophoneThread : Thread("ChatPlusMicrophoneThread") {
                 doWithMessage { messages, _ ->
                     ChatManager.addSentMessage(messages[0])
                     Minecraft.getInstance().player?.connection?.sendChat(messages[0])
-                    ChatPlusScreen.messagesToSend.addAll(messages.subList(1, messages.size))
+                    if (messages.size > 1) {
+                        InputOverFlowAutoFill.addToQueue(messages.subList(1, messages.size))
+                    }
                 }
             }
             EventResult.pass()

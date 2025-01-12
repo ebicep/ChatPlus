@@ -12,6 +12,7 @@
     "MixinChatScreen",
     "MixinGuiGraphics",
     "MixinScreen",
+    "MixinServerList",
     "NativeImagePointerAccessor"
   ],
   "mixins": [

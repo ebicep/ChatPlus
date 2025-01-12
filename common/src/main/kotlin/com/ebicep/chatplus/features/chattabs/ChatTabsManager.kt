@@ -11,6 +11,7 @@ import com.ebicep.chatplus.features.chatwindows.WindowSwitchEvent
 import com.ebicep.chatplus.hud.*
 import com.ebicep.chatplus.hud.ChatManager.selectedWindow
 import com.ebicep.chatplus.mixin.IMixinChatScreen
+import net.minecraft.client.Minecraft
 import net.minecraft.util.Mth
 
 
@@ -69,7 +70,16 @@ object ChatTabs {
             if (it.message.startsWith("/") && ChatManager.globalSelectedTab.commandsOverrideAutoPrefix) {
                 return@register
             }
-            it.message = ChatManager.globalSelectedTab.autoPrefix + it.message
+            var autoPrefix = ChatManager.globalSelectedTab.autoPrefix
+            Minecraft.getInstance().player?.connection?.serverData?.ip?.let { ip ->
+                ChatManager.globalSelectedTab.serverTabPatterns.forEach { serverTabPattern ->
+                    if (serverTabPattern.regex.matches(ip)) {
+                        autoPrefix = serverTabPattern.autoPrefix
+                        return@forEach
+                    }
+                }
+            }
+            it.message = autoPrefix + it.message
         }
         EventBus.register<ChatTabSwitchEvent> {
             it.newTab.read = true

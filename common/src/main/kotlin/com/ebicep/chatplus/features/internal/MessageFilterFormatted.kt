@@ -14,7 +14,7 @@ open class MessageFilterFormatted : MessageFilter {
         this.formatted = formatted
     }
 
-    fun matches(message: String): Boolean {
+    open fun matches(message: String, pattern: String, regex: Regex): Boolean {
         if (pattern == "(?s).*" || pattern == "(.*?)") {
             return true
         }
@@ -23,6 +23,10 @@ open class MessageFilterFormatted : MessageFilter {
         } else {
             regex.matches(ChatFormatting.stripFormatting(message)!!)
         }
+    }
+
+    fun matches(message: String): Boolean {
+        return matches(message, pattern, regex)
     }
 
     fun find(message: String): MatchResult? {

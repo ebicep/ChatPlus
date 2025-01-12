@@ -63,6 +63,7 @@ class TabSettings {
 
         tabs.forEach {
             it.updateRegex()
+            it.updateServerIPRegex()
         }
         resetSortedChatTabs(false)
     }

@@ -13,6 +13,7 @@ import com.ebicep.chatplus.config.serializers.KeyWithModifier
 import com.ebicep.chatplus.features.CompactMessages
 import com.ebicep.chatplus.features.FilterMessages
 import com.ebicep.chatplus.features.HoverHighlight
+import com.ebicep.chatplus.features.InputOverFlowAutoFill
 import com.ebicep.chatplus.features.chattabs.TabNotificationSettings
 import com.ebicep.chatplus.features.chatwindows.ChatWindow
 import com.ebicep.chatplus.features.chatwindows.ChatWindowsManager.createDefaultWindow
@@ -111,6 +112,7 @@ object Config {
 data class ConfigVariables(
     // general
     var enabled: Boolean = true,
+    var addMessagesIfDisabled: Boolean = false,
     var vanillaInputBox: Boolean = false,
     var wrappedMessageLineIndent: Int = 0,
     var maxMessages: Int = -1,
@@ -118,6 +120,7 @@ data class ConfigVariables(
     var chatTimestampMode: TimestampMode = TimestampMode.HR_12_SECOND,
     var jumpToMessageMode: JumpToMessageMode = JumpToMessageMode.CURSOR,
     var selectChatLinePriority: Int = 100,
+    var inputOverFlowAutoFillSettings: InputOverFlowAutoFill.InputOverFlowAutoFillSettings = InputOverFlowAutoFill.InputOverFlowAutoFillSettings(),
     // hide chat
     var hideChatEnabled: Boolean = false,
     var hideChatShowWhenFocused: Boolean = true,
@@ -179,6 +182,7 @@ data class ConfigVariables(
     var copyMessageKey: KeyWithModifier = KeyWithModifier(InputConstants.getKey("key.keyboard.c"), 2),
     var copyMessageLinePriority: Int = 50,
     var copyNoFormatting: Boolean = true,
+    var copyMessageSeparator: String = "\n",
     // screen shot chat
     var screenshotChatEnabled: Boolean = true,
     var screenshotChatTextBarElementEnabled: Boolean = true,

@@ -34,7 +34,7 @@ object PlayerHeadChatDisplay {
 
     data class TimedUUID(val uuid: UUID, val lastUsed: Long)
 
-    data class HeadData(val texture: ResourceLocation, val showHat: Boolean)
+    data class HeadData(val texture: () -> ResourceLocation, val showHat: Boolean)
 
     init {
         EventBus.register<ChatPlusMinuteEvent> {
@@ -67,7 +67,7 @@ object PlayerHeadChatDisplay {
                 if (playerInfo != null) {
                     val uuid = playerInfo.profile.id
                     playerNameUUIDs[word] = TimedUUID(uuid, System.currentTimeMillis())
-                    playerHeads[uuid] = HeadData(playerInfo.skinLocation, Minecraft.getInstance().level?.getPlayerByUUID(uuid)?.isModelPartShown(PlayerModelPart.HAT) == true)
+                    playerHeads[uuid] = HeadData({ playerInfo.skinLocation }, Minecraft.getInstance().level?.getPlayerByUUID(uuid)?.isModelPartShown(PlayerModelPart.HAT) == true)
                     it.senderUUID = uuid
                     return@register
                 }
@@ -110,7 +110,7 @@ object PlayerHeadChatDisplay {
                 RenderSystem.setShaderColor(1f, 1f, 1f, it.textColor / 255f)
                 playerFaceRendererDraw(
                     guiGraphics,
-                    headData.texture,
+                    headData.texture.invoke(),
                     it.chatWindow.renderer.rescaledX,
                     it.verticalTextOffset,
                     PlayerFaceRenderer.SKIN_HEAD_WIDTH.toFloat(),

@@ -16,7 +16,6 @@ object ChatPlusScreen {
     var lastMouseX = 0
     var lastMouseY = 0
 
-    val messagesToSend: MutableList<String> = mutableListOf()
     var lastMessageSentTick = 0L
 
     fun splitChatMessage(message: String): List<String> {

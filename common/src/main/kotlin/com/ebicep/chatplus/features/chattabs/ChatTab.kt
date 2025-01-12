@@ -66,12 +66,28 @@ class ChatTab : MessageFilterFormatted {
         val wrappedIndex: Int
     )
 
+    override fun matches(message: String, pattern: String, regex: Regex): Boolean {
+        val ip = Minecraft.getInstance().player?.connection?.serverData?.ip ?: return super.matches(message, pattern, regex)
+        serverTabPatterns.forEach {
+            if (it.regex.matches(ip)) {
+                return super.matches(message, it.chatPattern.pattern, it.chatPattern.regex)
+            }
+        }
+        return super.matches(message, pattern, regex)
+    }
+
     var name: String = ""
         set(value) {
             field = value
             width = -1
         }
     var autoPrefix: String = ""
+
+    var serverTabPatterns = mutableListOf<ServerTabPattern>()
+        set(value) {
+            field = value
+            updateServerIPRegex()
+        }
 
     // priority of tab, when adding messages, tabs are sorted by priority first
     // if a message got added to a tab then any other tab with a lower priority will not get the message
@@ -121,7 +137,6 @@ class ChatTab : MessageFilterFormatted {
 
     constructor(pattern: String, formatted: Boolean) : super(pattern, formatted) {
     }
-
 
     @Transient
     val messages: MutableList<ChatPlusGuiMessage> = ArrayList()
@@ -183,7 +198,6 @@ class ChatTab : MessageFilterFormatted {
 
     @Transient
     var read: Boolean = true
-
 
     @Transient
     lateinit var chatWindow: ChatWindow
@@ -497,11 +511,19 @@ class ChatTab : MessageFilterFormatted {
         return ChatPositionTranslator.getComponentStyleAt(this, mouseX, mouseY)
     }
 
+    fun updateServerIPRegex() {
+        this.serverTabPatterns.forEach {
+            it.updateRegex()
+            it.chatPattern.updateRegex()
+        }
+    }
+
     companion object {
 
         const val PADDING = 2
         const val TAB_HEIGHT = 9 + PADDING * 2
         private val INDENT: FormattedCharSequence = FormattedCharSequence.codepoint(32, Style.EMPTY)
+        var cachedServerIPs = mutableSetOf<String>()
 
         private fun stripColor(pText: String): String? {
             return if (Minecraft.getInstance().options.chatColors().get()) pText else ChatFormatting.stripFormatting(pText)
@@ -539,6 +561,7 @@ class ChatTab : MessageFilterFormatted {
                 list
             }
         }
+
     }
 
 }

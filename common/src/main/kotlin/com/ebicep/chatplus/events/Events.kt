@@ -1,16 +1,12 @@
 package com.ebicep.chatplus.events
 
-import com.ebicep.chatplus.ChatPlus
 import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.config.ConfigScreen
 import com.ebicep.chatplus.config.queueUpdateConfig
-import com.ebicep.chatplus.hud.ChatManager
-import com.ebicep.chatplus.hud.ChatPlusScreen
 import dev.architectury.event.CompoundEventResult
 import dev.architectury.event.events.client.ClientGuiEvent
 import dev.architectury.event.events.client.ClientLifecycleEvent
 import dev.architectury.event.events.client.ClientTickEvent
-import net.minecraft.client.Minecraft
 
 data class ChatPlusTickEvent(
     val tick: Long
@@ -39,17 +35,6 @@ object Events {
             }
 
             ConfigScreen.handleOpenScreen()
-
-            val messagesToSend = ChatPlusScreen.messagesToSend
-            if (messagesToSend.isNotEmpty() && ChatPlusScreen.lastMessageSentTick + 10 < currentTick) {
-                val message = messagesToSend.removeAt(0)
-                ChatManager.addSentMessage(message)
-                try {
-                    Minecraft.getInstance().player!!.connection.sendChat(message)
-                } catch (e: Exception) {
-                    ChatPlus.LOGGER.error(e)
-                }
-            }
 
             // save every 30s if there was a change or every 5 minutes
             if (currentTick % 600 == 0L && queueUpdateConfig || currentTick % 1800 == 0L) {

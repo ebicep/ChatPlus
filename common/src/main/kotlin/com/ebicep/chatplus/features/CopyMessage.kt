@@ -33,7 +33,7 @@ object CopyMessage {
                 copied.add(hoveredOverMessage)
                 copyToClipboard(hoveredOverMessage)
             } else if (selectedMessages.isNotEmpty()) {
-                copyToClipboard(SelectChat.getSelectedMessagesOrdered().joinToString("\n") { line ->
+                copyToClipboard(SelectChat.getSelectedMessagesOrdered().joinToString(Config.values.copyMessageSeparator) { line ->
                     copied.add(line)
                     line.content
                 })

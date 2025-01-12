@@ -1,7 +1,7 @@
 package com.ebicep.chatplus.translator
 
+import com.ebicep.chatplus.features.InputOverFlowAutoFill
 import com.ebicep.chatplus.hud.ChatManager
-import com.ebicep.chatplus.hud.ChatPlusScreen
 import com.ebicep.chatplus.hud.ChatPlusScreen.splitChatMessage
 import net.minecraft.client.Minecraft
 
@@ -22,7 +22,9 @@ class SelfTranslator(val toTranslate: String, val prefix: String) : Thread() {
             } else {
                 Minecraft.getInstance().player!!.connection.sendChat("$prefix $translatedMessage")
             }
-            ChatPlusScreen.messagesToSend.addAll(messages.subList(1, messages.size))
+            if (messages.size > 1) {
+                InputOverFlowAutoFill.addToQueue(messages.subList(1, messages.size))
+            }
         }
     }
 

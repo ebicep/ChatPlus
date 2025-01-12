@@ -8,6 +8,7 @@ import com.ebicep.chatplus.features.FilterMessages.DEFAULT_COLOR
 import com.ebicep.chatplus.features.MovableChat.MOVABLE_CHAT_COLOR
 import com.ebicep.chatplus.features.chattabs.AutoTabCreator
 import com.ebicep.chatplus.features.chattabs.ChatTab
+import com.ebicep.chatplus.features.chattabs.ServerTabPattern
 import com.ebicep.chatplus.features.chatwindows.ChatWindow
 import com.ebicep.chatplus.features.chatwindows.OutlineSettings
 import com.ebicep.chatplus.features.internal.MessageFilter
@@ -71,6 +72,7 @@ object ConfigScreenImpl {
     private fun addGeneralOptions(builder: ConfigBuilder, entryBuilder: ConfigEntryBuilder) {
         builder.getOrCreateCategory(Component.translatable("chatPlus.general").withColor(MOD_COLOR)).with(
             entryBuilder.booleanToggle("chatPlus.chatSettings.toggle", Config.values.enabled) { Config.values.enabled = it },
+            entryBuilder.booleanToggle("chatPlus.chatSettings.addMessagesIfDisabled", Config.values.addMessagesIfDisabled) { Config.values.addMessagesIfDisabled = it },
             entryBuilder.booleanToggle("chatPlus.vanillaInputBox.toggle", Config.values.vanillaInputBox) { Config.values.vanillaInputBox = it },
             entryBuilder.intSlider(
                 "chatPlus.chatSettings.wrappedMessageLineIndent",
@@ -100,6 +102,26 @@ object ConfigScreenImpl {
             ) { Config.values.jumpToMessageMode = it },
             entryBuilder.linePriorityField("chatPlus.linePriority.selectChat", Config.values.selectChatLinePriority)
             { Config.values.selectChatLinePriority = it },
+            entryBuilder.startSubCategory(Component.translatable("chatPlus.chatSettings.inputOverFlowAutoFill")).with(
+                entryBuilder.booleanToggle(
+                    "chatPlus.chatSettings.inputOverFlowAutoFill.enabled",
+                    Config.values.inputOverFlowAutoFillSettings.enabled
+                ) { Config.values.inputOverFlowAutoFillSettings.enabled = it },
+                entryBuilder.booleanToggle(
+                    "chatPlus.chatSettings.inputOverFlowAutoFill.onlyCycleOnEnter",
+                    Config.values.inputOverFlowAutoFillSettings.onlyOnEnter
+                ) { Config.values.inputOverFlowAutoFillSettings.onlyOnEnter = it },
+                entryBuilder.enumSelector(
+                    "chatPlus.chatSettings.inputOverFlowAutoFill.autoFillCommandInteraction",
+                    InputOverFlowAutoFill.AutoFillCommandInteraction::class.java,
+                    Config.values.inputOverFlowAutoFillSettings.autoFillCommandInteraction
+                ) { Config.values.inputOverFlowAutoFillSettings.autoFillCommandInteraction = it },
+                entryBuilder.enumSelector(
+                    "chatPlus.chatSettings.inputOverFlowAutoFill.queueMode",
+                    InputOverFlowAutoFill.QueueMode::class.java,
+                    Config.values.inputOverFlowAutoFillSettings.queueMode
+                ) { Config.values.inputOverFlowAutoFillSettings.queueMode = it },
+            ).build()
         )
     }
 
@@ -370,6 +392,26 @@ object ConfigScreenImpl {
                             value.formatted
                         ) { value.formatted = it },
                         entryBuilder.stringField("chatPlus.chatWindow.tabSettings.chatTabs.autoPrefix", value.autoPrefix) { value.autoPrefix = it },
+                        getCustomListOption(
+                            "chatPlus.chatWindow.tabSettings.chatTabs.serverTabPatterns",
+                            value.serverTabPatterns,
+                            { value.serverTabPatterns = it },
+                            true,
+                            { ServerTabPattern("", "") },
+                            { v ->
+                                listOf(
+                                    entryBuilder.stringField("chatPlus.chatWindow.tabSettings.chatTabs.serverTabPattern", v.pattern) { v.pattern = it },
+                                    entryBuilder.stringField("chatPlus.chatWindow.tabSettings.chatTabs.pattern", v.chatPattern.pattern) { v.chatPattern.pattern = it },
+                                    entryBuilder.booleanToggle(
+                                        "chatPlus.chatWindow.tabSettings.chatTabs.formatted.toggle",
+                                        v.chatPattern.formatted
+                                    ) { v.chatPattern.formatted = it },
+                                    entryBuilder.stringField("chatPlus.chatWindow.tabSettings.chatTabs.autoPrefix", v.autoPrefix) { v.autoPrefix = it },
+                                )
+                            },
+                            { Component.literal(it.pattern) },
+                            false
+                        ),
                         entryBuilder.intField(
                             "chatPlus.chatWindow.tabSettings.chatTabs.priority",
                             value.priority
@@ -736,7 +778,14 @@ object ConfigScreenImpl {
             entryBuilder.keyCodeOptionWithModifier(
                 "chatPlus.copyMessage.key",
                 Config.values.copyMessageKey
-            )
+            ),
+            entryBuilder.stringField(
+                "chatPlus.copyMessage.separator",
+                Config.values.copyMessageSeparator.replace("\\", "\\\\")
+                    .replace("\n", "\\n")
+                    .replace("\t", "\\t")
+                    .replace("\r", "\\r")
+            ) { Config.values.copyMessageSeparator = it.translateEscapes() }
         )
     }
 
