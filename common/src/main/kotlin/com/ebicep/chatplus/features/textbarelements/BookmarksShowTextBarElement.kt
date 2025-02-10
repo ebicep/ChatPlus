@@ -7,7 +7,6 @@ import com.ebicep.chatplus.mixin.IMixinScreen
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.client.gui.screens.ChatScreen
-import net.minecraft.network.chat.Component
 
 class ShowBookmarksBarElement(private val chatPlusScreen: ChatScreen) : TextBarElement {
 
@@ -19,14 +18,17 @@ class ShowBookmarksBarElement(private val chatPlusScreen: ChatScreen) : TextBarE
         return "B"
     }
 
-    override fun onClick() {
+    override fun onClick(button: Int) {
+        if (button != 0) {
+            return
+        }
         BookmarkMessages.toggle(chatPlusScreen)
     }
 
     override fun onHover(guiGraphics: GuiGraphics, pMouseX: Int, pMouseY: Int) {
         guiGraphics.renderTooltip(
             (chatPlusScreen as IMixinScreen).font,
-            Component.translatable("chatPlus.bookmark.textBarElement"),
+            tooltip("chatPlus.bookmark.textBarElement"),
             pMouseX,
             pMouseY
         )

@@ -30,7 +30,7 @@ public class MixinChatComponent {
 
     @Inject(method = "render", at = @At("HEAD"), cancellable = true)
     public void render(GuiGraphics guiGraphics, int i, int j, int k, CallbackInfo ci) {
-        if (!ChatPlus.INSTANCE.isEnabled()) {
+        if (!ChatPlus.INSTANCE.isEnabled() || (Config.INSTANCE.getValues().getShowVanillaWhenUnfocused() && !ChatManager.INSTANCE.isChatFocused())) {
             return;
         }
         ChatWindowsManager.INSTANCE.renderAll(guiGraphics, i, j, k);

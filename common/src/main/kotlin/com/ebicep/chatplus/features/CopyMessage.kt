@@ -10,6 +10,7 @@ import com.ebicep.chatplus.hud.ChatScreenKeyPressedEvent
 import com.ebicep.chatplus.util.TimeStampedLines
 import net.minecraft.ChatFormatting
 import net.minecraft.client.Minecraft
+import net.minecraft.client.gui.screens.Screen
 import java.awt.Color
 
 object CopyMessage {
@@ -57,10 +58,15 @@ object CopyMessage {
     }
 
     private fun copyToClipboard(str: String) {
-        if (Config.values.copyNoFormatting) {
-            Minecraft.getInstance().keyboardHandler.clipboard = ChatFormatting.stripFormatting(str)!!
+        val keyboardHandler = Minecraft.getInstance().keyboardHandler
+        if ((Config.values.copyNoFormatting && !Screen.hasShiftDown()) || (!Config.values.copyNoFormatting && Screen.hasShiftDown())) {
+            keyboardHandler.clipboard = ChatFormatting.stripFormatting(str)!!
         } else {
-            Minecraft.getInstance().keyboardHandler.clipboard = str
+            if (Config.values.copyMessageFormattingSymbolOverride.isEmpty()) {
+                keyboardHandler.clipboard = str
+            } else {
+                keyboardHandler.clipboard = str.replace("§", Config.values.copyMessageFormattingSymbolOverride)
+            }
         }
     }
 

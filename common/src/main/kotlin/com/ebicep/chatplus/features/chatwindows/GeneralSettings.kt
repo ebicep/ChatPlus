@@ -17,6 +17,7 @@ class GeneralSettings {
     var unfocusedBackgroundColorOpacityMultiplier: Float = .4f
     var scale: Float = 1f
     var textOpacity: Float = 1f
+    var textShadow: Boolean = true
     var unfocusedTextOpacityMultiplier: Float = 1f
     var unfocusedHeight: Float = .5f
     var lineSpacing: Float = 0f

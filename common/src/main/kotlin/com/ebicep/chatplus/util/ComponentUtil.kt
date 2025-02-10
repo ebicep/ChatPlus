@@ -83,10 +83,10 @@ object ComponentUtil {
         return this.withStyle { it.withColor(Color(color, alpha).rgb) }
     }
 
-    fun splitLines(component: MutableComponent, maxWidth: Int = 175): List<Component> {
+    fun splitLines(component: MutableComponent, maxWidth: Int? = 175): List<Component> {
         val lines = mutableListOf<Component>()
         component.visit({ _: Style, s: String ->
-            Minecraft.getInstance().font.splitter.splitLines(s, maxWidth, Style.EMPTY, false) { style: Style, pos: Int, len: Int ->
+            Minecraft.getInstance().font.splitter.splitLines(s, maxWidth ?: 175, Style.EMPTY, false) { style: Style, pos: Int, len: Int ->
                 lines.add(Component.literal(s.substring(pos, len)).withStyle(style))
             }
             Optional.empty<Any?>()

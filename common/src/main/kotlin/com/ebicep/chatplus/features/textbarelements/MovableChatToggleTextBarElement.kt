@@ -1,33 +1,33 @@
 package com.ebicep.chatplus.features.textbarelements
 
-import com.ebicep.chatplus.events.Event
-import com.ebicep.chatplus.features.FindMessage
+import com.ebicep.chatplus.config.Config
+import com.ebicep.chatplus.features.MovableChat.MOVABLE_CHAT_COLOR
 import com.ebicep.chatplus.mixin.IMixinScreen
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.client.gui.screens.ChatScreen
 
-class FindTextBarElement(private val chatPlusScreen: ChatScreen) : TextBarElement {
+class MovableChatToggleTextBarElement(private val chatPlusScreen: ChatScreen) : TextBarElement {
 
     override fun getWidth(): Int {
-        return Minecraft.getInstance().font.width("F")
+        return Minecraft.getInstance().font.width("M")
     }
 
     override fun getText(): String {
-        return "F"
+        return "M"
     }
 
     override fun onClick(button: Int) {
         if (button != 0) {
             return
         }
-        FindMessage.toggle(chatPlusScreen)
+        Config.values.movableChatEnabled = !Config.values.movableChatEnabled
     }
 
     override fun onHover(guiGraphics: GuiGraphics, pMouseX: Int, pMouseY: Int) {
         guiGraphics.renderTooltip(
             (chatPlusScreen as IMixinScreen).font,
-            tooltip("chatPlus.findMessage.highlightInputBox.tooltip"),
+            tooltip("chatPlus.movableChat.textBarElement.toggle.tooltip"),
             pMouseX,
             pMouseY
         )
@@ -35,12 +35,10 @@ class FindTextBarElement(private val chatPlusScreen: ChatScreen) : TextBarElemen
 
     override fun onRender(guiGraphics: GuiGraphics, currentX: Int, currentY: Int, mouseX: Int, mouseY: Int) {
         fill(guiGraphics, currentX, currentY)
-        drawCenteredString(guiGraphics, currentX, currentY, if (FindMessage.findEnabled) FindMessage.FIND_COLOR else -1)
-        if (FindMessage.findEnabled) {
-            renderOutline(guiGraphics, currentX, currentY, FindMessage.FIND_COLOR)
+        drawCenteredString(guiGraphics, currentX, currentY, if (Config.values.movableChatEnabled) MOVABLE_CHAT_COLOR else -1)
+        if (Config.values.movableChatEnabled) {
+            renderOutline(guiGraphics, currentX, currentY, MOVABLE_CHAT_COLOR)
         }
     }
 
 }
-
-data class FindToggleEvent(val enabled: Boolean) : Event

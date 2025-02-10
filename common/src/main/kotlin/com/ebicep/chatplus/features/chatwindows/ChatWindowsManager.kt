@@ -97,6 +97,7 @@ object ChatWindowsManager {
     }
 
     fun renderAll(guiGraphics: GuiGraphics, i: Int, j: Int, k: Int) {
+        EventBus.post(RenderWindowsPreEvent(guiGraphics))
         Config.values.chatWindows.forEachIndexed { index, it ->
             if (it.generalSettings.disabled) {
                 return@forEachIndexed
@@ -107,6 +108,7 @@ object ChatWindowsManager {
                 it.renderer.render(it, guiGraphics, i, j, k)
             }
         }
+        EventBus.post(RenderWindowsPostEvent(guiGraphics))
     }
 
 }
@@ -115,3 +117,7 @@ data class WindowSwitchEvent(
     val oldWindow: ChatWindow,
     val newWindow: ChatWindow
 )
+
+data class RenderWindowsPreEvent(val guiGraphics: GuiGraphics)
+
+data class RenderWindowsPostEvent(val guiGraphics: GuiGraphics)

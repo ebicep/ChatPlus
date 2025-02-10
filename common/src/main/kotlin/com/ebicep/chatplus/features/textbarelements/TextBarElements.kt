@@ -42,9 +42,6 @@ object TextBarElements {
             textBarElements.clear()
         }
         EventBus.register<ChatScreenMouseClickedEvent> {
-            if (it.button != 0) {
-                return@register
-            }
             val mouseX = it.mouseX
             val mouseY = it.mouseY
             val height = chatPlusScreen.height
@@ -55,7 +52,7 @@ object TextBarElements {
                     height - EDIT_BOX_HEIGHT < mouseY &&
                     mouseY < height
                 ) {
-                    element.onClick()
+                    element.onClick(it.button)
                 }
             }
         }

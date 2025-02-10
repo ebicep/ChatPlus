@@ -324,7 +324,8 @@ class ChatRenderer {
                     line.content,
                     rescaledX,
                     verticalTextOffset,
-                    textColor
+                    textColor,
+                    chatWindow.generalSettings.textShadow
                 )
             }
             ++displayMessageIndex

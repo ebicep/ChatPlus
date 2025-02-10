@@ -9,7 +9,6 @@ import com.ebicep.chatplus.mixin.IMixinScreen
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.client.gui.screens.ChatScreen
-import net.minecraft.network.chat.Component
 
 class TranslateSpeakTextBarElement(private val chatPlusScreen: ChatScreen) : TextBarElement {
 
@@ -17,10 +16,11 @@ class TranslateSpeakTextBarElement(private val chatPlusScreen: ChatScreen) : Tex
         fun toggleTranslateSpeak(chatPlusScreen: ChatScreen) {
             languageSpeakEnabled = !languageSpeakEnabled
             EventBus.post(TranslateToggleEvent(languageSpeakEnabled))
-            chatPlusScreen as IMixinChatScreen
-            chatPlusScreen.initial = chatPlusScreen.input!!.value
             chatPlusScreen as IMixinScreen
+            chatPlusScreen as IMixinChatScreen
+            val lastInput = chatPlusScreen.input!!.value
             chatPlusScreen.callRebuildWidgets()
+            chatPlusScreen.input.value = lastInput
         }
     }
 
@@ -32,7 +32,10 @@ class TranslateSpeakTextBarElement(private val chatPlusScreen: ChatScreen) : Tex
         return Config.values.translateSpeak
     }
 
-    override fun onClick() {
+    override fun onClick(button: Int) {
+        if (button != 0) {
+            return
+        }
         toggleTranslateSpeak(chatPlusScreen)
     }
 
@@ -40,7 +43,7 @@ class TranslateSpeakTextBarElement(private val chatPlusScreen: ChatScreen) : Tex
         chatPlusScreen as IMixinScreen
         guiGraphics.renderTooltip(
             chatPlusScreen.font,
-            Component.translatable("chatPlus.translator.translateSpeak.chat.tooltip"),
+            tooltip("chatPlus.translator.translateSpeak.chat.tooltip"),
             pMouseX,
             pMouseY
         )

@@ -13,14 +13,19 @@ class SelfTranslator(val toTranslate: String, val prefix: String) : Thread() {
             val translateResult = translator.translate(toTranslate) ?: return
             val messages = splitChatMessage(translateResult.translatedText)
 
+            val connection = Minecraft.getInstance().player!!.connection
             val translatedMessage = messages[0]
             ChatManager.addSentMessage(translatedMessage)
             if (prefix.isEmpty()) {
-                Minecraft.getInstance().player!!.connection.sendChat(translatedMessage)
+                if (translatedMessage.startsWith("/")) {
+                    connection.sendCommand(translatedMessage.substring(1))
+                } else {
+                    connection.sendChat(translatedMessage)
+                }
             } else if (prefix.startsWith("/")) {
-                Minecraft.getInstance().player!!.connection.sendCommand("${prefix.substring(1)} $translatedMessage")
+                connection.sendCommand("${prefix.substring(1).trim()}$translatedMessage")
             } else {
-                Minecraft.getInstance().player!!.connection.sendChat("$prefix $translatedMessage")
+                connection.sendChat("$prefix $translatedMessage")
             }
             if (messages.size > 1) {
                 InputOverFlowAutoFill.addToQueue(messages.subList(1, messages.size))

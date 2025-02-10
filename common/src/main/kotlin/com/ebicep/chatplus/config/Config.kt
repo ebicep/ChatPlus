@@ -10,10 +10,7 @@ import com.ebicep.chatplus.MOD_ID
 import com.ebicep.chatplus.config.migration.MigrationManager
 import com.ebicep.chatplus.config.serializers.KeySerializer
 import com.ebicep.chatplus.config.serializers.KeyWithModifier
-import com.ebicep.chatplus.features.CompactMessages
-import com.ebicep.chatplus.features.FilterMessages
-import com.ebicep.chatplus.features.HoverHighlight
-import com.ebicep.chatplus.features.InputOverFlowAutoFill
+import com.ebicep.chatplus.features.*
 import com.ebicep.chatplus.features.chattabs.TabNotificationSettings
 import com.ebicep.chatplus.features.chatwindows.ChatWindow
 import com.ebicep.chatplus.features.chatwindows.ChatWindowsManager.createDefaultWindow
@@ -113,13 +110,15 @@ data class ConfigVariables(
     // general
     var enabled: Boolean = true,
     var addMessagesIfDisabled: Boolean = false,
+    var showVanillaWhenUnfocused: Boolean = false,
     var vanillaInputBox: Boolean = false,
+    var saveInputBoxMessage: Boolean = false,
     var wrappedMessageLineIndent: Int = 0,
     var maxMessages: Int = -1,
     var maxCommandSuggestions: Int = 15,
-    var chatTimestampMode: TimestampMode = TimestampMode.HR_12_SECOND,
     var jumpToMessageMode: JumpToMessageMode = JumpToMessageMode.CURSOR,
     var selectChatLinePriority: Int = 100,
+    var timestampSettings: TimestampMessages.TimestampSettings = TimestampMessages.TimestampSettings(),
     var inputOverFlowAutoFillSettings: InputOverFlowAutoFill.InputOverFlowAutoFillSettings = InputOverFlowAutoFill.InputOverFlowAutoFillSettings(),
     // hide chat
     var hideChatEnabled: Boolean = false,
@@ -155,6 +154,15 @@ data class ConfigVariables(
     var movableChatToggleKey: InputConstants.Key = InputConstants.getKey("key.keyboard.right.control"),
     var movableChatColor: Int = Color(255, 255, 255, 200).rgb,
     var movableChatSelectedColor: Int = Color(0, 255, 0, 200).rgb,
+    var movableChatToggleTextBarElement: Boolean = false, // TODO add enabled
+    // notes
+    var sendNoteEnabled: Boolean = true,
+    var sendNoteKey: KeyWithModifier = KeyWithModifier(InputConstants.getKey("key.keyboard.enter"), 4),
+    var sendNoteClickMode: SendNote.NoteClickMode = SendNote.NoteClickMode.APPEND_INPUT,
+    var sendNoteSelectMode: SendNote.NoteSelectMode = SendNote.NoteSelectMode.LINE,
+    var sendNoteSelectKey: InputConstants.Key = InputConstants.getKey("key.keyboard.left.shift"),
+    var sendNoteSelectModeKey: SendNote.NoteSelectMode = SendNote.NoteSelectMode.WHOLE_MESSAGE,
+    var sendNoteTextBarElementEnabled: Boolean = true,
     // filter highlight
     var filterMessagesEnabled: Boolean = true,
     var filterMessagesLinePriority: Int = 150,
@@ -182,13 +190,22 @@ data class ConfigVariables(
     var copyMessageKey: KeyWithModifier = KeyWithModifier(InputConstants.getKey("key.keyboard.c"), 2),
     var copyMessageLinePriority: Int = 50,
     var copyNoFormatting: Boolean = true,
+    var copyMessageFormattingSymbolOverride: String = "",
     var copyMessageSeparator: String = "\n",
+    // delete message
+    var deleteMessageEnabled: Boolean = true,
+    var deleteMessageKey: KeyWithModifier = KeyWithModifier(InputConstants.getKey("key.keyboard.d"), 2),
     // screen shot chat
     var screenshotChatEnabled: Boolean = true,
-    var screenshotChatTextBarElementEnabled: Boolean = true,
-    var screenshotChatLinePriority: Int = 200,
-    var screenshotChatLine: KeyWithModifier = KeyWithModifier(InputConstants.getKey("key.keyboard.s"), 2),
+    var screenshotChatCopyToClipboard: Boolean = true,
+    var screenshotChatSaveToFile: Boolean = true, // TODO
     var screenshotChatAutoUpload: Boolean = true,
+    var screenshotChatLinePriority: Int = 200,
+    var screenshotChatKey: KeyWithModifier = KeyWithModifier(InputConstants.getKey("key.keyboard.s"), 2),
+    var screenshotDefaultScreenShotMode: ScreenshotChat.ScreenshotMode = ScreenshotChat.ScreenshotMode.CURRENT_WINDOW,
+    var screenshotDefaultScreenBackgroundMode: ScreenshotChat.ScreenshotBackgroundMode = ScreenshotChat.ScreenshotBackgroundMode.TRANSPARENT,
+    var screenshotDefaultScreenShotWindowsMode: ScreenshotChat.ScreenshotWindowsMode = ScreenshotChat.ScreenshotWindowsMode.SPLIT,
+    var screenshotChatTextBarElementEnabled: Boolean = true,
     // player head chat display
     var playerHeadChatDisplayEnabled: Boolean = true,
     var playerHeadChatDisplayShowOnWrapped: Boolean = false,

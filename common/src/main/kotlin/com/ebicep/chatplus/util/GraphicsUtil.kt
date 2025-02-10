@@ -80,15 +80,15 @@ object GraphicsUtil {
 //    }
 
     fun <T> PoseStack.guiForward(guiForwardType: GuiForwardType<T>, modifier: () -> T) {
-        translate(0.0, 0.0, guiForwardType.getAmount(modifier) / 100)
+        translate(0.0, 0.0, guiForwardType.getAmount(modifier) / 1000)
     }
 
     fun PoseStack.guiForward(guiForwardType: GuiForwardType<Unit>) {
-        translate(0.0, 0.0, guiForwardType.getAmount {} / 100)
+        translate(0.0, 0.0, guiForwardType.getAmount {} / 1000)
     }
 
     fun PoseStack.guiForward(guiForwardType: GuiForwardType<Boolean> = GuiForwardType.Default, backwards: Boolean = false) {
-        translate(0.0, 0.0, guiForwardType.getAmount { backwards } / 100)
+        translate(0.0, 0.0, guiForwardType.getAmount { backwards } / 1000)
     }
 
     fun GuiGraphics.fill0(i: Float, j: Float, k: Float, l: Float, n: Int) {
@@ -262,7 +262,7 @@ object GraphicsUtil {
             this.pose().last().pose(),
             this.bufferSource(),
             Font.DisplayMode.NORMAL,
-            0,
+            0, // highlights text
             0xF000F0
         )
         this.callFlushIfUnmanaged()

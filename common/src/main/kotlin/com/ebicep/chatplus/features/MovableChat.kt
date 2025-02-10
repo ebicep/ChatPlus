@@ -15,6 +15,8 @@ import com.ebicep.chatplus.features.chatwindows.ChatWindow
 import com.ebicep.chatplus.features.chatwindows.ChatWindowsManager
 import com.ebicep.chatplus.features.internal.Debug.debug
 import com.ebicep.chatplus.features.internal.OnScreenDisplayEvent
+import com.ebicep.chatplus.features.textbarelements.AddTextBarElementEvent
+import com.ebicep.chatplus.features.textbarelements.MovableChatToggleTextBarElement
 import com.ebicep.chatplus.hud.*
 import com.ebicep.chatplus.hud.ChatPlusScreen.EDIT_BOX_HEIGHT
 import com.ebicep.chatplus.hud.ChatPlusScreen.lastMouseX
@@ -90,6 +92,11 @@ object MovableChat {
                         .withStyle(if (Config.values.movableChatEnabled) ChatFormatting.GREEN else ChatFormatting.RED)
                 )
                 it.returnFunction = true
+            }
+        }
+        EventBus.register<AddTextBarElementEvent>({ 75 }) {
+            if (Config.values.movableChatToggleTextBarElement) {
+                it.elements.add(MovableChatToggleTextBarElement(it.screen))
             }
         }
         EventBus.register<ChatTabGetMessageAtEvent> {

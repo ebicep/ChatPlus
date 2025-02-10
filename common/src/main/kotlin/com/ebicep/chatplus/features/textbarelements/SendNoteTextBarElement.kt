@@ -1,33 +1,38 @@
 package com.ebicep.chatplus.features.textbarelements
 
 import com.ebicep.chatplus.events.Event
-import com.ebicep.chatplus.features.FindMessage
+import com.ebicep.chatplus.events.EventBus
+import com.ebicep.chatplus.features.SendNote
+import com.ebicep.chatplus.features.SendNote.NOTE_COLOR
+import com.ebicep.chatplus.mixin.IMixinChatScreen
 import com.ebicep.chatplus.mixin.IMixinScreen
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.client.gui.screens.ChatScreen
 
-class FindTextBarElement(private val chatPlusScreen: ChatScreen) : TextBarElement {
+class SendNoteTextBarElement(private val chatPlusScreen: ChatScreen) : TextBarElement {
 
     override fun getWidth(): Int {
-        return Minecraft.getInstance().font.width("F")
+        return Minecraft.getInstance().font.width("N")
     }
 
     override fun getText(): String {
-        return "F"
+        return "N"
     }
 
     override fun onClick(button: Int) {
         if (button != 0) {
             return
         }
-        FindMessage.toggle(chatPlusScreen)
+        chatPlusScreen as IMixinChatScreen
+        val input = chatPlusScreen.input.value ?: return
+        EventBus.post(SendNoteEvent(input))
     }
 
     override fun onHover(guiGraphics: GuiGraphics, pMouseX: Int, pMouseY: Int) {
         guiGraphics.renderTooltip(
             (chatPlusScreen as IMixinScreen).font,
-            tooltip("chatPlus.findMessage.highlightInputBox.tooltip"),
+            tooltip("chatPlus.sendNote.textBarElement.tooltip"),
             pMouseX,
             pMouseY
         )
@@ -35,12 +40,13 @@ class FindTextBarElement(private val chatPlusScreen: ChatScreen) : TextBarElemen
 
     override fun onRender(guiGraphics: GuiGraphics, currentX: Int, currentY: Int, mouseX: Int, mouseY: Int) {
         fill(guiGraphics, currentX, currentY)
-        drawCenteredString(guiGraphics, currentX, currentY, if (FindMessage.findEnabled) FindMessage.FIND_COLOR else -1)
-        if (FindMessage.findEnabled) {
-            renderOutline(guiGraphics, currentX, currentY, FindMessage.FIND_COLOR)
+        val onCooldown = SendNote.onCooldown()
+        drawCenteredString(guiGraphics, currentX, currentY, if (onCooldown) NOTE_COLOR else 0xFFFFFF)
+        if (onCooldown) {
+            renderOutline(guiGraphics, currentX, currentY, NOTE_COLOR)
         }
     }
 
 }
 
-data class FindToggleEvent(val enabled: Boolean) : Event
+data class SendNoteEvent(val message: String) : Event

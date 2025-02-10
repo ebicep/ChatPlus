@@ -6,6 +6,7 @@ import com.ebicep.chatplus.config.serializers.KeyWithModifier
 import com.ebicep.chatplus.features.*
 import com.ebicep.chatplus.features.FilterMessages.DEFAULT_COLOR
 import com.ebicep.chatplus.features.MovableChat.MOVABLE_CHAT_COLOR
+import com.ebicep.chatplus.features.SendNote.NOTE_COLOR
 import com.ebicep.chatplus.features.chattabs.AutoTabCreator
 import com.ebicep.chatplus.features.chattabs.ChatTab
 import com.ebicep.chatplus.features.chattabs.ServerTabPattern
@@ -56,11 +57,13 @@ object ConfigScreenImpl {
         addAnimationOption(builder, entryBuilder)
         addMovableChatOption(builder, entryBuilder)
         addChatWindowsTabsOption(builder, entryBuilder)
+        addSendNoteOption(builder, entryBuilder)
         addMessageFilterOption(builder, entryBuilder)
         addHoverHighlightOption(builder, entryBuilder)
         addBookmarkOption(builder, entryBuilder)
         addFindMessageOption(builder, entryBuilder)
         addCopyMessageOption(builder, entryBuilder)
+        addDeleteMessageOption(builder, entryBuilder)
         addChatScreenShotOption(builder, entryBuilder)
         addPlayerHeadChatDisplayOption(builder, entryBuilder)
         addKeyBindOptions(builder, entryBuilder)
@@ -73,7 +76,9 @@ object ConfigScreenImpl {
         builder.getOrCreateCategory(Component.translatable("chatPlus.general").withColor(MOD_COLOR)).with(
             entryBuilder.booleanToggle("chatPlus.chatSettings.toggle", Config.values.enabled) { Config.values.enabled = it },
             entryBuilder.booleanToggle("chatPlus.chatSettings.addMessagesIfDisabled", Config.values.addMessagesIfDisabled) { Config.values.addMessagesIfDisabled = it },
+            entryBuilder.booleanToggle("chatPlus.chatSettings.showVanillaWhenUnfocused", Config.values.showVanillaWhenUnfocused) { Config.values.showVanillaWhenUnfocused = it },
             entryBuilder.booleanToggle("chatPlus.vanillaInputBox.toggle", Config.values.vanillaInputBox) { Config.values.vanillaInputBox = it },
+            entryBuilder.booleanToggle("chatPlus.saveInputBoxMessage.toggle", Config.values.saveInputBoxMessage) { Config.values.saveInputBoxMessage = it },
             entryBuilder.intSlider(
                 "chatPlus.chatSettings.wrappedMessageLineIndent",
                 Config.values.wrappedMessageLineIndent,
@@ -91,17 +96,29 @@ object ConfigScreenImpl {
                 30
             ) { Config.values.maxCommandSuggestions = it },
             entryBuilder.enumSelector(
-                "chatPlus.chatSettings.chatTimestampMode",
-                TimestampMode::class.java,
-                Config.values.chatTimestampMode
-            ) { Config.values.chatTimestampMode = it },
-            entryBuilder.enumSelector(
                 "chatPlus.chatSettings.jumpToMessageMode",
                 JumpToMessageMode::class.java,
                 Config.values.jumpToMessageMode
             ) { Config.values.jumpToMessageMode = it },
             entryBuilder.linePriorityField("chatPlus.linePriority.selectChat", Config.values.selectChatLinePriority)
             { Config.values.selectChatLinePriority = it },
+            entryBuilder.startSubCategory(Component.translatable("chatPlus.chatSettings.timestampSettings")).with(
+                entryBuilder.booleanToggle(
+                    "chatPlus.chatSettings.timestampSettings.enabled",
+                    Config.values.timestampSettings.enabled
+                ) { Config.values.timestampSettings.enabled = it },
+                entryBuilder.stringField(
+                    "chatPlus.chatSettings.timestampSettings.format",
+                    Config.values.timestampSettings.timestampFormat,
+                    { Config.values.timestampSettings.timestampFormat = it },
+                    500
+                ),
+                entryBuilder.enumSelector(
+                    "chatPlus.chatSettings.timestampSettings.chatTimestampModeType",
+                    TimestampMessages.TimestampModeType::class.java,
+                    Config.values.timestampSettings.chatTimestampModeType
+                ) { Config.values.timestampSettings.chatTimestampModeType = it },
+            ).build(),
             entryBuilder.startSubCategory(Component.translatable("chatPlus.chatSettings.inputOverFlowAutoFill")).with(
                 entryBuilder.booleanToggle(
                     "chatPlus.chatSettings.inputOverFlowAutoFill.enabled",
@@ -313,7 +330,7 @@ object ConfigScreenImpl {
                         getAutoTabCreatorCategory(entryBuilder, window).build()
                     )
                 },
-                { Component.literal("Window").withColor(it.generalSettings.backgroundColor) }
+                { Component.literal("Window").withStyle(if (it.generalSettings.disabled) ChatFormatting.RED else ChatFormatting.GREEN) }
             )
         )
     }
@@ -385,13 +402,13 @@ object ConfigScreenImpl {
                 { ChatTab(window, "", "") },
                 { value ->
                     listOf(
-                        entryBuilder.stringField("chatPlus.chatWindow.tabSettings.chatTabs.name", value.name) { value.name = it },
-                        entryBuilder.stringField("chatPlus.chatWindow.tabSettings.chatTabs.pattern", value.pattern) { value.pattern = it },
+                        entryBuilder.stringField("chatPlus.chatWindow.tabSettings.chatTabs.name", value.name, { value.name = it }),
+                        entryBuilder.stringField("chatPlus.chatWindow.tabSettings.chatTabs.pattern", value.pattern, { value.pattern = it }),
                         entryBuilder.booleanToggle(
                             "chatPlus.chatWindow.tabSettings.chatTabs.formatted.toggle",
                             value.formatted
                         ) { value.formatted = it },
-                        entryBuilder.stringField("chatPlus.chatWindow.tabSettings.chatTabs.autoPrefix", value.autoPrefix) { value.autoPrefix = it },
+                        entryBuilder.stringField("chatPlus.chatWindow.tabSettings.chatTabs.autoPrefix", value.autoPrefix, { value.autoPrefix = it }),
                         getCustomListOption(
                             "chatPlus.chatWindow.tabSettings.chatTabs.serverTabPatterns",
                             value.serverTabPatterns,
@@ -400,13 +417,13 @@ object ConfigScreenImpl {
                             { ServerTabPattern("", "") },
                             { v ->
                                 listOf(
-                                    entryBuilder.stringField("chatPlus.chatWindow.tabSettings.chatTabs.serverTabPattern", v.pattern) { v.pattern = it },
-                                    entryBuilder.stringField("chatPlus.chatWindow.tabSettings.chatTabs.pattern", v.chatPattern.pattern) { v.chatPattern.pattern = it },
+                                    entryBuilder.stringField("chatPlus.chatWindow.tabSettings.chatTabs.serverTabPattern", v.pattern, { v.pattern = it }),
+                                    entryBuilder.stringField("chatPlus.chatWindow.tabSettings.chatTabs.pattern", v.chatPattern.pattern, { v.chatPattern.pattern = it }),
                                     entryBuilder.booleanToggle(
                                         "chatPlus.chatWindow.tabSettings.chatTabs.formatted.toggle",
                                         v.chatPattern.formatted
                                     ) { v.chatPattern.formatted = it },
-                                    entryBuilder.stringField("chatPlus.chatWindow.tabSettings.chatTabs.autoPrefix", v.autoPrefix) { v.autoPrefix = it },
+                                    entryBuilder.stringField("chatPlus.chatWindow.tabSettings.chatTabs.autoPrefix", v.autoPrefix, { v.autoPrefix = it }),
                                 )
                             },
                             { Component.literal(it.pattern) },
@@ -456,16 +473,19 @@ object ConfigScreenImpl {
                     autoTabOptions.with(
                         entryBuilder.stringField(
                             "chatPlus.chatWindow.autoTabCreator.autoTabOptions.regexFormatter",
-                            value.regexFormatter
-                        ) { value.regexFormatter = it },
+                            value.regexFormatter,
+                            { value.regexFormatter = it }
+                        ),
                         entryBuilder.stringField(
                             "chatPlus.chatWindow.autoTabCreator.autoTabOptions.tabNameFormatter",
-                            value.tabNameFormatter
-                        ) { value.tabNameFormatter = it },
+                            value.tabNameFormatter,
+                            { value.tabNameFormatter = it }
+                        ),
                         entryBuilder.stringField(
                             "chatPlus.chatWindow.autoTabCreator.autoTabOptions.autoPrefixFormatter",
-                            value.autoPrefixFormatter
-                        ) { value.autoPrefixFormatter = it },
+                            value.autoPrefixFormatter,
+                            { value.autoPrefixFormatter = it }
+                        ),
                         entryBuilder.intField(
                             "chatPlus.chatWindow.autoTabCreator.autoTabOptions.priority",
                             value.priority
@@ -494,8 +514,9 @@ object ConfigScreenImpl {
                         ) { value.skipOthersOnCreation = it },
                         entryBuilder.stringField(
                             "chatPlus.chatWindow.autoTabCreator.autoTabOptions.pattern",
-                            value.pattern
-                        ) { value.pattern = it },
+                            value.pattern,
+                            { value.pattern = it }
+                        ),
                         entryBuilder.booleanToggle(
                             "chatPlus.chatWindow.autoTabCreator.autoTabOptions.formatted.toggle",
                             value.formatted
@@ -560,6 +581,10 @@ object ConfigScreenImpl {
                 "chatPlus.chatWindow.generalSettings.textOpacity",
                 (window.generalSettings.textOpacity - .1f) / .9f
             ) { window.generalSettings.textOpacity = (it * .9f) + .1f },
+            entryBuilder.booleanToggle(
+                "chatPlus.chatWindow.generalSettings.textShadow",
+                window.generalSettings.textShadow
+            ) { window.generalSettings.textShadow = it },
             entryBuilder.percentSlider(
                 "chatPlus.chatWindow.generalSettings.unfocusedTextOpacityReduction",
                 1 - window.generalSettings.unfocusedTextOpacityMultiplier
@@ -581,7 +606,7 @@ object ConfigScreenImpl {
                 "chatPlus.chatWindow.generalSettings.messageDirection",
                 MessageDirection::class.java,
                 window.generalSettings.messageDirection
-            ) { window.generalSettings.messageDirection = it }
+            ) { window.generalSettings.messageDirection = it },
         )
     }
 
@@ -604,6 +629,10 @@ object ConfigScreenImpl {
                 "chatPlus.movableChat.selectedColor",
                 Config.values.movableChatSelectedColor
             ) { Config.values.movableChatSelectedColor = it },
+            entryBuilder.booleanToggle(
+                "chatPlus.movableChat.textBarElement.toggle",
+                Config.values.movableChatToggleTextBarElement
+            ) { Config.values.movableChatToggleTextBarElement = it },
         )
     }
 
@@ -626,8 +655,9 @@ object ConfigScreenImpl {
                     soundCategory.add(
                         entryBuilder.stringField(
                             "chatPlus.messageFilter.sound.sound",
-                            value.sound.sound
-                        ) { value.sound.sound = it }
+                            value.sound.sound,
+                            { value.sound.sound = it }
+                        )
                     )
                     soundCategory.add(
                         entryBuilder.enumSelector(
@@ -652,8 +682,9 @@ object ConfigScreenImpl {
                     listOf(
                         entryBuilder.stringField(
                             "chatPlus.messageFilter.pattern",
-                            value.pattern
-                        ) { value.pattern = it },
+                            value.pattern,
+                            { value.pattern = it }
+                        ),
                         entryBuilder.booleanToggle(
                             "chatPlus.messageFilter.formatted.toggle",
                             value.formatted
@@ -680,8 +711,39 @@ object ConfigScreenImpl {
         )
     }
 
+    private fun addSendNoteOption(builder: ConfigBuilder, entryBuilder: ConfigEntryBuilder) {
+        builder.getOrCreateCategory(Component.translatable("chatPlus.sendNote.title").withColor(NOTE_COLOR)).with(
+            entryBuilder.booleanToggle(
+                "chatPlus.sendNote.toggle",
+                Config.values.sendNoteEnabled
+            ) { Config.values.sendNoteEnabled = it },
+            entryBuilder.keyCodeOptionWithModifier("chatPlus.sendNote.key", Config.values.sendNoteKey),
+            entryBuilder.enumSelector(
+                "chatPlus.sendNote.clickMode",
+                SendNote.NoteClickMode::class.java,
+                Config.values.sendNoteClickMode
+            ) { Config.values.sendNoteClickMode = it },
+            entryBuilder.enumSelector(
+                "chatPlus.sendNote.selectMode",
+                SendNote.NoteSelectMode::class.java,
+                Config.values.sendNoteSelectMode
+            ) { Config.values.sendNoteSelectMode = it },
+            entryBuilder.keyCodeOption("chatPlus.sendNote.selectKey", Config.values.sendNoteSelectKey) { Config.values.sendNoteSelectKey = it },
+            entryBuilder.enumSelector(
+                "chatPlus.sendNote.selectModeKey",
+                SendNote.NoteSelectMode::class.java,
+                Config.values.sendNoteSelectModeKey
+            ) { Config.values.sendNoteSelectModeKey = it },
+            entryBuilder.booleanToggle(
+                "chatPlus.sendNote.textBarElement.toggle",
+                Config.values.sendNoteTextBarElementEnabled
+            ) { Config.values.sendNoteTextBarElementEnabled = it }
+        )
+    }
+
     private fun addHoverHighlightOption(builder: ConfigBuilder, entryBuilder: ConfigEntryBuilder) {
-        builder.getOrCreateCategory(Component.translatable("chatPlus.hoverHighlight.title").withColor(Config.values.hoverHighlightColor)).with(
+        val color = if (Config.values.hoverHighlightMode == HoverHighlight.HighlightMode.CUSTOM_COLOR) Config.values.hoverHighlightColor else 0xDDDDDD
+        builder.getOrCreateCategory(Component.translatable("chatPlus.hoverHighlight.title").withColor(color)).with(
             entryBuilder.booleanToggle(
                 "chatPlus.hoverHighlight.toggle",
                 Config.values.hoverHighlightEnabled
@@ -732,7 +794,7 @@ object ConfigScreenImpl {
                 { MessageFilterFormatted("") },
                 { value ->
                     listOf(
-                        entryBuilder.stringField("chatPlus.bookmark.auto.pattern", value.pattern) { value.pattern = it },
+                        entryBuilder.stringField("chatPlus.bookmark.auto.pattern", value.pattern, { value.pattern = it }),
                         entryBuilder.booleanToggle(
                             "chatPlus.messageFilter.formatted.toggle",
                             value.formatted
@@ -780,17 +842,36 @@ object ConfigScreenImpl {
                 Config.values.copyMessageKey
             ),
             entryBuilder.stringField(
+                "chatPlus.copyMessage.formattingSymbolOverride",
+                Config.values.copyMessageFormattingSymbolOverride,
+                { Config.values.copyMessageFormattingSymbolOverride = it }
+            ),
+            entryBuilder.stringField(
                 "chatPlus.copyMessage.separator",
                 Config.values.copyMessageSeparator.replace("\\", "\\\\")
                     .replace("\n", "\\n")
                     .replace("\t", "\\t")
-                    .replace("\r", "\\r")
-            ) {
-                Config.values.copyMessageSeparator = it.replace("\\\\", "\\")
-                    .replace("\\n", "\n")
-                    .replace("\\t", "\t")
-                    .replace("\\r", "\r")
-            }
+                    .replace("\r", "\\r"),
+                {
+                    Config.values.copyMessageSeparator = it.replace("\\\\", "\\")
+                        .replace("\\n", "\n")
+                        .replace("\\t", "\t")
+                        .replace("\\r", "\r")
+                }
+            )
+        )
+    }
+
+    private fun addDeleteMessageOption(builder: ConfigBuilder, entryBuilder: ConfigEntryBuilder) {
+        builder.getOrCreateCategory(Component.translatable("chatPlus.deleteMessage.title").withColor(DeleteMessages.DEFAULT_COLOR)).with(
+            entryBuilder.booleanToggle(
+                "chatPlus.deleteMessage.toggle",
+                Config.values.deleteMessageEnabled
+            ) { Config.values.deleteMessageEnabled = it },
+            entryBuilder.keyCodeOptionWithModifier(
+                "chatPlus.deleteMessage.key",
+                Config.values.deleteMessageKey
+            ),
         )
     }
 
@@ -800,17 +881,40 @@ object ConfigScreenImpl {
                 "chatPlus.screenshotChat.toggle",
                 Config.values.screenshotChatEnabled
             ) { Config.values.screenshotChatEnabled = it },
-            entryBuilder.linePriorityField("chatPlus.linePriority.screenshotChat", Config.values.screenshotChatLinePriority)
-            { Config.values.screenshotChatLinePriority = it },
-            entryBuilder.keyCodeOptionWithModifier("chatPlus.screenshotChat.line.key", Config.values.screenshotChatLine),
             entryBuilder.booleanToggle(
-                "chatPlus.screenshotChatTextBarElement.toggle",
-                Config.values.screenshotChatTextBarElementEnabled
-            ) { Config.values.screenshotChatTextBarElementEnabled = it },
+                "chatPlus.screenshotChatCopyToClipboard.toggle",
+                Config.values.screenshotChatCopyToClipboard
+            ) { Config.values.screenshotChatCopyToClipboard = it },
+            entryBuilder.booleanToggle(
+                "chatPlus.screenshotChatSaveToFile.toggle",
+                Config.values.screenshotChatSaveToFile
+            ) { Config.values.screenshotChatSaveToFile = it },
             entryBuilder.booleanToggle(
                 "chatPlus.screenshotChatAutoUpload.toggle",
                 Config.values.screenshotChatAutoUpload
-            ) { Config.values.screenshotChatAutoUpload = it }
+            ) { Config.values.screenshotChatAutoUpload = it },
+            entryBuilder.linePriorityField("chatPlus.linePriority.screenshotChat", Config.values.screenshotChatLinePriority)
+            { Config.values.screenshotChatLinePriority = it },
+            entryBuilder.keyCodeOptionWithModifier("chatPlus.screenshotChat.key", Config.values.screenshotChatKey),
+            entryBuilder.enumSelector(
+                "chatPlus.screenshotMode",
+                ScreenshotChat.ScreenshotMode::class.java,
+                Config.values.screenshotDefaultScreenShotMode
+            ) { Config.values.screenshotDefaultScreenShotMode = it },
+            entryBuilder.enumSelector(
+                "chatPlus.screenshotBackgroundMode",
+                ScreenshotChat.ScreenshotBackgroundMode::class.java,
+                Config.values.screenshotDefaultScreenBackgroundMode
+            ) { Config.values.screenshotDefaultScreenBackgroundMode = it },
+            entryBuilder.enumSelector(
+                "chatPlus.screenshotScreenShotWindowsMode",
+                ScreenshotChat.ScreenshotWindowsMode::class.java,
+                Config.values.screenshotDefaultScreenShotWindowsMode
+            ) { Config.values.screenshotDefaultScreenShotWindowsMode = it },
+            entryBuilder.booleanToggle(
+                "chatPlus.screenshotChatTextBarElement.toggle",
+                Config.values.screenshotChatTextBarElementEnabled
+            ) { Config.values.screenshotChatTextBarElementEnabled = it }
         )
     }
 
@@ -903,7 +1007,7 @@ object ConfigScreenImpl {
                 { MessageFilter("") },
                 { value ->
                     listOf(
-                        entryBuilder.stringField("chatPlus.bookmark.auto.pattern", value.pattern) { value.pattern = it }
+                        entryBuilder.stringField("chatPlus.bookmark.auto.pattern", value.pattern, { value.pattern = it })
                     )
                 },
                 { Component.literal(it.regex.toString()) }
@@ -1000,10 +1104,10 @@ object ConfigScreenImpl {
     }
 
 
-    private fun ConfigEntryBuilder.stringField(translatable: String, variable: String, saveConsumer: Consumer<String>): StringListEntry {
+    private fun ConfigEntryBuilder.stringField(translatable: String, variable: String, saveConsumer: Consumer<String>, maxWidth: Int? = null): StringListEntry {
         return startStrField(Component.translatable(translatable), variable)
             .setDefaultValue(variable)
-            .setTooltip(Optional.of(ComponentUtil.splitLines(Component.translatable("$translatable.tooltip")).toTypedArray()))
+            .setTooltip(Optional.of(ComponentUtil.splitLines(Component.translatable("$translatable.tooltip"), maxWidth).toTypedArray()))
             .setSaveConsumer {
                 saveConsumer.accept(it)
                 queueUpdateConfig = true

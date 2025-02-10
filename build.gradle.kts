@@ -4,7 +4,7 @@ buildscript {
     repositories { mavenCentral() }
 
     dependencies {
-        val kotlinVersion = "1.9.22"
+        val kotlinVersion = "2.1.0"
         classpath(kotlin("gradle-plugin", version = kotlinVersion))
         classpath(kotlin("serialization", version = kotlinVersion))
     }
@@ -12,8 +12,8 @@ buildscript {
 
 plugins {
     java
-    kotlin("jvm") version "1.9.22"
-    kotlin("plugin.serialization") version "1.9.22" apply false
+    kotlin("jvm") version "2.1.0"
+    kotlin("plugin.serialization") version "2.1.0" apply false
     id("architectury-plugin") version "3.4-SNAPSHOT"
     id("dev.architectury.loom") version "1.6-SNAPSHOT" apply false
     id("com.github.johnrengelman.shadow") version "8.1.1" apply false
@@ -67,6 +67,7 @@ allprojects {
     dependencies {
         compileOnly("org.jetbrains.kotlin:kotlin-stdlib")
         implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
+        implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.1")
         implementation("net.java.dev.jna:jna:5.14.0")
         implementation("com.alphacephei:vosk:0.3.45")
         compileOnly("io.github.llamalad7:mixinextras-common:0.3.6")

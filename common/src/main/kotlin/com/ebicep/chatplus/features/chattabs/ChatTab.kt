@@ -206,40 +206,43 @@ class ChatTab : MessageFilterFormatted {
         return "ChatTab($name)"
     }
 
-    fun addNewMessage(addNewMessageEvent: AddNewMessageEvent) {
+    fun addNewMessage(addNewMessageEvent: AddNewMessageEvent): NewMessageResult {
         val mutableComponent = addNewMessageEvent.mutableComponent.copy()
         val rawComponent = addNewMessageEvent.rawComponent
         val signature = addNewMessageEvent.signature
         val addedTime = addNewMessageEvent.addedTime
         val tag = addNewMessageEvent.tag
         val chatPlusGuiMessage = ChatPlusGuiMessage(senderUUID = addNewMessageEvent.senderUUID)
-        if (EventBus.post(
-                ChatTabAddNewMessageEvent(
-                    chatWindow,
-                    this,
-                    chatPlusGuiMessage,
-                    mutableComponent,
-                    rawComponent,
-                    signature,
-                    addedTime,
-                    tag,
-                )
-            ).returnFunction
-        ) {
-            return
+        val chatTabAddNewMessageEvent = ChatTabAddNewMessageEvent(
+            addNewMessageEvent,
+            chatWindow,
+            this,
+            chatPlusGuiMessage,
+            mutableComponent,
+            rawComponent,
+            signature,
+            addedTime,
+            tag,
+        )
+        if (EventBus.post(chatTabAddNewMessageEvent).returnFunction) {
+            return NewMessageResult(chatTabAddNewMessageEvent, null, null)
         }
         chatPlusGuiMessage.guiMessage = GuiMessage(addedTime, mutableComponent, signature, tag)
         this.messages.add(chatPlusGuiMessage)
         this.lastMessageTime = System.currentTimeMillis()
+        val removedMessages = mutableListOf<ChatPlusGuiMessage>()
         if (Config.values.maxMessages > 0) {
             while (this.messages.size > Config.values.maxMessages) {
-                EventBus.post(ChatTabRemoveMessageEvent(chatWindow, this, this.messages.removeFirst()))
+                val removed = this.messages.removeFirst()
+                EventBus.post(ChatTabRemoveMessageEvent(chatWindow, this, removed))
+                removedMessages.add(removed)
             }
         }
-        this.addNewDisplayMessage(mutableComponent, addedTime, tag, chatPlusGuiMessage)
+        val newDisplayMessageResult = this.addNewDisplayMessage(mutableComponent, addedTime, tag, chatPlusGuiMessage)
         if (chatWindow.tabSettings.selectedTab != this) {
             this.read = false
         }
+        return NewMessageResult(chatTabAddNewMessageEvent, removedMessages, newDisplayMessageResult)
     }
 
     private fun addNewDisplayMessage(
@@ -247,7 +250,7 @@ class ChatTab : MessageFilterFormatted {
         addedTime: Int,
         tag: GuiMessageTag?,
         linkedMessage: ChatPlusGuiMessage
-    ) {
+    ): NewDisplayMessageResult {
         val maxWidth = Mth.floor(this.chatWindow.renderer.getBackgroundWidth())
         val displayMessageEvent = EventBus.post(
             ChatTabAddDisplayMessageEvent(
@@ -261,14 +264,17 @@ class ChatTab : MessageFilterFormatted {
                 maxWidth
             )
         )
-        addWrappedComponents(component, displayMessageEvent, addedTime, tag, linkedMessage, -1)
+        val addedComponents: MutableList<ChatPlusGuiMessageLine> = addWrappedComponents(component, displayMessageEvent, addedTime, tag, linkedMessage, -1)
+        val removedMessages: MutableList<ChatPlusGuiMessageLine> = mutableListOf()
         while (
             !displayMessageEvent.filtered &&
             displayMessageEvent.addMessage &&
             this.displayedMessages.isNotEmpty() &&
             this.messages[0] !== this.displayedMessages[0].linkedMessage
         ) {
-            EventBus.post(ChatTabRemoveDisplayMessageEvent(chatWindow, this, this.displayedMessages.removeFirst()))
+            val removed = this.displayedMessages.removeFirst()
+            EventBus.post(ChatTabRemoveDisplayMessageEvent(chatWindow, this, removed))
+            removedMessages.add(removed)
             if (wasFiltered) {
                 unfilteredDisplayedMessages.removeFirst()
             }
@@ -276,6 +282,7 @@ class ChatTab : MessageFilterFormatted {
         while (this.unfilteredDisplayedMessages.isNotEmpty() && this.messages[0] !== this.unfilteredDisplayedMessages[0].linkedMessage) {
             unfilteredDisplayedMessages.removeFirst()
         }
+        return NewDisplayMessageResult(displayMessageEvent, addedComponents, removedMessages)
     }
 
     fun addWrappedComponents(
@@ -285,13 +292,14 @@ class ChatTab : MessageFilterFormatted {
         tag: GuiMessageTag?,
         linkedMessage: ChatPlusGuiMessage,
         index: Int
-    ) {
+    ): MutableList<ChatPlusGuiMessageLine> {
         val list: List<Pair<FormattedCharSequence, String>> = wrapComponents(
             component,
             displayMessageEvent.maxWidth,
             Minecraft.getInstance().font
         )
         var wrappedIndex = index
+        val added: MutableList<ChatPlusGuiMessageLine> = mutableListOf()
         for (j in list.indices) {
             val chatPlusLine = list[j]
             val formattedCharSequence = chatPlusLine.first
@@ -310,12 +318,14 @@ class ChatTab : MessageFilterFormatted {
             if (index == -1) {
                 if (displayMessageEvent.addMessage) {
                     this.displayedMessages.add(line)
+                    added.add(line)
                 }
                 this.unfilteredDisplayedMessages.add(line)
             } else {
                 // check if index is valid
                 if (displayMessageEvent.addMessage && wrappedIndex in 0..displayedMessages.size) {
                     this.displayedMessages.add(wrappedIndex, line)
+                    added.add(line)
                 }
                 if (wrappedIndex in 0..unfilteredDisplayedMessages.size) {
                     this.unfilteredDisplayedMessages.add(wrappedIndex, line)
@@ -323,6 +333,7 @@ class ChatTab : MessageFilterFormatted {
                 wrappedIndex++
             }
         }
+        return added
     }
 
     fun clear() {
@@ -564,6 +575,18 @@ class ChatTab : MessageFilterFormatted {
 
     }
 
+    data class NewMessageResult(
+        val chatTabAddNewMessageEvent: ChatTabAddNewMessageEvent,
+        val removed: MutableList<ChatPlusGuiMessage>?,
+        val newDisplayMessageResult: NewDisplayMessageResult?
+    )
+
+    data class NewDisplayMessageResult(
+        val chatTabAddDisplayMessageEvent: ChatTabAddDisplayMessageEvent,
+        val addedComponents: MutableList<ChatPlusGuiMessageLine>,
+        val removedMessages: MutableList<ChatPlusGuiMessageLine>
+    )
+
 }
 
 data class SkipNewMessageEvent(
@@ -586,6 +609,7 @@ data class AddNewMessageEvent(
 ) : Event
 
 data class ChatTabAddNewMessageEvent(
+    val addNewMessageEvent: AddNewMessageEvent,
     val chatWindow: ChatWindow,
     val chatTab: ChatTab,
     val chatPlusGuiMessage: ChatTab.ChatPlusGuiMessage,

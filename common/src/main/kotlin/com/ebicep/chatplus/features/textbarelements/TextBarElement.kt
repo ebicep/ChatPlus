@@ -1,8 +1,12 @@
 package com.ebicep.chatplus.features.textbarelements
 
+import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.hud.ChatPlusScreen.EDIT_BOX_DISPLAY_HEIGHT
+import com.ebicep.chatplus.util.ComponentUtil
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.network.chat.Component
+import net.minecraft.util.FormattedCharSequence
 
 interface TextBarElement {
 
@@ -14,7 +18,7 @@ interface TextBarElement {
 
     fun getText(): String?
 
-    fun onClick()
+    fun onClick(button: Int)
 
     fun onHover(guiGraphics: GuiGraphics, pMouseX: Int, pMouseY: Int) {
 
@@ -55,9 +59,13 @@ interface TextBarElement {
             currentX,
             currentY,
             getPaddedWidth(),
-            EDIT_BOX_DISPLAY_HEIGHT,
+            EDIT_BOX_DISPLAY_HEIGHT - (if (Config.values.vanillaInputBox) 0 else 1),
             color
         )
+    }
+
+    fun tooltip(translatable: String): List<FormattedCharSequence> {
+        return ComponentUtil.splitLines(Component.translatable(translatable)).map { it.visualOrderText }
     }
 
 }

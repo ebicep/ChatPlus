@@ -9,6 +9,7 @@ import com.ebicep.chatplus.features.chattabs.ChatTab
 import com.ebicep.chatplus.features.chattabs.SkipNewMessageEvent
 import com.ebicep.chatplus.hud.ChatManager.globalSortedTabs
 import com.ebicep.chatplus.translator.LanguageManager
+import com.ebicep.chatplus.util.ComponentUtil.withColor
 import net.minecraft.ChatFormatting
 import net.minecraft.client.Minecraft
 import net.minecraft.network.chat.Component
@@ -95,11 +96,10 @@ object ChatPlus {
     fun sendMessage(component: Component) {
         // rgb(18, 227, 219)
         Minecraft.getInstance().player?.sendSystemMessage(
-            Component.literal("ChatPlus").withStyle {
-                it.withColor(MOD_COLOR)
-            }.append(Component.literal(" > ").withStyle {
-                it.withColor(ChatFormatting.DARK_GRAY)
-            }).append(component)
+            Component.empty()
+                .append(Component.literal("ChatPlus").withColor(MOD_COLOR))
+                .append(Component.literal(" > ").withStyle(ChatFormatting.DARK_GRAY))
+                .append(component)
         )
     }
 }
