@@ -81,7 +81,7 @@ class TranslateSpeakTextBarElement(private val chatPlusScreen: ChatScreen) : Tex
             Component.translatable("chatPlus.selectorLanguageSearch")
         )
         selectorLanguageSearch.setMaxLength(25)
-        selectorLanguageSearch.isBordered = true
+        selectorLanguageSearch.setBordered(true)
         selectorLanguageSearch.setCanLoseFocus(true)
         selectorLanguageSearch.setResponder { updateFilteredLanguages(it) }
         chatPlusScreen as IMixinScreen
