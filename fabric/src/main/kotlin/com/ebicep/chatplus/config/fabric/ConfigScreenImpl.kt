@@ -8,12 +8,15 @@ import com.ebicep.chatplus.features.FilterMessages.DEFAULT_COLOR
 import com.ebicep.chatplus.features.MovableChat.MOVABLE_CHAT_COLOR
 import com.ebicep.chatplus.features.SendNote.NOTE_COLOR
 import com.ebicep.chatplus.features.chattabs.AutoTabCreator
+import com.ebicep.chatplus.features.chattabs.CHAT_TAB_HEIGHT
 import com.ebicep.chatplus.features.chattabs.ChatTab
 import com.ebicep.chatplus.features.chattabs.ServerTabPattern
 import com.ebicep.chatplus.features.chatwindows.ChatWindow
 import com.ebicep.chatplus.features.chatwindows.OutlineSettings
+import com.ebicep.chatplus.features.chatwindows.TabSettings.Position
 import com.ebicep.chatplus.features.internal.MessageFilter
 import com.ebicep.chatplus.features.internal.MessageFilterFormatted
+import com.ebicep.chatplus.features.speechtotext.MicrophoneThread.SpeechToTextReplace
 import com.ebicep.chatplus.features.speechtotext.SpeechToText
 import com.ebicep.chatplus.hud.ChatManager
 import com.ebicep.chatplus.hud.ChatManager.resetGlobalSortedTabs
@@ -138,7 +141,19 @@ object ConfigScreenImpl {
                     InputOverFlowAutoFill.QueueMode::class.java,
                     Config.values.inputOverFlowAutoFillSettings.queueMode
                 ) { Config.values.inputOverFlowAutoFillSettings.queueMode = it },
-            ).build()
+            ).build(),
+            entryBuilder.startSubCategory(Component.translatable("chatPlus.chatSettings.messageImagePreview")).with(
+                entryBuilder.booleanToggle(
+                    "chatPlus.chatSettings.messageImagePreview.enabled",
+                    Config.values.messageImagePreviewSettings.enabled
+                ) { Config.values.messageImagePreviewSettings.enabled = it },
+                entryBuilder.linePriorityField("chatPlus.linePriority.messageImagePreview", Config.values.messageImagePreviewSettings.hasPreviewLinePriority)
+                { Config.values.messageImagePreviewSettings.hasPreviewLinePriority = it },
+                entryBuilder.alphaField(
+                    "chatPlus.chatSettings.messageImagePreview.color",
+                    Config.values.messageImagePreviewSettings.previewLineColor
+                ) { Config.values.messageImagePreviewSettings.previewLineColor = it },
+            ).build(),
         )
     }
 
@@ -294,6 +309,10 @@ object ConfigScreenImpl {
                 Config.values.arrowCycleTabEnabled
             ) { Config.values.arrowCycleTabEnabled = it },
             entryBuilder.booleanToggle(
+                "chatPlus.chatWindow.tabSettings.chatTabs.inputBoxAutoAdjustChatWindowEnabled.toggle",
+                Config.values.inputBoxAutoAdjustChatWindowEnabled
+            ) { Config.values.inputBoxAutoAdjustChatWindowEnabled = it },
+            entryBuilder.booleanToggle(
                 "chatPlus.chatWindow.tabSettings.chatTabs.moveToTabWhenCycling.toggle",
                 Config.values.moveToTabWhenCycling
             ) { Config.values.moveToTabWhenCycling = it },
@@ -382,6 +401,20 @@ object ConfigScreenImpl {
                 "chatPlus.chatWindow.tabSettings.showTabsWhenChatNotOpen",
                 window.tabSettings.showTabsWhenChatNotOpen
             ) { window.tabSettings.showTabsWhenChatNotOpen = it },
+            entryBuilder.enumSelector(
+                "chatPlus.chatWindow.tabSettings.position",
+                Position::class.java,
+                window.tabSettings.position
+            ) {
+                val oldPosition = window.tabSettings.position
+                window.tabSettings.position = it
+                if (oldPosition != it) {
+                    when (oldPosition) {
+                        Position.TOP -> window.renderer.y -= CHAT_TAB_HEIGHT
+                        Position.BOTTOM -> window.renderer.y += CHAT_TAB_HEIGHT
+                    }
+                }
+            },
             entryBuilder.percentSlider(
                 "chatPlus.chatWindow.tabSettings.unfocusedTabOpacityReduction",
                 1 - window.tabSettings.unfocusedTabOpacityMultiplier
@@ -620,7 +653,7 @@ object ConfigScreenImpl {
                 "chatPlus.movableChat.showEnabledOnScreen.toggle",
                 Config.values.movableChatShowEnabledOnScreen
             ) { Config.values.movableChatShowEnabledOnScreen = it },
-            entryBuilder.keyCodeOption("chatPlus.movableChat.toggleKey", Config.values.movableChatToggleKey) { Config.values.movableChatToggleKey = it },
+            entryBuilder.keyCodeOptionWithModifier("chatPlus.movableChat.toggleKey", Config.values.movableChatKey),
             entryBuilder.alphaField(
                 "chatPlus.movableChat.color",
                 Config.values.movableChatColor
@@ -807,25 +840,38 @@ object ConfigScreenImpl {
     }
 
     private fun addFindMessageOption(builder: ConfigBuilder, entryBuilder: ConfigEntryBuilder) {
-        builder.getOrCreateCategory(Component.translatable("chatPlus.findMessage.title").withColor(FindMessage.FIND_COLOR)).with(
+        builder.getOrCreateCategory(Component.translatable("chatPlus.findMessage.title").withColor(Config.values.findMessageDefaultMode.color)).with(
             entryBuilder.booleanToggle(
                 "chatPlus.findMessage.toggle",
                 Config.values.findMessageEnabled
             ) { Config.values.findMessageEnabled = it },
-            entryBuilder.linePriorityField("chatPlus.linePriority.findMessage", Config.values.findMessageLinePriority)
-            { Config.values.findMessageLinePriority = it },
             entryBuilder.booleanToggle(
                 "chatPlus.findMessage.highlightInputBox.toggle",
                 Config.values.findMessageHighlightInputBox
             ) { Config.values.findMessageHighlightInputBox = it },
             entryBuilder.booleanToggle(
-                "chatPlus.findMessage.textBarElement.toggle",
-                Config.values.findMessageTextBarElementEnabled
-            ) { Config.values.findMessageTextBarElementEnabled = it },
+                "chatPlus.findMessage.highlightMatchedText.toggle",
+                Config.values.findMessageHighlightMatchedText
+            ) { Config.values.findMessageHighlightMatchedText = it },
+            entryBuilder.booleanToggle(
+                "chatPlus.findMessage.ignoreCase.toggle",
+                Config.values.findMessageIgnoreCase
+            ) { Config.values.findMessageIgnoreCase = it },
+            entryBuilder.linePriorityField("chatPlus.linePriority.findMessage", Config.values.findMessageLinePriority)
+            { Config.values.findMessageLinePriority = it },
             entryBuilder.keyCodeOptionWithModifier(
                 "chatPlus.findMessage.key",
                 Config.values.findMessageKey
-            )
+            ),
+            entryBuilder.enumSelector(
+                "chatPlus.findMessage.textBarElement.defaultMode",
+                FindMessage.FindMode::class.java,
+                Config.values.findMessageDefaultMode
+            ) { Config.values.findMessageDefaultMode = it },
+            entryBuilder.booleanToggle(
+                "chatPlus.findMessage.textBarElement.toggle",
+                Config.values.findMessageTextBarElementEnabled
+            ) { Config.values.findMessageTextBarElementEnabled = it },
         )
     }
 
@@ -1047,7 +1093,8 @@ object ConfigScreenImpl {
             entryBuilder.booleanToggle(
                 "chatPlus.speechToText.toggle",
                 Config.values.speechToTextEnabled
-            ) { Config.values.speechToTextEnabled = it }, entryBuilder.booleanToggle(
+            ) { Config.values.speechToTextEnabled = it },
+            entryBuilder.booleanToggle(
                 "chatPlus.speechToText.toInputBox.toggle",
                 Config.values.speechToTextToInputBox
             ) { Config.values.speechToTextToInputBox = it },
@@ -1082,10 +1129,12 @@ object ConfigScreenImpl {
             entryBuilder.keyCodeOption(
                 "key.speechToText.quickSend",
                 Config.values.speechToTextQuickSendKey
-            ) { Config.values.speechToTextQuickSendKey = it }, entryBuilder.booleanToggle(
+            ) { Config.values.speechToTextQuickSendKey = it },
+            entryBuilder.booleanToggle(
                 "chatPlus.speechToText.speechToTextTranslateEnabled.toggle",
                 Config.values.speechToTextTranslateEnabled
-            ) { Config.values.speechToTextTranslateEnabled = it }, entryBuilder.booleanToggle(
+            ) { Config.values.speechToTextTranslateEnabled = it },
+            entryBuilder.booleanToggle(
                 "chatPlus.speechToText.speechToTextTranslateToInputBox.toggle",
                 Config.values.speechToTextTranslateToInputBox
             ) { Config.values.speechToTextTranslateToInputBox = it },
@@ -1099,7 +1148,34 @@ object ConfigScreenImpl {
                     Config.values.speechToTextTranslateLang = str
                     SpeechToText.updateTranslateLanguage()
                 }
-            )
+            ),
+            entryBuilder.startSubCategory(Component.translatable("chatPlus.speechToText.autoReplacePlayers")).with(
+                entryBuilder.booleanToggle(
+                    "chatPlus.speechToText.autoReplacePlayers.toggle",
+                    Config.values.speechToTextAutoReplacePlayers
+                ) { Config.values.speechToTextAutoReplacePlayers = it },
+                entryBuilder.intSlider(
+                    "chatPlus.speechToText.autoReplacePlayers.maxSearchDepth",
+                    Config.values.speechToTextAutoReplacePlayersMaxSearchDepth,
+                    1,
+                    10
+                ) { Config.values.speechToTextAutoReplacePlayersMaxSearchDepth = it },
+            ).build(),
+            getCustomListOption(
+                "chatPlus.speechToText.speechToText.replacePatterns",
+                Config.values.speechToTextReplace,
+                { Config.values.speechToTextReplace = it },
+                true,
+                { SpeechToTextReplace("", "", 0) },
+                { v ->
+                    listOf(
+                        entryBuilder.stringField("chatPlus.speechToText.speechToText.replacePatterns.pattern", v.pattern, { v.pattern = it }),
+                        entryBuilder.stringField("chatPlus.speechToText.speechToText.replacePatterns.replaceWith", v.str, { v.str = it }),
+                        entryBuilder.intField("chatPlus.speechToText.speechToText.replacePatterns.priority", v.priority) { v.priority = it }
+                    )
+                },
+                { Component.literal(it.pattern + " > " + it.str) }
+            ),
         )
     }
 

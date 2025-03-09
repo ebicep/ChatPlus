@@ -2,6 +2,7 @@ package com.ebicep.chatplus.mixin;
 
 import com.ebicep.chatplus.IChatScreen;
 import com.ebicep.chatplus.config.Config;
+import com.ebicep.chatplus.features.MovableChat;
 import com.ebicep.chatplus.hud.ChatManager;
 import com.ebicep.chatplus.hud.ChatPlusScreen;
 import com.ebicep.chatplus.hud.ChatPlusScreenAdapter;
@@ -93,7 +94,7 @@ public abstract class MixinChatScreen extends Screen implements IMixinChatScreen
         if (Config.INSTANCE.getValues().getVanillaInputBox()) {
             return y;
         }
-        return this.height - ChatPlusScreen.EDIT_BOX_HEIGHT + 4;
+        return Config.INSTANCE.getValues().getInputBoxSettings().getCalculatedStartY();
     }
 
     @ModifyArg(method = "init", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/ChatScreen$1;<init>(Lnet/minecraft/client/gui/screens/ChatScreen;Lnet/minecraft/client/gui/Font;IIIILnet/minecraft/network/chat/Component;)V"), index = 4)
@@ -297,7 +298,7 @@ public abstract class MixinChatScreen extends Screen implements IMixinChatScreen
         if (Config.INSTANCE.getValues().getVanillaInputBox()) {
             return y;
         }
-        return height - ChatPlusScreen.EDIT_BOX_HEIGHT;
+        return Config.INSTANCE.getValues().getInputBoxSettings().getCalculatedStartY() - MovableChat.InputBoxSettings.INPUT_BOX_PADDING;
     }
 
     @ModifyArg(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;fill(IIIII)V"), index = 2)
@@ -316,7 +317,7 @@ public abstract class MixinChatScreen extends Screen implements IMixinChatScreen
         if (Config.INSTANCE.getValues().getVanillaInputBox()) {
             return y;
         }
-        return height;
+        return Config.INSTANCE.getValues().getInputBoxSettings().getCalculatedStartY() + MovableChat.InputBoxSettings.PADDED_INPUT_BOX_HEIGHT;
     }
 
     @ModifyExpressionValue(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/ChatComponent;getMessageTagAt(DD)Lnet/minecraft/client/GuiMessageTag;"))

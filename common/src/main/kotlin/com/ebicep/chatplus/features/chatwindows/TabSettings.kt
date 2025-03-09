@@ -1,6 +1,7 @@
 package com.ebicep.chatplus.features.chatwindows
 
 import com.ebicep.chatplus.config.Config
+import com.ebicep.chatplus.config.EnumTranslatableName
 import com.ebicep.chatplus.config.queueUpdateConfig
 import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.features.chattabs.CHAT_TAB_X_SPACE
@@ -23,8 +24,10 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.network.chat.Component
 import net.minecraft.util.Mth
 import java.awt.Color
+import kotlin.math.roundToInt
 
 @Serializable
 class TabSettings {
@@ -33,6 +36,7 @@ class TabSettings {
     var startRenderTabIndex = 0
     var hideTabs = false
     var showTabsWhenChatNotOpen: Boolean = false
+    var position: Position = Position.BOTTOM
     var tabTextColorSelected: Int = Color(255, 255, 255, 255).rgb
     var tabTextColorUnselected: Int = Color(153, 153, 153, 255).rgb
     var unfocusedTabOpacityMultiplier: Float = .4f
@@ -72,6 +76,7 @@ class TabSettings {
         return TabSettings().also {
             it.hideTabs = hideTabs
             it.showTabsWhenChatNotOpen = showTabsWhenChatNotOpen
+            it.position = position
             it.tabTextColorSelected = tabTextColorSelected
             it.tabTextColorUnselected = tabTextColorUnselected
             it.unfocusedTabOpacityMultiplier = unfocusedTabOpacityMultiplier
@@ -102,7 +107,7 @@ class TabSettings {
                 }
                 totalWidth += it.width + CHAT_TAB_X_SPACE
             }
-            if (totalWidth >= Minecraft.getInstance().window.guiScaledWidth) {
+            if (tabs.first().xStart + totalWidth >= Minecraft.getInstance().window.guiScaledWidth) {
                 startRenderTabIndex++
             }
         }
@@ -128,9 +133,20 @@ class TabSettings {
     }
 
     fun getClickedTab(x: Double, y: Double): ChatTab? {
-        val translatedY = chatWindow.renderer.getUpdatedY() - y
-        if (translatedY > CHAT_TAB_Y_OFFSET - 4 || translatedY < -(9 + ChatTab.PADDING + ChatTab.PADDING)) {
-            return null
+        when (position) {
+            Position.TOP -> {
+                val translatedY = chatWindow.renderer.getUpdatedY() - y - chatWindow.renderer.getTotalLineHeight(true) - TAB_HEIGHT - CHAT_TAB_Y_OFFSET
+                if (translatedY > CHAT_TAB_Y_OFFSET || translatedY < -TAB_HEIGHT + 2) {
+                    return null
+                }
+            }
+
+            Position.BOTTOM -> {
+                val translatedY = chatWindow.renderer.getUpdatedY() - y
+                if (translatedY > CHAT_TAB_Y_OFFSET - 4 || translatedY < -TAB_HEIGHT) {
+                    return null
+                }
+            }
         }
         tabs.forEachIndexed { index, it ->
             if (index < startRenderTabIndex) {
@@ -147,7 +163,10 @@ class TabSettings {
     fun renderTabs(guiGraphics: GuiGraphics) {
         val poseStack = guiGraphics.pose()
         var xStart: Int = chatWindow.renderer.internalX
-        val yStart: Int = chatWindow.renderer.internalY + CHAT_TAB_Y_OFFSET
+        val yStart: Int = when (position) {
+            Position.TOP -> chatWindow.renderer.internalY - chatWindow.renderer.getTotalLineHeight(true).roundToInt() - TAB_HEIGHT - CHAT_TAB_Y_OFFSET
+            Position.BOTTOM -> chatWindow.renderer.internalY + CHAT_TAB_Y_OFFSET
+        }
         poseStack.createPose {
             tabs.forEachIndexed { index, it ->
                 if (index < startRenderTabIndex) {
@@ -209,12 +228,21 @@ class TabSettings {
         }
         val startY = if (isWindowSelected && chatTab == selectedTab) {
             if (chatWindow.outlineSettings.outlineTabType == OutlineSettings.OutlineTabType.SELECTED_TAB_OPEN_TOP) {
-                -(chatTab.yStart - chatWindow.renderer.internalY)
+                when (position) {
+                    Position.TOP -> chatWindow.renderer.internalY - chatWindow.renderer.getTotalLineHeight(true).roundToInt() - chatTab.yStart // top of highest line
+                    Position.BOTTOM -> -(chatTab.yStart - chatWindow.renderer.internalY)
+                }
             } else {
-                -CHAT_TAB_Y_OFFSET
+                when (position) {
+                    Position.TOP -> chatWindow.renderer.internalY - chatWindow.renderer.getTotalLineHeight(true).roundToInt() - chatTab.yStart - CHAT_TAB_Y_OFFSET
+                    Position.BOTTOM -> -CHAT_TAB_Y_OFFSET
+                }
             }
         } else {
-            0
+            when (position) {
+                Position.TOP -> TAB_HEIGHT // start from bottom
+                Position.BOTTOM -> 0
+            }
         }
 
         poseStack.createPose {
@@ -223,7 +251,10 @@ class TabSettings {
                 0,
                 startY,
                 chatTab.width,
-                TAB_HEIGHT,
+                when (position) {
+                    Position.TOP -> 0 // fill to top
+                    Position.BOTTOM -> TAB_HEIGHT
+                },
                 backgroundColor
             )
             poseStack.guiForward()
@@ -242,7 +273,7 @@ class TabSettings {
                 poseStack.guiForward(GraphicsUtil.GuiForwardType.ChatTabNotificationBadge)
                 poseStack.translate0(
                     x = chatTab.width - Resources.NOTIFICATION_BADGE.width / 2 * scale,
-                    y = startY - Resources.NOTIFICATION_BADGE.height / 2 * scale
+                    y = startY - Resources.NOTIFICATION_BADGE.height / 2 * scale - if (position == Position.TOP) TAB_HEIGHT else 0
                 )
                 poseStack.scale(scale, scale, 1f)
                 guiGraphics.drawImage(Resources.NOTIFICATION_BADGE)
@@ -259,6 +290,20 @@ class TabSettings {
             totalWidth += it.width + CHAT_TAB_X_SPACE
         }
         return totalWidth - CHAT_TAB_X_SPACE
+    }
+
+    @Serializable
+    enum class Position(key: String) : EnumTranslatableName {
+        TOP("chatPlus.chatWindow.tabSettings.position.top"),
+        BOTTOM("chatPlus.chatWindow.tabSettings.position.bottom"),
+
+        ;
+
+        val translatable: Component = Component.translatable(key)
+
+        override fun getTranslatableName(): Component {
+            return translatable
+        }
     }
 
 }

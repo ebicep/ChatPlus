@@ -1,6 +1,7 @@
 package com.ebicep.chatplus.events
 
 import com.ebicep.chatplus.config.Config
+import com.ebicep.chatplus.hud.ChatScreenInputEvent
 
 interface Event
 
@@ -23,14 +24,16 @@ object EventBus {
         }
 
         fun <E> post(data: E): E {
-            if (!Config.values.enabled) {
-                return data
-            }
+            var skipped = false
             for (it in subscribers) {
                 it.callback.invoke(data as T)
                 if (it.skipOtherCallbacks()) {
+                    skipped = true
                     break
                 }
+            }
+            if (!skipped && data is ChatScreenInputEvent) {
+                post(data.inputEvent.javaClass, data.inputEvent)
             }
             return data
         }
@@ -81,10 +84,12 @@ object EventBus {
     }
 
     fun <T> post(clazz: Class<T>, data: T): T {
+        if (!Config.values.enabled) {
+            return data
+        }
         if (!bus.containsKey(clazz.toString())) {
             bus[clazz.toString()] = Bus<T>()
         }
-
         return bus[clazz.toString()]!!.post(data)
     }
 

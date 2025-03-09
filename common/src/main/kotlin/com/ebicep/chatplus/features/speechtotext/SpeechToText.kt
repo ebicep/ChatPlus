@@ -6,6 +6,7 @@ import com.ebicep.chatplus.config.configDirectoryPath
 import com.ebicep.chatplus.events.ChatPlusTickEvent
 import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.features.InputOverFlowAutoFill
+import com.ebicep.chatplus.features.internal.MessageFilterWithString
 import com.ebicep.chatplus.hud.ChatManager
 import com.ebicep.chatplus.hud.ChatPlusScreen
 import com.ebicep.chatplus.hud.ChatScreenCloseEvent
@@ -22,6 +23,7 @@ import com.google.gson.JsonParser
 import dev.architectury.event.EventResult
 import dev.architectury.event.events.client.ClientGuiEvent
 import dev.architectury.event.events.client.ClientRawInputEvent
+import kotlinx.serialization.Serializable
 import net.minecraft.ChatFormatting
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphics
@@ -32,6 +34,7 @@ import org.vosk.Recognizer
 import java.awt.Color
 import java.io.File
 import java.util.regex.Pattern
+import kotlin.math.min
 
 
 class MicrophoneException(override val message: String) : Exception(message)
@@ -319,6 +322,16 @@ class MicrophoneThread : Thread("ChatPlusMicrophoneThread") {
                     if (lastSpokenMessage.isNullOrBlank()) {
                         continue
                     }
+                    Config.values.speechToTextReplace
+                        .sortedBy { -it.priority }
+                        .filter { it.regex.pattern.isNotEmpty() }
+                        .forEach {
+                            lastSpokenMessage = lastSpokenMessage!!.replace(it.regex, it.str)
+                            ChatPlus.LOGGER.info("Replaced: $lastSpokenMessage")
+                        }
+                    if (Config.values.speechToTextAutoReplacePlayers) {
+                        lastSpokenMessage = replacePlayer(lastSpokenMessage!!)
+                    }
                     val screen = Minecraft.getInstance().screen
                     if (ChatManager.isChatFocused()) {
                         doWithMessage { messages, translated ->
@@ -386,6 +399,60 @@ class MicrophoneThread : Thread("ChatPlusMicrophoneThread") {
             ChatPlus.LOGGER.error(e)
         }
         return microphone
+    }
+
+    private fun replacePlayer(input: String, searchDepth: Int = Config.values.speechToTextAutoReplacePlayersMaxSearchDepth): String {
+        if (!input.contains("player")) {
+            return input
+        }
+        val players = Minecraft.getInstance().connection?.listedOnlinePlayers ?: return input
+        val words = input.substringAfter("player ").split(" ")
+        var matched = players
+            .map { it.profile.name }
+            .map { MatchedPlayer(it, it) }
+            .toList()
+        var matchedIndex = -1
+        for (i in 0 until min(searchDepth, words.size)) {
+            val wordToMatch = words[i]
+            val newMatched = matched
+                .filter {
+                    val matchedIndex = it.postMatchName.indexOf(wordToMatch, ignoreCase = true)
+                    if (matchedIndex != -1) {
+                        it.postMatchName = it.postMatchName.substring(matchedIndex + wordToMatch.length)
+                    }
+                    matchedIndex != -1
+                }
+                .toList()
+            if (newMatched.isEmpty()) {
+                break
+            }
+            matched = newMatched
+            matchedIndex = i
+            if (newMatched.size == 1) {
+                break
+            }
+        }
+        if (matchedIndex == -1 || matched.isEmpty()) {
+            return input
+        }
+        return input.replace(
+            "player " + words.subList(0, matchedIndex + 1).joinToString(" "),
+            matched.first().name,
+            ignoreCase = true
+        )
+    }
+
+    data class MatchedPlayer(val name: String, var postMatchName: String)
+
+    @Serializable
+    class SpeechToTextReplace : MessageFilterWithString {
+
+        var priority: Int = 0
+
+        constructor(pattern: String, str: String, priority: Int) : super(pattern, str) {
+            this.priority = priority
+        }
+
     }
 
 }

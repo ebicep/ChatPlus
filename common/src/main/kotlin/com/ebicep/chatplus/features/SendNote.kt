@@ -10,11 +10,8 @@ import com.ebicep.chatplus.features.chattabs.ChatTab
 import com.ebicep.chatplus.features.textbarelements.AddTextBarElementEvent
 import com.ebicep.chatplus.features.textbarelements.SendNoteEvent
 import com.ebicep.chatplus.features.textbarelements.SendNoteTextBarElement
-import com.ebicep.chatplus.hud.ChatManager
-import com.ebicep.chatplus.hud.ChatPlusScreen
+import com.ebicep.chatplus.hud.*
 import com.ebicep.chatplus.hud.ChatPlusScreen.splitChatMessage
-import com.ebicep.chatplus.hud.ChatScreenMouseClickedEvent
-import com.ebicep.chatplus.hud.ChatScreenSendMessagePostEvent
 import com.ebicep.chatplus.mixin.IMixinChatScreen
 import com.ebicep.chatplus.translator.LanguageManager
 import com.ebicep.chatplus.translator.Translator
@@ -47,25 +44,32 @@ object SendNote {
                 addNote(it.message)
             }
         }
-        EventBus.register<ChatScreenSendMessagePostEvent>({ 5 }, { true }) {
+        var sendNote = false
+        EventBus.register<ChatScreenSendMessagePostEvent>({ 5 }, { sendNote }) {
+            sendNote = false
             if (!Config.values.sendNoteEnabled) {
                 return@register
             }
             if (!Config.values.sendNoteKey.isDown()) {
                 return@register
             }
+            sendNote = true
             EventBus.post(SendNoteEvent(it.messages.joinToString("")))
             (it.screen as IMixinChatScreen).input.value = ""
             it.dontSendMessage = true
         }
-        EventBus.register<ChatScreenMouseClickedEvent> {
+        EventBus.register<ChatScreenInputEvent> {
             if (!Config.values.sendNoteEnabled) {
                 return@register
             }
-            if (it.button != 0) {
+            val inputEvent = it.inputEvent
+            if (inputEvent !is ChatScreenMouseClickedEvent) {
                 return@register
             }
-            ChatManager.globalSelectedTab.getHoveredOverMessageLine(it.mouseX, it.mouseY)?.let { message ->
+            if (inputEvent.button != 0) {
+                return@register
+            }
+            ChatManager.globalSelectedTab.getHoveredOverMessageLine(inputEvent.mouseX, inputEvent.mouseY)?.let { message ->
                 if (!notes.contains(message.linkedMessage)) {
                     return@register
                 }

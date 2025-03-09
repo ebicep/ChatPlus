@@ -1,10 +1,17 @@
 package com.ebicep.chatplus.hud
 
 import com.ebicep.chatplus.config.Config
+import com.ebicep.chatplus.config.serializers.KeyWithModifier
 import com.ebicep.chatplus.events.Event
+import com.ebicep.chatplus.events.EventBus
+import com.ebicep.chatplus.util.KeyUtil
+import com.ebicep.chatplus.util.KeyUtil.isDown
+import com.mojang.blaze3d.platform.InputConstants
 import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.client.gui.screens.ChatScreen
 import org.apache.commons.lang3.StringUtils
+import java.util.*
+import java.util.concurrent.atomic.AtomicBoolean
 
 object ChatPlusScreen {
 
@@ -17,6 +24,14 @@ object ChatPlusScreen {
     var lastMouseY = 0
 
     var lastMessageSentTick = 0L
+
+    val inputCooldowns: MutableMap<Any, AtomicBoolean> = IdentityHashMap()
+
+    init {
+        EventBus.register<ChatScreenCloseEvent>({ 100 }) {
+            inputCooldowns.values.forEach { it.set(false) }
+        }
+    }
 
     fun splitChatMessage(message: String): List<String> {
         return if (message.length <= 256) {
@@ -42,28 +57,118 @@ object ChatPlusScreen {
 
 }
 
+interface InputEvent : Event {
+    val screen: ChatScreen
+    var returnFunction: Boolean
+}
+
+class ChatScreenInputEvent(
+    val inputEvent: InputEvent
+) {
+    val screen: ChatScreen
+        get() = inputEvent.screen
+
+    var returnFunction: Boolean
+        get() = inputEvent.returnFunction
+        set(value) {
+            inputEvent.returnFunction = value
+        }
+
+    fun isRelease(): Boolean {
+        return inputEvent is ChatScreenKeyReleasedEvent || inputEvent is ChatScreenMouseReleasedEvent
+    }
+
+    fun isRelease(key: InputConstants.Key): Boolean {
+        return isRelease(key.value)
+    }
+
+    fun isRelease(value: Int): Boolean {
+        return if (KeyUtil.isMouseButton(value)) {
+            inputEvent is ChatScreenMouseReleasedEvent && inputEvent.button == value
+        } else {
+            inputEvent is ChatScreenKeyReleasedEvent && inputEvent.keyCode == value
+        }
+    }
+
+    fun checkRelease(keyWithModifier: KeyWithModifier, checkKeyDown: Boolean = true): Boolean {
+        val inputCooldown = ChatPlusScreen.inputCooldowns.computeIfAbsent(keyWithModifier) { AtomicBoolean() }
+        val value = keyWithModifier.key.value
+        val isModifier = KeyUtil.isModifier(value)
+        val hasModifier = keyWithModifier.modifier.toInt() != 0
+        val keyReleased = isRelease(value) // (only check release)
+        val modifierReleased = inputEvent is ChatScreenKeyReleasedEvent && KeyUtil.isModifier(inputEvent.keyCode)
+        val isKey = !hasModifier && keyReleased // press x
+        val isKeyWithModifier = hasModifier && (!modifierReleased || isModifier) && keyReleased // ctrl + X (only check X release UNLESS key is a modifier ctrl + shift)
+        if (isKey || isKeyWithModifier) {
+            inputCooldown.set(false)
+            return true
+        }
+        if (inputCooldown.get()) {
+            return true
+        }
+        if (checkKeyDown && keyWithModifier.isDown(this)) {
+            inputCooldown.set(true)
+            return false
+        }
+        return true
+
+    }
+
+    fun checkRelease(inputCooldownKey: Any, key: InputConstants.Key, checkKeyDown: Boolean = true): Boolean {
+        val inputCooldown = ChatPlusScreen.inputCooldowns.computeIfAbsent(inputCooldownKey) { AtomicBoolean() }
+        val value = key.value
+        val keyReleased = isRelease(value)
+        if (keyReleased) {
+            inputCooldown.set(false)
+            return true
+        }
+        if (inputCooldown.get()) {
+            return true
+        }
+        if (checkKeyDown && key.isDown(this)) {
+            inputCooldown.set(true)
+            return false
+        }
+        return true
+    }
+
+    fun checkRelease(inputCooldownKey: Any, value: Int): Boolean {
+        val inputCooldown = ChatPlusScreen.inputCooldowns.computeIfAbsent(inputCooldownKey) { AtomicBoolean() }
+        if (isRelease(value)) {
+            inputCooldown.set(false)
+            return true
+        }
+        if (inputCooldown.get()) {
+            return true
+        }
+        return false
+    }
+
+}
+
 data class ChatScreenKeyPressedEvent(
-    val screen: ChatScreen,
+    override val screen: ChatScreen,
     val keyCode: Int,
     val scanCode: Int,
     val modifiers: Int,
-    var returnFunction: Boolean = false
-) : Event
+    override var returnFunction: Boolean = false
+) : InputEvent
 
 data class ChatScreenKeyReleasedEvent(
-    val screen: ChatScreen,
+    override val screen: ChatScreen,
     val keyCode: Int,
     val scanCode: Int,
-    val modifiers: Int
-) : Event
+    val modifiers: Int,
+    override var returnFunction: Boolean = false //unused
+) : InputEvent
 
 data class ChatScreenMouseClickedEvent(
-    val screen: ChatScreen,
+    override val screen: ChatScreen,
     val mouseX: Double,
     val mouseY: Double,
     val button: Int,
-    var returnFunction: Boolean = false
-) : Event
+    override var returnFunction: Boolean = false
+) : InputEvent
 
 data class ChatScreenMouseScrolledEvent(
     val screen: ChatScreen,
@@ -83,12 +188,12 @@ data class ChatScreenMouseDraggedEvent(
 ) : Event
 
 data class ChatScreenMouseReleasedEvent(
-    val screen: ChatScreen,
+    override val screen: ChatScreen,
     val mouseX: Double,
     val mouseY: Double,
     val button: Int,
-    var returnFunction: Boolean = false
-) : Event
+    override var returnFunction: Boolean = false
+) : InputEvent
 
 data class ChatScreenRenderEvent(
     val screen: ChatScreen,

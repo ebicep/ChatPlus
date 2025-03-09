@@ -38,7 +38,7 @@ class SendNoteTextBarElement(private val chatPlusScreen: ChatScreen) : TextBarEl
         )
     }
 
-    override fun onRender(guiGraphics: GuiGraphics, currentX: Int, currentY: Int, mouseX: Int, mouseY: Int) {
+    override fun onRender(guiGraphics: GuiGraphics, currentX: Int, currentY: Int, mouseX: Int, mouseY: Int, partialTick: Float) {
         fill(guiGraphics, currentX, currentY)
         val onCooldown = SendNote.onCooldown()
         drawCenteredString(guiGraphics, currentX, currentY, if (onCooldown) NOTE_COLOR else 0xFFFFFF)

@@ -59,17 +59,41 @@ object ChatWindowsManager {
                 }
             }
         }
-        EventBus.register<GetMaxYEvent> {
-            if (it.chatWindow.tabSettings.hideTabs) {
+        EventBus.register<GetMinYEvent> {
+            val tabSettings = it.chatWindow.tabSettings
+            if (tabSettings.hideTabs) {
                 return@register
             }
-            it.maxY -= CHAT_TAB_HEIGHT
+            if (tabSettings.position == TabSettings.Position.TOP) {
+                it.minY += CHAT_TAB_HEIGHT
+            }
+        }
+        EventBus.register<GetMaxYEvent> {
+            val tabSettings = it.chatWindow.tabSettings
+            if (tabSettings.hideTabs) {
+                return@register
+            }
+            if (tabSettings.position == TabSettings.Position.BOTTOM) {
+                it.maxY -= CHAT_TAB_HEIGHT
+            }
         }
         EventBus.register<GetDefaultYEvent> {
-            if (it.chatWindow.tabSettings.hideTabs) {
+            val tabSettings = it.chatWindow.tabSettings
+            if (tabSettings.hideTabs) {
                 return@register
             }
-            it.y -= CHAT_TAB_HEIGHT
+            if (tabSettings.position == TabSettings.Position.BOTTOM) {
+                it.y -= CHAT_TAB_HEIGHT
+            }
+        }
+        EventBus.register<GetMaxHeightEvent> {
+            val tabSettings = it.chatWindow.tabSettings
+            if (tabSettings.hideTabs) {
+                return@register
+            }
+            if (tabSettings.position == TabSettings.Position.TOP) {
+                it.maxHeight -= CHAT_TAB_HEIGHT
+            }
         }
     }
 
@@ -77,10 +101,14 @@ object ChatWindowsManager {
         val renderer = chatWindow.renderer
         val startX = renderer.getUpdatedX()
         val endX = startX + renderer.getUpdatedWidthValue()
-        val startY = renderer.getUpdatedY() - renderer.getTotalLineHeight()
+        var startY = renderer.getUpdatedY() - renderer.getTotalLineHeight(true)
         var endY = renderer.getUpdatedY()
-        if (!chatWindow.tabSettings.hideTabs) {
-            endY += CHAT_TAB_HEIGHT + CHAT_TAB_Y_OFFSET
+        val tabSettings = chatWindow.tabSettings
+        if (!tabSettings.hideTabs) {
+            when (tabSettings.position) {
+                TabSettings.Position.TOP -> startY -= CHAT_TAB_HEIGHT + CHAT_TAB_Y_OFFSET
+                TabSettings.Position.BOTTOM -> endY += CHAT_TAB_HEIGHT + CHAT_TAB_Y_OFFSET
+            }
         }
         return startX < x && x < endX && startY < y && y < endY
     }

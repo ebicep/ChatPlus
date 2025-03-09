@@ -5,15 +5,15 @@ buildscript {
     repositories { mavenCentral() }
 
     dependencies {
-        classpath(kotlin("gradle-plugin", version = "2.1.0"))
-        classpath(kotlin("serialization", version = "2.1.0"))
+        classpath(kotlin("gradle-plugin", version = "2.0.20"))
+        classpath(kotlin("serialization", version = "2.0.20"))
     }
 }
 
 plugins {
     java
-    kotlin("jvm") version "2.1.0"
-    kotlin("plugin.serialization") version "2.1.0" apply false
+    kotlin("jvm") version "2.0.20"
+    kotlin("plugin.serialization") version "2.0.20" apply false
     id("architectury-plugin") version "3.4-SNAPSHOT"
     id("dev.architectury.loom") version "1.9-SNAPSHOT" apply false
     id("com.github.johnrengelman.shadow") version "8.1.1" apply false
@@ -26,7 +26,6 @@ architectury {
 
 subprojects {
     apply(plugin = "dev.architectury.loom")
-    apply(plugin = "org.jetbrains.kotlin.plugin.serialization")
     apply(plugin = "me.shedaniel.unified-publishing")
 
     val loom = project.extensions.getByName<LoomGradleExtensionAPI>("loom")
@@ -65,9 +64,9 @@ allprojects {
     }
 
     dependencies {
-        compileOnly("org.jetbrains.kotlin:kotlin-stdlib")
-        implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
-        implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.1")
+        compileOnly("org.jetbrains.kotlin:kotlin-stdlib:2.0.20")
+        implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
+        implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
         implementation("net.java.dev.jna:jna:5.14.0")
         implementation("com.alphacephei:vosk:0.3.45")
         compileOnly("io.github.llamalad7:mixinextras-common:0.3.6")

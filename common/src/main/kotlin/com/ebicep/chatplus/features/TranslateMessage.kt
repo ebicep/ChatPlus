@@ -43,7 +43,9 @@ object TranslateMessage {
             if (!Config.values.translatorTextBarElementEnabled) {
                 return@register
             }
-            it.elements.add(TranslateSpeakTextBarElement(it.screen))
+            val textBarElement = TranslateSpeakTextBarElement(it.screen)
+            textBarElement.init()
+            it.elements.add(textBarElement)
         }
         EventBus.register<ChatScreenInitPostEvent> {
             if (!Config.values.translatorEnabled) {
@@ -166,15 +168,11 @@ object TranslateMessage {
             languageSpeakEnabled = true
             EventResult.interruptTrue()
         }
-        var translateKeyPressed = false
-        EventBus.register<ChatScreenKeyPressedEvent> {
-            if (Config.values.translateToggleKey.isDown() && !translateKeyPressed) {
-                translateKeyPressed = true
-                TranslateSpeakTextBarElement.toggleTranslateSpeak(it.screen)
+        EventBus.register<ChatScreenInputEvent> {
+            if (it.checkRelease(Config.values.translateToggleKey)) {
+                return@register
             }
-        }
-        EventBus.register<ChatScreenKeyReleasedEvent> {
-            translateKeyPressed = false
+            TranslateSpeakTextBarElement.toggleTranslateSpeak(it.screen)
         }
         var translateClickCooldown = 0L
         EventBus.register<ChatScreenMouseClickedEvent>({ 100 }) {

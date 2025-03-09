@@ -11,11 +11,13 @@ import com.ebicep.chatplus.config.migration.MigrationManager
 import com.ebicep.chatplus.config.serializers.KeySerializer
 import com.ebicep.chatplus.config.serializers.KeyWithModifier
 import com.ebicep.chatplus.features.*
+import com.ebicep.chatplus.features.MovableChat.InputBoxSettings
 import com.ebicep.chatplus.features.chattabs.TabNotificationSettings
 import com.ebicep.chatplus.features.chatwindows.ChatWindow
 import com.ebicep.chatplus.features.chatwindows.ChatWindowsManager.createDefaultWindow
 import com.ebicep.chatplus.features.internal.MessageFilter
 import com.ebicep.chatplus.features.internal.MessageFilterFormatted
+import com.ebicep.chatplus.features.speechtotext.MicrophoneThread.SpeechToTextReplace
 import com.ebicep.chatplus.features.speechtotext.SpeechToText
 import com.ebicep.chatplus.translator.LanguageManager
 import com.mojang.blaze3d.platform.InputConstants
@@ -26,7 +28,7 @@ import net.minecraft.util.Mth
 import java.awt.Color
 import java.io.File
 
-const val CONFIG_NAME = "${MOD_ID}-v2.1.0.json"
+const val CONFIG_NAME = "${MOD_ID}-v2.5.0.json"
 val json = Json {
     encodeDefaults = true
     ignoreUnknownKeys = true
@@ -88,6 +90,9 @@ object Config {
         }
         LanguageManager.updateTranslateLanguages()
         SpeechToText.updateTranslateLanguage()
+        values.speechToTextReplace.forEach {
+            it.updateRegex()
+        }
     }
 
     private fun correctValues() {
@@ -98,8 +103,7 @@ object Config {
         LanguageManager.findLanguageFromName(values.translateTo).let { if (it == null) values.translateTo = "Auto Detect" }
         LanguageManager.findLanguageFromName(values.translateSelf).let { if (it == null) values.translateSelf = "Auto Detect" }
         LanguageManager.findLanguageFromName(values.translateSpeak).let { if (it == null) values.translateSpeak = "English" }
-        LanguageManager.findLanguageFromName(values.speechToTextTranslateLang)
-            .let { if (it == null) values.speechToTextTranslateLang = "English" }
+        LanguageManager.findLanguageFromName(values.speechToTextTranslateLang).let { if (it == null) values.speechToTextTranslateLang = "English" }
         save()
     }
 
@@ -120,6 +124,7 @@ data class ConfigVariables(
     var selectChatLinePriority: Int = 100,
     var timestampSettings: TimestampMessages.TimestampSettings = TimestampMessages.TimestampSettings(),
     var inputOverFlowAutoFillSettings: InputOverFlowAutoFill.InputOverFlowAutoFillSettings = InputOverFlowAutoFill.InputOverFlowAutoFillSettings(),
+    var messageImagePreviewSettings: MessageImagePreview.MessageImagePreviewSettings = MessageImagePreview.MessageImagePreviewSettings(),
     // hide chat
     var hideChatEnabled: Boolean = false,
     var hideChatShowWhenFocused: Boolean = true,
@@ -146,15 +151,17 @@ data class ConfigVariables(
     var scrollCycleTabEnabled: Boolean = true,
     var arrowCycleTabEnabled: Boolean = true,
     var moveToTabWhenCycling: Boolean = true,
+    var inputBoxAutoAdjustChatWindowEnabled: Boolean = true,
     var tabNotificationSettings: TabNotificationSettings = TabNotificationSettings(),
     var chatWindows: MutableList<ChatWindow> = mutableListOf(),
     // moving chat
     var movableChatEnabled: Boolean = true,
     var movableChatShowEnabledOnScreen: Boolean = true,
-    var movableChatToggleKey: InputConstants.Key = InputConstants.getKey("key.keyboard.right.control"),
+    var movableChatKey: KeyWithModifier = KeyWithModifier(InputConstants.getKey("key.keyboard.right.control"), 0),
     var movableChatColor: Int = Color(255, 255, 255, 200).rgb,
     var movableChatSelectedColor: Int = Color(0, 255, 0, 200).rgb,
     var movableChatToggleTextBarElement: Boolean = false, // TODO add enabled
+    var inputBoxSettings: InputBoxSettings = InputBoxSettings(),
     // notes
     var sendNoteEnabled: Boolean = true,
     var sendNoteKey: KeyWithModifier = KeyWithModifier(InputConstants.getKey("key.keyboard.enter"), 4),
@@ -182,10 +189,13 @@ data class ConfigVariables(
     var autoBookMarkPatterns: MutableList<MessageFilterFormatted> = mutableListOf(),
     // find message
     var findMessageEnabled: Boolean = true,
-    var findMessageLinePriority: Int = 250,
     var findMessageHighlightInputBox: Boolean = false,
-    var findMessageTextBarElementEnabled: Boolean = true,
+    var findMessageHighlightMatchedText: Boolean = true,
+    var findMessageIgnoreCase: Boolean = true,
+    var findMessageLinePriority: Int = 250,
     var findMessageKey: KeyWithModifier = KeyWithModifier(InputConstants.getKey("key.keyboard.f"), 2),
+    var findMessageDefaultMode: FindMessage.FindMode = FindMessage.FindMode.CONTAINS,
+    var findMessageTextBarElementEnabled: Boolean = true,
     // copy message
     var copyMessageKey: KeyWithModifier = KeyWithModifier(InputConstants.getKey("key.keyboard.c"), 2),
     var copyMessageLinePriority: Int = 50,
@@ -235,6 +245,9 @@ data class ConfigVariables(
     var speechToTextTranslateEnabled: Boolean = false,
     var speechToTextTranslateToInputBox: Boolean = true,
     var speechToTextTranslateLang: String = "English",
+    var speechToTextAutoReplacePlayers: Boolean = true,
+    var speechToTextAutoReplacePlayersMaxSearchDepth: Int = 3,
+    var speechToTextReplace: MutableList<SpeechToTextReplace> = mutableListOf(),
 ) {
 
     // speech to text

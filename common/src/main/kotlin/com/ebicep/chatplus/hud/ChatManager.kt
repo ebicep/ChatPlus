@@ -91,6 +91,11 @@ data class GetMaxHeightEvent(
     var maxHeight: Int
 ) : Event
 
+data class GetMinYEvent(
+    var chatWindow: ChatWindow,
+    var minY: Int
+) : Event
+
 data class GetMaxYEvent(
     var chatWindow: ChatWindow,
     var maxY: Int

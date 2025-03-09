@@ -34,7 +34,7 @@ class ShowBookmarksBarElement(private val chatPlusScreen: ChatScreen) : TextBarE
         )
     }
 
-    override fun onRender(guiGraphics: GuiGraphics, currentX: Int, currentY: Int, mouseX: Int, mouseY: Int) {
+    override fun onRender(guiGraphics: GuiGraphics, currentX: Int, currentY: Int, mouseX: Int, mouseY: Int, partialTick: Float) {
         fill(guiGraphics, currentX, currentY)
         drawCenteredString(guiGraphics, currentX, currentY, if (BookmarkMessages.showingBookmarks) Config.values.bookmarkColor else -1)
         if (BookmarkMessages.showingBookmarks) {

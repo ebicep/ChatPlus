@@ -33,7 +33,7 @@ class MovableChatToggleTextBarElement(private val chatPlusScreen: ChatScreen) : 
         )
     }
 
-    override fun onRender(guiGraphics: GuiGraphics, currentX: Int, currentY: Int, mouseX: Int, mouseY: Int) {
+    override fun onRender(guiGraphics: GuiGraphics, currentX: Int, currentY: Int, mouseX: Int, mouseY: Int, partialTick: Float) {
         fill(guiGraphics, currentX, currentY)
         drawCenteredString(guiGraphics, currentX, currentY, if (Config.values.movableChatEnabled) MOVABLE_CHAT_COLOR else -1)
         if (Config.values.movableChatEnabled) {

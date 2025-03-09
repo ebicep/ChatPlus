@@ -2,8 +2,11 @@ package com.ebicep.chatplus.features
 
 import com.ebicep.chatplus.ChatPlus
 import com.ebicep.chatplus.config.Config
+import com.ebicep.chatplus.config.MessageDirection
 import com.ebicep.chatplus.config.queueUpdateConfig
 import com.ebicep.chatplus.events.EventBus
+import com.ebicep.chatplus.features.MovableChat.InputBoxSettings.Companion.INPUT_BOX_PADDING
+import com.ebicep.chatplus.features.MovableChat.InputBoxSettings.Companion.PADDED_INPUT_BOX_HEIGHT
 import com.ebicep.chatplus.features.chattabs.CHAT_TAB_X_SPACE
 import com.ebicep.chatplus.features.chattabs.CHAT_TAB_Y_OFFSET
 import com.ebicep.chatplus.features.chattabs.ChatTab
@@ -13,6 +16,8 @@ import com.ebicep.chatplus.features.chatwindows.ChatTabClickedEvent
 import com.ebicep.chatplus.features.chatwindows.ChatTabRenderEvent
 import com.ebicep.chatplus.features.chatwindows.ChatWindow
 import com.ebicep.chatplus.features.chatwindows.ChatWindowsManager
+import com.ebicep.chatplus.features.chatwindows.TabSettings.Position.BOTTOM
+import com.ebicep.chatplus.features.chatwindows.TabSettings.Position.TOP
 import com.ebicep.chatplus.features.internal.Debug.debug
 import com.ebicep.chatplus.features.internal.OnScreenDisplayEvent
 import com.ebicep.chatplus.features.textbarelements.AddTextBarElementEvent
@@ -21,14 +26,15 @@ import com.ebicep.chatplus.hud.*
 import com.ebicep.chatplus.hud.ChatPlusScreen.EDIT_BOX_HEIGHT
 import com.ebicep.chatplus.hud.ChatPlusScreen.lastMouseX
 import com.ebicep.chatplus.hud.ChatPlusScreen.lastMouseY
+import com.ebicep.chatplus.mixin.IMixinChatScreen
 import com.ebicep.chatplus.util.ComponentUtil.withColor
 import com.ebicep.chatplus.util.GraphicsUtil
 import com.ebicep.chatplus.util.GraphicsUtil.createPose
 import com.ebicep.chatplus.util.GraphicsUtil.fill0
 import com.ebicep.chatplus.util.GraphicsUtil.guiForward
 import com.ebicep.chatplus.util.GraphicsUtil.translate0
-import com.ebicep.chatplus.util.KeyUtil.isDown
 import com.mojang.blaze3d.vertex.PoseStack
+import kotlinx.serialization.Serializable
 import net.minecraft.ChatFormatting
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphics
@@ -42,7 +48,6 @@ import kotlin.math.roundToInt
 object MovableChat {
 
     val MOVABLE_CHAT_COLOR = Color(255, 255, 255).rgb
-    private val MOVABLE_CHAT_ENABLED_COMPONENT = Component.literal("Movable Chat Enabled").withColor(MOVABLE_CHAT_COLOR)
 
     // moving chat box
     private const val RENDER_MOVING_SIZE = 5f // width/length of box when rendering moving chat
@@ -78,21 +83,20 @@ object MovableChat {
     private val innerTabYOffset: Int
         get() = movingTabMouseYStart - movingTabYStart
 
+    // moving input box
+    private var movingInputBox = false
+
     init {
-        var toggleCooldown = false
-        EventBus.register<ChatScreenKeyPressedEvent>({ 2 }) {
-            if (toggleCooldown) {
+        EventBus.register<ChatScreenInputEvent>({ 5 }) {
+            if (it.checkRelease(Config.values.movableChatKey)) {
                 return@register
             }
-            if (Config.values.movableChatToggleKey.isDown()) {
-                toggleCooldown = true
-                Config.values.movableChatEnabled = !Config.values.movableChatEnabled
-                ChatPlus.sendMessage(
-                    Component.literal("Movable Chat ${if (Config.values.movableChatEnabled) "Enabled" else "Disabled"}")
-                        .withStyle(if (Config.values.movableChatEnabled) ChatFormatting.GREEN else ChatFormatting.RED)
-                )
-                it.returnFunction = true
-            }
+            Config.values.movableChatEnabled = !Config.values.movableChatEnabled
+            ChatPlus.sendMessage(
+                Component.literal("Movable Chat ${if (Config.values.movableChatEnabled) "Enabled" else "Disabled"}")
+                    .withStyle(if (Config.values.movableChatEnabled) ChatFormatting.GREEN else ChatFormatting.RED)
+            )
+            it.returnFunction = true
         }
         EventBus.register<AddTextBarElementEvent>({ 75 }) {
             if (Config.values.movableChatToggleTextBarElement) {
@@ -104,12 +108,10 @@ object MovableChat {
                 it.returnFunction = true
             }
         }
-        EventBus.register<ChatScreenKeyReleasedEvent> {
-            toggleCooldown = false
-        }
         EventBus.register<ChatScreenCloseEvent> {
             movingChat = false
             movingTab = false
+            movingInputBox = false
             dragging = false
         }
         EventBus.register<ChatScreenMouseReleasedEvent> {
@@ -119,6 +121,9 @@ object MovableChat {
             }
             if (movingTab) {
                 movingTab = false
+            }
+            if (movingInputBox) {
+                movingInputBox = false
             }
             dragging = false
         }
@@ -161,8 +166,16 @@ object MovableChat {
                         movingChatHeight = true
                     }
                 }
+            } else {
+                // check moving input box
+                val inputBoxSettings = Config.values.inputBoxSettings
+                val startY = inputBoxSettings.getCalculatedStartY()
+                if (startY < mouseY && mouseY < startY + EDIT_BOX_HEIGHT) {
+                    movingInputBox = true
+                    yDisplacement = mouseY - startY
+                }
             }
-            it.returnFunction = movingChat
+            it.returnFunction = movingChat || movingInputBox
         }
         EventBus.register<ChatTabClickedEvent> {
             if (!Config.values.movableChatEnabled) {
@@ -231,13 +244,22 @@ object MovableChat {
             val guiGraphics = it.guiGraphics
             // area above highest chat line
             val poseStack = guiGraphics.pose()
-            val startY = renderer.rescaledY - renderer.getTotalLineHeight() / renderer.scale
+            val totalLineHeightScaled = renderer.getTotalLineHeight() / renderer.scale
+            val visibleLineHeightScaled = (renderer.getLinesPerPageScaled() - it.displayMessageIndex) * renderer.lineHeight
+            var startY = when (chatWindow.generalSettings.messageDirection) {
+                MessageDirection.TOP_DOWN -> renderer.rescaledY - visibleLineHeightScaled
+                MessageDirection.BOTTOM_UP -> renderer.rescaledY - totalLineHeightScaled
+            }
+            var endY = when (chatWindow.generalSettings.messageDirection) {
+                MessageDirection.TOP_DOWN -> renderer.rescaledY
+                MessageDirection.BOTTOM_UP -> startY + visibleLineHeightScaled
+            }
             poseStack.guiForward(GraphicsUtil.GuiForwardType.MovableChatMoving)
             guiGraphics.fill0(
                 renderer.rescaledX,
                 startY,
                 renderer.rescaledEndX,
-                startY + (renderer.getLinesPerPageScaled() - it.displayMessageIndex) * renderer.lineHeight,
+                endY,
                 chatWindow.generalSettings.getUpdatedBackgroundColor()
             )
             poseStack.createPose {
@@ -309,10 +331,11 @@ object MovableChat {
                     0,
                     Minecraft.getInstance().window.guiScaledWidth - renderer.getUpdatedWidthValue()
                 )
+                val minYScaled = renderer.getMinYScaled()
                 val maxYScaled = renderer.getMaxYScaled()
                 var newY = Mth.clamp(
                     (mouseY - yDisplacement).roundToInt(),
-                    renderer.getTotalLineHeight().roundToInt() + 1,
+                    minYScaled,
                     maxYScaled
                 )
                 if (newY == maxYScaled) {
@@ -323,53 +346,67 @@ object MovableChat {
             if (movingChat) {
                 renderer.updateCachedDimension()
             }
-            if (!movingTab) {
-                return@register
-            }
-            val selectedTab = ChatManager.globalSelectedTab
-            val movingTabIndex: Int = chatWindow.tabSettings.tabs.indexOf(selectedTab)
-            if (movingTabIndex == -1) {
-                return@register
-            }
-            movingTabXOffset = (mouseX - movingTabMouseXStart).roundToInt()
-            movingTabYOffset = (mouseY - movingTabMouseYStart).roundToInt()
-            val outsideTabBar = outsideTabBar(chatWindow, mouseX, mouseY) != RelativeMouseTabBarPosition.INSIDE
-            val singleTab = isSingleTabWindow(chatWindow)
-            if (outsideTabBar || singleTab) {
-                val windowMovedTo: ChatWindow? = getWindowMovedTo(chatWindow, mouseX, mouseY)
-                if (windowMovedTo != null) { // check if tab is moved to new window
-                    moveTabToWindow(selectedTab, windowMovedTo, mouseX, mouseY)
-                } else if (!singleTab) { // check if tab can become a new window
-                    createNewWindow(chatWindow, selectedTab, mouseX, mouseY)
+            if (movingTab) {
+                val selectedTab = ChatManager.globalSelectedTab
+                val movingTabIndex: Int = chatWindow.tabSettings.tabs.indexOf(selectedTab)
+                if (movingTabIndex == -1) {
+                    return@register
                 }
-            } else {
-                // moving tabs within the same window
-                for (otherTab in chatWindow.tabSettings.tabs) {
-                    if (otherTab === selectedTab) {
-                        continue
+                movingTabXOffset = (mouseX - movingTabMouseXStart).roundToInt()
+                movingTabYOffset = (mouseY - movingTabMouseYStart).roundToInt()
+                val outsideTabBar = outsideTabBar(chatWindow, mouseX, mouseY) != RelativeMouseTabBarPosition.INSIDE
+                val singleTab = isSingleTabWindow(chatWindow)
+                if (outsideTabBar || singleTab) {
+                    val windowMovedTo: ChatWindow? = getWindowMovedTo(chatWindow, mouseX, mouseY)
+                    if (windowMovedTo != null) { // check if tab is moved to new window
+                        moveTabToWindow(selectedTab, windowMovedTo, mouseX, mouseY)
+                    } else if (!singleTab) { // check if tab can become a new window
+                        createNewWindow(chatWindow, selectedTab, mouseX, mouseY)
                     }
-                    val tabIndex = chatWindow.tabSettings.tabs.indexOf(otherTab)
-                    val movingLeft = tabIndex < movingTabIndex
-                    val otherTabMiddleX = otherTab.xStart + otherTab.width / 2.0
-                    val leftSwap = movingLeft && selectedTab.xStart < otherTabMiddleX
-                    val rightSwap = !movingLeft && selectedTab.xEnd > otherTabMiddleX
-                    if (leftSwap || rightSwap) {
-                        chatWindow.tabSettings.tabs.add(tabIndex, chatWindow.tabSettings.tabs.removeAt(movingTabIndex))
-                        chatWindow.tabSettings.selectedTabIndex = tabIndex
-                        queueUpdateConfig = true
-                        break
+                } else {
+                    // moving tabs within the same window
+                    for (otherTab in chatWindow.tabSettings.tabs) {
+                        if (otherTab === selectedTab) {
+                            continue
+                        }
+                        val tabIndex = chatWindow.tabSettings.tabs.indexOf(otherTab)
+                        val movingLeft = tabIndex < movingTabIndex
+                        val otherTabMiddleX = otherTab.xStart + otherTab.width / 2.0
+                        val leftSwap = movingLeft && selectedTab.xStart < otherTabMiddleX
+                        val rightSwap = !movingLeft && selectedTab.xEnd > otherTabMiddleX
+                        if (leftSwap || rightSwap) {
+                            chatWindow.tabSettings.tabs.add(tabIndex, chatWindow.tabSettings.tabs.removeAt(movingTabIndex))
+                            chatWindow.tabSettings.selectedTabIndex = tabIndex
+                            queueUpdateConfig = true
+                            break
+                        }
                     }
                 }
+                if (debug) {
+                    renderDebugMoving(it.guiGraphics, chatWindow)
+                }
             }
-            if (debug && movingTab) {
-                renderDebugMoving(it.guiGraphics, chatWindow)
+
+            if (movingInputBox) {
+                val inputBoxSettings = Config.values.inputBoxSettings
+                val maxY = Minecraft.getInstance().window.guiScaledHeight - PADDED_INPUT_BOX_HEIGHT
+                inputBoxSettings.startY = Mth.clamp(
+                    (mouseY - yDisplacement).roundToInt(),
+                    INPUT_BOX_PADDING,
+                    maxY
+                )
+                if (inputBoxSettings.startY == maxY) {
+                    inputBoxSettings.startY = -PADDED_INPUT_BOX_HEIGHT
+                }
+                it.screen as IMixinChatScreen
+                it.screen.input.y = inputBoxSettings.startY
             }
         }
         EventBus.register<OnScreenDisplayEvent> {
             if (!Config.values.movableChatEnabled || !Config.values.movableChatShowEnabledOnScreen || !ChatManager.isChatFocused()) {
                 return@register
             }
-            it.components.add(MOVABLE_CHAT_ENABLED_COMPONENT)
+            it.components.add(Component.literal("Movable Chat Enabled").withColor(MOVABLE_CHAT_COLOR).append(Config.values.movableChatKey.getDisplayName(true)))
         }
     }
 
@@ -381,6 +418,7 @@ object MovableChat {
     ) {
         ChatPlus.LOGGER.info("Removed $selectedTab from $chatWindow to create new window")
         removeTabFromWindow(chatWindow, selectedTab)
+        val oldRenderer = chatWindow.renderer
 
         val newWindow = chatWindow.clone()
         selectedTab.chatWindow = newWindow
@@ -389,14 +427,17 @@ object MovableChat {
         // creates new window with same x/y as window separated from
         val newRenderer = newWindow.renderer
         val newX = (mouseX - innerTabXOffset).roundToInt()
-        val newY = (mouseY - innerTabYOffset - CHAT_TAB_Y_OFFSET).roundToInt()
+        var newY = when (chatWindow.tabSettings.position) {
+            TOP -> (mouseY + innerTabYOffset + oldRenderer.getTotalLineHeight()).roundToInt() + CHAT_TAB_Y_OFFSET
+            BOTTOM -> (mouseY - innerTabYOffset - CHAT_TAB_Y_OFFSET).roundToInt()
+        }
         ChatPlus.LOGGER.info("New window at $newX, $newY")
         newRenderer.x = newRenderer.getUpdatedX(newX)
         newRenderer.y = newRenderer.getUpdatedY(newY)
         newRenderer.internalX = newRenderer.x
         newRenderer.internalY = newRenderer.y
-        newRenderer.width = chatWindow.renderer.width
-        newRenderer.height = chatWindow.renderer.height
+        newRenderer.width = oldRenderer.width
+        newRenderer.height = oldRenderer.height
         newRenderer.updateCachedDimension()
 
         Config.values.chatWindows.add(newWindow)
@@ -413,7 +454,10 @@ object MovableChat {
 
         // realign tab to cursor
         movingTabXStart = newX
-        movingTabYStart = newY + CHAT_TAB_Y_OFFSET
+        movingTabYStart = when (chatWindow.tabSettings.position) {
+            TOP -> newY - oldRenderer.getTotalLineHeight().roundToInt() - CHAT_TAB_Y_OFFSET - TAB_HEIGHT
+            BOTTOM -> newY + CHAT_TAB_Y_OFFSET
+        }
         movingTabMouseXStart = mouseX.roundToInt()
         movingTabMouseYStart = mouseY.roundToInt()
         movingTabXOffset = (mouseX - movingTabMouseXStart).roundToInt()
@@ -430,25 +474,29 @@ object MovableChat {
     ) {
         removeTabFromWindow(ChatManager.selectedWindow, selectedTab)
 
-        val newStartX = windowMovedTo.tabSettings.tabs.last().xEnd + CHAT_TAB_X_SPACE
-        val oldWidth = windowMovedTo.tabSettings.getTabBarWidth()
+        val tabSettings = windowMovedTo.tabSettings
+        val newStartX = tabSettings.tabs.last().xEnd + CHAT_TAB_X_SPACE
+        val oldWidth = tabSettings.getTabBarWidth()
 
         selectedTab.chatWindow = windowMovedTo
         selectedTab.rescaleChat()
-        windowMovedTo.tabSettings.tabs.add(selectedTab)
-        windowMovedTo.tabSettings.selectedTabIndex = windowMovedTo.tabSettings.tabs.size - 1
-        windowMovedTo.tabSettings.resetSortedChatTabs()
+        tabSettings.tabs.add(selectedTab)
+        tabSettings.selectedTabIndex = tabSettings.tabs.size - 1
+        tabSettings.resetSortedChatTabs()
         ChatWindowsManager.selectWindow(windowMovedTo)
 
         // make sure tab is viewed in same place but with offset based on new window
         movingTabMouseXStart = windowMovedTo.renderer.internalX + oldWidth + CHAT_TAB_X_SPACE + innerTabXOffset
-        movingTabMouseYStart = windowMovedTo.renderer.internalY + innerTabYOffset + CHAT_TAB_Y_OFFSET
+        movingTabMouseYStart = when (tabSettings.position) {
+            TOP -> windowMovedTo.renderer.internalY - windowMovedTo.renderer.getTotalLineHeight().roundToInt() - CHAT_TAB_Y_OFFSET - innerTabYOffset
+            BOTTOM -> windowMovedTo.renderer.internalY + CHAT_TAB_Y_OFFSET + innerTabYOffset
+        }
         movingTabXStart = newStartX
-        movingTabYStart = windowMovedTo.tabSettings.tabs.first().yStart
+        movingTabYStart = tabSettings.tabs.first().yStart
         movingTabXOffset = (mouseX - movingTabMouseXStart).roundToInt()
         movingTabYOffset = (mouseY - movingTabMouseYStart).roundToInt()
         selectedTab.xStart = newStartX
-        selectedTab.yStart = windowMovedTo.tabSettings.tabs.last().yStart
+        selectedTab.yStart = tabSettings.tabs.last().yStart
         movingChatBox = false
 
         EventBus.post(MovableChatTabToWindowEvent(selectedTab, windowMovedTo))
@@ -483,14 +531,14 @@ object MovableChat {
             poseStack.translate0(x = chatTab.xStart, y = chatTab.yStart, z = 100)
             guiGraphics.drawString(
                 Minecraft.getInstance().font,
-                "$movingTabXOffset",
+                "movingTabXOffset: $movingTabXOffset",
                 30,
                 -20,
                 0xFF5050
             )
             guiGraphics.drawString(
                 Minecraft.getInstance().font,
-                "$movingTabYOffset",
+                "movingTabYOffset: $movingTabYOffset",
                 30,
                 -10,
                 0xFF5050
@@ -631,13 +679,14 @@ object MovableChat {
         paddingX: Int = MOVE_PADDING_X,
         paddingY: Int = MOVE_PADDING_Y
     ): RelativeMouseTabBarPosition {
-        if (mouseY > Minecraft.getInstance().window.guiScaledHeight - EDIT_BOX_HEIGHT) {
-            return RelativeMouseTabBarPosition.OUTSIDE_SCREEN
-        }
         val renderer = chatWindow.renderer
         val barStartX = renderer.internalX - paddingX
         val barEndX =
-            (if (isSingleTabWindow(chatWindow)) renderer.internalX + chatWindow.tabSettings.getTabBarWidth() else renderer.rescaledEndX).toFloat() * renderer.scale + paddingX
+            (if (isSingleTabWindow(chatWindow)) {
+                renderer.internalX + chatWindow.tabSettings.getTabBarWidth()
+            } else {
+                renderer.rescaledEndX
+            }).toFloat() * renderer.scale + paddingX
         val barStartY = getTabStartY(chatWindow) - paddingY
         val barEndY = getTabEndY(chatWindow) + paddingY
         when {
@@ -688,11 +737,17 @@ object MovableChat {
     }
 
     private fun getTabStartY(chatWindow: ChatWindow): Int {
-        return chatWindow.renderer.internalY + CHAT_TAB_Y_OFFSET
+        return when (chatWindow.tabSettings.position) {
+            TOP -> chatWindow.renderer.internalY - chatWindow.renderer.getTotalLineHeight().roundToInt() - TAB_HEIGHT - CHAT_TAB_Y_OFFSET
+            BOTTOM -> chatWindow.renderer.internalY + CHAT_TAB_Y_OFFSET
+        }
     }
 
     private fun getTabEndY(chatWindow: ChatWindow): Int {
-        return chatWindow.renderer.internalY + CHAT_TAB_Y_OFFSET + TAB_HEIGHT
+        return when (chatWindow.tabSettings.position) {
+            TOP -> chatWindow.renderer.internalY - chatWindow.renderer.getTotalLineHeight().roundToInt() - CHAT_TAB_Y_OFFSET
+            BOTTOM -> chatWindow.renderer.internalY + CHAT_TAB_Y_OFFSET + TAB_HEIGHT
+        }
     }
 
     enum class RelativeMouseTabBarPosition {
@@ -703,6 +758,30 @@ object MovableChat {
         OUTSIDE_RIGHT,
         OUTSIDE_TOP,
         OUTSIDE_BOTTOM,
+
+    }
+
+    @Serializable
+    data class InputBoxSettings(var startY: Int = -PADDED_INPUT_BOX_HEIGHT) {
+
+        fun getCalculatedStartY(): Int {
+            var start = startY
+            if (start < 0) {
+                start += Minecraft.getInstance().window.guiScaledHeight
+            }
+            if (start < INPUT_BOX_PADDING) {
+                start = INPUT_BOX_PADDING
+            }
+            if (start > Minecraft.getInstance().window.guiScaledHeight - PADDED_INPUT_BOX_HEIGHT) {
+                start = Minecraft.getInstance().window.guiScaledHeight - PADDED_INPUT_BOX_HEIGHT
+            }
+            return start
+        }
+
+        companion object {
+            const val INPUT_BOX_PADDING = 4
+            const val PADDED_INPUT_BOX_HEIGHT = EDIT_BOX_HEIGHT - INPUT_BOX_PADDING // center ish height
+        }
 
     }
 

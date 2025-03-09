@@ -18,10 +18,11 @@ class FindTextBarElement(private val chatPlusScreen: ChatScreen) : TextBarElemen
     }
 
     override fun onClick(button: Int) {
-        if (button != 0) {
-            return
+        if (button == 0) {
+            FindMessage.toggle(chatPlusScreen)
+        } else if (button == 1) {
+            FindMessage.toggle(chatPlusScreen, FindMessage.getOtherMode())
         }
-        FindMessage.toggle(chatPlusScreen)
     }
 
     override fun onHover(guiGraphics: GuiGraphics, pMouseX: Int, pMouseY: Int) {
@@ -33,11 +34,11 @@ class FindTextBarElement(private val chatPlusScreen: ChatScreen) : TextBarElemen
         )
     }
 
-    override fun onRender(guiGraphics: GuiGraphics, currentX: Int, currentY: Int, mouseX: Int, mouseY: Int) {
+    override fun onRender(guiGraphics: GuiGraphics, currentX: Int, currentY: Int, mouseX: Int, mouseY: Int, partialTick: Float) {
         fill(guiGraphics, currentX, currentY)
-        drawCenteredString(guiGraphics, currentX, currentY, if (FindMessage.findEnabled) FindMessage.FIND_COLOR else -1)
+        drawCenteredString(guiGraphics, currentX, currentY, if (FindMessage.findEnabled) FindMessage.findMode!!.color else -1)
         if (FindMessage.findEnabled) {
-            renderOutline(guiGraphics, currentX, currentY, FindMessage.FIND_COLOR)
+            renderOutline(guiGraphics, currentX, currentY, FindMessage.findMode!!.color)
         }
     }
 

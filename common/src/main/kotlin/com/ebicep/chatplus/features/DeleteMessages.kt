@@ -5,7 +5,7 @@ import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.events.Events
 import com.ebicep.chatplus.features.chattabs.ChatTab
 import com.ebicep.chatplus.hud.ChatManager
-import com.ebicep.chatplus.hud.ChatScreenKeyPressedEvent
+import com.ebicep.chatplus.hud.ChatScreenInputEvent
 import java.awt.Color
 
 object DeleteMessages {
@@ -15,7 +15,7 @@ object DeleteMessages {
     init {
         var deleteMessageCooldown: Long = -1
         var messageDeleted = false
-        EventBus.register<ChatScreenKeyPressedEvent>({ 1 }, { messageDeleted }) {
+        EventBus.register<ChatScreenInputEvent>({ 1 }, { messageDeleted }) {
             if (!Config.values.deleteMessageEnabled) {
                 return@register
             }

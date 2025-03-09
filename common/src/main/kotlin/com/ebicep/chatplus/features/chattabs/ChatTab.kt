@@ -139,14 +139,14 @@ class ChatTab : MessageFilterFormatted {
     }
 
     @Transient
-    val messages: MutableList<ChatPlusGuiMessage> = ArrayList()
+    var messages: ArrayList<ChatPlusGuiMessage> = ArrayList()
 
     @Transient
-    var displayedMessages: MutableList<ChatPlusGuiMessageLine> = ArrayList()
+    var displayedMessages: ArrayList<ChatPlusGuiMessageLine> = ArrayList()
 
     // represents displayMessages before any filter is applied, used to revert back instantly + cleared as well
     @Transient
-    var unfilteredDisplayedMessages: MutableList<ChatPlusGuiMessageLine> = ArrayList()
+    var unfilteredDisplayedMessages: ArrayList<ChatPlusGuiMessageLine> = ArrayList()
 
     @Transient
     var wasFiltered = false
@@ -337,9 +337,9 @@ class ChatTab : MessageFilterFormatted {
     }
 
     fun clear() {
-        messages.clear()
-        displayedMessages.clear()
-        unfilteredDisplayedMessages.clear()
+        messages = ArrayList()
+        displayedMessages = ArrayList()
+        unfilteredDisplayedMessages = ArrayList()
     }
 
     fun resetChatScroll() {
@@ -424,8 +424,9 @@ class ChatTab : MessageFilterFormatted {
 
             rescaleChat = false
 
-            displayedMessages.clear()
-            unfilteredDisplayedMessages.clear()
+            // recreate the list in the case of rescale from tiny to large, removes extra allocated space
+            displayedMessages = ArrayList()
+            unfilteredDisplayedMessages = ArrayList()
             for (i in messages.indices) {
                 val chatPlusGuiMessage: ChatPlusGuiMessage = messages[i]
                 val guiMessage: GuiMessage = chatPlusGuiMessage.guiMessage
@@ -449,10 +450,10 @@ class ChatTab : MessageFilterFormatted {
             } else {
                 ChatPlus.LOGGER.info("$this Filtering - $wasFiltered")
                 if (!wasFiltered) {
-                    unfilteredDisplayedMessages = displayedMessages.toMutableList()
+                    unfilteredDisplayedMessages = ArrayList(displayedMessages)
                     ChatPlus.LOGGER.info("$this Saved ${unfilteredDisplayedMessages.size} messages")
                 } else {
-                    displayedMessages = unfilteredDisplayedMessages.toMutableList()
+                    displayedMessages = ArrayList(unfilteredDisplayedMessages)
                     ChatPlus.LOGGER.info("$this Loaded ${displayedMessages.size} messages")
                 }
                 wasFiltered = true
@@ -503,8 +504,8 @@ class ChatTab : MessageFilterFormatted {
             if (unfilteredDisplayedMessages.size < 100) {
                 ChatPlus.LOGGER.error("$this NO MESSAGES")
             }
-            displayedMessages = unfilteredDisplayedMessages.toMutableList()
-            unfilteredDisplayedMessages.clear()
+            displayedMessages = ArrayList(unfilteredDisplayedMessages)
+            unfilteredDisplayedMessages = ArrayList()
             wasFiltered = false
             ChatPlus.LOGGER.info("$this Reloaded ${displayedMessages.size} messages")
         }

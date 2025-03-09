@@ -312,6 +312,7 @@ object GraphicsUtil {
     }
 
     private fun GuiGraphics.innerBlit0(resourceLocation: ResourceLocation, i: Float, j: Float, k: Float, l: Float, m: Float, f: Float, g: Float, h: Float, n: Float) {
+        RenderSystem.enableDepthTest()
         RenderSystem.setShaderTexture(0, resourceLocation)
         RenderSystem.setShader { GameRenderer.getPositionTexShader() }
         val matrix4f: Matrix4f = this.pose().last().pose()
@@ -322,15 +323,24 @@ object GraphicsUtil {
         bufferBuilder.vertex(matrix4f, j, l, m).uv(g, n).endVertex()
         bufferBuilder.vertex(matrix4f, j, k, m).uv(g, h).endVertex()
         BufferUploader.drawWithShader(bufferBuilder.end())
+        RenderSystem.enableDepthTest()
     }
 
     fun GuiGraphics.drawImage(resources: Resources) {
+        this.drawImage(resources.resourceLocation, resources.width, resources.height)
+    }
+
+    fun GuiGraphics.drawImage(resourceLocation: ResourceLocation, width: Int, height: Int) {
+        this.drawImage(resourceLocation, width.toFloat(), height.toFloat())
+    }
+
+    fun GuiGraphics.drawImage(resourceLocation: ResourceLocation, width: Float, height: Float) {
         this.innerBlit0(
-            resources.resourceLocation,
+            resourceLocation,
             0f,
-            resources.width.toFloat(),
+            width,
             0f,
-            resources.height.toFloat(),
+            height,
             0f,
             0f,
             1f,

@@ -32,6 +32,9 @@ object BookmarkMessages {
             bookmarkedMessages.remove(it.guiMessage)
         }
         EventBus.register<ChatTabAddNewMessageEvent> {
+            if (!Config.values.bookmarkEnabled) {
+                return@register
+            }
             val content = it.rawComponent.string
             for (autoBookMarkPattern in Config.values.autoBookMarkPatterns) {
                 if (autoBookMarkPattern.matches(content)) {
@@ -40,28 +43,41 @@ object BookmarkMessages {
                 }
             }
         }
-        var showBookmarkShortcutUsed = false
-        EventBus.register<ChatScreenKeyPressedEvent>({ 1 }, { showBookmarkShortcutUsed }) {
-            var toggledBookmarkMessage = false
-            if (Config.values.bookmarkKey.isDown()) {
-                val hoveredOverMessage = ChatManager.globalSelectedTab.getHoveredOverMessageLine()
-                val selectedMessages = SelectChat.getAllSelectedMessages()
-                if (hoveredOverMessage != null && selectedMessages.isEmpty()) {
-                    toggleMessageBookmark(hoveredOverMessage.linkedMessage)
-                    toggledBookmarkMessage = true
-                } else if (SelectChat.selectedMessages.isNotEmpty()) {
-                    selectedMessages.forEach {
-                        toggleMessageBookmark(it.linkedMessage)
-                    }
-                    toggledBookmarkMessage = true
-                }
+        var toggledBookmarkMessage = false
+        EventBus.register<ChatScreenInputEvent>({ 2 }, { toggledBookmarkMessage }) {
+            toggledBookmarkMessage = false
+            if (!Config.values.bookmarkEnabled) {
+                return@register
             }
-            if (!toggledBookmarkMessage && Config.values.bookmarkTextBarElementKey.isDown()) {
-                showBookmarkShortcutUsed = true
-                toggle(it.screen)
-                it.returnFunction = true
+            if (it.checkRelease(Config.values.bookmarkKey)) {
+                return@register
+            }
+            val hoveredOverMessage = ChatManager.globalSelectedTab.getHoveredOverMessageLine()
+            val selectedMessages = SelectChat.getAllSelectedMessages()
+            if (hoveredOverMessage != null && selectedMessages.isEmpty()) {
+                toggleMessageBookmark(hoveredOverMessage.linkedMessage)
+                toggledBookmarkMessage = true
+            } else if (SelectChat.selectedMessages.isNotEmpty()) {
+                selectedMessages.forEach {
+                    toggleMessageBookmark(it.linkedMessage)
+                }
+                toggledBookmarkMessage = true
             }
         }
+        var showBookmarkShortcutUsed = false
+        EventBus.register<ChatScreenInputEvent>({ 1 }, { showBookmarkShortcutUsed }) {
+            showBookmarkShortcutUsed = false
+            if (!Config.values.bookmarkEnabled) {
+                return@register
+            }
+            if (it.checkRelease(Config.values.bookmarkTextBarElementKey)) {
+                return@register
+            }
+            showBookmarkShortcutUsed = true
+            toggle(it.screen)
+            it.returnFunction = true
+        }
+
         EventBus.register<ChatScreenCloseEvent> {
             if (showingBookmarks) {
                 showingBookmarks = false
@@ -94,6 +110,9 @@ object BookmarkMessages {
             }
         }
         EventBus.register<ChatRenderPreLineAppearanceEvent>({ Config.values.bookmarkLinePriority }) {
+            if (!Config.values.bookmarkEnabled) {
+                return@register
+            }
             if (bookmarkedMessages.contains(it.chatPlusGuiMessageLine.linkedMessage)) {
                 it.backgroundColor = Config.values.bookmarkColor
             }

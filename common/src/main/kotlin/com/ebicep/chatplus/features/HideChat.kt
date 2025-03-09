@@ -63,7 +63,7 @@ object HideChat {
             if (!Config.values.hideChatEnabled || !Config.values.hideChatShowHiddenOnScreen) {
                 return@register
             }
-            it.components.add(CHAT_HIDDEN_COMPONENT)
+            it.components.add(Component.literal("Chat Hidden").withColor(MOD_COLOR).append(Config.values.hideChatToggleKey.getDisplayName(true)))
         }
     }
 

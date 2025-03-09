@@ -8,6 +8,7 @@
     "IMixinChatScreen",
     "IMixinGuiGraphics",
     "IMixinScreen",
+    "IMixinStringSplitter",
     "MixinChatComponent",
     "MixinChatScreen",
     "MixinGuiGraphics",

@@ -37,11 +37,14 @@ object ChatPlusScreenAdapter {
     }
 
     fun handleKeyPressed(chatScreen: ChatScreen, keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
-        return EventBus.post(ChatScreenKeyPressedEvent(chatScreen, keyCode, scanCode, modifiers)).returnFunction
+        val event = ChatScreenKeyPressedEvent(chatScreen, keyCode, scanCode, modifiers)
+        EventBus.post(ChatScreenInputEvent(event))
+        return event.returnFunction
     }
 
     fun handleKeyReleased(chatScreen: ChatScreen, keyCode: Int, scanCode: Int, modifiers: Int) {
-        EventBus.post(ChatScreenKeyReleasedEvent(chatScreen, keyCode, scanCode, modifiers))
+        val event = ChatScreenKeyReleasedEvent(chatScreen, keyCode, scanCode, modifiers)
+        EventBus.post(ChatScreenInputEvent(event))
     }
 
     fun handlePageUpDown(up: Boolean) {
@@ -76,11 +79,15 @@ object ChatPlusScreenAdapter {
     }
 
     fun handleMouseClicked(chatScreen: ChatScreen, mouseX: Double, mouseY: Double, pButton: Int): Boolean {
-        return EventBus.post(ChatScreenMouseClickedEvent(chatScreen, mouseX, mouseY, pButton)).returnFunction
+        val event = ChatScreenMouseClickedEvent(chatScreen, mouseX, mouseY, pButton)
+        EventBus.post(ChatScreenInputEvent(event))
+        return event.returnFunction
     }
 
     fun handleMouseReleased(chatScreen: ChatScreen, mouseX: Double, mouseY: Double, pButton: Int): Boolean {
-        return EventBus.post(ChatScreenMouseReleasedEvent(chatScreen, mouseX, mouseY, pButton)).returnFunction
+        val event = ChatScreenMouseReleasedEvent(chatScreen, mouseX, mouseY, pButton)
+        EventBus.post(ChatScreenInputEvent(event))
+        return event.returnFunction
     }
 
     fun handleMouseDragged(chatScreen: ChatScreen, mouseX: Double, mouseY: Double, pButton: Int, pDragX: Double, pDragY: Double) {

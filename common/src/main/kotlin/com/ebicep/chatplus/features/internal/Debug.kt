@@ -17,6 +17,18 @@ object Debug {
     var debug = false
 
     init {
+//        var inputCooldown = AtomicBoolean()
+//        EventBus.register<ChatScreenInputEvent>({ 1000 }, { true }) {
+//            val keyWithModifier = KeyWithModifier(InputConstants.getKey("key.keyboard.b"), 2)
+//            println(it.inputEvent)
+//            if (it.checkRelease(inputCooldown, keyWithModifier)) {
+//                println("skipped")
+//                return@register
+//            }
+//            ChatPlus.sendMessage(Component.literal("EXECUTE"))
+//            it.returnFunction = true
+//
+//        }
         // show mouse position
         EventBus.register<ChatScreenRenderEvent> {
             if (!debug) {

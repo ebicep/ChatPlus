@@ -6,7 +6,7 @@ import com.ebicep.chatplus.events.Events
 import com.ebicep.chatplus.features.chattabs.ChatTab
 import com.ebicep.chatplus.hud.ChatManager
 import com.ebicep.chatplus.hud.ChatRenderPreLineAppearanceEvent
-import com.ebicep.chatplus.hud.ChatScreenKeyPressedEvent
+import com.ebicep.chatplus.hud.ChatScreenInputEvent
 import com.ebicep.chatplus.util.TimeStampedLines
 import net.minecraft.ChatFormatting
 import net.minecraft.client.Minecraft
@@ -21,7 +21,7 @@ object CopyMessage {
         var lastCopied: TimeStampedLines? = null
         var copiedMessageCooldown: Long = -1
         var messageCopied = false
-        EventBus.register<ChatScreenKeyPressedEvent>({ 1 }, { messageCopied }) {
+        EventBus.register<ChatScreenInputEvent>({ 1 }, { messageCopied }) {
             val canCopyMessage = copiedMessageCooldown < Events.currentTick && Config.values.copyMessageKey.isDown()
             if (!canCopyMessage) {
                 messageCopied = false
