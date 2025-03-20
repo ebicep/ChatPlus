@@ -321,7 +321,6 @@ class ChatRenderer {
                 )
                 // text
                 guiGraphics.drawString0(
-                    Minecraft.getInstance().font,
                     line.content,
                     rescaledX,
                     verticalTextOffset,
@@ -339,11 +338,11 @@ class ChatRenderer {
         if (chatFocused && Debug.debug && chatWindow == ChatManager.selectedWindow) {
             poseStack.createPose {
                 poseStack.guiForward(GraphicsUtil.GuiForwardType.ChatRendererDebug)
-                guiGraphics.drawString(Minecraft.getInstance().font, "$height", lastMouseX - 15, lastMouseY + 5, 0x3eeff)
-                guiGraphics.drawString(Minecraft.getInstance().font, "$rescaledHeight", lastMouseX - 15, lastMouseY + 15, 0x3eeff)
-                guiGraphics.drawString(Minecraft.getInstance().font, "$lineHeight", lastMouseX - 15, lastMouseY + 25, 0x3eeff)
-                guiGraphics.drawString(Minecraft.getInstance().font, "${getLinesPerPage()}", lastMouseX - 15, lastMouseY + 35, 0x3eeff)
-                guiGraphics.drawString(Minecraft.getInstance().font, "$rescaledLinesPerPage", lastMouseX - 15, lastMouseY + 45, 0x3eeff)
+                guiGraphics.drawString0("$height", lastMouseX - 15, lastMouseY + 5, 0x3eeff)
+                guiGraphics.drawString0("$rescaledHeight", lastMouseX - 15, lastMouseY + 15, 0x3eeff)
+                guiGraphics.drawString0("$lineHeight", lastMouseX - 15, lastMouseY + 25, 0x3eeff)
+                guiGraphics.drawString0("${getLinesPerPage()}", lastMouseX - 15, lastMouseY + 35, 0x3eeff)
+                guiGraphics.drawString0("$rescaledLinesPerPage", lastMouseX - 15, lastMouseY + 45, 0x3eeff)
             }
         }
     }

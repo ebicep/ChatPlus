@@ -202,6 +202,23 @@ class ChatTab : MessageFilterFormatted {
     @Transient
     lateinit var chatWindow: ChatWindow
 
+    fun clone(): ChatTab {
+        return ChatTab(
+            chatWindow,
+            name,
+            pattern,
+            autoPrefix,
+            priority,
+            alwaysAdd,
+            skipOthers,
+            commandsOverrideAutoPrefix,
+            temporary,
+            isAutoTab
+        ).also {
+            it.serverTabPatterns = serverTabPatterns.map { ServerTabPattern(it.pattern, it.autoPrefix) }.toMutableList()
+        }
+    }
+
     override fun toString(): String {
         return "ChatTab($name)"
     }

@@ -101,9 +101,9 @@ object InputOverFlowAutoFill {
 
     @Serializable
     enum class AutoFillCommandInteraction(key: String) : EnumTranslatableName {
-        IGNORE("chatPlus.chatSettings.inputOverFlowAutoFill.autoFillCommandInteraction.ignore"), // ignore command/slash and auto fill
-        SKIP("chatPlus.chatSettings.inputOverFlowAutoFill.autoFillCommandInteraction.skip"), // auto fill next non command/slash
-        CLEAR("chatPlus.chatSettings.inputOverFlowAutoFill.autoFillCommandInteraction.clear"), // clear auto fill
+        IGNORE("chatPlus.chatSettings.inputBoxSettings.inputOverFlowAutoFill.autoFillCommandInteraction.ignore"), // ignore command/slash and auto fill
+        SKIP("chatPlus.chatSettings.inputBoxSettings.inputOverFlowAutoFill.autoFillCommandInteraction.skip"), // auto fill next non command/slash
+        CLEAR("chatPlus.chatSettings.inputBoxSettings.inputOverFlowAutoFill.autoFillCommandInteraction.clear"), // clear auto fill
 
         ;
 
@@ -117,9 +117,9 @@ object InputOverFlowAutoFill {
 
     @Serializable
     enum class QueueMode(key: String) : EnumTranslatableName {
-        OVERWRITE("chatPlus.chatSettings.inputOverFlowAutoFill.queueMode.overwrite"),
-        PREPEND("chatPlus.chatSettings.inputOverFlowAutoFill.queueMode.prepend"),
-        APPEND("chatPlus.chatSettings.inputOverFlowAutoFill.queueMode.append"),
+        OVERWRITE("chatPlus.chatSettings.inputBoxSettings.inputOverFlowAutoFill.queueMode.overwrite"),
+        PREPEND("chatPlus.chatSettings.inputBoxSettings.inputOverFlowAutoFill.queueMode.prepend"),
+        APPEND("chatPlus.chatSettings.inputBoxSettings.inputOverFlowAutoFill.queueMode.append"),
 
         ;
 

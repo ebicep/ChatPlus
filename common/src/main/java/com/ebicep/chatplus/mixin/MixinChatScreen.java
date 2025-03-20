@@ -102,7 +102,7 @@ public abstract class MixinChatScreen extends Screen implements IMixinChatScreen
         if (!Config.INSTANCE.getValues().getEnabled()) {
             return width;
         }
-        return chatPlus$w + 1;
+        return chatPlus$w - 5;
     }
 
     @ModifyArg(method = "init", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/ChatScreen$1;<init>(Lnet/minecraft/client/gui/screens/ChatScreen;Lnet/minecraft/client/gui/Font;IIIILnet/minecraft/network/chat/Component;)V"), index = 5)
@@ -121,7 +121,7 @@ public abstract class MixinChatScreen extends Screen implements IMixinChatScreen
         if (!Config.INSTANCE.getValues().getEnabled()) {
             return maxLength;
         }
-        return 256 * 5;
+        return Config.INSTANCE.getValues().getInputBoxSettings().getMaxInputBoxInputLength();
     }
 
     @ModifyArg(method = "init", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/EditBox;setCanLoseFocus(Z)V"))

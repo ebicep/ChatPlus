@@ -38,9 +38,8 @@ import java.util.function.Consumer
 
 object ConfigScreenImpl {
 
-    @JvmStatic
-    fun getConfigScreen(previousScreen: Screen? = null): Screen {
-//        return ClothConfigDemo.getConfigBuilderWithDemo().build()
+
+    private fun getBuilder(previousScreen: Screen?): ConfigBuilder {
         val builder: ConfigBuilder = ConfigBuilder.create()
             .setParentScreen(previousScreen)
             .setTitle(Component.translatable("chatPlus.title").withColor(MOD_COLOR))
@@ -50,8 +49,15 @@ object ConfigScreenImpl {
                 resetGlobalSortedTabs()
             }
             .transparentBackground()
-        builder.setGlobalized(true)
         builder.setGlobalizedExpanded(true)
+        return builder
+    }
+
+    @JvmStatic
+    fun getConfigScreen(previousScreen: Screen? = null): Screen {
+//        return ClothConfigDemo.getConfigBuilderWithDemo().build()
+        val builder: ConfigBuilder = getBuilder(previousScreen)
+        builder.setGlobalized(Config.values.globalizedConfig)
         val entryBuilder: ConfigEntryBuilder = builder.entryBuilder()
         addGeneralOptions(builder, entryBuilder)
         addHideChatOptions(builder, entryBuilder)
@@ -75,8 +81,31 @@ object ConfigScreenImpl {
         return builder.build()
     }
 
+    @JvmStatic
+    fun getTabEditorScreen(previousScreen: Screen? = null, chatTab: ChatTab): Screen {
+        val builder: ConfigBuilder = getBuilder(previousScreen)
+        val entryBuilder: ConfigEntryBuilder = builder.entryBuilder()
+        val tabCategory = builder.getOrCreateCategory(Component.translatable("chatPlus.chatWindow.tabSettings.chatTabs.title"))
+        getTabEntries(entryBuilder, chatTab).forEach {
+            tabCategory.addEntry(it)
+        }
+        return builder.build()
+    }
+
+    @JvmStatic
+    fun getWindowEditorScreen(previousScreen: Screen? = null, chatWindow: ChatWindow): Screen {
+        val builder: ConfigBuilder = getBuilder(previousScreen)
+        val entryBuilder: ConfigEntryBuilder = builder.entryBuilder()
+        val windowCategory = builder.getOrCreateCategory(Component.translatable("chatPlus.chatWindowsTabs.title"))
+        getWindowEntries(entryBuilder, chatWindow).forEach {
+            windowCategory.addEntry(it)
+        }
+        return builder.build()
+    }
+
     private fun addGeneralOptions(builder: ConfigBuilder, entryBuilder: ConfigEntryBuilder) {
         builder.getOrCreateCategory(Component.translatable("chatPlus.general").withColor(MOD_COLOR)).with(
+            entryBuilder.booleanToggle("chatPlus.chatSettings.globalizedConfig", Config.values.globalizedConfig) { Config.values.globalizedConfig = it },
             entryBuilder.booleanToggle("chatPlus.chatSettings.toggle", Config.values.enabled) { Config.values.enabled = it },
             entryBuilder.booleanToggle("chatPlus.chatSettings.addMessagesIfDisabled", Config.values.addMessagesIfDisabled) { Config.values.addMessagesIfDisabled = it },
             entryBuilder.booleanToggle("chatPlus.chatSettings.showVanillaWhenUnfocused", Config.values.showVanillaWhenUnfocused) { Config.values.showVanillaWhenUnfocused = it },
@@ -122,25 +151,50 @@ object ConfigScreenImpl {
                     Config.values.timestampSettings.chatTimestampModeType
                 ) { Config.values.timestampSettings.chatTimestampModeType = it },
             ).build(),
-            entryBuilder.startSubCategory(Component.translatable("chatPlus.chatSettings.inputOverFlowAutoFill")).with(
+            entryBuilder.startSubCategory(Component.translatable("chatPlus.chatSettings.inputBoxSettings")).with(
                 entryBuilder.booleanToggle(
-                    "chatPlus.chatSettings.inputOverFlowAutoFill.enabled",
-                    Config.values.inputOverFlowAutoFillSettings.enabled
-                ) { Config.values.inputOverFlowAutoFillSettings.enabled = it },
+                    "chatPlus.chatSettings.inputBoxSettings.normalizeInputWhileTyping",
+                    Config.values.inputBoxSettings.normalizeInputWhileTyping
+                ) { Config.values.inputBoxSettings.normalizeInputWhileTyping = it },
+                entryBuilder.intField(
+                    "chatPlus.chatSettings.inputBoxSettings.maxInputBoxInputLength",
+                    Config.values.inputBoxSettings.maxInputBoxInputLength,
+                    error = {
+                        if (it <= 0) {
+                            "chatPlus.chatSettings.inputBoxSettings.maxInputBoxInputLength.error"
+                        } else {
+                            ""
+                        }
+                    }
+                ) { Config.values.inputBoxSettings.maxInputBoxInputLength = it },
                 entryBuilder.booleanToggle(
-                    "chatPlus.chatSettings.inputOverFlowAutoFill.onlyCycleOnEnter",
-                    Config.values.inputOverFlowAutoFillSettings.onlyOnEnter
-                ) { Config.values.inputOverFlowAutoFillSettings.onlyOnEnter = it },
-                entryBuilder.enumSelector(
-                    "chatPlus.chatSettings.inputOverFlowAutoFill.autoFillCommandInteraction",
-                    InputOverFlowAutoFill.AutoFillCommandInteraction::class.java,
-                    Config.values.inputOverFlowAutoFillSettings.autoFillCommandInteraction
-                ) { Config.values.inputOverFlowAutoFillSettings.autoFillCommandInteraction = it },
-                entryBuilder.enumSelector(
-                    "chatPlus.chatSettings.inputOverFlowAutoFill.queueMode",
-                    InputOverFlowAutoFill.QueueMode::class.java,
-                    Config.values.inputOverFlowAutoFillSettings.queueMode
-                ) { Config.values.inputOverFlowAutoFillSettings.queueMode = it },
+                    "chatPlus.chatSettings.inputBoxSettings.showInputBoxInputLength",
+                    Config.values.inputBoxSettings.showInputBoxInputLength
+                ) { Config.values.inputBoxSettings.showInputBoxInputLength = it },
+                entryBuilder.alphaField(
+                    "chatPlus.chatSettings.inputBoxSettings.showInputBoxInputLengthBackgroundColor",
+                    Config.values.inputBoxSettings.showInputBoxInputLengthBackgroundColor
+                ) { Config.values.inputBoxSettings.showInputBoxInputLengthBackgroundColor = it },
+                entryBuilder.startSubCategory(Component.translatable("chatPlus.chatSettings.inputBoxSettings.inputOverFlowAutoFill")).with(
+                    entryBuilder.booleanToggle(
+                        "chatPlus.chatSettings.inputBoxSettings.inputOverFlowAutoFill.enabled",
+                        Config.values.inputOverFlowAutoFillSettings.enabled
+                    ) { Config.values.inputOverFlowAutoFillSettings.enabled = it },
+                    entryBuilder.booleanToggle(
+                        "chatPlus.chatSettings.inputBoxSettings.inputOverFlowAutoFill.onlyCycleOnEnter",
+                        Config.values.inputOverFlowAutoFillSettings.onlyOnEnter
+                    ) { Config.values.inputOverFlowAutoFillSettings.onlyOnEnter = it },
+                    entryBuilder.enumSelector(
+                        "chatPlus.chatSettings.inputBoxSettings.inputOverFlowAutoFill.autoFillCommandInteraction",
+                        InputOverFlowAutoFill.AutoFillCommandInteraction::class.java,
+                        Config.values.inputOverFlowAutoFillSettings.autoFillCommandInteraction
+                    ) { Config.values.inputOverFlowAutoFillSettings.autoFillCommandInteraction = it },
+                    entryBuilder.enumSelector(
+                        "chatPlus.chatSettings.inputBoxSettings.inputOverFlowAutoFill.queueMode",
+                        InputOverFlowAutoFill.QueueMode::class.java,
+                        Config.values.inputOverFlowAutoFillSettings.queueMode
+                    ) { Config.values.inputOverFlowAutoFillSettings.queueMode = it },
+                ).build(),
             ).build(),
             entryBuilder.startSubCategory(Component.translatable("chatPlus.chatSettings.messageImagePreview")).with(
                 entryBuilder.booleanToggle(
@@ -305,6 +359,14 @@ object ConfigScreenImpl {
     private fun addChatWindowsTabsOption(builder: ConfigBuilder, entryBuilder: ConfigEntryBuilder) {
         builder.getOrCreateCategory(Component.translatable("chatPlus.chatWindowsTabs.title").withStyle(ChatFormatting.GOLD)).with(
             entryBuilder.booleanToggle(
+                "chatPlus.chatWindow.tabSettings.chatTabs.tabEditorScreen.toggle",
+                Config.values.tabEditorScreen
+            ) { Config.values.tabEditorScreen = it },
+            entryBuilder.booleanToggle(
+                "chatPlus.chatWindow.tabSettings.chatTabs.windowEditorScreen.toggle",
+                Config.values.windowEditorScreen
+            ) { Config.values.windowEditorScreen = it },
+            entryBuilder.booleanToggle(
                 "chatPlus.chatWindow.tabSettings.chatTabs.arrowCycleTabEnabled.toggle",
                 Config.values.arrowCycleTabEnabled
             ) { Config.values.arrowCycleTabEnabled = it },
@@ -338,21 +400,26 @@ object ConfigScreenImpl {
                         window.renderer.updateCachedDimension()
                     }
                 },
-                Config.values.chatWindows.size > 0,
+                Config.values.chatWindows.size > 1,
                 { ChatWindow() },
                 { window ->
-                    listOf(
-                        getWindowGeneralCategory(entryBuilder, window).build(),
-                        getWindowPaddingCategory(entryBuilder, window).build(),
-                        getWindowOutlineCategory(entryBuilder, window).build(),
-                        getWindowTabsCategory(entryBuilder, window).build(),
-                        getAutoTabCreatorCategory(entryBuilder, window).build()
-                    )
+                    getWindowEntries(entryBuilder, window)
                 },
                 { Component.literal("Window").withStyle(if (it.generalSettings.disabled) ChatFormatting.RED else ChatFormatting.GREEN) }
             )
         )
     }
+
+    private fun getWindowEntries(
+        entryBuilder: ConfigEntryBuilder,
+        window: ChatWindow
+    ): List<SubCategoryListEntry> = listOf(
+        getWindowGeneralCategory(entryBuilder, window).build(),
+        getWindowPaddingCategory(entryBuilder, window).build(),
+        getWindowOutlineCategory(entryBuilder, window).build(),
+        getWindowTabsCategory(entryBuilder, window).build(),
+        getAutoTabCreatorCategory(entryBuilder, window).build()
+    )
 
     private fun getWindowOutlineCategory(
         entryBuilder: ConfigEntryBuilder,
@@ -431,64 +498,69 @@ object ConfigScreenImpl {
                 "chatPlus.chatWindow.tabSettings.chatTabs.title",
                 window.tabSettings.tabs,
                 { window.tabSettings.tabs = it },
-                window.tabSettings.tabs.size > 0,
+                window.tabSettings.tabs.size > 1,
                 { ChatTab(window, "", "") },
                 { value ->
-                    listOf(
-                        entryBuilder.stringField("chatPlus.chatWindow.tabSettings.chatTabs.name", value.name, { value.name = it }),
-                        entryBuilder.stringField("chatPlus.chatWindow.tabSettings.chatTabs.pattern", value.pattern, { value.pattern = it }),
-                        entryBuilder.booleanToggle(
-                            "chatPlus.chatWindow.tabSettings.chatTabs.formatted.toggle",
-                            value.formatted
-                        ) { value.formatted = it },
-                        entryBuilder.stringField("chatPlus.chatWindow.tabSettings.chatTabs.autoPrefix", value.autoPrefix, { value.autoPrefix = it }),
-                        getCustomListOption(
-                            "chatPlus.chatWindow.tabSettings.chatTabs.serverTabPatterns",
-                            value.serverTabPatterns,
-                            { value.serverTabPatterns = it },
-                            true,
-                            { ServerTabPattern("", "") },
-                            { v ->
-                                listOf(
-                                    entryBuilder.stringField("chatPlus.chatWindow.tabSettings.chatTabs.serverTabPattern", v.pattern, { v.pattern = it }),
-                                    entryBuilder.stringField("chatPlus.chatWindow.tabSettings.chatTabs.pattern", v.chatPattern.pattern, { v.chatPattern.pattern = it }),
-                                    entryBuilder.booleanToggle(
-                                        "chatPlus.chatWindow.tabSettings.chatTabs.formatted.toggle",
-                                        v.chatPattern.formatted
-                                    ) { v.chatPattern.formatted = it },
-                                    entryBuilder.stringField("chatPlus.chatWindow.tabSettings.chatTabs.autoPrefix", v.autoPrefix, { v.autoPrefix = it }),
-                                )
-                            },
-                            { Component.literal(it.pattern) },
-                            false
-                        ),
-                        entryBuilder.intField(
-                            "chatPlus.chatWindow.tabSettings.chatTabs.priority",
-                            value.priority
-                        ) { value.priority = it },
-                        entryBuilder.booleanToggle(
-                            "chatPlus.chatWindow.tabSettings.chatTabs.alwaysAdd",
-                            value.alwaysAdd
-                        ) { value.alwaysAdd = it },
-                        entryBuilder.booleanToggle(
-                            "chatPlus.chatWindow.tabSettings.chatTabs.skipOthers",
-                            value.skipOthers
-                        ) { value.skipOthers = it },
-                        entryBuilder.booleanToggle(
-                            "chatPlus.chatWindow.tabSettings.chatTabs.commandsOverrideAutoPrefix",
-                            value.commandsOverrideAutoPrefix
-                        ) { value.commandsOverrideAutoPrefix = it },
-                        entryBuilder.booleanToggle(
-                            "chatPlus.chatWindow.tabSettings.chatTabs.temporary",
-                            value.temporary
-                        ) { value.temporary = it },
-                    )
+                    getTabEntries(entryBuilder, value)
                 },
                 { Component.literal(it.name) },
                 false
             )
         )
     }
+
+    private fun getTabEntries(
+        entryBuilder: ConfigEntryBuilder,
+        value: ChatTab
+    ): List<TooltipListEntry<out Any?>> = listOf(
+        entryBuilder.stringField("chatPlus.chatWindow.tabSettings.chatTabs.name", value.name, { value.name = it }),
+        entryBuilder.stringField("chatPlus.chatWindow.tabSettings.chatTabs.pattern", value.pattern, { value.pattern = it }),
+        entryBuilder.booleanToggle(
+            "chatPlus.chatWindow.tabSettings.chatTabs.formatted.toggle",
+            value.formatted
+        ) { value.formatted = it },
+        entryBuilder.stringField("chatPlus.chatWindow.tabSettings.chatTabs.autoPrefix", value.autoPrefix, { value.autoPrefix = it }),
+        getCustomListOption(
+            "chatPlus.chatWindow.tabSettings.chatTabs.serverTabPatterns",
+            value.serverTabPatterns,
+            { value.serverTabPatterns = it },
+            true,
+            { ServerTabPattern("", "") },
+            { v ->
+                listOf(
+                    entryBuilder.stringField("chatPlus.chatWindow.tabSettings.chatTabs.serverTabPattern", v.pattern, { v.pattern = it }),
+                    entryBuilder.stringField("chatPlus.chatWindow.tabSettings.chatTabs.pattern", v.chatPattern.pattern, { v.chatPattern.pattern = it }),
+                    entryBuilder.booleanToggle(
+                        "chatPlus.chatWindow.tabSettings.chatTabs.formatted.toggle",
+                        v.chatPattern.formatted
+                    ) { v.chatPattern.formatted = it },
+                    entryBuilder.stringField("chatPlus.chatWindow.tabSettings.chatTabs.autoPrefix", v.autoPrefix, { v.autoPrefix = it }),
+                )
+            },
+            { Component.literal(it.pattern) },
+            false
+        ),
+        entryBuilder.intField(
+            "chatPlus.chatWindow.tabSettings.chatTabs.priority",
+            value.priority
+        ) { value.priority = it },
+        entryBuilder.booleanToggle(
+            "chatPlus.chatWindow.tabSettings.chatTabs.alwaysAdd",
+            value.alwaysAdd
+        ) { value.alwaysAdd = it },
+        entryBuilder.booleanToggle(
+            "chatPlus.chatWindow.tabSettings.chatTabs.skipOthers",
+            value.skipOthers
+        ) { value.skipOthers = it },
+        entryBuilder.booleanToggle(
+            "chatPlus.chatWindow.tabSettings.chatTabs.commandsOverrideAutoPrefix",
+            value.commandsOverrideAutoPrefix
+        ) { value.commandsOverrideAutoPrefix = it },
+        entryBuilder.booleanToggle(
+            "chatPlus.chatWindow.tabSettings.chatTabs.temporary",
+            value.temporary
+        ) { value.temporary = it },
+    )
 
     private fun getAutoTabCreatorCategory(
         entryBuilder: ConfigEntryBuilder,
@@ -1122,6 +1194,19 @@ object ConfigScreenImpl {
                     Config.values.speechToTextSelectedAudioModel = str
                 }
             ),
+            entryBuilder.stringField(
+                "chatPlus.speechToText.speechToTextCharset",
+                Config.values.speechToTextCharset,
+                { Config.values.speechToTextCharset = it },
+                error = {
+                    try {
+                        charset(it)
+                        ""
+                    } catch (_: Exception) {
+                        "chatPlus.speechToText.speechToTextCharSet.invalid"
+                    }
+                }
+            ),
             entryBuilder.keyCodeOption(
                 "key.speechToText.ptt",
                 Config.values.speechToTextMicrophoneKey
@@ -1180,10 +1265,24 @@ object ConfigScreenImpl {
     }
 
 
-    private fun ConfigEntryBuilder.stringField(translatable: String, variable: String, saveConsumer: Consumer<String>, maxWidth: Int? = null): StringListEntry {
+    private fun ConfigEntryBuilder.stringField(
+        translatable: String,
+        variable: String,
+        saveConsumer: Consumer<String>,
+        maxWidth: Int? = null,
+        error: (String) -> String = { "" }
+    ): StringListEntry {
         return startStrField(Component.translatable(translatable), variable)
             .setDefaultValue(variable)
             .setTooltip(Optional.of(ComponentUtil.splitLines(Component.translatable("$translatable.tooltip"), maxWidth).toTypedArray()))
+            .setErrorSupplier {
+                val str = error.invoke(it)
+                if (str.isEmpty()) {
+                    Optional.empty()
+                } else {
+                    Optional.of(Component.translatable(str))
+                }
+            }
             .setSaveConsumer {
                 saveConsumer.accept(it)
                 queueUpdateConfig = true
@@ -1253,21 +1352,31 @@ object ConfigScreenImpl {
     private fun ConfigEntryBuilder.linePriorityField(
         translatable: String,
         variable: Int,
+        error: (Int) -> String = { "" },
         saveConsumer: Consumer<Int>
     ): IntegerListEntry {
-        return intField(translatable, variable, "chatPlus.linePriority.tooltip", saveConsumer)
+        return intField(translatable, variable, "chatPlus.linePriority.tooltip", error, saveConsumer)
     }
 
     private fun ConfigEntryBuilder.intField(
         translatable: String,
         variable: Int,
         tooltip: String = "$translatable.tooltip",
-        saveConsumer: Consumer<Int>
+        error: (Int) -> String = { "" },
+        saveConsumer: Consumer<Int>,
     ): IntegerListEntry {
         return startIntField(Component.translatable(translatable), variable)
             .setDefaultValue(variable)
             .setTooltip(Optional.of(ComponentUtil.splitLines(Component.translatable(tooltip)).toTypedArray()))
             .setSaveConsumer { saveConsumer.accept(it) }
+            .setErrorSupplier {
+                val str = error.invoke(it)
+                if (str.isEmpty()) {
+                    Optional.empty()
+                } else {
+                    Optional.of(Component.translatable(str))
+                }
+            }
             .build()
     }
 
@@ -1285,7 +1394,7 @@ object ConfigScreenImpl {
             Component.translatable(translatable),
             list,
             true,
-            { Optional.empty() },
+            { Optional.of(ComponentUtil.splitLines(Component.translatable("$translatable.tooltip")).toTypedArray()) },
             saveConsumer,
             { mutableListOf() },
             Component.literal("Reset"),

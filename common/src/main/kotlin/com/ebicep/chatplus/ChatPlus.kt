@@ -1,13 +1,8 @@
 package com.ebicep.chatplus
 
 import com.ebicep.chatplus.config.Config
-import com.ebicep.chatplus.events.EventBus.post
 import com.ebicep.chatplus.events.Events
-import com.ebicep.chatplus.features.FeatureManager
-import com.ebicep.chatplus.features.chattabs.AddNewMessageEvent
-import com.ebicep.chatplus.features.chattabs.ChatTab
-import com.ebicep.chatplus.features.chattabs.SkipNewMessageEvent
-import com.ebicep.chatplus.hud.ChatManager.globalSortedTabs
+import com.ebicep.chatplus.features.internal.FeatureManager
 import com.ebicep.chatplus.translator.LanguageManager
 import com.ebicep.chatplus.util.ComponentUtil.withColor
 import net.minecraft.ChatFormatting
@@ -36,57 +31,7 @@ object ChatPlus {
     }
 
     fun doTest() {
-        val component = Component.literal("[You -> Bob_123] hello")
-//        val component = Component.literal("[Bob_123 -> You] hello")
-//        val component = Component.literal("[GameManager] hello")
-        val addMessagesTo: MutableList<ChatTab> = ArrayList()
-        var lastPriority: Int? = null
-        for (chatTab in globalSortedTabs) {
-            val priority = chatTab.priority
-            val alwaysAdd = chatTab.alwaysAdd
-            if (lastPriority != null && lastPriority > priority && !alwaysAdd) {
-                continue
-            }
-            if (chatTab.matches(component.string)) {
-                addMessagesTo.add(chatTab)
-                if (chatTab.skipOthers) {
-                    break
-                }
-                if (!alwaysAdd) {
-                    lastPriority = priority
-                }
-            }
-        }
-        if (!addMessagesTo.isEmpty()) {
-            val messageEvent = AddNewMessageEvent(
-                component.copy(),
-                component,
-                null,
-                null,
-                Minecraft.getInstance().gui.guiTicks,
-                null,
-            )
-            post(AddNewMessageEvent::class.java, messageEvent)
-            if (messageEvent.returnFunction) {
-                return
-            }
-            for (chatTab in addMessagesTo) {
-                chatTab.addNewMessage(messageEvent)
-            }
-        } else {
-            val messageEvent = SkipNewMessageEvent(
-                component.copy(),
-                component,
-                null,
-                null,
-                Minecraft.getInstance().gui.guiTicks,
-                null,
-            )
-            post(SkipNewMessageEvent::class.java, messageEvent)
-        }
-        for (i in 1..500_000) {
-//            ChatManager.globalSelectedTab.addNewMessage(Component.literal("Test $i"), null, 0, null)
-        }
+        Minecraft.getInstance().player!!.connection.sendChat("                 X       Y")
     }
 
     fun isEnabled(): Boolean {

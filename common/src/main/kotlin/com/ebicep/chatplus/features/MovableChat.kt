@@ -30,6 +30,7 @@ import com.ebicep.chatplus.mixin.IMixinChatScreen
 import com.ebicep.chatplus.util.ComponentUtil.withColor
 import com.ebicep.chatplus.util.GraphicsUtil
 import com.ebicep.chatplus.util.GraphicsUtil.createPose
+import com.ebicep.chatplus.util.GraphicsUtil.drawString0
 import com.ebicep.chatplus.util.GraphicsUtil.fill0
 import com.ebicep.chatplus.util.GraphicsUtil.guiForward
 import com.ebicep.chatplus.util.GraphicsUtil.translate0
@@ -511,15 +512,13 @@ object MovableChat {
         poseStack.createPose {
             // below cursor - if tab is outside tab bar
             poseStack.guiForward(GraphicsUtil.GuiForwardType.MovableChatDebug)
-            guiGraphics.drawString(
-                Minecraft.getInstance().font,
+            guiGraphics.drawString0(
                 "$outsideTabBar",
                 lastMouseX + 5,
                 lastMouseY + 45,
                 0xFF5050
             )
-            guiGraphics.drawString(
-                Minecraft.getInstance().font,
+            guiGraphics.drawString0(
                 "$innerTabXOffset | $innerTabYOffset",
                 lastMouseX + 5,
                 lastMouseY + 55,
@@ -529,15 +528,13 @@ object MovableChat {
         poseStack.createPose {
             // below cursor - offset from tab start position
             poseStack.translate0(x = chatTab.xStart, y = chatTab.yStart, z = 100)
-            guiGraphics.drawString(
-                Minecraft.getInstance().font,
+            guiGraphics.drawString0(
                 "movingTabXOffset: $movingTabXOffset",
                 30,
                 -20,
                 0xFF5050
             )
-            guiGraphics.drawString(
-                Minecraft.getInstance().font,
+            guiGraphics.drawString0(
                 "movingTabYOffset: $movingTabYOffset",
                 30,
                 -10,
@@ -555,15 +552,13 @@ object MovableChat {
         poseStack.createPose {
             poseStack.translate0(z = 1000)
             // tab mouse start position (bottom of cursor)
-            guiGraphics.drawString(
-                Minecraft.getInstance().font,
+            guiGraphics.drawString0(
                 "$movingTabMouseXStart",
                 lastMouseX + 5,
                 lastMouseY + 25,
                 0xFF5050
             )
-            guiGraphics.drawString(
-                Minecraft.getInstance().font,
+            guiGraphics.drawString0(
                 "$movingTabMouseYStart",
                 lastMouseX + 5,
                 lastMouseY + 35,
@@ -762,7 +757,13 @@ object MovableChat {
     }
 
     @Serializable
-    data class InputBoxSettings(var startY: Int = -PADDED_INPUT_BOX_HEIGHT) {
+    data class InputBoxSettings(
+        var startY: Int = -PADDED_INPUT_BOX_HEIGHT,
+        var normalizeInputWhileTyping: Boolean = false,
+        var maxInputBoxInputLength: Int = 256 * 5,
+        var showInputBoxInputLength: Boolean = true,
+        var showInputBoxInputLengthBackgroundColor: Int = Color(0, 0, 0, 0).rgb,
+    ) {
 
         fun getCalculatedStartY(): Int {
             var start = startY

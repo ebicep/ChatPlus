@@ -16,6 +16,7 @@ import com.ebicep.chatplus.hud.ChatManager.resetGlobalSortedTabs
 import com.ebicep.chatplus.util.GraphicsUtil
 import com.ebicep.chatplus.util.GraphicsUtil.createPose
 import com.ebicep.chatplus.util.GraphicsUtil.drawImage
+import com.ebicep.chatplus.util.GraphicsUtil.drawString0
 import com.ebicep.chatplus.util.GraphicsUtil.guiForward
 import com.ebicep.chatplus.util.GraphicsUtil.translate0
 import com.ebicep.chatplus.util.KotlinUtil.reduceAlpha
@@ -44,9 +45,15 @@ class TabSettings {
     @Serializable(with = ChatTabSerializer::class)
     var tabs: MutableList<ChatTab> = mutableListOf()
         set(value) {
-            field = value
+            field = if (value.isEmpty()) {
+                val defaultTab = createDefaultTab()
+                defaultTab.chatWindow = chatWindow
+                mutableListOf(defaultTab)
+            } else {
+                value
+            }
             selectedTabIndex = Mth.clamp(selectedTabIndex, 0, tabs.size - 1)
-            value.forEach { it.chatWindow = chatWindow }
+            field.forEach { it.chatWindow = chatWindow }
             resetSortedChatTabs()
         }
 
@@ -258,8 +265,7 @@ class TabSettings {
                 backgroundColor
             )
             poseStack.guiForward()
-            guiGraphics.drawString(
-                Minecraft.getInstance().font,
+            guiGraphics.drawString0(
                 chatTab.name,
                 ChatTab.PADDING,
                 ChatTab.PADDING + ChatTab.PADDING / 2,

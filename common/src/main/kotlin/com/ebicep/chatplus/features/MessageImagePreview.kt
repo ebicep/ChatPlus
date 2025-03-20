@@ -224,6 +224,7 @@ object MessageImagePreview {
         val url = URI(validURL).toURL()
         val urlString = url.toString()
         if (urlString in imageCache && imageCache[urlString] != null) {
+            afterLoad.invoke(urlString)
             return
         }
         ChatPlus.LOGGER.info("Loading Image from URL: $urlString")

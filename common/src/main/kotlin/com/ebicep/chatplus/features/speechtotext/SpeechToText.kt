@@ -33,6 +33,7 @@ import org.vosk.Model
 import org.vosk.Recognizer
 import java.awt.Color
 import java.io.File
+import java.nio.charset.StandardCharsets
 import java.util.regex.Pattern
 import kotlin.math.min
 
@@ -316,7 +317,12 @@ class MicrophoneThread : Thread("ChatPlusMicrophoneThread") {
                     ChatPlus.LOGGER.info("Data: ${totalData.size}")
                     getMicrophone()?.stopRecording()
                     speechToText(totalData.toShortArray())
-                    lastSpokenMessage = JsonParser.parseString(recognizer!!.finalResult).asJsonObject.get("text")?.asString
+                    val asString = JsonParser.parseString(recognizer!!.finalResult).asJsonObject.get("text")?.asString
+                    lastSpokenMessage = if (asString == null) {
+                        null
+                    } else {
+                        String(asString.toByteArray(charset(Config.values.speechToTextCharset)), StandardCharsets.UTF_8)
+                    }
                     quickSendTimer = System.currentTimeMillis() + 3000
                     ChatPlus.LOGGER.info("Final: $lastSpokenMessage")
                     if (lastSpokenMessage.isNullOrBlank()) {
@@ -352,6 +358,9 @@ class MicrophoneThread : Thread("ChatPlusMicrophoneThread") {
                 }
             } catch (e: Exception) {
                 ChatPlus.LOGGER.error(e)
+                ChatPlus.sendMessage(Component.literal("Problem recording speech, disabling Speech to Text: ${e.message}").withStyle {
+                    it.withColor(ChatFormatting.RED)
+                })
                 disabled = true
             }
         }
@@ -393,7 +402,7 @@ class MicrophoneThread : Thread("ChatPlusMicrophoneThread") {
             microphone = SpeechToText.createMicrophone()
         } catch (e: MicrophoneException) {
             ChatPlus.sendMessage(Component.literal("Invalid Microphone, disabling Speech to Text.").withStyle {
-                it.withColor(ChatFormatting.GREEN)
+                it.withColor(ChatFormatting.RED)
             })
             disabled = true
             ChatPlus.LOGGER.error(e)

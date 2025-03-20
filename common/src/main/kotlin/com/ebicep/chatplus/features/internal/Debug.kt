@@ -105,7 +105,6 @@ object Debug {
                 pose.translate0(z = 5000)
                 var string = "${renderer.internalHeight}"
                 guiGraphics.drawString0(
-                    Minecraft.getInstance().font,
                     string,
                     renderer.rescaledX - Minecraft.getInstance().font.width(string) - 1,
                     renderer.rescaledY - it.displayMessageIndex * renderer.lineHeight - 20,
@@ -113,7 +112,6 @@ object Debug {
                 )
                 string = renderer.getUpdatedHeight(HeightType.ADJUSTED).toString()
                 guiGraphics.drawString0(
-                    Minecraft.getInstance().font,
                     string,
                     renderer.rescaledX - Minecraft.getInstance().font.width(string) - 1,
                     renderer.rescaledY - it.displayMessageIndex * renderer.lineHeight - 10,
@@ -121,14 +119,12 @@ object Debug {
                 )
                 string = renderer.getTotalLineHeight().toString()
                 guiGraphics.drawString0(
-                    Minecraft.getInstance().font,
                     string,
                     renderer.rescaledX - Minecraft.getInstance().font.width(string) - 1,
                     renderer.rescaledY - it.displayMessageIndex * renderer.lineHeight,
                     0x00FF00
                 )
                 guiGraphics.drawString0(
-                    Minecraft.getInstance().font,
                     "${renderer.rescaledEndX},${renderer.rescaledY - it.displayMessageIndex * renderer.lineHeight}",
                     renderer.rescaledEndX,
                     renderer.rescaledY - it.displayMessageIndex * renderer.lineHeight - 10,

@@ -12,6 +12,7 @@ import com.ebicep.chatplus.hud.*
 import com.ebicep.chatplus.hud.ChatManager.selectedWindow
 import com.ebicep.chatplus.mixin.IMixinChatScreen
 import net.minecraft.client.Minecraft
+import net.minecraft.client.gui.screens.Screen
 import net.minecraft.util.Mth
 
 
@@ -20,8 +21,6 @@ const val CHAT_TAB_Y_OFFSET = 1 // offset from text box
 const val CHAT_TAB_X_SPACE = 1 // space between categories
 
 object ChatTabs {
-
-    val DefaultTab: ChatTab = createDefaultTab()
 
     fun createDefaultTab(): ChatTab {
         return ChatTab("All", "(?s).*", alwaysAdd = true)
@@ -61,12 +60,24 @@ object ChatTabs {
             if (selectedWindow.tabSettings.hideTabs) {
                 return@register
             }
+            val mouseX = it.mouseX
+            val mouseY = it.mouseY
             if (it.button == 0) {
-                selectedWindow.tabSettings.handleClickedTab(it.mouseX, it.mouseY)
+                selectedWindow.tabSettings.handleClickedTab(mouseX, mouseY)
+            } else if (it.button == 1 && Config.values.tabEditorScreen) {
+                val clickedTab = selectedWindow.tabSettings.getClickedTab(mouseX, mouseY) ?: return@register
+                if (Config.values.windowEditorScreen && Screen.hasShiftDown()) {
+                    Minecraft.getInstance().setScreen(Editor.windowEditor(it.screen, selectedWindow))
+                } else {
+                    Minecraft.getInstance().setScreen(Editor.tabEditor(it.screen, clickedTab))
+                }
             }
         }
         // tab auto prefix
         EventBus.register<ChatScreenSendMessagePreEvent> {
+            if (it.message.isEmpty()) {
+                return@register
+            }
             if (it.message.startsWith("/") && ChatManager.globalSelectedTab.commandsOverrideAutoPrefix) {
                 return@register
             }

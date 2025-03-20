@@ -324,7 +324,6 @@ object ScreenshotChat {
                 )
                 // text
                 guiGraphics.drawString0(
-                    Minecraft.getInstance().font,
                     line.content,
                     renderer.rescaledX,
                     verticalTextOffset,

@@ -27,6 +27,7 @@ import kotlinx.serialization.json.Json
 import net.minecraft.util.Mth
 import java.awt.Color
 import java.io.File
+import kotlin.math.max
 
 const val CONFIG_NAME = "${MOD_ID}-v2.5.0.json"
 val json = Json {
@@ -93,10 +94,16 @@ object Config {
         values.speechToTextReplace.forEach {
             it.updateRegex()
         }
+        try {
+            charset(values.speechToTextCharset)
+        } catch (_: Exception) {
+            values.speechToTextCharset = "UTF-8"
+        }
     }
 
     private fun correctValues() {
         values.maxCommandSuggestions = Mth.clamp(values.maxCommandSuggestions, 10, 30)
+        values.inputBoxSettings.maxInputBoxInputLength = max(1, values.inputBoxSettings.maxInputBoxInputLength)
         if (values.chatWindows.isEmpty()) {
             values.chatWindows.add(createDefaultWindow())
         }
@@ -112,6 +119,7 @@ object Config {
 @Serializable
 data class ConfigVariables(
     // general
+    var globalizedConfig: Boolean = true,
     var enabled: Boolean = true,
     var addMessagesIfDisabled: Boolean = false,
     var showVanillaWhenUnfocused: Boolean = false,
@@ -148,12 +156,13 @@ data class ConfigVariables(
     var animationDisableOnFocus: Boolean = false,
     var animationNewMessageTransitionTime: Int = 200,
     // windows
+    var tabEditorScreen: Boolean = true,
+    var windowEditorScreen: Boolean = true,
     var scrollCycleTabEnabled: Boolean = true,
     var arrowCycleTabEnabled: Boolean = true,
     var moveToTabWhenCycling: Boolean = true,
     var inputBoxAutoAdjustChatWindowEnabled: Boolean = true,
     var tabNotificationSettings: TabNotificationSettings = TabNotificationSettings(),
-    var chatWindows: MutableList<ChatWindow> = mutableListOf(),
     // moving chat
     var movableChatEnabled: Boolean = true,
     var movableChatShowEnabledOnScreen: Boolean = true,
@@ -240,6 +249,7 @@ data class ConfigVariables(
     // speech to text
     var speechToTextEnabled: Boolean = true,
     var speechToTextToInputBox: Boolean = true,
+    var speechToTextCharset: String = "UTF-8",
     var speechToTextMicrophoneKey: InputConstants.Key = InputConstants.getKey("key.keyboard.b"),
     var speechToTextQuickSendKey: InputConstants.Key = InputConstants.getKey("key.keyboard.enter"),
     var speechToTextTranslateEnabled: Boolean = false,
@@ -249,6 +259,15 @@ data class ConfigVariables(
     var speechToTextAutoReplacePlayersMaxSearchDepth: Int = 3,
     var speechToTextReplace: MutableList<SpeechToTextReplace> = mutableListOf(),
 ) {
+
+    var chatWindows: MutableList<ChatWindow> = mutableListOf()
+        set(value) {
+            field = if (value.isEmpty()) {
+                mutableListOf(createDefaultWindow())
+            } else {
+                value
+            }
+        }
 
     // speech to text
     var speechToTextSampleRate: Int = 48000

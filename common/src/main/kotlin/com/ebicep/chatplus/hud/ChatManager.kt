@@ -23,7 +23,9 @@ object ChatManager {
     val globalSelectedTab: ChatTab
         get() {
             if (selectedWindow.tabSettings.tabs.isEmpty()) {
-                selectedWindow.tabSettings.tabs.add(createDefaultTab())
+                val defaultTab = createDefaultTab()
+                defaultTab.chatWindow = selectedWindow
+                selectedWindow.tabSettings.tabs.add(defaultTab)
                 selectedWindow.tabSettings.selectedTabIndex = 0
                 queueUpdateConfig = true
             }
