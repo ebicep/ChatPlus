@@ -53,7 +53,8 @@ object ComponentUtil {
 
     enum class LiteralIgnoredType {
         TIMESTAMP,
-        COMPACT
+        COMPACT,
+        TRANSLATE
     }
 
 
@@ -178,6 +179,92 @@ object ComponentUtil {
         }
 
         return widthRanges
+    }
+
+    private val START_COLOR_REGEX = Regex("^§[0-9A-FK-OR]", RegexOption.IGNORE_CASE)
+    private val COLOR_REGEX = Regex("§([0-9A-FK-OR])", RegexOption.IGNORE_CASE)
+
+//    fun FormattedText.getColoredString(): String {
+//        var string = ""
+//        var previousColor = ""
+//        this.visit({ style: Style, str: String ->
+//            val color = style.color
+//            val colorString = if (color == null) {
+//                "#ffffff"
+//            } else {
+//                "#${Integer.toHexString(color.value)}"
+//            }
+//            val text = formatString(str, colorString)
+//            string += if (colorString == previousColor || START_COLOR_REGEX.containsMatchIn(str)) {
+//                text
+//            } else {
+//                colorString + text
+//            }
+//            previousColor = colorString
+//            Optional.empty<Any?>()
+//        }, Style.EMPTY)
+//        return string
+//    }
+
+    fun FormattedCharSequence.getColoredString(): String {
+        var string = ""
+        var previousStyleString = ""
+        this.accept { index: Int, style: Style, code: Int ->
+            var chr = code.toChar()
+            if (style.isObfuscated) {
+                chr = ' '
+            }
+            var styleString = style.getString()
+            if (previousStyleString == styleString) {
+                string += chr
+            } else {
+                string += styleString + chr
+                previousStyleString = styleString
+            }
+            true
+        }
+        return string
+    }
+
+    fun Component.getColoredString(): String {
+        return visualOrderText.getColoredString()
+    }
+
+    fun formatString(input: String, defaultColor: String): String {
+        return COLOR_REGEX.replace(input) { matchResult ->
+            val code = matchResult.groupValues[1]
+            val chatFormatting = ChatFormatting.getByCode(code[0])
+            if (chatFormatting != null && chatFormatting.color != null) {
+                String.format("#%06X", chatFormatting.color) // hex color in #RRGGBB format
+            } else if (code.equals("r", ignoreCase = true)) {
+                defaultColor
+            } else {
+                ""
+            }
+        }
+    }
+
+    fun Style.getString(): String {
+        var string = ""
+        if (this.color != null) {
+            string += "#${Integer.toHexString(this.color!!.value)}"
+        }
+        if (isBold) {
+            string += "&l"
+        }
+        if (isItalic) {
+            string += "&o"
+        }
+        if (isUnderlined) {
+            string += "&n"
+        }
+        if (isStrikethrough) {
+            string += "&m"
+        }
+        if (isObfuscated) {
+            string += "&k"
+        }
+        return string
     }
 
 }

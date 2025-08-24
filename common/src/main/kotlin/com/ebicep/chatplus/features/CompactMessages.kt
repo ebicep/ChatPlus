@@ -49,25 +49,38 @@ object CompactMessages {
                 if (!componentEquals(guiMessage.content, it.mutableComponent)) {
                     continue
                 }
-                message.timesRepeated++
                 // remove previous displayed message and update it
                 var addIndex = -1
                 var oldDisplayMessage: ChatTab.ChatPlusGuiMessageLine? = null
-                for (j in displayedMessages.size - 1 downTo 0) {
-                    val displayedMessage = displayedMessages[j]
-                    if (messages[i] === displayedMessage.linkedMessage) {
-                        displayedMessages.removeAt(j)
-                        if (displayedMessage.wrappedIndex == 0) {
-                            addIndex = j
-                            oldDisplayMessage = displayedMessage
-                            break
+                if (!Config.values.compactMessagesSendAsNew ||
+                    Config.values.compactMessagesSendAsNew && Config.values.compactMessagesDeleteDuplicate
+                ) {
+                    for (j in displayedMessages.size - 1 downTo 0) {
+                        val displayedMessage = displayedMessages[j]
+                        if (messages[i] === displayedMessage.linkedMessage) {
+                            displayedMessages.removeAt(j)
+                            if (displayedMessage.wrappedIndex == 0) {
+                                addIndex = j
+                                oldDisplayMessage = displayedMessage
+                                break
+                            }
                         }
                     }
+                }
+                it.chatPlusGuiMessage.timesRepeated = ++message.timesRepeated
+                it.mutableComponent.siblings.add(
+                    literalIgnored(
+                        formatString(it.chatPlusGuiMessage.timesRepeated.toString()),
+                        ComponentUtil.LiteralIgnoredType.COMPACT
+                    ).withStyle(COMPACT_STYLE)
+                )
+                if (Config.values.compactMessagesSendAsNew && Config.values.compactMessagesDeleteDuplicate) {
+                    messages.removeAt(i)
+                    break
                 }
                 if (addIndex == -1 || oldDisplayMessage == null) {
                     break
                 }
-                it.mutableComponent.siblings.add(literalIgnored(" (${message.timesRepeated})", ComponentUtil.LiteralIgnoredType.COMPACT).withStyle(COMPACT_STYLE))
                 val addedTime = if (Config.values.compactMessagesRefreshAddedTime) it.addedTime else oldDisplayMessage.line.addedTime
                 val displayMessageEvent = EventBus.post(
                     ChatTabAddDisplayMessageEvent(
@@ -101,7 +114,12 @@ object CompactMessages {
                 return@register
             }
             if (it.component.siblings.none { component -> component.contents is ComponentUtil.LiteralContentsIgnored }) {
-                it.component.siblings.add(literalIgnored(" (${it.linkedMessage.timesRepeated})", ComponentUtil.LiteralIgnoredType.COMPACT).withStyle(COMPACT_STYLE))
+                it.component.siblings.add(
+                    literalIgnored(
+                        formatString(it.linkedMessage.timesRepeated.toString()),
+                        ComponentUtil.LiteralIgnoredType.COMPACT
+                    ).withStyle(COMPACT_STYLE)
+                )
             }
         }
     }
@@ -117,6 +135,12 @@ object CompactMessages {
         override fun getTranslatableName(): Component {
             return translatable
         }
+    }
+
+    private fun formatString(value: String): String {
+        return Config.values.compactMessagesFormat
+            .replace("&", "§")
+            .replace("%VALUE%", value)
     }
 
     private fun componentEquals(component1: Component?, component2: Component?): Boolean {
@@ -189,6 +213,9 @@ object CompactMessages {
             if (hoverEvent1.action == HoverEvent.Action.SHOW_TEXT && hoverEvent2.action == HoverEvent.Action.SHOW_TEXT) {
                 val value1 = hoverEvent1.getValue(HoverEvent.Action.SHOW_TEXT)
                 val value2 = hoverEvent2.getValue(HoverEvent.Action.SHOW_TEXT)
+                if (ignoreTimestamps && value1 != null && isTimestampContents(value1) && value2 != null && isTimestampContents(value2)) {
+                    return true
+                }
                 return componentEquals(value1, value2)
             }
             return hoverEvent1 == hoverEvent2

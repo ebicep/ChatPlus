@@ -6,12 +6,10 @@ import com.ebicep.chatplus.features.chattabs.ChatTab
 import com.ebicep.chatplus.features.chatwindows.ChatWindow
 import com.ebicep.chatplus.hud.*
 import net.minecraft.client.gui.screens.Screen
-import java.awt.Color
 import java.util.*
 
 object SelectChat {
 
-    private val SELECT_COLOR = Color(186, 211, 252, 255).rgb
     private var rightClicking = false
     private var lastSelected: ChatTab.ChatPlusGuiMessageLine? = null
     var selectedMessages: MutableMap<ChatTab, MutableSet<ChatTab.ChatPlusGuiMessageLine>> = mutableMapOf()//Collections.newSetFromMap(IdentityHashMap())
@@ -118,7 +116,7 @@ object SelectChat {
             val selectedTab = it.chatWindow.tabSettings.selectedTab
             val selected = selectedMessages[selectedTab] ?: return@register
             if (selected.contains(it.chatPlusGuiMessageLine)) {
-                it.backgroundColor = SELECT_COLOR
+                it.backgroundColor = Config.values.selectChatColor
             }
         }
     }

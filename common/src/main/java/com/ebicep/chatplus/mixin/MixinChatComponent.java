@@ -72,7 +72,7 @@ public class MixinChatComponent {
             if (lastPriority != null && lastPriority > priority && !alwaysAdd) {
                 continue;
             }
-            if (chatTab.matches(component.getString())) {
+            if (chatTab.matches(component)) {
                 addMessagesTo.add(chatTab);
                 if (chatTab.getSkipOthers()) {
                     break;

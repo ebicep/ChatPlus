@@ -38,16 +38,16 @@ interface TextBarElement {
         currentY: Int,
         mouseX: Int,
         mouseY: Int,
-        partialTick: Float
+        partialTick: Float,
     )
 
-    fun fill(guiGraphics: GuiGraphics, currentX: Int, currentY: Int) {
+    fun fill(guiGraphics: GuiGraphics, currentX: Int, currentY: Int, color: Int = Minecraft.getInstance().options.getBackgroundColor(Int.MIN_VALUE)) {
         guiGraphics.fill(
             currentX,
             currentY,
             currentX + getPaddedWidth(),
             currentY + EDIT_BOX_DISPLAY_HEIGHT,
-            Minecraft.getInstance().options.getBackgroundColor(Int.MIN_VALUE)
+            color
         )
     }
 

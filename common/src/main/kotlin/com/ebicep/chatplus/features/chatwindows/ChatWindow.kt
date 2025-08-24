@@ -11,12 +11,16 @@ class ChatWindow {
     var generalSettings: GeneralSettings = GeneralSettings()
     var outlineSettings: OutlineSettings = OutlineSettings()
     var padding: Padding = Padding()
-    val renderer = ChatRenderer()
+    var renderer = ChatRenderer()
     var tabSettings: TabSettings = TabSettings()
     var autoTabCreator: AutoTabCreator = AutoTabCreator()
 
     init {
         ChatPlus.LOGGER.info("Create $this")
+        updateWindowReference()
+    }
+
+    fun updateWindowReference() {
         generalSettings.chatWindow = this
         tabSettings.chatWindow = this
         tabSettings.tabs.forEach {

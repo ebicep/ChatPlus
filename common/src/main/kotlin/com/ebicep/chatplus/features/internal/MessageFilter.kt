@@ -3,6 +3,7 @@ package com.ebicep.chatplus.features.internal
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
+import net.minecraft.ChatFormatting
 
 @Serializable
 open class MessageFilter {
@@ -24,5 +25,12 @@ open class MessageFilter {
 
     @Transient
     var regex: Regex = Regex("")
+
+    fun matches(message: String): Boolean {
+        if (pattern == "(?s).*" || pattern == "(.*?)") {
+            return true
+        }
+        return regex.matches(ChatFormatting.stripFormatting(message)!!)
+    }
 
 }

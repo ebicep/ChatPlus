@@ -4,9 +4,11 @@ import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.config.serializers.KeyWithModifier
 import com.ebicep.chatplus.events.Event
 import com.ebicep.chatplus.events.EventBus
+import com.ebicep.chatplus.features.InputOverFlowAutoFill
 import com.ebicep.chatplus.util.KeyUtil
 import com.ebicep.chatplus.util.KeyUtil.isDown
 import com.mojang.blaze3d.platform.InputConstants
+import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.client.gui.screens.ChatScreen
 import org.apache.commons.lang3.StringUtils
@@ -30,6 +32,33 @@ object ChatPlusScreen {
     init {
         EventBus.register<ChatScreenCloseEvent>({ 100 }) {
             inputCooldowns.values.forEach { it.set(false) }
+        }
+    }
+
+    fun sendChatMessage(chatScreen: ChatScreen? = null, message: String, addToSent: Boolean = true) {
+        val normalizeChatMessage = normalizeChatMessage(message)
+        if (normalizeChatMessage.isEmpty()) {
+            return
+        }
+        sendChatMessage(chatScreen, splitChatMessage(normalizeChatMessage), addToSent)
+    }
+
+    private fun sendChatMessage(chatScreen: ChatScreen? = null, messages: List<String>, addToSent: Boolean = true) {
+        if (messages.isEmpty()) {
+            return
+        }
+        val screen = chatScreen ?: ChatScreen("")
+        val messageToSend = screen.normalizeChatMessage(messages[0])
+        if (addToSent) {
+            ChatManager.addSentMessage(messageToSend)
+        }
+        if (messageToSend.startsWith("/")) {
+            Minecraft.getInstance().player?.connection?.sendCommand(messageToSend.substring(1))
+        } else {
+            Minecraft.getInstance().player?.connection?.sendChat(messageToSend)
+            if (messages.size > 1) {
+                InputOverFlowAutoFill.addToQueue(messages.subList(1, messages.size))
+            }
         }
     }
 
@@ -63,7 +92,7 @@ interface InputEvent : Event {
 }
 
 class ChatScreenInputEvent(
-    val inputEvent: InputEvent
+    val inputEvent: InputEvent,
 ) {
     val screen: ChatScreen
         get() = inputEvent.screen
@@ -151,7 +180,7 @@ data class ChatScreenKeyPressedEvent(
     val keyCode: Int,
     val scanCode: Int,
     val modifiers: Int,
-    override var returnFunction: Boolean = false
+    override var returnFunction: Boolean = false,
 ) : InputEvent
 
 data class ChatScreenKeyReleasedEvent(
@@ -159,7 +188,7 @@ data class ChatScreenKeyReleasedEvent(
     val keyCode: Int,
     val scanCode: Int,
     val modifiers: Int,
-    override var returnFunction: Boolean = false //unused
+    override var returnFunction: Boolean = false, //unused
 ) : InputEvent
 
 data class ChatScreenMouseClickedEvent(
@@ -167,7 +196,7 @@ data class ChatScreenMouseClickedEvent(
     val mouseX: Double,
     val mouseY: Double,
     val button: Int,
-    override var returnFunction: Boolean = false
+    override var returnFunction: Boolean = false,
 ) : InputEvent
 
 data class ChatScreenMouseScrolledEvent(
@@ -175,7 +204,7 @@ data class ChatScreenMouseScrolledEvent(
     val mouseX: Double,
     val mouseY: Double,
     val amount: Double,
-    var returnFunction: Boolean = false
+    var returnFunction: Boolean = false,
 ) : Event
 
 data class ChatScreenMouseDraggedEvent(
@@ -192,7 +221,7 @@ data class ChatScreenMouseReleasedEvent(
     val mouseX: Double,
     val mouseY: Double,
     val button: Int,
-    override var returnFunction: Boolean = false
+    override var returnFunction: Boolean = false,
 ) : InputEvent
 
 data class ChatScreenRenderEvent(
@@ -206,7 +235,7 @@ data class ChatScreenRenderEvent(
 data class ChatScreenInputBoxEditEvent(
     val screen: ChatScreen,
     val str: String,
-    var returnFunction: Boolean = false
+    var returnFunction: Boolean = false,
 ) : Event
 
 data class ChatScreenInitPreEvent(
@@ -224,7 +253,7 @@ data class ChatScreenCloseEvent(
 data class ChatScreenSendMessagePreEvent(
     val screen: ChatScreen,
     var message: String,
-    var returnFunction: Boolean = false
+    var returnFunction: Boolean = false,
 ) : Event
 
 data class ChatScreenSendMessagePostEvent(
@@ -234,5 +263,5 @@ data class ChatScreenSendMessagePostEvent(
     val messageToSend: String,
     val normalizeChatMessage: String,
     val messages: List<String>,
-    var dontSendMessage: Boolean = false
+    var dontSendMessage: Boolean = false,
 ) : Event

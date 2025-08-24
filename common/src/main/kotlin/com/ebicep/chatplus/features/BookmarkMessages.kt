@@ -35,7 +35,7 @@ object BookmarkMessages {
             if (!Config.values.bookmarkEnabled) {
                 return@register
             }
-            val content = it.rawComponent.string
+            val content = it.rawComponent
             for (autoBookMarkPattern in Config.values.autoBookMarkPatterns) {
                 if (autoBookMarkPattern.matches(content)) {
                     bookmarkedMessages.add(it.chatPlusGuiMessage)

@@ -1,7 +1,7 @@
 package com.ebicep.chatplus.features
 
 import com.ebicep.chatplus.ChatPlus
-import com.ebicep.chatplus.config.Config
+import com.ebicep.chatplus.config.Config.values
 import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.features.chattabs.AddNewMessageEvent
 import com.ebicep.chatplus.features.chattabs.ChatTab
@@ -15,32 +15,30 @@ import com.ebicep.chatplus.mixin.IMixinChatScreen
 import com.ebicep.chatplus.mixin.IMixinScreen
 import com.ebicep.chatplus.translator.*
 import com.ebicep.chatplus.util.ComponentUtil
-import dev.architectury.event.CompoundEventResult
 import dev.architectury.event.EventResult
-import dev.architectury.event.events.client.ClientChatEvent
 import dev.architectury.event.events.client.ClientRawInputEvent
-import dev.architectury.event.events.client.ClientSystemMessageEvent
 import net.minecraft.ChatFormatting
 import net.minecraft.client.GuiMessageTag
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.components.EditBox
 import net.minecraft.client.gui.screens.Screen
-import net.minecraft.network.chat.ChatType
 import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.HoverEvent
 
 
 object TranslateMessage {
 
+    val TRANSLATE_PREFIX_INPUT_WIDTH: Int
+        get() = if (values.vanillaInputBox) 63 else 65
     var languageSpeakEnabled = false
     var inputTranslatePrefix: EditBox? = null
 
     init {
         EventBus.register<AddTextBarElementEvent>({ 0 }) {
-            if (!Config.values.translatorEnabled) {
+            if (!values.translatorEnabled) {
                 return@register
             }
-            if (!Config.values.translatorTextBarElementEnabled) {
+            if (!values.translatorTextBarElementEnabled) {
                 return@register
             }
             val textBarElement = TranslateSpeakTextBarElement(it.screen)
@@ -48,25 +46,27 @@ object TranslateMessage {
             it.elements.add(textBarElement)
         }
         EventBus.register<ChatScreenInitPostEvent> {
-            if (!Config.values.translatorEnabled) {
+            if (!values.translatorEnabled) {
                 return@register
             }
             val screen = it.screen
 
             inputTranslatePrefix = null
             if (languageSpeakEnabled) {
+                val inputBoxSettings = values.inputBoxSettings
                 screen as IMixinChatScreen
-                screen.input?.x = 68
+                screen.input?.x = TRANSLATE_PREFIX_INPUT_WIDTH + (if (values.vanillaInputBox) 5 else inputBoxSettings.startX)
+                screen.input.width -= TRANSLATE_PREFIX_INPUT_WIDTH
                 inputTranslatePrefix = EditBox(
                     screen.minecraft!!.fontFilterFishy,
-                    if (Config.values.vanillaInputBox) 4 else 3,
-                    screen.height - EDIT_BOX_HEIGHT + (if (Config.values.vanillaInputBox) 2 else 4),
-                    63,
+                    if (values.vanillaInputBox) 4 else inputBoxSettings.startX,
+                    if (values.vanillaInputBox) screen.height - EDIT_BOX_HEIGHT + 2 else inputBoxSettings.getCalculatedStartY(),
+                    TRANSLATE_PREFIX_INPUT_WIDTH,
                     EDIT_BOX_DISPLAY_HEIGHT,
                     Component.translatable("chatPlus.editBox")
                 )
                 val editBox = inputTranslatePrefix as EditBox
-                editBox.setMaxLength(256 * 5) // default 256
+                editBox.setMaxLength(inputBoxSettings.maxInputBoxInputLength) // default 256
                 editBox.setBordered(false)
                 editBox.setCanLoseFocus(true)
                 screen as IMixinScreen
@@ -74,15 +74,15 @@ object TranslateMessage {
             }
         }
         EventBus.register<ChatScreenCloseEvent> {
-            if (!Config.values.translatorEnabled) {
+            if (!values.translatorEnabled) {
                 return@register
             }
-            if (languageSpeakEnabled && !Config.values.translateKeepOnAfterChatClose) {
+            if (languageSpeakEnabled && !values.translateKeepOnAfterChatClose) {
                 languageSpeakEnabled = false
             }
         }
         EventBus.register<FindToggleEvent> {
-            if (!Config.values.translatorEnabled) {
+            if (!values.translatorEnabled) {
                 return@register
             }
             if (languageSpeakEnabled) {
@@ -90,7 +90,7 @@ object TranslateMessage {
             }
         }
         EventBus.register<ChatScreenMouseClickedEvent> {
-            if (!Config.values.translatorEnabled) {
+            if (!values.translatorEnabled) {
                 return@register
             }
             if (languageSpeakEnabled) {
@@ -100,7 +100,7 @@ object TranslateMessage {
             }
         }
         EventBus.register<ChatScreenRenderEvent> {
-            if (!Config.values.translatorEnabled) {
+            if (!values.translatorEnabled) {
                 return@register
             }
             if (inputTranslatePrefix == null) {
@@ -110,26 +110,29 @@ object TranslateMessage {
             val guiGraphics = it.guiGraphics
             val height = screen.height
             val minecraft = screen.minecraft!!
+            val inputBoxSettings = values.inputBoxSettings
+            val startX = if (values.vanillaInputBox) 2 else inputBoxSettings.startX - 2
+            val startY = if (values.vanillaInputBox) height - EDIT_BOX_HEIGHT else inputBoxSettings.getCalculatedStartY() - MovableChat.InputBoxSettings.INPUT_BOX_PADDING
             guiGraphics.fill(
-                if (Config.values.vanillaInputBox) 2 else 0,
-                height - EDIT_BOX_HEIGHT,
-                65,
-                height - (if (Config.values.vanillaInputBox) 2 else 0),
+                startX,
+                startY,
+                startX + TRANSLATE_PREFIX_INPUT_WIDTH,
+                if (values.vanillaInputBox) height - 2 else inputBoxSettings.getCalculatedStartY() + MovableChat.InputBoxSettings.PADDED_INPUT_BOX_HEIGHT,
                 minecraft.options.getBackgroundColor(Int.MIN_VALUE)
             )
             guiGraphics.renderOutline(
-                if (Config.values.vanillaInputBox) 2 else 0,
-                height - EDIT_BOX_HEIGHT,
-                if (Config.values.vanillaInputBox) 63 else 65,
-                EDIT_BOX_DISPLAY_HEIGHT - (if (Config.values.vanillaInputBox) 0 else 1),
+                startX,
+                startY,
+                TRANSLATE_PREFIX_INPUT_WIDTH,
+                EDIT_BOX_DISPLAY_HEIGHT,
                 0xFF55FF55.toInt()
             )
             val mouseX = it.mouseX
             val mouseY = it.mouseY
             inputTranslatePrefix!!.render(guiGraphics, mouseX, mouseY, it.partialTick)
             if (
-                mouseX in 0 until 65 &&
-                mouseY in height - EDIT_BOX_HEIGHT until height
+                mouseX in startX until startX + TRANSLATE_PREFIX_INPUT_WIDTH &&
+                mouseY in startY until startY + EDIT_BOX_HEIGHT
             ) {
                 guiGraphics.renderTooltip(
                     minecraft.font,
@@ -140,7 +143,7 @@ object TranslateMessage {
             }
         }
         EventBus.register<ChatScreenSendMessagePostEvent> {
-            if (!Config.values.translatorEnabled) {
+            if (!values.translatorEnabled) {
                 return@register
             }
             if (!languageSpeakEnabled) {
@@ -149,34 +152,30 @@ object TranslateMessage {
             it.dontSendMessage = true
             SelfTranslator(it.normalizeChatMessage, if (inputTranslatePrefix == null) "" else inputTranslatePrefix!!.value).start()
         }
-
-        ClientChatEvent.RECEIVED.register { type: ChatType.Bound, component: Component ->
-            handleTranslate(component)
-            CompoundEventResult.pass()
-        }
-        ClientSystemMessageEvent.RECEIVED.register { component: Component ->
-            handleTranslate(component)
-            CompoundEventResult.pass()
+        EventBus.register<AddNewMessageEvent>({ -10 }) {
+            if (!isTranslateMessage(it.rawComponent)) {
+                handleTranslate(it.rawComponent)
+            }
         }
         ClientRawInputEvent.KEY_PRESSED.register { _, keyCode, _, _, modifiers ->
             if (ChatManager.isChatFocused()) {
                 return@register EventResult.pass()
             }
-            if (keyCode != Config.values.translateKey.key.value || modifiers != Config.values.translateKey.modifier.toInt()) {
+            if (keyCode != values.translateKey.key.value || modifiers != values.translateKey.modifier.toInt()) {
                 return@register EventResult.pass()
             }
             languageSpeakEnabled = true
             EventResult.interruptTrue()
         }
         EventBus.register<ChatScreenInputEvent> {
-            if (it.checkRelease(Config.values.translateToggleKey)) {
+            if (it.checkRelease(values.translateToggleKey)) {
                 return@register
             }
             TranslateSpeakTextBarElement.toggleTranslateSpeak(it.screen)
         }
         var translateClickCooldown = 0L
         EventBus.register<ChatScreenMouseClickedEvent>({ 100 }) {
-            if (!Config.values.translatorEnabled || !Config.values.translateClickEnabled) {
+            if (!values.translatorEnabled || !values.translateClickEnabled) {
                 return@register
             }
             if (it.button != 0 || !Screen.hasControlDown()) {
@@ -207,8 +206,13 @@ object TranslateMessage {
         }
     }
 
+    private fun isTranslateMessage(component: Component): Boolean {
+        return component.contents is ComponentUtil.LiteralContentsIgnored &&
+                (component.contents as ComponentUtil.LiteralContentsIgnored).isType(ComponentUtil.LiteralIgnoredType.TRANSLATE)
+    }
+
     private fun handleTranslate(component: Component) {
-        if (!Config.values.translatorEnabled) {
+        if (!values.translatorEnabled) {
             return
         }
         LanguageManager.languageTo?.let {

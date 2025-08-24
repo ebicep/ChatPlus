@@ -11,9 +11,14 @@
     "IMixinStringSplitter",
     "MixinChatComponent",
     "MixinChatScreen",
+    "MixinClientHandshakePacketListenerImpl",
+    "MixinCommandSuggestions",
     "MixinGuiGraphics",
+    "MixinKeyboardHandler",
+    "MixinMouseHandler",
     "MixinScreen",
     "MixinServerList",
+    "MixinTitleScreen",
     "NativeImagePointerAccessor"
   ],
   "mixins": [

@@ -5,12 +5,20 @@ import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.hud.ChatRenderPreLinesEvent
 import com.ebicep.chatplus.util.KeyUtil.isDown
 
-object PeakChat {
+object PeekChat {
+
+    val peeking: Boolean
+        get() = Config.values.keyPeekChat.isDown()
 
     init {
+        var wasPeeking = false
         EventBus.register<ChatRenderPreLinesEvent> {
-            if (Config.values.keyPeekChat.isDown()) {
+            if (peeking) {
+                wasPeeking = true
                 it.chatFocused = true
+            } else if (wasPeeking) {
+                wasPeeking = false
+                it.chatWindow.tabSettings.selectedTab.resetChatScroll()
             }
         }
     }

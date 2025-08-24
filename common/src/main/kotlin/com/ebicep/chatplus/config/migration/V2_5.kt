@@ -1,36 +1,42 @@
+@file:UseSerializers(
+    KeySerializer::class
+)
+
 package com.ebicep.chatplus.config.migration
 
 import com.ebicep.chatplus.ChatPlus
 import com.ebicep.chatplus.MOD_ID
 import com.ebicep.chatplus.config.Config
+import com.ebicep.chatplus.config.serializers.KeySerializer
 import com.ebicep.chatplus.features.chattabs.AutoTabCreator
 import com.ebicep.chatplus.features.chattabs.ChatTab
 import com.ebicep.chatplus.features.chattabs.ServerChatTabSettings
 import com.ebicep.chatplus.features.chatwindows.*
 import com.ebicep.chatplus.features.chatwindows.TabSettings.Position
+import com.ebicep.chatplus.features.internal.MessageFilter
+import com.ebicep.chatplus.features.internal.MessageFilterFormatted
 import com.ebicep.chatplus.hud.ChatRenderer
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.UseSerializers
 import java.awt.Color
 
 
-object V2 : Migrator<SchemaV2> {
+object V2_5 : Migrator<SchemaV2_5> {
 
     override fun getFileNameVersion(): String {
-        return "$MOD_ID-v2"
+        return "$MOD_ID-v2.5.0"
     }
 
-    override fun getSerializer(): KSerializer<SchemaV2> {
-        return SchemaV2.serializer()
+    override fun getSerializer(): KSerializer<SchemaV2_5> {
+        return SchemaV2_5.serializer()
     }
 
-    override fun migrate(old: SchemaV2) {
-        val values = Config.values
-        values.compactMessageSettings.ignoreTimestamps = old.compactMessagesIgnoreTimestamps
+    override fun migrate(old: SchemaV2_5) {
         migrateChatWindows(old)
     }
 
-    fun migrateChatWindows(old: SchemaV2) {
+    fun migrateChatWindows(old: SchemaV2_5) {
         val newChatWindows = mutableListOf<ChatWindow>()
         old.chatWindows.forEach { oldChatWindow ->
             ChatPlus.LOGGER.info("Migrating chat window: $oldChatWindow")
@@ -64,6 +70,21 @@ object V2 : Migrator<SchemaV2> {
                             settings.commandsOverrideAutoPrefix = oldChatTab.commandsOverrideAutoPrefix
                         }
                         chatTabSettings.add(mainTabSettings)
+                        oldChatTab.serverTabPatterns.forEach {
+                            chatTabSettings.add(
+                                ServerChatTabSettings(
+                                    it.chatPattern.pattern,
+                                    false,
+                                ).also { settings ->
+                                    settings.serverPattern = MessageFilter(it.pattern)
+                                    settings.name = mainTabSettings.name
+                                    settings.autoPrefix = mainTabSettings.autoPrefix
+                                    settings.priority = mainTabSettings.priority
+                                    settings.alwaysAdd = mainTabSettings.alwaysAdd
+                                    settings.skipOthers = mainTabSettings.skipOthers
+                                    settings.commandsOverrideAutoPrefix = mainTabSettings.commandsOverrideAutoPrefix
+                                })
+                        }
                         newChatTabs.add(ChatTab(chatTabSettings).also { chatTab ->
                             chatTab.settings.forEach {
                                 it.chatTab = chatTab
@@ -85,16 +106,13 @@ object V2 : Migrator<SchemaV2> {
 }
 
 @Serializable
-data class SchemaV2(
-
-    var compactMessagesIgnoreTimestamps: Boolean = false,
-    var chatWindows: MutableList<SchemaV2_ChatWindow> = mutableListOf(),
-
-    )
+data class SchemaV2_5(
+    var chatWindows: MutableList<SchemaV2_5_ChatWindow> = mutableListOf(),
+)
 
 @Serializable
-class SchemaV2_ChatWindow {
-    var tabSettings: SchemaV2_TabSettings = SchemaV2_TabSettings()
+class SchemaV2_5_ChatWindow {
+    var tabSettings: SchemaV2_5_TabSettings = SchemaV2_5_TabSettings()
     var generalSettings: GeneralSettings = GeneralSettings()
     var outlineSettings: OutlineSettings = OutlineSettings()
     var padding: Padding = Padding()
@@ -103,8 +121,8 @@ class SchemaV2_ChatWindow {
 }
 
 @Serializable
-class SchemaV2_TabSettings {
-    var tabs: MutableList<SchemaV2_ChatTab> = mutableListOf()
+class SchemaV2_5_TabSettings {
+    var tabs: MutableList<SchemaV2_5_ChatTab> = mutableListOf()
     var selectedTabIndex = 0
     var startRenderTabIndex = 0
     var hideTabs = false
@@ -117,13 +135,26 @@ class SchemaV2_TabSettings {
 }
 
 @Serializable
-class SchemaV2_ChatTab {
+class SchemaV2_5_ChatTab {
     var pattern: String = ""
     var formatted: Boolean = false
     var name: String = ""
     var autoPrefix: String = ""
+    var serverTabPatterns = mutableListOf<SchemaV2_5_ServerTabPattern>()
     var priority: Int = 0
     var alwaysAdd: Boolean = false
     var skipOthers: Boolean = false
     var commandsOverrideAutoPrefix: Boolean = true
+}
+
+@Serializable
+class SchemaV2_5_ServerTabPattern : MessageFilter {
+
+    var chatPattern = MessageFilterFormatted("", false)
+    var autoPrefix: String = ""
+
+    constructor(pattern: String, autoPrefix: String) : super(pattern) {
+        this.autoPrefix = autoPrefix
+    }
+
 }

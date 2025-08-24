@@ -1,11 +1,14 @@
 package com.ebicep.chatplus.features
 
 import com.ebicep.chatplus.config.Config
+import com.ebicep.chatplus.config.EnumTranslatableName
 import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.events.Events
 import com.ebicep.chatplus.features.chattabs.ChatTab
 import com.ebicep.chatplus.hud.ChatManager
 import com.ebicep.chatplus.hud.ChatScreenInputEvent
+import kotlinx.serialization.Serializable
+import net.minecraft.network.chat.Component
 import java.awt.Color
 
 object DeleteMessages {
@@ -37,6 +40,44 @@ object DeleteMessages {
                 deleteMessageCooldown = Events.currentTick + 5
                 tab.displayedMessages.removeAll(selectedMessages)
                 tab.messages.removeAll(selectedMessages.map { it.linkedMessage }.toSet())
+            }
+        }
+    }
+
+    @Serializable
+    enum class F3DMode(key: String) : EnumTranslatableName {
+        DISABLED("chatPlus.deleteMessage.f3DMode.disabled"),
+        SELECTED_TAB("chatPlus.deleteMessage.f3DMode.selectedTab"),
+        SELECTED_WINDOW("chatPlus.deleteMessage.f3DMode.selectedWindow"),
+        ALL("chatPlus.deleteMessage.f3DMode.all"),
+
+        ;
+
+        val translatable: Component = Component.translatable(key)
+
+        override fun getTranslatableName(): Component {
+            return translatable
+        }
+
+    }
+
+    fun f3D() {
+        when (Config.values.deleteMessageF3DMode) {
+            F3DMode.DISABLED -> {
+            }
+
+            F3DMode.SELECTED_TAB -> {
+                ChatManager.globalSelectedTab.clear()
+            }
+
+            F3DMode.SELECTED_WINDOW -> {
+                ChatManager.selectedWindow.tabSettings.tabs.forEach { it.clear() }
+            }
+
+            F3DMode.ALL -> {
+                Config.values.chatWindows.forEach { window ->
+                    window.tabSettings.tabs.forEach { it.clear() }
+                }
             }
         }
     }

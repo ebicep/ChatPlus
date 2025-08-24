@@ -32,7 +32,7 @@ class TranslateSpeakTextBarElement(private val chatPlusScreen: ChatScreen) : Tex
         var selectorFilteredLanguages: List<Language> = mutableListOf()
         var selectorLastHoveredLanguage: Language? = null
         val selectorRenderBottom: Boolean
-            get() = Config.values.vanillaInputBox || Minecraft.getInstance().window.guiScaledHeight - Config.values.inputBoxSettings.getCalculatedStartY() < Config.values.inputBoxSettings.getCalculatedStartY()
+            get() = Config.values.vanillaInputBox || Config.values.inputBoxSettings.renderBottom()
         val selectorStartY: Int
             get() = if (Config.values.vanillaInputBox) {
                 Minecraft.getInstance().window.guiScaledHeight - 12 - EDIT_BOX_HEIGHT - 1
@@ -74,7 +74,7 @@ class TranslateSpeakTextBarElement(private val chatPlusScreen: ChatScreen) : Tex
         selectorFilteredLanguages = mutableListOf()
         selectorLanguageSearch = EditBox(
             chatPlusScreen.minecraft!!.fontFilterFishy,
-            Minecraft.getInstance().window.guiScaledWidth - getPaddedWidth() - if (Config.values.vanillaInputBox) 2 else 0,
+            if (Config.values.vanillaInputBox) Minecraft.getInstance().window.guiScaledWidth - getPaddedWidth() - 2 else Config.values.inputBoxSettings.startX + Config.values.inputBoxSettings.getCalculatedWidth() - getPaddedWidth(),
             selectorStartY,
             getPaddedWidth(),
             EDIT_BOX_DISPLAY_HEIGHT,
@@ -167,7 +167,8 @@ class TranslateSpeakTextBarElement(private val chatPlusScreen: ChatScreen) : Tex
         val bottom = selectorRenderBottom
         var y = if (bottom) selectorStartY - 10 else selectorStartY + EDIT_BOX_HEIGHT
         poseStack.createPose {
-            val guiScaledWidth = Minecraft.getInstance().window.guiScaledWidth
+            val guiScaledWidth =
+                if (Config.values.vanillaInputBox) Minecraft.getInstance().window.guiScaledWidth else Config.values.inputBoxSettings.startX + Config.values.inputBoxSettings.getCalculatedWidth()
             var hovered = false
             selectorFilteredLanguages.forEach {
                 val languageWidth = Minecraft.getInstance().font.width(it.name)

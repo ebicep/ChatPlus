@@ -11,7 +11,6 @@ import com.ebicep.chatplus.features.textbarelements.AddTextBarElementEvent
 import com.ebicep.chatplus.features.textbarelements.SendNoteEvent
 import com.ebicep.chatplus.features.textbarelements.SendNoteTextBarElement
 import com.ebicep.chatplus.hud.*
-import com.ebicep.chatplus.hud.ChatPlusScreen.splitChatMessage
 import com.ebicep.chatplus.mixin.IMixinChatScreen
 import com.ebicep.chatplus.translator.LanguageManager
 import com.ebicep.chatplus.translator.Translator
@@ -79,25 +78,7 @@ object SendNote {
                 val screen = it.screen as IMixinChatScreen
                 when (Config.values.sendNoteClickMode) {
                     NoteClickMode.SEND -> {
-                        val normalizeChatMessage = ChatPlusScreen.normalizeChatMessage(string)
-                        if (normalizeChatMessage.isEmpty()) {
-                            return@register
-                        }
-                        val messages = splitChatMessage(normalizeChatMessage)
-                        if (messages.isEmpty()) {
-                            return@register
-                        }
-                        var sentMessage = messages[0]
-                        val messageToSend = it.screen.normalizeChatMessage(messages[0])
-                        ChatManager.addSentMessage(sentMessage)
-                        if (string.startsWith("/")) {
-                            minecraft.player!!.connection.sendCommand(messageToSend.substring(1))
-                        } else {
-                            minecraft.player!!.connection.sendChat(messageToSend)
-                            if (messages.size > 1) {
-                                InputOverFlowAutoFill.addToQueue(messages.subList(1, messages.size))
-                            }
-                        }
+                        ChatPlusScreen.sendChatMessage(it.screen, string)
                     }
 
                     NoteClickMode.COPY -> {

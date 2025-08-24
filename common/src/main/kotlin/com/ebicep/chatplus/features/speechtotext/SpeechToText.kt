@@ -5,7 +5,6 @@ import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.config.configDirectoryPath
 import com.ebicep.chatplus.events.ChatPlusTickEvent
 import com.ebicep.chatplus.events.EventBus
-import com.ebicep.chatplus.features.InputOverFlowAutoFill
 import com.ebicep.chatplus.features.internal.MessageFilterWithString
 import com.ebicep.chatplus.hud.ChatManager
 import com.ebicep.chatplus.hud.ChatPlusScreen
@@ -173,21 +172,20 @@ class MicrophoneThread : Thread("ChatPlusMicrophoneThread") {
             if (quickSendTimer <= 0) {
                 return@register
             }
-            doWithMessage { messages, translated ->
+            doWithMessage { message, translated ->
                 if (
                     !Config.values.speechToTextToInputBox && !translated ||
                     !Config.values.speechToTextTranslateToInputBox && translated
                 ) {
                     return@doWithMessage
                 }
-                val text = messages.joinToString(" ")
-                ChatPlus.LOGGER.info("Quick Send: $text")
+                ChatPlus.LOGGER.info("Quick Send: $message")
                 // for if translating messages enabled, takes time so input might already be initialized
                 it.screen as IMixinChatScreen
                 if (it.screen.input != null) {
-                    it.screen.input?.insertText(text)
+                    it.screen.input?.insertText(message)
                 } else {
-                    it.screen.initial = text
+                    it.screen.initial = message
                 }
             }
         }
@@ -237,29 +235,25 @@ class MicrophoneThread : Thread("ChatPlusMicrophoneThread") {
             val quickSend = keyCode == Config.values.speechToTextQuickSendKey.value && !ChatManager.isChatFocused()
             if (canQuickSend && quickSend) {
                 quickSendTimer = -1
-                doWithMessage { messages, _ ->
-                    ChatManager.addSentMessage(messages[0])
-                    Minecraft.getInstance().player?.connection?.sendChat(messages[0])
-                    if (messages.size > 1) {
-                        InputOverFlowAutoFill.addToQueue(messages.subList(1, messages.size))
-                    }
+                doWithMessage { message, _ ->
+                    ChatPlusScreen.sendChatMessage(message = message)
                 }
             }
             EventResult.pass()
         }
     }
 
-    private fun doWithMessage(toRun: (List<String>, Boolean) -> Unit) {
+    private fun doWithMessage(toRun: (String, Boolean) -> Unit) {
         lastSpokenMessage?.let {
             val speechToTextLang = SpeechToText.speechToTextLang
             if (Config.values.speechToTextTranslateEnabled && speechToTextLang != null) {
                 object : Translator(it, LanguageManager.autoLang, speechToTextLang, false) {
                     override fun onTranslate(matchedRegex: String?, translatedMessage: TranslateResult, fromLanguage: String?) {
-                        toRun(ChatPlusScreen.splitChatMessage(translatedMessage.translatedText), true)
+                        toRun(translatedMessage.translatedText, true)
                     }
                 }.start()
             } else {
-                toRun(ChatPlusScreen.splitChatMessage(it), false)
+                toRun(it, false)
             }
         }
     }
@@ -340,7 +334,7 @@ class MicrophoneThread : Thread("ChatPlusMicrophoneThread") {
                     }
                     val screen = Minecraft.getInstance().screen
                     if (ChatManager.isChatFocused()) {
-                        doWithMessage { messages, translated ->
+                        doWithMessage { message, translated ->
                             if (
                                 Config.values.speechToTextToInputBox && !translated ||
                                 Config.values.speechToTextTranslateToInputBox && translated
@@ -348,7 +342,7 @@ class MicrophoneThread : Thread("ChatPlusMicrophoneThread") {
                                 return@doWithMessage
                             }
                             screen as IMixinChatScreen
-                            screen.input?.insertText(messages.joinToString(" "))
+                            screen.input?.insertText(message)
                         }
                     }
                 } else if (listening) {

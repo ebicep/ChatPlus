@@ -11,6 +11,7 @@ import java.io.File
 object MigrationManager {
 
     private val migrators: List<Migrator<*>> = listOf(
+        V2_5,
         V2_1,
         V2,
         V1

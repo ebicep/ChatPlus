@@ -114,7 +114,7 @@ class JavaxMicrophone(
             val names = mutableListOf<String>()
             AudioSystem.getMixerInfo().forEach {
                 val mixer = AudioSystem.getMixer(it)
-                val info = DataLine.Info(TargetDataLine::class.java, audioFormat);
+                val info = DataLine.Info(TargetDataLine::class.java, audioFormat)
                 if (mixer.isLineSupported(info)) {
                     names.add(it.name)
                 }

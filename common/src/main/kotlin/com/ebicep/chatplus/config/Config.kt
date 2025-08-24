@@ -11,7 +11,9 @@ import com.ebicep.chatplus.config.migration.MigrationManager
 import com.ebicep.chatplus.config.serializers.KeySerializer
 import com.ebicep.chatplus.config.serializers.KeyWithModifier
 import com.ebicep.chatplus.features.*
+import com.ebicep.chatplus.features.DeleteMessages.F3DMode
 import com.ebicep.chatplus.features.MovableChat.InputBoxSettings
+import com.ebicep.chatplus.features.ScreenshotChat.ScreenshotUploadSettings
 import com.ebicep.chatplus.features.chattabs.TabNotificationSettings
 import com.ebicep.chatplus.features.chatwindows.ChatWindow
 import com.ebicep.chatplus.features.chatwindows.ChatWindowsManager.createDefaultWindow
@@ -29,7 +31,8 @@ import java.awt.Color
 import java.io.File
 import kotlin.math.max
 
-const val CONFIG_NAME = "${MOD_ID}-v2.5.0.json"
+const val CONFIG_VERSION = "2.7.0"
+const val CONFIG_NAME = "${MOD_ID}-v$CONFIG_VERSION.json"
 val json = Json {
     encodeDefaults = true
     ignoreUnknownKeys = true
@@ -61,17 +64,20 @@ object Config {
 
     fun load() {
         ChatPlus.LOGGER.info("Config Directory: ${ConfigDirectory.getConfigDirectory().toAbsolutePath().normalize()}/chatplus")
-        val configDirectory: File = File(configDirectoryPath)
+        val configDirectory = File(configDirectoryPath)
         if (!configDirectory.exists()) {
             configDirectory.mkdir()
         }
-        val configFile: File = File(configDirectory, CONFIG_NAME)
+        val configFile = File(configDirectory, CONFIG_NAME)
         if (!configFile.exists()) {
             ChatPlus.LOGGER.info("No config file found, checking migration")
             if (!MigrationManager.tryMigration(configDirectory, configFile)) {
                 ChatPlus.LOGGER.info("No migration found, creating new config")
                 configFile.createNewFile()
                 configFile.writeText(json.encodeToString(ConfigVariables.serializer(), values))
+            } else {
+                ChatPlus.LOGGER.info("Reading migrated config")
+                values = json.decodeFromString(ConfigVariables.serializer(), configFile.readText())
             }
         } else {
             values = json.decodeFromString(ConfigVariables.serializer(), configFile.readText())
@@ -130,6 +136,7 @@ data class ConfigVariables(
     var maxCommandSuggestions: Int = 15,
     var jumpToMessageMode: JumpToMessageMode = JumpToMessageMode.CURSOR,
     var selectChatLinePriority: Int = 100,
+    var selectChatColor: Int = Color(186, 211, 252, 255).rgb,
     var timestampSettings: TimestampMessages.TimestampSettings = TimestampMessages.TimestampSettings(),
     var inputOverFlowAutoFillSettings: InputOverFlowAutoFill.InputOverFlowAutoFillSettings = InputOverFlowAutoFill.InputOverFlowAutoFillSettings(),
     var messageImagePreviewSettings: MessageImagePreview.MessageImagePreviewSettings = MessageImagePreview.MessageImagePreviewSettings(),
@@ -142,15 +149,24 @@ data class ConfigVariables(
     var alwaysShowChatToggleKey: KeyWithModifier = KeyWithModifier(InputConstants.getKey("key.keyboard.unknown"), 0),
     // compact messages
     var compactMessagesEnabled: Boolean = true,
+    var compactMessagesFormat: String = " &7(%VALUE%)",
+    var compactMessagesSendAsNew: Boolean = true,
+    var compactMessagesDeleteDuplicate: Boolean = true,
     var compactMessagesRefreshAddedTime: Boolean = false,
     var compactMessagesSearchAmount: Int = 1,
-    var compactMessageComparatorMode: CompactMessages.CompactComparatorMode = CompactMessages.CompactComparatorMode.VANILLA,
+    var compactMessageComparatorMode: CompactMessages.CompactComparatorMode = CompactMessages.CompactComparatorMode.CUSTOM,
     var compactMessageSettings: CompactMessages.CompactMessageCustomSettings = CompactMessages.CompactMessageCustomSettings(),
-    // scrollbar
-    var scrollbarEnabled: Boolean = true,
+    // scrolling
+    var keyNoScroll: InputConstants.Key = InputConstants.getKey("key.keyboard.left.control"),
+    var keyFineScroll: InputConstants.Key = InputConstants.getKey("key.keyboard.left.shift"),
+    var keyLargeScroll: InputConstants.Key = InputConstants.getKey("key.keyboard.left.alt"),
     var invertedScrolling: Boolean = false,
+    var scrollbarEnabled: Boolean = true,
     var scrollbarColor: Int = Color(128, 134, 139, 255).rgb,
     var scrollbarWidth: Int = 6,
+    // peek chat
+    var keyPeekChat: InputConstants.Key = InputConstants.getKey("key.keyboard.p"),
+    var peekChatScrollingEnabled: Boolean = true,
     // animation
     var animationEnabled: Boolean = true,
     var animationDisableOnFocus: Boolean = false,
@@ -208,17 +224,21 @@ data class ConfigVariables(
     // copy message
     var copyMessageKey: KeyWithModifier = KeyWithModifier(InputConstants.getKey("key.keyboard.c"), 2),
     var copyMessageLinePriority: Int = 50,
+    var copyWholeMessage: Boolean = false,
     var copyNoFormatting: Boolean = true,
     var copyMessageFormattingSymbolOverride: String = "",
     var copyMessageSeparator: String = "\n",
     // delete message
     var deleteMessageEnabled: Boolean = true,
     var deleteMessageKey: KeyWithModifier = KeyWithModifier(InputConstants.getKey("key.keyboard.d"), 2),
+    var deleteMessageF3DMode: F3DMode = F3DMode.SELECTED_TAB,
     // screen shot chat
     var screenshotChatEnabled: Boolean = true,
+    var screenshotChatScale: Float = 1f,
     var screenshotChatCopyToClipboard: Boolean = true,
     var screenshotChatSaveToFile: Boolean = true, // TODO
     var screenshotChatAutoUpload: Boolean = true,
+    var screenshotChatAutoUploadSettings: ScreenshotUploadSettings = ScreenshotUploadSettings(),
     var screenshotChatLinePriority: Int = 200,
     var screenshotChatKey: KeyWithModifier = KeyWithModifier(InputConstants.getKey("key.keyboard.s"), 2),
     var screenshotDefaultScreenShotMode: ScreenshotChat.ScreenshotMode = ScreenshotChat.ScreenshotMode.CURRENT_WINDOW,
@@ -230,11 +250,6 @@ data class ConfigVariables(
     var playerHeadChatDisplayShowOnWrapped: Boolean = false,
     var playerHeadChatDisplayOffsetNonHeadMessages: Boolean = false,
     var playerHeadChatDisplayOffsetNonHeadMessagesShowOnWrapped: Boolean = true,
-    // keys binds
-    var keyNoScroll: InputConstants.Key = InputConstants.getKey("key.keyboard.left.control"),
-    var keyFineScroll: InputConstants.Key = InputConstants.getKey("key.keyboard.left.shift"),
-    var keyLargeScroll: InputConstants.Key = InputConstants.getKey("key.keyboard.left.alt"),
-    var keyPeekChat: InputConstants.Key = InputConstants.getKey("key.keyboard.p"),
     // translator
     var translatorEnabled: Boolean = true,
     var translatorTextBarElementEnabled: Boolean = true,

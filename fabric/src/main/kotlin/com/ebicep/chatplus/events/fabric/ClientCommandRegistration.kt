@@ -28,33 +28,58 @@ object ClientCommandRegistration {
 
     private fun createCommand(commandName: String): LiteralArgumentBuilder<FabricClientCommandSource?>? =
         ClientCommandManager.literal(commandName)
-            .then(ClientCommandManager.literal("clear")
-                .executes {
-                    ChatManager.globalSelectedTab.clear()
-                    Command.SINGLE_SUCCESS
-                }
+            .then(
+                ClientCommandManager.literal("clear")
+                    .executes {
+                        ChatManager.globalSelectedTab.clear()
+                        Command.SINGLE_SUCCESS
+                    }
             )
-            .then(ClientCommandManager.literal("hide")
-                .executes {
-                    Config.values.hideChatEnabled = !Config.values.hideChatEnabled
-                    Command.SINGLE_SUCCESS
-                }
+            .then(
+                ClientCommandManager.literal("hide")
+                    .executes {
+                        Config.values.hideChatEnabled = !Config.values.hideChatEnabled
+                        Command.SINGLE_SUCCESS
+                    }
             )
-            .then(ClientCommandManager.literal("debug")
-                .executes {
-                    Debug.debug = !Debug.debug
-                    ChatPlus.sendMessage(
-                        Component.literal("Debug ${if (Debug.debug) "Enabled" else "Disabled"}")
-                            .withStyle(if (Debug.debug) ChatFormatting.GREEN else ChatFormatting.RED)
+            .then(
+                ClientCommandManager.literal("tab")
+                    .then(
+                        ClientCommandManager.literal("delete")
+                            .executes {
+                                val selectedWindow = ChatManager.selectedWindow
+                                val globalSelectedTab = ChatManager.globalSelectedTab
+                                selectedWindow.tabSettings.removeTab(globalSelectedTab)
+                                Command.SINGLE_SUCCESS
+                            }
                     )
-                    Command.SINGLE_SUCCESS
-                }
+                    .then(
+                        ClientCommandManager.literal("clone")
+                            .executes {
+                                val selectedWindow = ChatManager.selectedWindow
+                                val globalSelectedTab = ChatManager.globalSelectedTab
+                                selectedWindow.tabSettings.cloneTab(globalSelectedTab)
+                                Command.SINGLE_SUCCESS
+                            }
+                    )
             )
-            .then(ClientCommandManager.literal("test")
-                .executes {
-//                    ChatPlus.doTest()
-                    Command.SINGLE_SUCCESS
-                }
+            .then(
+                ClientCommandManager.literal("debug")
+                    .executes {
+                        Debug.debug = !Debug.debug
+                        ChatPlus.sendMessage(
+                            Component.literal("Debug ${if (Debug.debug) "Enabled" else "Disabled"}")
+                                .withStyle(if (Debug.debug) ChatFormatting.GREEN else ChatFormatting.RED)
+                        )
+                        Command.SINGLE_SUCCESS
+                    }
+            )
+            .then(
+                ClientCommandManager.literal("test")
+                    .executes {
+//                        ChatPlus.doTest()
+                        Command.SINGLE_SUCCESS
+                    }
             )
             .executes {
                 ConfigScreen.open = true

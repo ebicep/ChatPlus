@@ -24,7 +24,7 @@ object FilterMessages {
             if (!Config.values.filterMessagesEnabled) {
                 return@register
             }
-            val message = it.rawComponent.string
+            val message = it.rawComponent
             for (filterHighlight in Config.values.filterMessagesPatterns) {
                 if (!filterHighlight.playSound || !filterHighlight.matches(message)) {
                     continue
@@ -58,7 +58,7 @@ object FilterMessages {
             if (!Config.values.filterMessagesEnabled) {
                 return@register
             }
-            val message = it.chatPlusGuiMessageLine.content
+            val message = it.chatPlusGuiMessageLine
             for (filterHighlight in Config.values.filterMessagesPatterns) {
                 if (!filterHighlight.changeColor || !filterHighlight.matches(message)) {
                     continue

@@ -3,6 +3,7 @@ package com.ebicep.chatplus.mixin;
 import com.ebicep.chatplus.IChatScreen;
 import com.ebicep.chatplus.config.Config;
 import com.ebicep.chatplus.features.MovableChat;
+import com.ebicep.chatplus.features.TranslateMessage;
 import com.ebicep.chatplus.hud.ChatManager;
 import com.ebicep.chatplus.hud.ChatPlusScreen;
 import com.ebicep.chatplus.hud.ChatPlusScreenAdapter;
@@ -24,7 +25,7 @@ import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@Mixin(ChatScreen.class)
+@Mixin(value = ChatScreen.class, priority = Integer.MAX_VALUE)
 @Implements(@Interface(iface = IChatScreen.class, prefix = "chatPlus$"))
 public abstract class MixinChatScreen extends Screen implements IMixinChatScreen, IChatScreen {
 
@@ -83,7 +84,7 @@ public abstract class MixinChatScreen extends Screen implements IMixinChatScreen
         if (Config.INSTANCE.getValues().getVanillaInputBox()) {
             return x;
         }
-        return 2;
+        return Config.INSTANCE.getValues().getInputBoxSettings().getStartX();
     }
 
     @ModifyArg(method = "init", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/ChatScreen$1;<init>(Lnet/minecraft/client/gui/screens/ChatScreen;Lnet/minecraft/client/gui/Font;IIIILnet/minecraft/network/chat/Component;)V"), index = 3)
@@ -140,6 +141,15 @@ public abstract class MixinChatScreen extends Screen implements IMixinChatScreen
         return Config.INSTANCE.getValues().getMaxCommandSuggestions();
     }
 
+    @ModifyArg(method = "init", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/CommandSuggestions;<init>(Lnet/minecraft/client/Minecraft;" +
+            "Lnet/minecraft/client/gui/screens/Screen;Lnet/minecraft/client/gui/components/EditBox;Lnet/minecraft/client/gui/Font;ZZIIZI)V"), index = 8)
+    private boolean modifyChatScreenCommandSuggestionsAnchor(boolean bl) {
+        if (!Config.INSTANCE.getValues().getEnabled() || Config.INSTANCE.getValues().getVanillaInputBox()) {
+            return bl;
+        }
+        return Config.INSTANCE.getValues().getInputBoxSettings().renderBottom();
+    }
+
     @Inject(method = "removed", at = @At("HEAD"))
     private void removed(CallbackInfo ci) {
         if (!Config.INSTANCE.getValues().getEnabled()) {
@@ -185,7 +195,7 @@ public abstract class MixinChatScreen extends Screen implements IMixinChatScreen
         ChatPlusScreenAdapter.INSTANCE.handlePageUpDown(false);
     }
 
-    @Inject(method = "mouseScrolled", at = @At(value = "RETURN", opcode = 1), cancellable = true)
+    @Inject(method = "mouseScrolled", at = @At(value = "RETURN", ordinal = 1), cancellable = true)
     private void mouseScrolled(double mouseX, double mouseY, double amountX, CallbackInfoReturnable<Boolean> cir) {
         if (!Config.INSTANCE.getValues().getEnabled()) {
             return;
@@ -277,16 +287,17 @@ public abstract class MixinChatScreen extends Screen implements IMixinChatScreen
         if (!Config.INSTANCE.getValues().getEnabled()) {
             return x;
         }
+        MovableChat.InputBoxSettings inputBoxSettings = Config.INSTANCE.getValues().getInputBoxSettings();
         if (LanguageManager.INSTANCE.getLanguageSpeakEnabled()) {
             if (Config.INSTANCE.getValues().getVanillaInputBox()) {
-                return 65 + x;
+                return TranslateMessage.INSTANCE.getTRANSLATE_PREFIX_INPUT_WIDTH() + inputBoxSettings.getStartX();
             }
-            return 65;
+            return TranslateMessage.INSTANCE.getTRANSLATE_PREFIX_INPUT_WIDTH();
         } else {
             if (Config.INSTANCE.getValues().getVanillaInputBox()) {
                 return x;
             }
-            return 0;
+            return inputBoxSettings.getStartX() - 2;
         }
     }
 
@@ -306,7 +317,10 @@ public abstract class MixinChatScreen extends Screen implements IMixinChatScreen
         if (!Config.INSTANCE.getValues().getEnabled()) {
             return x;
         }
-        return chatPlus$w;
+        if (Config.INSTANCE.getValues().getVanillaInputBox()) {
+            return chatPlus$w;
+        }
+        return Config.INSTANCE.getValues().getInputBoxSettings().getStartX() + chatPlus$w;
     }
 
     @ModifyArg(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;fill(IIIII)V"), index = 3)

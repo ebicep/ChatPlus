@@ -23,7 +23,10 @@ const val CHAT_TAB_X_SPACE = 1 // space between categories
 object ChatTabs {
 
     fun createDefaultTab(): ChatTab {
-        return ChatTab("All", "(?s).*", alwaysAdd = true)
+        return ChatTab(ServerChatTabSettings("(?s).*").also { settings ->
+            settings.name = "All"
+            settings.alwaysAdd = true
+        })
     }
 
     init {
@@ -81,26 +84,17 @@ object ChatTabs {
             if (it.message.startsWith("/") && ChatManager.globalSelectedTab.commandsOverrideAutoPrefix) {
                 return@register
             }
-            var autoPrefix = ChatManager.globalSelectedTab.autoPrefix
-            Minecraft.getInstance().player?.connection?.serverData?.ip?.let { ip ->
-                ChatManager.globalSelectedTab.serverTabPatterns.forEach { serverTabPattern ->
-                    if (serverTabPattern.regex.matches(ip)) {
-                        autoPrefix = serverTabPattern.autoPrefix
-                        return@forEach
-                    }
-                }
-            }
-            it.message = autoPrefix + it.message
+            it.message = ChatManager.globalSelectedTab.autoPrefix + it.message
         }
         EventBus.register<ChatTabSwitchEvent> {
-            it.newTab.read = true
+            it.newTab.unreadCount = 0
         }
         EventBus.register<WindowSwitchEvent> {
-            it.newWindow.tabSettings.selectedTab.read = true
+            it.newWindow.tabSettings.selectedTab.unreadCount = 0
         }
         EventBus.register<MovableChatRemoveTabFromWindowEvent> {
             if (!it.deleted) {
-                it.chatWindow.tabSettings.selectedTab.read = true
+                it.chatWindow.tabSettings.selectedTab.unreadCount = 0
             }
         }
     }

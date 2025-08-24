@@ -3,14 +3,15 @@ package com.ebicep.chatplus.features.chattabs
 import com.ebicep.chatplus.ChatPlus
 import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.config.JumpToMessageMode
+import com.ebicep.chatplus.config.MessageDirection
 import com.ebicep.chatplus.events.Event
 import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.events.Events
 import com.ebicep.chatplus.features.chatwindows.ChatWindow
-import com.ebicep.chatplus.features.internal.MessageFilterFormatted
 import com.ebicep.chatplus.hud.ChatManager
 import com.ebicep.chatplus.hud.ChatPlusScreen
 import com.ebicep.chatplus.mixin.IMixinScreen
+import com.ebicep.chatplus.util.ComponentUtil.getColoredString
 import com.google.common.base.Predicate
 import com.google.common.collect.Lists
 import kotlinx.serialization.KSerializer
@@ -50,11 +51,11 @@ object ChatTabSerializer : KSerializer<MutableList<ChatTab>> {
 }
 
 @Serializable
-class ChatTab : MessageFilterFormatted {
+class ChatTab {
 
     class ChatPlusGuiMessage(
         var timesRepeated: Int = 1,
-        var senderUUID: UUID? = null
+        var senderUUID: UUID? = null,
     ) {
         lateinit var guiMessage: GuiMessage
     }
@@ -62,80 +63,85 @@ class ChatTab : MessageFilterFormatted {
     data class ChatPlusGuiMessageLine(
         val line: GuiMessage.Line,
         val content: String,
+        var coloredContent: String?,
         val linkedMessage: ChatPlusGuiMessage,
-        val wrappedIndex: Int
-    )
-
-    override fun matches(message: String, pattern: String, regex: Regex): Boolean {
-        val ip = Minecraft.getInstance().player?.connection?.serverData?.ip ?: return super.matches(message, pattern, regex)
-        serverTabPatterns.forEach {
-            if (it.regex.matches(ip)) {
-                return super.matches(message, it.chatPattern.pattern, it.chatPattern.regex)
+        val wrappedIndex: Int,
+    ) {
+        fun coloredContent(): String {
+            if (coloredContent == null) {
+                coloredContent = line.content.getColoredString()
             }
+            return coloredContent!!
         }
-        return super.matches(message, pattern, regex)
     }
 
-    var name: String = ""
-        set(value) {
-            field = value
-            width = -1
-        }
-    var autoPrefix: String = ""
+    var settings: MutableList<ServerChatTabSettings> = mutableListOf()
 
-    var serverTabPatterns = mutableListOf<ServerTabPattern>()
-        set(value) {
-            field = value
-            updateServerIPRegex()
-        }
+    val name: String
+        get() = if (!::currentSettings.isInitialized) "" else currentSettings.name
+    val autoSend: String
+        get() = if (!::currentSettings.isInitialized) "" else currentSettings.autoSend
+    val autoPrefix: String
+        get() = if (!::currentSettings.isInitialized) "" else currentSettings.autoPrefix
+    val priority: Int
+        get() = if (!::currentSettings.isInitialized) 0 else currentSettings.priority
+    val alwaysAdd: Boolean
+        get() = if (!::currentSettings.isInitialized) false else currentSettings.alwaysAdd
+    val skipOthers: Boolean
+        get() = if (!::currentSettings.isInitialized) false else currentSettings.skipOthers
+    val commandsOverrideAutoPrefix: Boolean
+        get() = if (!::currentSettings.isInitialized) false else currentSettings.commandsOverrideAutoPrefix
+    val notificationSettings: ServerChatTabNotificationSettings
+        get() = if (!::currentSettings.isInitialized) ServerChatTabNotificationSettings() else currentSettings.notificationSettings
 
-    // priority of tab, when adding messages, tabs are sorted by priority first
-    // if a message got added to a tab then any other tab with a lower priority will not get the message
-    var priority: Int = 0
+    fun matches(message: String, coloredMessage: String?): Boolean {
+        return currentSettings.matches(message, coloredMessage)
+    }
 
-    // if true then priority will be ignored when deciding to "skip" this tab
-    var alwaysAdd: Boolean = false
+    fun matches(message: Component): Boolean {
+        return currentSettings.matches(message)
+    }
 
-    // if true then tab loop will break if message is added to this tab, overrides alwaysAdds
-    var skipOthers: Boolean = false
+    fun matches(message: ChatPlusGuiMessageLine): Boolean {
+        return currentSettings.matches(message)
+    }
 
-    var commandsOverrideAutoPrefix: Boolean = true
+    @Transient
+    lateinit var currentSettings: ServerChatTabSettings
 
+    @Transient
     var temporary = false
 
     @Transient
     var isAutoTab = false
 
     constructor(
+        currentSettings: ServerChatTabSettings,
+    ) {
+        this.currentSettings = currentSettings
+    }
+
+    constructor(
+        settings: MutableList<ServerChatTabSettings>,
+    ) {
+        this.settings = settings
+    }
+
+    constructor(
         chatWindow: ChatWindow,
-        name: String,
-        pattern: String,
-        autoPrefix: String = "",
-        priority: Int = 0,
-        alwaysAdd: Boolean = false,
-        skipOthers: Boolean = false,
-        commandsOverrideAutoPrefix: Boolean = true,
-        temporary: Boolean = false,
-        isAutoTab: Boolean = false
-    ) : super(pattern) {
+        currentSettings: ServerChatTabSettings,
+    ) {
         this.chatWindow = chatWindow
-        this.name = name
-        this.autoPrefix = autoPrefix
-        this.priority = priority
-        this.alwaysAdd = alwaysAdd
-        this.skipOthers = skipOthers
-        this.commandsOverrideAutoPrefix = commandsOverrideAutoPrefix
-        this.temporary = temporary
-        this.isAutoTab = isAutoTab
+        this.currentSettings = currentSettings
+        this.settings = mutableListOf(currentSettings)
     }
 
-    constructor(name: String, pattern: String, autoPrefix: String = "", alwaysAdd: Boolean = false) : super(pattern) {
-        this.name = name
-        this.autoPrefix = autoPrefix
-        this.alwaysAdd = alwaysAdd
-    }
-
-    constructor(pattern: String, formatted: Boolean) : super(pattern, formatted) {
+    init {
+        if (settings.isNotEmpty()) {
+            this.currentSettings = settings.first()
+        }
+        updateServerSettings()
+        updateCurrentSettings()
     }
 
     @Transient
@@ -197,25 +203,55 @@ class ChatTab : MessageFilterFormatted {
     var lastMessageTime: Long = 0
 
     @Transient
-    var read: Boolean = true
+    var unreadCount: Int = 0
 
     @Transient
     lateinit var chatWindow: ChatWindow
 
+    fun updateServerSettings() {
+        this.settings.forEach {
+            it.updateRegex()
+            it.serverPattern.updateRegex()
+            it.suggestionsPatterns.forEach { it.updateRegex() }
+            it.notificationSettings.notificationMatch.updateRegex()
+        }
+    }
+
+    fun updateCurrentSettings(ip: String? = Minecraft.getInstance().player?.connection?.serverData?.ip) {
+        val patterns = "(${settings.joinToString(", ") { it.serverPattern.pattern }})"
+        ChatPlus.LOGGER.info("Updating current settings for $patterns given $ip")
+        var newCurrent: ServerChatTabSettings? = null
+        if (ip != null) {
+            settings.forEach {
+                if (it.serverPattern.matches(ip)) {
+                    ChatPlus.LOGGER.info("Set current settings to ${it.serverPattern.pattern} for $ip")
+                    newCurrent = it
+                    return@forEach
+                }
+            }
+        }
+        // sort empty server patterns first
+        if (newCurrent == null) {
+            newCurrent = settings.maxByOrNull { it.serverPattern.pattern.isEmpty() }
+            if (newCurrent == null) {
+                ChatPlus.LOGGER.error("No server pattern found for $ip in ($patterns)")
+                newCurrent = ServerChatTabSettings()
+                settings.add(newCurrent)
+            } else {
+                ChatPlus.LOGGER.info("Set current settings to default ${newCurrent.serverPattern.pattern} for $ip")
+            }
+        }
+        newCurrent.chatTab = this
+        currentSettings = newCurrent
+        width = -1
+        ChatPlus.LOGGER.info("Set current settings for $patterns to ${currentSettings.serverPattern.pattern} for $ip")
+
+    }
+
     fun clone(): ChatTab {
-        return ChatTab(
-            chatWindow,
-            name,
-            pattern,
-            autoPrefix,
-            priority,
-            alwaysAdd,
-            skipOthers,
-            commandsOverrideAutoPrefix,
-            temporary,
-            isAutoTab
-        ).also {
-            it.serverTabPatterns = serverTabPatterns.map { ServerTabPattern(it.pattern, it.autoPrefix) }.toMutableList()
+        val newSettings: MutableList<ServerChatTabSettings> = this.settings.map { it.clone() }.toCollection(mutableListOf())
+        return ChatTab(newSettings).also {
+            it.chatWindow = chatWindow
         }
     }
 
@@ -257,7 +293,10 @@ class ChatTab : MessageFilterFormatted {
         }
         val newDisplayMessageResult = this.addNewDisplayMessage(mutableComponent, addedTime, tag, chatPlusGuiMessage)
         if (chatWindow.tabSettings.selectedTab != this) {
-            this.read = false
+            val notificationMatch = notificationSettings.notificationMatch
+            if (notificationMatch.matches(rawComponent)) {
+                this.unreadCount++
+            }
         }
         return NewMessageResult(chatTabAddNewMessageEvent, removedMessages, newDisplayMessageResult)
     }
@@ -266,7 +305,7 @@ class ChatTab : MessageFilterFormatted {
         component: MutableComponent,
         addedTime: Int,
         tag: GuiMessageTag?,
-        linkedMessage: ChatPlusGuiMessage
+        linkedMessage: ChatPlusGuiMessage,
     ): NewDisplayMessageResult {
         val maxWidth = Mth.floor(this.chatWindow.renderer.getBackgroundWidth())
         val displayMessageEvent = EventBus.post(
@@ -308,7 +347,7 @@ class ChatTab : MessageFilterFormatted {
         addedTime: Int,
         tag: GuiMessageTag?,
         linkedMessage: ChatPlusGuiMessage,
-        index: Int
+        index: Int,
     ): MutableList<ChatPlusGuiMessageLine> {
         val list: List<Pair<FormattedCharSequence, String>> = wrapComponents(
             component,
@@ -317,11 +356,15 @@ class ChatTab : MessageFilterFormatted {
         )
         var wrappedIndex = index
         val added: MutableList<ChatPlusGuiMessageLine> = mutableListOf()
-        for (j in list.indices) {
+
+        val reversed = chatWindow.generalSettings.messageDirection == MessageDirection.TOP_DOWN &&
+                chatWindow.generalSettings.topDownDirectionWrapInOrder
+        val indices = if (reversed) list.indices.reversed() else list.indices
+        for (j in indices) {
             val chatPlusLine = list[j]
             val formattedCharSequence = chatPlusLine.first
             val content = chatPlusLine.second
-            if (ChatManager.isChatFocused() && chatScrollbarPos > 0) {
+            if (chatScrollbarPos > 0) {
                 newMessageSinceScroll = true
                 scrollChat(1)
             }
@@ -329,6 +372,7 @@ class ChatTab : MessageFilterFormatted {
             val line = ChatPlusGuiMessageLine(
                 GuiMessage.Line(addedTime, formattedCharSequence, tag, lastComponent),
                 content,
+                null,
                 linkedMessage,
                 j
             )
@@ -357,11 +401,14 @@ class ChatTab : MessageFilterFormatted {
         messages = ArrayList()
         displayedMessages = ArrayList()
         unfilteredDisplayedMessages = ArrayList()
+        unreadCount = 0
     }
 
-    fun resetChatScroll() {
-        chatScrollbarPos = 0
-        this.newMessageSinceScroll = false
+    fun resetChatScroll(reset: Boolean = chatWindow.generalSettings.resetScrollPositionOnClose) {
+        if (reset) {
+            chatScrollbarPos = 0
+            this.newMessageSinceScroll = false
+        }
     }
 
     fun scrollChat(positionIncrease: Int) {
@@ -405,7 +452,7 @@ class ChatTab : MessageFilterFormatted {
     fun rescaleChat() {
         ChatPlus.LOGGER.info("$this Rescale")
         EventBus.post(ChatTabRescale(chatWindow, this))
-        resetChatScroll()
+        resetChatScroll(true)
         queueRefreshDisplayedMessages(true)
     }
 
@@ -509,7 +556,7 @@ class ChatTab : MessageFilterFormatted {
             }
             ChatPlus.LOGGER.info("$this Filter time taken: ${System.currentTimeMillis() - filterStart}ms")
         }
-        resetChatScroll()
+        resetChatScroll(true)
 //        ChatPlus.LOGGER.info("Refresh time taken: ${System.currentTimeMillis() - start}ms")
 
         refreshing = false
@@ -538,13 +585,6 @@ class ChatTab : MessageFilterFormatted {
 
     fun getComponentStyleAt(mouseX: Double, mouseY: Double): Style? {
         return ChatPositionTranslator.getComponentStyleAt(this, mouseX, mouseY)
-    }
-
-    fun updateServerIPRegex() {
-        this.serverTabPatterns.forEach {
-            it.updateRegex()
-            it.chatPattern.updateRegex()
-        }
     }
 
     companion object {
@@ -596,13 +636,13 @@ class ChatTab : MessageFilterFormatted {
     data class NewMessageResult(
         val chatTabAddNewMessageEvent: ChatTabAddNewMessageEvent,
         val removed: MutableList<ChatPlusGuiMessage>?,
-        val newDisplayMessageResult: NewDisplayMessageResult?
+        val newDisplayMessageResult: NewDisplayMessageResult?,
     )
 
     data class NewDisplayMessageResult(
         val chatTabAddDisplayMessageEvent: ChatTabAddDisplayMessageEvent,
         val addedComponents: MutableList<ChatPlusGuiMessageLine>,
-        val removedMessages: MutableList<ChatPlusGuiMessageLine>
+        val removedMessages: MutableList<ChatPlusGuiMessageLine>,
     )
 
 }
@@ -613,7 +653,7 @@ data class SkipNewMessageEvent(
     var senderUUID: UUID?,
     val signature: MessageSignature?,
     val addedTime: Int,
-    val tag: GuiMessageTag?
+    val tag: GuiMessageTag?,
 ) : Event
 
 data class AddNewMessageEvent(
@@ -623,7 +663,7 @@ data class AddNewMessageEvent(
     val signature: MessageSignature?,
     val addedTime: Int,
     val tag: GuiMessageTag?,
-    var returnFunction: Boolean = false
+    var returnFunction: Boolean = false,
 ) : Event
 
 data class ChatTabAddNewMessageEvent(
@@ -636,7 +676,7 @@ data class ChatTabAddNewMessageEvent(
     val signature: MessageSignature?,
     val addedTime: Int,
     val tag: GuiMessageTag?,
-    var returnFunction: Boolean = false
+    var returnFunction: Boolean = false,
 ) : Event
 
 data class ChatTabAddDisplayMessageEvent(
@@ -661,19 +701,19 @@ data class ChatTabRemoveMessageEvent(
     val chatWindow: ChatWindow,
     val chatTab: ChatTab,
     val guiMessage: ChatTab.ChatPlusGuiMessage,
-    var returnFunction: Boolean = false
+    var returnFunction: Boolean = false,
 ) : Event
 
 data class ChatTabRemoveDisplayMessageEvent(
     val chatWindow: ChatWindow,
     val chatTab: ChatTab,
     val chatPlusGuiMessageLine: ChatTab.ChatPlusGuiMessageLine,
-    var returnFunction: Boolean = false
+    var returnFunction: Boolean = false,
 ) : Event
 
 data class ChatTabRescale(
     val chatWindow: ChatWindow,
-    val chatTab: ChatTab
+    val chatTab: ChatTab,
 ) : Event
 
 data class ChatTabRewrapDisplayMessages(

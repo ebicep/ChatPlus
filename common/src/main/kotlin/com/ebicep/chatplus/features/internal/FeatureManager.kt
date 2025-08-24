@@ -21,7 +21,7 @@ object FeatureManager {
         AlignMessage
         ScreenshotChat
         SpeechToText
-        PeakChat
+        PeekChat
         PlayerHeadChatDisplay
         SelectChat
         ScrollBar

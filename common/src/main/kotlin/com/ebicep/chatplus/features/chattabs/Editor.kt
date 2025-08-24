@@ -23,7 +23,7 @@ import java.util.function.Consumer
 
 class Editor(
     val previousScreen: Screen?,
-    val titleComponent: () -> String,
+    titleComponent: () -> String,
     val subTitleComponent: () -> String?,
     val pressClone: (Button) -> Unit,
     val pressEdit: (Button) -> Unit,
@@ -38,17 +38,12 @@ class Editor(
                 { "chatPlus.gui.tabEditor" },
                 { "( ${chatTab.name} ) " },
                 { button ->
-                    val mutableList = chatTab.chatWindow.tabSettings.tabs.toMutableList()
-                    mutableList.add(chatTab.clone())
-                    chatTab.chatWindow.tabSettings.tabs = mutableList
-                    resetGlobalSortedTabs()
+                    chatTab.chatWindow.tabSettings.cloneTab(chatTab)
                     Minecraft.getInstance().setScreen(previousScreen)
                 },
                 { button -> Minecraft.getInstance().setScreen(getTabEditorScreen(previousScreen, chatTab)) },
                 { button ->
-                    val mutableList = chatTab.chatWindow.tabSettings.tabs.toMutableList()
-                    mutableList.remove(chatTab)
-                    chatTab.chatWindow.tabSettings.tabs = mutableList
+                    chatTab.chatWindow.tabSettings.removeTab(chatTab)
                     Minecraft.getInstance().setScreen(previousScreen)
                 },
                 { chatTab.chatWindow.tabSettings.tabs.size > 1 }

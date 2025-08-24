@@ -50,10 +50,10 @@ open class Translator(val message: String, val from: Language?, val to: Language
 
     open fun onTranslate(matchedRegex: String?, translatedMessage: TranslateResult, fromLanguage: String?) {
         Minecraft.getInstance().player?.sendSystemMessage(
-            ComponentUtil.literal(
+            ComponentUtil.literalIgnored(
                 (matchedRegex ?: "") + translatedMessage.translatedText + " (" + (fromLanguage ?: "Unknown") + ")",
-                ChatFormatting.GREEN
-            )
+                ComponentUtil.LiteralIgnoredType.TRANSLATE
+            ).withStyle(ChatFormatting.GREEN)
         )
     }
 

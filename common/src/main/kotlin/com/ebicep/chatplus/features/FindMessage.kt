@@ -130,7 +130,7 @@ object FindMessage {
                 it.guiGraphics.renderOutline(
                     editBox.x - 2,
                     editBox.y - (if (Config.values.vanillaInputBox) 2 else 4),
-                    it.screen.chatPlusWidth - (if (Config.values.vanillaInputBox) 2 else 0),
+                    it.screen.chatPlusWidth - (if (Config.values.vanillaInputBox) 2 else -2),
                     editBox.height,
                     findMode!!.color
                 )

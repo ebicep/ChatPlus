@@ -1,8 +1,11 @@
 package com.ebicep.chatplus.features.internal
 
 
+import com.ebicep.chatplus.features.chattabs.ChatTab.ChatPlusGuiMessageLine
+import com.ebicep.chatplus.util.ComponentUtil.getColoredString
 import kotlinx.serialization.Serializable
 import net.minecraft.ChatFormatting
+import net.minecraft.network.chat.Component
 
 @Serializable
 open class MessageFilterFormatted : MessageFilter {
@@ -14,19 +17,23 @@ open class MessageFilterFormatted : MessageFilter {
         this.formatted = formatted
     }
 
-    open fun matches(message: String, pattern: String, regex: Regex): Boolean {
+    fun matches(message: String, coloredMessage: String?): Boolean {
         if (pattern == "(?s).*" || pattern == "(.*?)") {
             return true
         }
         return if (formatted) {
-            regex.matches(message.replace("§", "&"))
+            regex.matches(coloredMessage ?: message)
         } else {
             regex.matches(ChatFormatting.stripFormatting(message)!!)
         }
     }
 
-    fun matches(message: String): Boolean {
-        return matches(message, pattern, regex)
+    fun matches(message: Component): Boolean {
+        return matches(message.string, message.visualOrderText.getColoredString())
+    }
+
+    fun matches(message: ChatPlusGuiMessageLine): Boolean {
+        return matches(message.content, message.coloredContent())
     }
 
     fun find(message: String): MatchResult? {

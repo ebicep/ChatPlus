@@ -2,6 +2,7 @@ package com.ebicep.chatplus.hud
 
 import com.ebicep.chatplus.IChatScreen
 import com.ebicep.chatplus.config.Config
+import com.ebicep.chatplus.config.Config.values
 import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.features.InputOverFlowAutoFill
 import com.ebicep.chatplus.hud.ChatManager.sentMessages
@@ -18,7 +19,8 @@ object ChatPlusScreenAdapter {
 
     fun handleInitPre(chatScreen: ChatScreen) {
         chatScreen as IChatScreen
-        chatScreen.chatPlusWidth = chatScreen.width
+        val w = values.inputBoxSettings.getCalculatedWidth()
+        chatScreen.chatPlusWidth = if (w < 0 || values.vanillaInputBox) chatScreen.width else w
         EventBus.post(ChatScreenInitPreEvent(chatScreen))
     }
 
@@ -60,6 +62,10 @@ object ChatPlusScreenAdapter {
         if (EventBus.post(ChatScreenMouseScrolledEvent(chatScreen, mouseX, mouseY, amountX)).returnFunction) {
             return true
         }
+        return scrollChat(amountY)
+    }
+
+    fun scrollChat(amountY: Double): Boolean {
         // control = no scroll
         // shift = fine scroll
         // alt = triple scroll
