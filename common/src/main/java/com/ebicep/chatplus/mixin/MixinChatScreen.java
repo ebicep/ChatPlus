@@ -196,11 +196,11 @@ public abstract class MixinChatScreen extends Screen implements IMixinChatScreen
     }
 
     @Inject(method = "mouseScrolled", at = @At(value = "RETURN", ordinal = 1), cancellable = true)
-    private void mouseScrolled(double mouseX, double mouseY, double amountX, CallbackInfoReturnable<Boolean> cir) {
+    private void mouseScrolled(double mouseX, double mouseY, double amountY, CallbackInfoReturnable<Boolean> cir) {
         if (!Config.INSTANCE.getValues().getEnabled()) {
             return;
         }
-        if (ChatPlusScreenAdapter.INSTANCE.handleMouseScrolled(thisScreen(), mouseX, mouseY, amountX, 0)) {
+        if (ChatPlusScreenAdapter.INSTANCE.handleMouseScrolled(thisScreen(), mouseX, mouseY, 0, amountY)) {
             cir.setReturnValue(true);
             cir.cancel();
         }
