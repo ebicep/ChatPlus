@@ -36,7 +36,7 @@ object InputBoxCharacterCount {
                 val length = "${input.length}"
                 val width = Minecraft.getInstance().font.width(length)
                 poseStack.scale(SCALE, SCALE, 1f)
-                poseStack.translate0(x = (screen.chatPlusWidth / SCALE - width) - PADDING_SCALED, z = 1f)
+                poseStack.translate0(x = (Config.values.inputBoxSettings.startX / SCALE + screen.chatPlusWidth / SCALE - width) - PADDING_SCALED, z = 1f)
                 guiGraphics.fill0(
                     x / SCALE,
                     y / SCALE,
