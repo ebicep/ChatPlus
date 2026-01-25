@@ -83,6 +83,7 @@ object ScreenshotChat {
             "$MOD_ID:screenshot",
             RenderSetup.builder(RenderPipelines.TEXT)
                 .bufferSize(786432)
+                .useLightmap()
                 .setOutputTarget(OutputTarget("${MOD_ID}_target") {
                     renderTarget
                 })
