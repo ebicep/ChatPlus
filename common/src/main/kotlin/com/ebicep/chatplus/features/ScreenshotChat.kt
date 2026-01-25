@@ -39,7 +39,6 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import net.minecraft.ChatFormatting
-import net.minecraft.Util
 import net.minecraft.client.GuiMessage
 import net.minecraft.client.Minecraft
 import net.minecraft.client.Screenshot
@@ -49,11 +48,16 @@ import net.minecraft.client.gui.render.pip.PictureInPictureRenderer
 import net.minecraft.client.gui.render.state.GuiRenderState
 import net.minecraft.client.renderer.*
 import net.minecraft.client.renderer.fog.FogRenderer
+import net.minecraft.client.renderer.rendertype.RenderSetup
+import net.minecraft.client.renderer.rendertype.RenderType
+import net.minecraft.client.renderer.rendertype.OutputTarget
+import net.minecraft.client.renderer.rendertype.TextureTransform
 import net.minecraft.network.chat.ClickEvent
 import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.HoverEvent
 import net.minecraft.network.chat.HoverEvent.ShowText
 import net.minecraft.network.chat.Style
+import net.minecraft.util.Util
 import org.lwjgl.stb.STBImage
 import java.awt.Color
 import java.awt.Image
@@ -77,15 +81,14 @@ object ScreenshotChat {
     private fun createRenderType(renderTarget: RenderTarget): RenderType {
         return RenderType.create(
             "$MOD_ID:screenshot",
-            786432,
-            RenderPipelines.TEXT,
-            RenderType.CompositeState.builder()
-                .setLightmapState(RenderStateShard.LIGHTMAP)
-                .setOutputState(RenderStateShard.OutputStateShard("${MOD_ID}_target") {
+            RenderSetup.builder(RenderPipelines.TEXT)
+                .bufferSize(786432)
+                .setOutputTarget(OutputTarget("${MOD_ID}_target") {
                     renderTarget
                 })
-                .setTextureState(RenderStateShard.NO_TEXTURE)
-                .createCompositeState(false)
+                .setTextureTransform(TextureTransform.DEFAULT_TEXTURING)
+                .setOutline(RenderSetup.OutlineProperty.NONE)
+                .createRenderSetup()
         )
     }
 
@@ -239,7 +242,7 @@ object ScreenshotChat {
             val commandEncoder: CommandEncoder = device.createCommandEncoder()
             val vertexProvider = ChatPlusBufferSource(ByteBufferBuilder(512), renderTarget!!)
             val guiRenderState = GuiRenderState()
-            val guiGraphics = GuiGraphics(minecraft, guiRenderState)
+            val guiGraphics = GuiGraphics(minecraft, guiRenderState, 0, 0)
             val guiRenderer = GuiRenderer(
                 guiRenderState,
                 vertexProvider,
@@ -466,7 +469,7 @@ object ScreenshotChat {
             ChatPlus.sendMessage(Component.translatable("screenshot.success", component).withStyle(ChatFormatting.GRAY))
         } catch (e: IOException) {
             ChatPlus.LOGGER.error(e)
-            ChatPlus.sendMessage(Component.translatable("screenshot.failure", e.message).withStyle(ChatFormatting.RED))
+            ChatPlus.sendMessage(Component.translatable("screenshot.failure", e.message ?: "Unknown error").withStyle(ChatFormatting.RED))
         }
     }
 

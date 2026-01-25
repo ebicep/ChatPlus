@@ -1,7 +1,7 @@
 import org.gradle.kotlin.dsl.support.uppercaseFirstChar
 
 plugins {
-    id("com.github.johnrengelman.shadow")
+    id("com.gradleup.shadow")
 }
 
 architectury {

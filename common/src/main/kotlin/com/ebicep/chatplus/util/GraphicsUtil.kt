@@ -9,7 +9,7 @@ import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.client.renderer.RenderPipelines
 import net.minecraft.locale.Language
 import net.minecraft.network.chat.FormattedText
-import net.minecraft.resources.ResourceLocation
+import net.minecraft.resources.Identifier
 import net.minecraft.util.FormattedCharSequence
 import org.joml.Matrix3x2fStack
 
@@ -257,7 +257,7 @@ object GraphicsUtil {
 
     fun GuiGraphics.blit0(
         renderPipeline: RenderPipeline,
-        resourceLocation: ResourceLocation,
+        identifier: Identifier,
         i: Float, // starting x-coordinate for the blit.
         j: Float, // starting y-coordinate for the blit.
         f: Float, // starting u-coordinate in the texture.
@@ -272,7 +272,7 @@ object GraphicsUtil {
     ) {
         innerBlit0(
             renderPipeline,
-            resourceLocation,
+            identifier,
             i,
             i + k,
             j,
@@ -287,7 +287,7 @@ object GraphicsUtil {
 
     private fun GuiGraphics.innerBlit0(
         renderPipeline: RenderPipeline,
-        resourceLocation: ResourceLocation,
+        identifier: Identifier,
         i: Float, // starting x-coordinate for the blit.
         j: Float, // ending x-coordinate for the blit.
         k: Float, // starting y-coordinate for the blit.
@@ -299,21 +299,21 @@ object GraphicsUtil {
         n: Int, // color to be applied to the vertices.
     ) {
         this as IMixinGuiGraphics
-        this.callInnerBlit(renderPipeline, resourceLocation, i.toInt(), j.toInt(), k.toInt(), l.toInt(), f, g, h, m, n)
+        this.callInnerBlit(renderPipeline, identifier, i.toInt(), j.toInt(), k.toInt(), l.toInt(), f, g, h, m, n)
     }
 
     fun GuiGraphics.drawImage(resources: Resources) {
-        this.drawImage(resources.resourceLocation, resources.width, resources.height)
+        this.drawImage(resources.identifier, resources.width, resources.height)
     }
 
-    fun GuiGraphics.drawImage(resourceLocation: ResourceLocation, width: Int, height: Int) {
-        this.drawImage(resourceLocation, width.toFloat(), height.toFloat())
+    fun GuiGraphics.drawImage(identifier: Identifier, width: Int, height: Int) {
+        this.drawImage(identifier, width.toFloat(), height.toFloat())
     }
 
-    fun GuiGraphics.drawImage(resourceLocation: ResourceLocation, width: Float, height: Float) {
+    fun GuiGraphics.drawImage(identifier: Identifier, width: Float, height: Float) {
         this.innerBlit0(
             RenderPipelines.GUI_TEXTURED,
-            resourceLocation,
+            identifier,
             0f,
             width,
             0f,
@@ -328,13 +328,13 @@ object GraphicsUtil {
 
     object PlayerHeadUtils {
 
-        fun playerFaceRendererDraw(guiGraphics: GuiGraphics, resourceLocation: ResourceLocation, i: Float, j: Float, k: Float) {
-            this.playerFaceRendererDraw(guiGraphics, resourceLocation, i, j, k, renderHat = true, renderUpsideDown = false, l = -1)
+        fun playerFaceRendererDraw(guiGraphics: GuiGraphics, identifier: Identifier, i: Float, j: Float, k: Float) {
+            this.playerFaceRendererDraw(guiGraphics, identifier, i, j, k, renderHat = true, renderUpsideDown = false, l = -1)
         }
 
         fun playerFaceRendererDraw(
             guiGraphics: GuiGraphics,
-            resourceLocation: ResourceLocation,
+            identifier: Identifier,
             i: Float,
             j: Float,
             k: Float,
@@ -346,7 +346,7 @@ object GraphicsUtil {
             val n = 8 * (if (renderUpsideDown) -1 else 1)
             guiGraphics.blit0(
                 RenderPipelines.GUI_TEXTURED,
-                resourceLocation,
+                identifier,
                 i,
                 j,
                 8.0f,
@@ -360,16 +360,16 @@ object GraphicsUtil {
                 l
             )
             if (renderHat) {
-                playerFaceRendererDrawHat(guiGraphics, resourceLocation, i, j, k, renderUpsideDown, l)
+                playerFaceRendererDrawHat(guiGraphics, identifier, i, j, k, renderUpsideDown, l)
             }
         }
 
-        private fun playerFaceRendererDrawHat(guiGraphics: GuiGraphics, resourceLocation: ResourceLocation, i: Float, j: Float, k: Float, bl: Boolean, l: Int) {
+        private fun playerFaceRendererDrawHat(guiGraphics: GuiGraphics, identifier: Identifier, i: Float, j: Float, k: Float, bl: Boolean, l: Int) {
             val m = 8 + (if (bl) 8 else 0)
             val n = 8 * (if (bl) -1 else 1)
             guiGraphics.blit0(
                 RenderPipelines.GUI_TEXTURED,
-                resourceLocation,
+                identifier,
                 i,
                 j,
                 40.0f,

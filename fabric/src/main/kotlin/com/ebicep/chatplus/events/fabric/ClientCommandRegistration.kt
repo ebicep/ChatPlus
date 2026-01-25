@@ -19,7 +19,7 @@ import net.minecraft.network.chat.Component
 object ClientCommandRegistration {
 
     fun registerCommands() {
-        ClientCommandRegistrationCallback.EVENT.register(ClientCommandRegistrationCallback { dispatcher: CommandDispatcher<FabricClientCommandSource?>, _: CommandBuildContext? ->
+        ClientCommandRegistrationCallback.EVENT.register(ClientCommandRegistrationCallback { dispatcher: CommandDispatcher<FabricClientCommandSource>, _: CommandBuildContext? ->
             dispatcher.register(createCommand("chatplus"))
             dispatcher.register(createCommand("cp"))
 

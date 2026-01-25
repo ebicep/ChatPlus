@@ -72,7 +72,7 @@ object SpeechToText {
             color
         )
         if (Config.values.speechToTextTranslateEnabled) {
-            guiGraphics.submitOutline(
+            guiGraphics.renderOutline(
                 centerWidth - width / 2 - 5,
                 35,
                 width + 10,

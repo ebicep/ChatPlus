@@ -11,7 +11,7 @@ import kotlinx.serialization.Serializable
 import net.minecraft.client.Minecraft
 import net.minecraft.client.resources.sounds.SimpleSoundInstance
 import net.minecraft.client.resources.sounds.SoundInstance
-import net.minecraft.resources.ResourceLocation
+import net.minecraft.resources.Identifier
 import net.minecraft.util.RandomSource
 import java.awt.Color
 
@@ -31,7 +31,7 @@ object FilterMessages {
                 }
                 val sound = filterHighlight.sound
                 try {
-                    ResourceLocation.tryParse(sound.sound)?.let {
+                    Identifier.tryParse(sound.sound)?.let {
                         Minecraft.getInstance().soundManager.play(
                             SimpleSoundInstance(
                                 it,

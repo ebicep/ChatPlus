@@ -119,7 +119,7 @@ object TranslateMessage {
                 if (values.vanillaInputBox) height - 2 else inputBoxSettings.getCalculatedStartY() + MovableChat.InputBoxSettings.PADDED_INPUT_BOX_HEIGHT,
                 minecraft.options.getBackgroundColor(Int.MIN_VALUE)
             )
-            guiGraphics.submitOutline(
+            guiGraphics.renderOutline(
                 startX,
                 startY,
                 TRANSLATE_PREFIX_INPUT_WIDTH,

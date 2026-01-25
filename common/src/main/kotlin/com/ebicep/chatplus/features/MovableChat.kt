@@ -628,7 +628,7 @@ object MovableChat {
             Config.values.chatWindows.forEach { window ->
                 val smallWidth = window === ChatManager.selectedWindow && isSingleTabWindow(window)
                 val width = if (smallWidth) window.tabSettings.getTabBarWidth() else window.renderer.backgroundWidthEndX - window.renderer.internalX
-                guiGraphics.submitOutline(
+                guiGraphics.renderOutline(
                     window.renderer.internalX - MOVE_PADDING_X,
                     getTabStartY(window) - MOVE_PADDING_Y,
                     (width + MOVE_PADDING_X * 2),
@@ -640,7 +640,7 @@ object MovableChat {
             Config.values.chatWindows.forEach { window ->
                 val selected = window === ChatManager.selectedWindow && isSingleTabWindow(window)
                 val width = if (selected) window.tabSettings.getTabBarWidth() else window.renderer.backgroundWidthEndX - window.renderer.internalX
-                guiGraphics.submitOutline(
+                guiGraphics.renderOutline(
                     window.renderer.internalX,
                     getTabStartY(window),
                     width,

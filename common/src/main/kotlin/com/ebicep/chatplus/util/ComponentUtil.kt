@@ -24,12 +24,12 @@ object ComponentUtil {
             return text
         }
 
-        override fun <T> visit(arg: FormattedText.ContentConsumer<T>): Optional<T> {
-            return arg.accept(this.text)
+        override fun <T : Any> visit(contentConsumer: FormattedText.ContentConsumer<T>): Optional<T> {
+            return contentConsumer.accept(this.text)
         }
 
-        override fun <T> visit(arg: FormattedText.StyledContentConsumer<T>, arg2: Style): Optional<T> {
-            return arg.accept(arg2, this.text)
+        override fun <T : Any> visit(styledContentConsumer: FormattedText.StyledContentConsumer<T>, style: Style): Optional<T> {
+            return styledContentConsumer.accept(style, this.text)
         }
 
         override fun toString(): String {

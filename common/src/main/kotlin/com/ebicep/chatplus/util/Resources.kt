@@ -1,7 +1,7 @@
 package com.ebicep.chatplus.util
 
 import com.ebicep.chatplus.MOD_ID
-import net.minecraft.resources.ResourceLocation
+import net.minecraft.resources.Identifier
 
 enum class Resources(path: String, var width: Int, var height: Int) {
 
@@ -9,6 +9,6 @@ enum class Resources(path: String, var width: Int, var height: Int) {
 
     ;
 
-    var resourceLocation: ResourceLocation = ResourceLocation.fromNamespaceAndPath(MOD_ID, path)
+    var identifier: Identifier = Identifier.fromNamespaceAndPath(MOD_ID, path)
 
 }

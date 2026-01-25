@@ -64,7 +64,7 @@ interface TextBarElement {
     }
 
     fun renderOutline(guiGraphics: GuiGraphics, currentX: Int, currentY: Int, color: Int) {
-        guiGraphics.submitOutline(
+        guiGraphics.renderOutline(
             currentX,
             currentY,
             getPaddedWidth(),

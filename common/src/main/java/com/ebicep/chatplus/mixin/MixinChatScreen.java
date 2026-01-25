@@ -11,7 +11,6 @@ import com.ebicep.chatplus.translator.LanguageManager;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.sugar.Share;
 import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
-import net.minecraft.client.GuiMessageTag;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.ChatScreen;
@@ -21,9 +20,7 @@ import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import org.spongepowered.asm.mixin.*;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.ModifyArg;
+import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
@@ -239,6 +236,14 @@ public abstract class MixinChatScreen extends Screen implements IMixinChatScreen
         return input.isFocused() && original;
     }
 
+    @ModifyVariable(method = "mouseClicked", at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/client/gui/ActiveTextCollector$ClickableStyleFinder;result()Lnet/minecraft/network/chat/Style;"), name = "style")
+    private Style modifyClickedStyle(Style original, MouseButtonEvent mouseButtonEvent) {
+        if (!Config.INSTANCE.getValues().getEnabled()) {
+            return original;
+        }
+        return ChatManager.INSTANCE.getGlobalSelectedTab().getComponentStyleAt(mouseButtonEvent.x(), mouseButtonEvent.y());
+    }
+
     @Override
     public boolean mouseReleased(MouseButtonEvent mouseButtonEvent) {
         if (!Config.INSTANCE.getValues().getEnabled()) {
@@ -336,29 +341,12 @@ public abstract class MixinChatScreen extends Screen implements IMixinChatScreen
         return Config.INSTANCE.getValues().getInputBoxSettings().getCalculatedStartY() + MovableChat.InputBoxSettings.PADDED_INPUT_BOX_HEIGHT;
     }
 
-    @ModifyExpressionValue(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/ChatComponent;getMessageTagAt(DD)Lnet/minecraft/client/GuiMessageTag;"))
-    private GuiMessageTag renderModifyVariable(GuiMessageTag original) {
-        if (!Config.INSTANCE.getValues().getEnabled()) {
-            return original;
-        }
-        return null;
-    }
-
     @Inject(method = "render", at = @At("TAIL"))
     private void renderTail(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick, CallbackInfo ci) {
         if (!Config.INSTANCE.getValues().getEnabled()) {
             return;
         }
         ChatPlusScreenAdapter.INSTANCE.handleRenderTail(thisScreen(), guiGraphics, mouseX, mouseY, partialTick);
-    }
-
-    @Inject(method = "getComponentStyleAt", at = @At(value = "HEAD"), cancellable = true)
-    private void getComponentStyleAtRedirect(double mouseX, double mouseY, CallbackInfoReturnable<Style> cir) {
-        if (!Config.INSTANCE.getValues().getEnabled()) {
-            return;
-        }
-        cir.setReturnValue(ChatManager.INSTANCE.getGlobalSelectedTab().getComponentStyleAt(mouseX, mouseY));
-        cir.cancel();
     }
 
     @Inject(method = "handleChatInput", at = @At("HEAD"), cancellable = true)

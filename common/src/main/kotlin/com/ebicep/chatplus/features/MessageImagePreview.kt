@@ -23,7 +23,7 @@ import net.minecraft.client.Minecraft
 import net.minecraft.client.renderer.texture.DynamicTexture
 import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.HoverEvent
-import net.minecraft.resources.ResourceLocation
+import net.minecraft.resources.Identifier
 import java.awt.Color
 import java.awt.image.BufferedImage
 import java.io.ByteArrayInputStream
@@ -122,7 +122,7 @@ object MessageImagePreview {
                 images.filterNotNull().forEachIndexed { index, url ->
                     imageCache[url]?.let {
                         poseStack.createPose {
-                            fun draw(resourceLocation: ResourceLocation, chatPlusTexture: ChatPlusTexture) {
+                            fun draw(identifier: Identifier, chatPlusTexture: ChatPlusTexture) {
                                 val nativeImage = chatPlusTexture.nativeImage
                                 val scale = minOf(windowWidth * .4f / nativeImage.width.toFloat(), windowHeight * .4f / nativeImage.height.toFloat())
                                 val width = nativeImage.width * scale
@@ -134,17 +134,17 @@ object MessageImagePreview {
                                 }
                                 y += height + 10
 //                                guiGraphics.fill(0, 0, width.toInt(), height.toInt(), 0xFF000000.toInt())
-                                guiGraphics.drawImage(resourceLocation, width, height)
+                                guiGraphics.drawImage(identifier, width, height)
                             }
                             if (it.maxFrames <= 1) {
-                                val resourceLocation = it.resourceLocations[0] ?: return@let
+                                val identifier = it.identifiers[0] ?: return@let
                                 val chatPlusTexture = it.chatPlusTextures[0] ?: return@let
-                                draw(resourceLocation, chatPlusTexture)
+                                draw(identifier, chatPlusTexture)
                             } else {
                                 val currentFrame = (it.currentFrame % it.maxFrames).toInt()
-                                val resourceLocation = it.resourceLocations[currentFrame] ?: return@let
+                                val identifier = it.identifiers[currentFrame] ?: return@let
                                 val chatPlusTexture = it.chatPlusTextures[currentFrame] ?: return@let
-                                draw(resourceLocation, chatPlusTexture)
+                                draw(identifier, chatPlusTexture)
                                 it.currentFrame = (it.currentFrame + .15f) % it.maxFrames
                             }
                         }
@@ -307,8 +307,8 @@ object MessageImagePreview {
             loadImage(
                 pngBytes,
                 "chatplus_message_image_preview",
-                { resourceLocation, texture ->
-                    chatPlusImage.resourceLocations.add(resourceLocation)
+                { identifier, texture ->
+                    chatPlusImage.identifiers.add(identifier)
                     chatPlusImage.chatPlusTextures.add(texture)
                 },
                 afterLoad,
@@ -355,8 +355,8 @@ object MessageImagePreview {
                 loadImage(
                     pngBytes,
                     "chatplus_message_image_preview_gif_frame",
-                    { resourceLocation, texture ->
-                        chatPlusImage.resourceLocations.add(resourceLocation)
+                    { identifier, texture ->
+                        chatPlusImage.identifiers.add(identifier)
                         chatPlusImage.chatPlusTextures.add(texture)
                     },
                     afterLoad,
@@ -374,7 +374,7 @@ object MessageImagePreview {
     private fun loadImage(
         pngBytes: ByteArray?,
         prefix: String,
-        onResource: (resourceLocation: ResourceLocation, texture: ChatPlusTexture) -> Unit,
+        onResource: (identifier: Identifier, texture: ChatPlusTexture) -> Unit,
         afterLoad: (String) -> Unit,
         urlString: String
     ) {
@@ -384,10 +384,10 @@ object MessageImagePreview {
             }
 
             nativeImage.use { image ->
-                val resourceLocation = ResourceLocation.tryBuild(MOD_ID, "${prefix}_${System.currentTimeMillis()}") ?: throw IllegalArgumentException("Invalid ResourceLocation")
+                val identifier = Identifier.tryBuild(MOD_ID, "${prefix}_${System.currentTimeMillis()}") ?: throw IllegalArgumentException("Invalid Identifier")
                 val chatPlusTexture = ChatPlusTexture(image)
-                Minecraft.getInstance().textureManager.register(resourceLocation, chatPlusTexture)
-                onResource(resourceLocation, chatPlusTexture)
+                Minecraft.getInstance().textureManager.register(identifier, chatPlusTexture)
+                onResource(identifier, chatPlusTexture)
 
                 afterLoad(urlString)
             }
@@ -397,7 +397,7 @@ object MessageImagePreview {
     }
 
     data class ChatPlusImage(
-        var resourceLocations: MutableList<ResourceLocation?> = mutableListOf(),
+        var identifiers: MutableList<Identifier?> = mutableListOf(),
         var chatPlusTextures: MutableList<ChatPlusTexture?> = mutableListOf(),
         var currentFrame: Float = 1f,
         var maxFrames: Int = 1,

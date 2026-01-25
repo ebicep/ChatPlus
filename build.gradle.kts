@@ -17,8 +17,8 @@ plugins {
     kotlin("jvm") version "2.2.0"
     kotlin("plugin.serialization") version "2.2.0" apply false
     id("architectury-plugin") version "3.4-SNAPSHOT"
-    id("dev.architectury.loom") version "1.11-SNAPSHOT" apply false
-    id("com.github.johnrengelman.shadow") version "8.1.1" apply false
+    id("dev.architectury.loom") version "1.13-SNAPSHOT" apply false
+    id("com.gradleup.shadow") version "9.3.1" apply false
     id("me.shedaniel.unified-publishing") version "0.1.+" apply false
 }
 

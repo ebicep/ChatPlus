@@ -43,11 +43,15 @@ object KeyUtil {
 
     fun isAlt(value: Int): Boolean = value == InputConstants.KEY_LALT || value == InputConstants.KEY_RALT
 
+    // copy from 1.21.9
+    private val EDIT_SHORTCUT_KEY_LEFT: Int = if (InputQuirks.REPLACE_CTRL_KEY_WITH_CMD_KEY) 343 else 341
+    private val EDIT_SHORTCUT_KEY_RIGHT: Int = if (InputQuirks.REPLACE_CTRL_KEY_WITH_CMD_KEY) 347 else 345;
+
     fun InputConstants.Key.isControl(): Boolean =
-        value == InputQuirks.EDIT_SHORTCUT_KEY_LEFT || value == InputQuirks.EDIT_SHORTCUT_KEY_RIGHT
+        value == EDIT_SHORTCUT_KEY_LEFT || value == EDIT_SHORTCUT_KEY_RIGHT
 
     fun isControl(value: Int): Boolean =
-        value == InputQuirks.EDIT_SHORTCUT_KEY_LEFT || value == InputQuirks.EDIT_SHORTCUT_KEY_RIGHT
+        value == EDIT_SHORTCUT_KEY_LEFT || value == EDIT_SHORTCUT_KEY_RIGHT
 
     fun InputConstants.Key.isShift(): Boolean = value == InputConstants.KEY_LSHIFT || value == InputConstants.KEY_RSHIFT
 

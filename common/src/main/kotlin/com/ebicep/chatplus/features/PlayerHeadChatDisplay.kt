@@ -16,7 +16,7 @@ import com.ebicep.chatplus.util.GraphicsUtil.translate0
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.components.PlayerFaceRenderer
 import net.minecraft.client.multiplayer.PlayerInfo
-import net.minecraft.resources.ResourceLocation
+import net.minecraft.resources.Identifier
 import net.minecraft.world.entity.player.PlayerModelPart
 import java.util.*
 
@@ -32,7 +32,7 @@ object PlayerHeadChatDisplay {
 
     data class TimedUUID(val uuid: UUID, val lastUsed: Long)
 
-    data class HeadData(val texture: () -> ResourceLocation, val showHat: Boolean)
+    data class HeadData(val texture: () -> Identifier, val showHat: Boolean)
 
     init {
         EventBus.register<ChatPlusMinuteEvent> {
