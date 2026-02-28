@@ -397,6 +397,28 @@ class ChatTab {
         return added
     }
 
+    fun deleteMessage(signature: MessageSignature) {
+        val messageIndex = messages.indexOfFirst { it.guiMessage.signature == signature }
+        if (messageIndex == -1) return
+
+        val message = messages.removeAt(messageIndex)
+        EventBus.post(ChatTabRemoveMessageEvent(chatWindow, this, message))
+
+        displayedMessages.removeIf {
+            val match = it.linkedMessage === message
+            if (match) {
+                EventBus.post(ChatTabRemoveDisplayMessageEvent(chatWindow, this, it))
+            }
+            match
+        }
+
+        unfilteredDisplayedMessages.removeIf {
+            it.linkedMessage === message
+        }
+
+        refreshDisplayMessages()
+    }
+
     fun clear() {
         messages = ArrayList()
         displayedMessages = ArrayList()

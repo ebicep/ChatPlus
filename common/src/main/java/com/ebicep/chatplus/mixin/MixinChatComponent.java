@@ -19,6 +19,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MessageSignature;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
+import org.jspecify.annotations.Nullable;
+import org.slf4j.Logger;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -35,6 +37,10 @@ public class MixinChatComponent {
     @Final
     @Shadow
     Minecraft minecraft;
+
+    @Shadow
+    @Final
+    private static Logger LOGGER;
 
     @Inject(method = "render(Lnet/minecraft/client/gui/GuiGraphics;Lnet/minecraft/client/gui/Font;IIIZZ)V", at = @At("HEAD"), cancellable = true)
     public void render(GuiGraphics guiGraphics, Font font, int i, int j, int k, boolean bl, boolean bl2, CallbackInfo ci) {
@@ -110,5 +116,14 @@ public class MixinChatComponent {
             EventBus.INSTANCE.post(SkipNewMessageEvent.class, messageEvent);
         }
     }
+    @Inject(method = "deleteMessage(Lnet/minecraft/network/chat/MessageSignature;)V", at = @At("RETURN"))
+    public void deleteMessage(MessageSignature messageSignature, CallbackInfo ci) {
+        if (!ChatPlus.INSTANCE.isEnabled()) {
+            return;
+        }
 
+        for (ChatTab chatTab : ChatManager.INSTANCE.getGlobalSortedTabs()) {
+            chatTab.deleteMessage(messageSignature);
+        }
+    }
 }
