@@ -24,7 +24,7 @@ object HideChat {
                 it.chatFocused = true
                 return@register
             }
-            if (Config.values.hideChatHideWhenDebugScreen && Minecraft.getInstance().debugOverlay.showDebugScreen()) {
+            if (Config.values.hideChatHideWhenDebugScreen && Minecraft.getInstance().options.renderDebug) {
                 if (ChatManager.isChatFocused() && Config.values.hideChatShowWhenFocused) {
                     return@register
                 }
