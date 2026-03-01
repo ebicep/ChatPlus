@@ -1,0 +1,63 @@
+name: Publish to CurseForge & Modrinth
+
+on:
+  workflow_dispatch:
+
+jobs:
+  publish:
+    name: Build & Publish
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Read enabled platforms
+        id: platforms
+        run: |
+          PLATFORMS=$(grep '^enabled_platforms=' gradle.properties | cut -d'=' -f2)
+          echo "value=$PLATFORMS" >> $GITHUB_OUTPUT
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: false
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build enabled platforms
+        run: |
+          PLATFORMS="${{ steps.platforms.outputs.value }}"
+          TASKS=""
+          [[ "$PLATFORMS" == *"fabric"* ]]   && TASKS="$TASKS :fabric:remapJar"
+          [[ "$PLATFORMS" == *"forge"* ]]    && TASKS="$TASKS :forge:remapJar"
+          [[ "$PLATFORMS" == *"neoforge"* ]] && TASKS="$TASKS :neoforge:remapJar"
+          ./gradlew $TASKS
+
+      - name: Publish Fabric
+        if: contains(steps.platforms.outputs.value, 'fabric')
+        run: ./gradlew :fabric:publishUnified
+        env:
+          CF_TOKEN: ${{ secrets.CF_TOKEN }}
+          MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
+
+      - name: Publish Forge
+        if: contains(steps.platforms.outputs.value, 'forge')
+        run: ./gradlew :forge:publishUnified
+        env:
+          CF_TOKEN: ${{ secrets.CF_TOKEN }}
+          MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
+
+      - name: Publish NeoForge
+        if: contains(steps.platforms.outputs.value, 'neoforge')
+        run: ./gradlew :neoforge:publishUnified
+        env:
+          CF_TOKEN: ${{ secrets.CF_TOKEN }}
+          MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
