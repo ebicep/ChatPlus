@@ -140,6 +140,7 @@ data class ConfigVariables(
     var timestampSettings: TimestampMessages.TimestampSettings = TimestampMessages.TimestampSettings(),
     var inputOverFlowAutoFillSettings: InputOverFlowAutoFill.InputOverFlowAutoFillSettings = InputOverFlowAutoFill.InputOverFlowAutoFillSettings(),
     var messageImagePreviewSettings: MessageImagePreview.MessageImagePreviewSettings = MessageImagePreview.MessageImagePreviewSettings(),
+    var debugLogging: Boolean = false,
     // hide chat
     var hideChatEnabled: Boolean = false,
     var hideChatShowWhenFocused: Boolean = true,
@@ -147,6 +148,7 @@ data class ConfigVariables(
     var hideChatToggleKey: KeyWithModifier = KeyWithModifier(InputConstants.getKey("key.keyboard.unknown"), 0),
     var alwaysShowChat: Boolean = false,
     var alwaysShowChatToggleKey: KeyWithModifier = KeyWithModifier(InputConstants.getKey("key.keyboard.unknown"), 0),
+    var hideChatHideWhenDebugScreen: Boolean = false,
     // compact messages
     var compactMessagesEnabled: Boolean = true,
     var compactMessagesFormat: String = " &7(%VALUE%)",
@@ -154,6 +156,8 @@ data class ConfigVariables(
     var compactMessagesDeleteDuplicate: Boolean = true,
     var compactMessagesRefreshAddedTime: Boolean = false,
     var compactMessagesSearchAmount: Int = 1,
+    var compactMessagesTimeSeconds: Int = 30,
+    var compactMessagesMode: CompactMessages.CompactMode = CompactMessages.CompactMode.LATEST,
     var compactMessageComparatorMode: CompactMessages.CompactComparatorMode = CompactMessages.CompactComparatorMode.CUSTOM,
     var compactMessageSettings: CompactMessages.CompactMessageCustomSettings = CompactMessages.CompactMessageCustomSettings(),
     // scrolling
@@ -175,7 +179,10 @@ data class ConfigVariables(
     var tabEditorScreen: Boolean = true,
     var windowEditorScreen: Boolean = true,
     var scrollCycleTabEnabled: Boolean = true,
-    var arrowCycleTabEnabled: Boolean = true,
+    var keyCycleTabLeft: KeyWithModifier = KeyWithModifier(InputConstants.getKey("key.keyboard.left"), 0),
+    var keyCycleTabRight: KeyWithModifier = KeyWithModifier(InputConstants.getKey("key.keyboard.right"), 0),
+    var keyCycleTabLeftChatClosed: KeyWithModifier = KeyWithModifier(InputConstants.getKey("key.keyboard.unknown"), 0),
+    var keyCycleTabRightChatClosed: KeyWithModifier = KeyWithModifier(InputConstants.getKey("key.keyboard.unknown"), 0),
     var moveToTabWhenCycling: Boolean = true,
     var inputBoxAutoAdjustChatWindowEnabled: Boolean = true,
     var tabNotificationSettings: TabNotificationSettings = TabNotificationSettings(),
@@ -186,6 +193,7 @@ data class ConfigVariables(
     var movableChatColor: Int = Color(255, 255, 255, 200).rgb,
     var movableChatSelectedColor: Int = Color(0, 255, 0, 200).rgb,
     var movableChatToggleTextBarElement: Boolean = false, // TODO add enabled
+    var allowWindowsOutsideScreen: Boolean = false,
     var inputBoxSettings: InputBoxSettings = InputBoxSettings(),
     // notes
     var sendNoteEnabled: Boolean = true,
@@ -254,6 +262,7 @@ data class ConfigVariables(
     var translatorEnabled: Boolean = true,
     var translatorTextBarElementEnabled: Boolean = true,
     var translatorRegexes: MutableList<MessageFilter> = mutableListOf(),
+    var translateFrom: String = "Auto Detect",
     var translateTo: String = "Auto Detect",
     var translateSelf: String = "Auto Detect",
     var translateSpeak: String = "English",

@@ -8,7 +8,10 @@ import com.ebicep.chatplus.features.DeleteMessages.F3DMode
 import com.ebicep.chatplus.features.FilterMessages.DEFAULT_COLOR
 import com.ebicep.chatplus.features.MovableChat.MOVABLE_CHAT_COLOR
 import com.ebicep.chatplus.features.SendNote.NOTE_COLOR
-import com.ebicep.chatplus.features.chattabs.*
+import com.ebicep.chatplus.features.chattabs.AutoTabCreator
+import com.ebicep.chatplus.features.chattabs.ChatTab
+import com.ebicep.chatplus.features.chattabs.ServerChatTabCommandSuggestion
+import com.ebicep.chatplus.features.chattabs.ServerChatTabSettings
 import com.ebicep.chatplus.features.chatwindows.ChatWindow
 import com.ebicep.chatplus.features.chatwindows.OutlineSettings
 import com.ebicep.chatplus.features.chatwindows.TabSettings.Position
@@ -211,6 +214,7 @@ object ConfigScreenImpl {
                     Config.values.messageImagePreviewSettings.previewLineColor
                 ) { Config.values.messageImagePreviewSettings.previewLineColor = it },
             ).build(),
+            entryBuilder.booleanToggle("chatPlus.chatSettings.debugLogging", Config.values.debugLogging) { Config.values.debugLogging = it },
         )
     }
 
@@ -224,6 +228,10 @@ object ConfigScreenImpl {
                 "chatPlus.hideChat.showWhenFocused.toggle",
                 Config.values.hideChatShowWhenFocused
             ) { Config.values.hideChatShowWhenFocused = it },
+            entryBuilder.booleanToggle(
+                "chatPlus.hideChat.hideWhenDebugScreen.toggle",
+                Config.values.hideChatHideWhenDebugScreen
+            ) { Config.values.hideChatHideWhenDebugScreen = it },
             entryBuilder.booleanToggle(
                 "chatPlus.hideChat.showHiddenOnScreen.toggle",
                 Config.values.hideChatShowHiddenOnScreen
@@ -260,12 +268,21 @@ object ConfigScreenImpl {
                 "chatPlus.compactMessages.refreshFadeTime.toggle",
                 Config.values.compactMessagesRefreshAddedTime
             ) { Config.values.compactMessagesRefreshAddedTime = it },
+            entryBuilder.enumSelector(
+                "chatPlus.compactMessages.mode",
+                CompactMessages.CompactMode::class.java,
+                Config.values.compactMessagesMode
+            ) { Config.values.compactMessagesMode = it },
             entryBuilder.intSlider(
                 "chatPlus.compactMessages.searchAmount",
                 Config.values.compactMessagesSearchAmount,
                 1,
                 25
             ) { Config.values.compactMessagesSearchAmount = it },
+            entryBuilder.intField(
+                "chatPlus.compactMessages.timeSeconds",
+                Config.values.compactMessagesTimeSeconds
+            ) { Config.values.compactMessagesTimeSeconds = it },
             entryBuilder.enumSelector(
                 "chatPlus.compactMessages.comparatorMode",
                 CompactMessages.CompactComparatorMode::class.java,
@@ -390,10 +407,22 @@ object ConfigScreenImpl {
                 "chatPlus.chatWindow.tabSettings.chatTabs.windowEditorScreen.toggle",
                 Config.values.windowEditorScreen
             ) { Config.values.windowEditorScreen = it },
-            entryBuilder.booleanToggle(
-                "chatPlus.chatWindow.tabSettings.chatTabs.arrowCycleTabEnabled.toggle",
-                Config.values.arrowCycleTabEnabled
-            ) { Config.values.arrowCycleTabEnabled = it },
+            entryBuilder.keyCodeOptionWithModifier(
+                "chatPlus.chatWindow.tabSettings.chatTabs.keyCycleTabLeft",
+                Config.values.keyCycleTabLeft
+            ),
+            entryBuilder.keyCodeOptionWithModifier(
+                "chatPlus.chatWindow.tabSettings.chatTabs.keyCycleTabRight",
+                Config.values.keyCycleTabRight
+            ),
+            entryBuilder.keyCodeOptionWithModifier(
+                "chatPlus.chatWindow.tabSettings.chatTabs.keyCycleTabLeftChatClosed",
+                Config.values.keyCycleTabLeftChatClosed
+            ),
+            entryBuilder.keyCodeOptionWithModifier(
+                "chatPlus.chatWindow.tabSettings.chatTabs.keyCycleTabRightChatClosed",
+                Config.values.keyCycleTabRightChatClosed
+            ),
             entryBuilder.booleanToggle(
                 "chatPlus.chatWindow.tabSettings.chatTabs.inputBoxAutoAdjustChatWindowEnabled.toggle",
                 Config.values.inputBoxAutoAdjustChatWindowEnabled
@@ -483,7 +512,11 @@ object ConfigScreenImpl {
             entryBuilder.percentSlider(
                 "chatPlus.chatWindow.generalSettings.unfocusedOutlineColorOpacityReduction",
                 1 - window.outlineSettings.unfocusedOutlineColorOpacityMultiplier
-            ) { window.outlineSettings.unfocusedOutlineColorOpacityMultiplier = 1 - it }
+            ) { window.outlineSettings.unfocusedOutlineColorOpacityMultiplier = 1 - it },
+            entryBuilder.booleanToggle(
+                "chatPlus.chatWindow.generalSettings.reduceUnfocusedOutlineOpacityWhenClosed",
+                window.outlineSettings.reduceUnfocusedOutlineOpacityWhenClosed
+            ) { window.outlineSettings.reduceUnfocusedOutlineOpacityWhenClosed = it }
         )
     }
 
@@ -505,14 +538,8 @@ object ConfigScreenImpl {
                 Position::class.java,
                 window.tabSettings.position
             ) {
-                val oldPosition = window.tabSettings.position
                 window.tabSettings.position = it
-                if (oldPosition != it) {
-                    when (oldPosition) {
-                        Position.TOP -> window.renderer.y -= CHAT_TAB_HEIGHT
-                        Position.BOTTOM -> window.renderer.y += CHAT_TAB_HEIGHT
-                    }
-                }
+                window.renderer.updateCachedDimension()
             },
             entryBuilder.percentSlider(
                 "chatPlus.chatWindow.tabSettings.unfocusedTabOpacityReduction",
@@ -799,6 +826,10 @@ object ConfigScreenImpl {
                 "chatPlus.chatWindow.generalSettings.unfocusedBackgroundColorOpacityReduction",
                 1 - window.generalSettings.unfocusedBackgroundColorOpacityMultiplier
             ) { window.generalSettings.unfocusedBackgroundColorOpacityMultiplier = 1 - it },
+            entryBuilder.booleanToggle(
+                "chatPlus.chatWindow.generalSettings.reduceUnfocusedBackgroundOpacityWhenClosed",
+                window.generalSettings.reduceUnfocusedBackgroundOpacityWhenClosed
+            ) { window.generalSettings.reduceUnfocusedBackgroundOpacityWhenClosed = it },
             entryBuilder.percentSlider(
                 "chatPlus.chatWindow.generalSettings.chatTextSize",
                 window.generalSettings.scale
@@ -815,6 +846,10 @@ object ConfigScreenImpl {
                 "chatPlus.chatWindow.generalSettings.unfocusedTextOpacityReduction",
                 1 - window.generalSettings.unfocusedTextOpacityMultiplier
             ) { window.generalSettings.unfocusedTextOpacityMultiplier = 1 - it },
+            entryBuilder.booleanToggle(
+                "chatPlus.chatWindow.generalSettings.reduceUnfocusedTextOpacityWhenClosed",
+                window.generalSettings.reduceUnfocusedTextOpacityWhenClosed
+            ) { window.generalSettings.reduceUnfocusedTextOpacityWhenClosed = it },
             entryBuilder.percentSlider(
                 "chatPlus.chatWindow.generalSettings.unfocusedHeight",
                 window.generalSettings.unfocusedHeight
@@ -823,6 +858,19 @@ object ConfigScreenImpl {
                 "chatPlus.chatWindow.generalSettings.lineSpacing",
                 window.generalSettings.lineSpacing
             ) { window.generalSettings.lineSpacing = it },
+            entryBuilder.enumSelector(
+                "chatPlus.chatWindow.generalSettings.anchorPoint",
+                AnchorPoint::class.java,
+                window.generalSettings.anchorPoint
+            ) {
+                val renderer = window.renderer
+                val absX = renderer.internalX
+                val absY = renderer.internalY
+                window.generalSettings.anchorPoint = it
+                renderer.x = absX
+                renderer.y = absY
+                renderer.updateCachedDimension()
+            },
             entryBuilder.enumSelector(
                 "chatPlus.chatWindow.generalSettings.messageAlignment",
                 AlignMessage.Alignment::class.java,
@@ -867,6 +915,10 @@ object ConfigScreenImpl {
                 "chatPlus.movableChat.textBarElement.toggle",
                 Config.values.movableChatToggleTextBarElement
             ) { Config.values.movableChatToggleTextBarElement = it },
+            entryBuilder.booleanToggle(
+                "chatPlus.movableChat.allowWindowsOutsideScreen.toggle",
+                Config.values.allowWindowsOutsideScreen
+            ) { Config.values.allowWindowsOutsideScreen = it },
         )
     }
 
@@ -1234,6 +1286,17 @@ object ConfigScreenImpl {
                 "chatPlus.translatorTextBarElement.toggle",
                 Config.values.translatorTextBarElementEnabled
             ) { Config.values.translatorTextBarElementEnabled = it },
+            entryBuilder.dropDown(
+                "chatPlus.translator.translateFrom",
+                Config.values.translateFrom,
+                { str -> str },
+                languageNames,
+                { str: String -> if (languageNames.contains(str)) "" else "chatPlus.translator.translateInvalid" },
+                { str: String ->
+                    Config.values.translateFrom = str
+                    LanguageManager.updateTranslateLanguages()
+                }
+            ),
             entryBuilder.dropDown(
                 "chatPlus.translator.translateTo",
                 Config.values.translateTo,

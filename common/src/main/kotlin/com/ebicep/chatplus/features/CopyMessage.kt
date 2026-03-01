@@ -7,12 +7,14 @@ import com.ebicep.chatplus.features.chattabs.ChatTab
 import com.ebicep.chatplus.hud.ChatManager
 import com.ebicep.chatplus.hud.ChatRenderPreLineAppearanceEvent
 import com.ebicep.chatplus.hud.ChatScreenInputEvent
+import com.ebicep.chatplus.util.ComponentUtil.getColoredString
+import com.ebicep.chatplus.util.ComponentUtil.getString
 import com.ebicep.chatplus.util.TimeStampedLines
 import com.ebicep.chatplus.util.TimeStampedMessages
 import com.ebicep.chatplus.util.Timestamped
-import net.minecraft.ChatFormatting
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.screens.Screen
+import net.minecraft.util.FormattedCharSequence
 import java.awt.Color
 
 object CopyMessage {
@@ -37,23 +39,21 @@ object CopyMessage {
             if (hoveredOverMessage != null && selectedMessages.isEmpty()) {
                 if (copyWholeMessage) {
                     copiedMessages.add(hoveredOverMessage.linkedMessage)
-                    copyToClipboard(hoveredOverMessage.linkedMessage.guiMessage.content.string)
+                    copyToClipboard(getClipboardString(hoveredOverMessage.linkedMessage.guiMessage.content.visualOrderText))
                 } else {
                     copiedLines.add(hoveredOverMessage)
-                    copyToClipboard(hoveredOverMessage)
+                    copyToClipboard(getClipboardString(hoveredOverMessage))
                 }
             } else if (selectedMessages.isNotEmpty()) {
-                if (copyWholeMessage) {
-                    copyToClipboard(SelectChat.getSelectedMessagesOrdered().map { it.linkedMessage }.joinToString(Config.values.copyMessageSeparator) { message ->
-                        copiedMessages.add(message)
-                        message.guiMessage.content.string
-                    })
-                } else {
-                    copyToClipboard(SelectChat.getSelectedMessagesOrdered().joinToString(Config.values.copyMessageSeparator) { line ->
-                        copiedLines.add(line)
-                        line.content
-                    })
-                }
+                copyToClipboard(SelectChat.getSelectedMessagesOrdered().joinToString(Config.values.copyMessageSeparator) {
+                    if (copyWholeMessage) {
+                        copiedMessages.add(it.linkedMessage)
+                        getClipboardString(it.linkedMessage.guiMessage.content.visualOrderText)
+                    } else {
+                        copiedLines.add(it)
+                        getClipboardString(it)
+                    }
+                })
             }
             if (copyWholeMessage && copiedMessages.isNotEmpty() || !copyWholeMessage && copiedLines.isNotEmpty()) {
                 messageCopied = true
@@ -73,21 +73,32 @@ object CopyMessage {
         }
     }
 
-    private fun copyToClipboard(message: ChatTab.ChatPlusGuiMessageLine) {
-        copyToClipboard(message.content)
-    }
-
-    private fun copyToClipboard(str: String) {
-        val keyboardHandler = Minecraft.getInstance().keyboardHandler
-        if ((Config.values.copyNoFormatting && !Screen.hasShiftDown()) || (!Config.values.copyNoFormatting && Screen.hasShiftDown())) {
-            keyboardHandler.clipboard = ChatFormatting.stripFormatting(str)!!
+    private fun getClipboardString(message: ChatTab.ChatPlusGuiMessageLine): String {
+        return if ((Config.values.copyNoFormatting && !Screen.hasShiftDown()) || (!Config.values.copyNoFormatting && Screen.hasShiftDown())) {
+            message.content
         } else {
             if (Config.values.copyMessageFormattingSymbolOverride.isEmpty()) {
-                keyboardHandler.clipboard = str
+                message.coloredContent()
             } else {
-                keyboardHandler.clipboard = str.replace("§", Config.values.copyMessageFormattingSymbolOverride)
+                message.coloredContent().replace("&", Config.values.copyMessageFormattingSymbolOverride)
             }
         }
+    }
+
+    private fun getClipboardString(message: FormattedCharSequence): String {
+        return if ((Config.values.copyNoFormatting && !Screen.hasShiftDown()) || (!Config.values.copyNoFormatting && Screen.hasShiftDown())) {
+            message.getString()
+        } else {
+            if (Config.values.copyMessageFormattingSymbolOverride.isEmpty()) {
+                message.getColoredString()
+            } else {
+                message.getColoredString().replace("&", Config.values.copyMessageFormattingSymbolOverride)
+            }
+        }
+    }
+
+    private fun copyToClipboard(message: String) {
+        Minecraft.getInstance().keyboardHandler.clipboard = message
     }
 
 }

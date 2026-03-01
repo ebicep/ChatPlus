@@ -31,8 +31,8 @@ public class MixinComponentSerializer {
             Type type,
             JsonSerializationContext jsonSerializationContext,
             CallbackInfoReturnable<JsonElement> cir,
-            @Local ComponentContents componentContents,
-            @Local JsonObject jsonObject
+            @Local(name = "componentContents") ComponentContents componentContents,
+            @Local(name = "jsonObject") JsonObject jsonObject
     ) {
         if (componentContents instanceof ComponentUtil.LiteralContentsIgnored literalContentsIgnored) {
             jsonObject.addProperty("text", literalContentsIgnored.getText());

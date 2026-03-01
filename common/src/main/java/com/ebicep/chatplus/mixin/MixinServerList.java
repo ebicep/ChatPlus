@@ -20,7 +20,7 @@ public class MixinServerList {
                     ordinal = 1
             )
     )
-    private void onLoad(CallbackInfo ci, @Local ServerData serverData) {
+    private void onLoad(CallbackInfo ci, @Local(name = "serverData") ServerData serverData) {
         ChatTab.Companion.getCachedServerIPs().add(serverData.ip);
     }
 

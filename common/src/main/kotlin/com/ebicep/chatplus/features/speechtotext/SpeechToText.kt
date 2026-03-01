@@ -301,14 +301,14 @@ class MicrophoneThread : Thread("ChatPlusMicrophoneThread") {
                 if (recordMic && !listening) {
                     quickSendTimer = 0
                     totalData.clear()
-                    ChatPlus.LOGGER.info("Started Recording")
+                    ChatPlus.debugLog("Started Recording")
                     getMicrophone()?.startRecording()
                     listening = true
                 } else if (!recordMic && listening) {
-                    ChatPlus.LOGGER.info("Done Recording")
+                    ChatPlus.debugLog("Done Recording")
                     listening = false
                     totalData.addAll(readMic().toList())
-                    ChatPlus.LOGGER.info("Data: ${totalData.size}")
+                    ChatPlus.debugLog("Data: ${totalData.size}")
                     getMicrophone()?.stopRecording()
                     speechToText(totalData.toShortArray())
                     val asString = JsonParser.parseString(recognizer!!.finalResult).asJsonObject.get("text")?.asString
@@ -318,7 +318,7 @@ class MicrophoneThread : Thread("ChatPlusMicrophoneThread") {
                         String(asString.toByteArray(charset(Config.values.speechToTextCharset)), StandardCharsets.UTF_8)
                     }
                     quickSendTimer = System.currentTimeMillis() + 3000
-                    ChatPlus.LOGGER.info("Final: $lastSpokenMessage")
+                    ChatPlus.debugLog("Final: $lastSpokenMessage")
                     if (lastSpokenMessage.isNullOrBlank()) {
                         continue
                     }
@@ -327,7 +327,7 @@ class MicrophoneThread : Thread("ChatPlusMicrophoneThread") {
                         .filter { it.regex.pattern.isNotEmpty() }
                         .forEach {
                             lastSpokenMessage = lastSpokenMessage!!.replace(it.regex, it.str)
-                            ChatPlus.LOGGER.info("Replaced: $lastSpokenMessage")
+                            ChatPlus.debugLog("Replaced: $lastSpokenMessage")
                         }
                     if (Config.values.speechToTextAutoReplacePlayers) {
                         lastSpokenMessage = replacePlayer(lastSpokenMessage!!)

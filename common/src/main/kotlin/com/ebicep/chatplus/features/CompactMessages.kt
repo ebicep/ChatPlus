@@ -37,19 +37,74 @@ object CompactMessages {
             if (!Config.values.compactMessagesEnabled) {
                 return@register
             }
-            val chatTab = it.chatTab
+            Config.values.compactMessagesMode.handleNewMessage(it)
+        }
+        EventBus.register<ChatTabAddDisplayMessageEvent> {
+            if (it.addDisplayMessageType != AddDisplayMessageType.TAB) {
+                return@register
+            }
+            if (it.linkedMessage.timesRepeated <= 1) {
+                return@register
+            }
+            if (it.component.siblings.none { component -> component.contents is ComponentUtil.LiteralContentsIgnored }) {
+                it.component.siblings.add(
+                    literalIgnored(
+                        formatString(it.linkedMessage.timesRepeated.toString()),
+                        ComponentUtil.LiteralIgnoredType.COMPACT
+                    ).withStyle(COMPACT_STYLE)
+                )
+            }
+        }
+    }
+
+    enum class CompactMode(key: String) : EnumTranslatableName {
+        LATEST("chatPlus.compactMessages.mode.latest"),
+        TIME("chatPlus.compactMessages.mode.time"),
+        ;
+
+        private val translatable: Component = Component.translatable(key)
+
+        override fun getTranslatableName(): Component {
+            return translatable
+        }
+
+        fun handleNewMessage(event: ChatTabAddNewMessageEvent) {
+            when (this) {
+                LATEST -> compact(event, null)
+                TIME -> {
+                    val seconds = Config.values.compactMessagesTimeSeconds
+                    if (seconds <= 0) {
+                        return
+                    }
+                    compact(event, seconds * 20)
+                }
+            }
+        }
+
+        private fun compact(event: ChatTabAddNewMessageEvent, maxAgeTicks: Int?) {
+            val chatTab = event.chatTab
             val messages = chatTab.messages
             val displayedMessages = chatTab.displayedMessages
             if (messages.isEmpty()) {
-                return@register
+                return
             }
-            for (i in messages.size - 1 downTo max(0, messages.size - Config.values.compactMessagesSearchAmount)) {
+            val rangeEnd = if (maxAgeTicks != null) {
+                0
+            } else {
+                max(0, messages.size - Config.values.compactMessagesSearchAmount)
+            }
+            for (i in messages.size - 1 downTo rangeEnd) {
                 val message = messages[i]
                 val guiMessage = message.guiMessage
-                if (!componentEquals(guiMessage.content, it.mutableComponent)) {
+                if (maxAgeTicks != null) {
+                    val ageTicks = event.addedTime - guiMessage.addedTime()
+                    if (ageTicks > maxAgeTicks) {
+                        break
+                    }
+                }
+                if (!componentEquals(guiMessage.content, event.mutableComponent)) {
                     continue
                 }
-                // remove previous displayed message and update it
                 var addIndex = -1
                 var oldDisplayMessage: ChatTab.ChatPlusGuiMessageLine? = null
                 if (!Config.values.compactMessagesSendAsNew ||
@@ -67,10 +122,10 @@ object CompactMessages {
                         }
                     }
                 }
-                it.chatPlusGuiMessage.timesRepeated = ++message.timesRepeated
-                it.mutableComponent.siblings.add(
+                event.chatPlusGuiMessage.timesRepeated = ++message.timesRepeated
+                event.mutableComponent.siblings.add(
                     literalIgnored(
-                        formatString(it.chatPlusGuiMessage.timesRepeated.toString()),
+                        formatString(event.chatPlusGuiMessage.timesRepeated.toString()),
                         ComponentUtil.LiteralIgnoredType.COMPACT
                     ).withStyle(COMPACT_STYLE)
                 )
@@ -81,45 +136,30 @@ object CompactMessages {
                 if (addIndex == -1 || oldDisplayMessage == null) {
                     break
                 }
-                val addedTime = if (Config.values.compactMessagesRefreshAddedTime) it.addedTime else oldDisplayMessage.line.addedTime
+                val addedTime =
+                    if (Config.values.compactMessagesRefreshAddedTime) event.addedTime else oldDisplayMessage.line.addedTime
                 val displayMessageEvent = EventBus.post(
                     ChatTabAddDisplayMessageEvent(
                         AddDisplayMessageType.COMPACT,
-                        it.chatWindow,
+                        event.chatWindow,
                         chatTab,
-                        it.mutableComponent,
+                        event.mutableComponent,
                         addedTime,
                         oldDisplayMessage.line.tag,
                         message,
-                        Mth.floor(it.chatWindow.renderer.getBackgroundWidth())
+                        Mth.floor(event.chatWindow.renderer.getBackgroundWidth())
                     )
                 )
                 chatTab.addWrappedComponents(
-                    it.mutableComponent,
+                    event.mutableComponent,
                     displayMessageEvent,
                     addedTime,
                     oldDisplayMessage.line.tag,
                     message,
                     addIndex
                 )
-                it.returnFunction = true
+                event.returnFunction = true
                 break
-            }
-        }
-        EventBus.register<ChatTabAddDisplayMessageEvent> {
-            if (it.addDisplayMessageType != AddDisplayMessageType.TAB) {
-                return@register
-            }
-            if (it.linkedMessage.timesRepeated <= 1) {
-                return@register
-            }
-            if (it.component.siblings.none { component -> component.contents is ComponentUtil.LiteralContentsIgnored }) {
-                it.component.siblings.add(
-                    literalIgnored(
-                        formatString(it.linkedMessage.timesRepeated.toString()),
-                        ComponentUtil.LiteralIgnoredType.COMPACT
-                    ).withStyle(COMPACT_STYLE)
-                )
             }
         }
     }

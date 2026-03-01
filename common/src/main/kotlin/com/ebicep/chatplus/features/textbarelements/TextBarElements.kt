@@ -43,6 +43,7 @@ object TextBarElements {
         }
         EventBus.register<ChatScreenCloseEvent> {
             textBarElements.clear()
+            textBarElementsStartX.clear()
         }
         EventBus.register<ChatScreenMouseClickedEvent> {
             val mouseX = it.mouseX

@@ -216,12 +216,12 @@ object TranslateMessage {
             return
         }
         LanguageManager.languageTo?.let {
-            Translator(ChatFormatting.stripFormatting(component.string)!!, null, it).start()
+            Translator(ChatFormatting.stripFormatting(component.string)!!, LanguageManager.translateFrom, it).start()
         }
     }
 
     class ClickTranslator(val line: List<ChatTab.ChatPlusGuiMessage>, message: String, to: Language) :
-        Translator(message, null, to, false) {
+        Translator(message, LanguageManager.translateFrom, to, false) {
 
         override fun onTranslateSameMessage() {
             val component = Component.literal("")

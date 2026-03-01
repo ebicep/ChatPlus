@@ -82,4 +82,11 @@ object ChatPlus {
                 .append(component)
         )
     }
+
+    fun debugLog(message: String) {
+        if (Config.values.debugLogging) {
+            LOGGER.info(message)
+        }
+    }
+
 }

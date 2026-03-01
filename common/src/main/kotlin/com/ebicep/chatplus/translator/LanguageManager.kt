@@ -6,12 +6,12 @@ import com.google.gson.Gson
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.nio.charset.StandardCharsets
-import java.util.*
 
 
 object LanguageManager {
 
     var languages: List<Language> = ArrayList()
+    var translateFrom: Language? = null
     var languageTo: Language? = null
     var languageSelf: Language? = null
     var languageSpeak: Language? = null
@@ -31,12 +31,10 @@ object LanguageManager {
     }
 
     fun updateTranslateLanguages() {
+        translateFrom = findLanguageFromName(Config.values.translateFrom)
         languageTo = findLanguageFromName(Config.values.translateTo)
-//        ChatPlus.LOGGER.info("LanguageTo: $languageTo")
         languageSelf = findLanguageFromName(Config.values.translateSelf)
-//        ChatPlus.LOGGER.info("LanguageSelf: $languageSelf")
         languageSpeak = findLanguageFromName(Config.values.translateSpeak)
-//        ChatPlus.LOGGER.info("LanguageSpeak: $languageSpeak")
     }
 
     fun findLanguageFromName(name: String): Language? {

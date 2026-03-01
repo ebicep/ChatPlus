@@ -24,6 +24,7 @@ class OutlineSettings {
     var showWhenChatNotOpen: Boolean = false
     var outlineColor: Int = Color(0f, 0f, 0f, 0f).rgb
     var unfocusedOutlineColorOpacityMultiplier: Float = .4f
+    var reduceUnfocusedOutlineOpacityWhenClosed: Boolean = false
     var outlineBoxType: OutlineBoxType = OutlineBoxType.TEXT_BOX
     var outlineTabType: OutlineTabType = OutlineTabType.SELECTED_TAB_OPEN_TOP
 
@@ -32,13 +33,16 @@ class OutlineSettings {
             it.enabled = enabled
             it.outlineColor = outlineColor
             it.unfocusedOutlineColorOpacityMultiplier = unfocusedOutlineColorOpacityMultiplier
+            it.reduceUnfocusedOutlineOpacityWhenClosed = reduceUnfocusedOutlineOpacityWhenClosed
             it.outlineBoxType = outlineBoxType
             it.outlineTabType = outlineTabType
         }
     }
 
     fun getUpdatedOutlineColor(chatWindow: ChatWindow): Int {
-        if (chatWindow == ChatManager.selectedWindow) {
+        val isFocused = chatWindow == ChatManager.selectedWindow
+        val applyReductionWhenClosed = reduceUnfocusedOutlineOpacityWhenClosed && !ChatManager.isChatFocused()
+        if (isFocused && !applyReductionWhenClosed) {
             return outlineColor
         }
         return reduceAlpha(outlineColor, unfocusedOutlineColorOpacityMultiplier)

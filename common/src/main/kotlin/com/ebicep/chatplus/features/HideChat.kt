@@ -9,6 +9,7 @@ import com.ebicep.chatplus.hud.ChatRenderPreLinesEvent
 import com.ebicep.chatplus.util.ComponentUtil.withColor
 import dev.architectury.event.EventResult
 import dev.architectury.event.events.client.ClientRawInputEvent
+import net.minecraft.client.Minecraft
 import net.minecraft.network.chat.Component
 
 object HideChat {
@@ -21,6 +22,14 @@ object HideChat {
             hidden = false
             if (Config.values.alwaysShowChat) {
                 it.chatFocused = true
+                return@register
+            }
+            if (Config.values.hideChatHideWhenDebugScreen && Minecraft.getInstance().debugOverlay.showDebugScreen()) {
+                if (ChatManager.isChatFocused() && Config.values.hideChatShowWhenFocused) {
+                    return@register
+                }
+                it.returnFunction = true
+                hidden = true
                 return@register
             }
             if (!Config.values.hideChatEnabled) {

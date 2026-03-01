@@ -226,6 +226,19 @@ object ComponentUtil {
         return string
     }
 
+    fun FormattedCharSequence.getString(): String {
+        var string = ""
+        this.accept { index: Int, style: Style, code: Int ->
+            var chr = code.toChar()
+            if (style.isObfuscated) {
+                chr = ' '
+            }
+            string += chr
+            true
+        }
+        return string
+    }
+
     fun Component.getColoredString(): String {
         return visualOrderText.getColoredString()
     }

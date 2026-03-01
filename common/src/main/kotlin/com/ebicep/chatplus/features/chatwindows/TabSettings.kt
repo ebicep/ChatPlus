@@ -43,6 +43,9 @@ class TabSettings {
     var tabTextColorUnselected: Int = Color(153, 153, 153, 255).rgb
     var unfocusedTabOpacityMultiplier: Float = .4f
 
+    @Transient
+    var tabPositionsInitialized: Boolean = false
+
     @Serializable(with = ChatTabSerializer::class)
     var tabs: MutableList<ChatTab> = mutableListOf()
         set(value) {

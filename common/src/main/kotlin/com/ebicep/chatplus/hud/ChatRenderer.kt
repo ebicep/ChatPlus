@@ -1,6 +1,7 @@
 package com.ebicep.chatplus.hud
 
 import com.ebicep.chatplus.ChatPlus
+import com.ebicep.chatplus.config.AnchorPoint
 import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.config.MessageDirection
 import com.ebicep.chatplus.config.queueUpdateConfig
@@ -108,21 +109,42 @@ data class GetTotalLineHeightEvent(val chatWindow: ChatWindow, var totalLineHeig
 @Serializable
 class ChatRenderer {
 
+    // Stored as anchor-relative distance (see AnchorPoint docs):
+    //   LEFT/TOP anchors:  positive = pixels from that edge
+    //   RIGHT/BOTTOM:      negative = -pixels from that edge
+    //   CENTER:            signed offset from screen center to window center
     var x: Int = 0
-        set(newX) {
-            if (field == newX) {
+        set(absoluteX) {
+            // Convert the incoming absolute screen coordinate to anchor-relative storage.
+            // Falls back to absolute if chatWindow or Minecraft aren't ready yet (e.g. during init).
+            val anchorX = runCatching {
+                chatWindow.generalSettings.anchorPoint.absoluteToAnchorX(
+                    absoluteX,
+                    Minecraft.getInstance().window.guiScaledWidth,
+                    internalWidth
+                )
+            }.getOrElse { absoluteX }
+            if (field == anchorX) {
                 return
             }
-            field = newX
-            internalX = newX
+            field = anchorX
+            internalX = absoluteX
         }
     var y: Int = -CHAT_TAB_HEIGHT - EDIT_BOX_HEIGHT
-        set(newY) {
-            if (field == newY) {
+        set(absoluteY) {
+            // Convert the incoming absolute screen coordinate to anchor-relative storage.
+            val anchorY = runCatching {
+                chatWindow.generalSettings.anchorPoint.absoluteToAnchorY(
+                    absoluteY,
+                    Minecraft.getInstance().window.guiScaledHeight,
+                    internalHeight
+                )
+            }.getOrElse { absoluteY }
+            if (field == anchorY) {
                 return
             }
-            field = newY
-            internalY = newY
+            field = anchorY
+            internalY = absoluteY
         }
     var width: Int = 80
         set(newWidth) {
@@ -209,8 +231,8 @@ class ChatRenderer {
         l1 = (-8.0 * (chatWindow.generalSettings.lineSpacing + 1.0) + 4.0 * chatWindow.generalSettings.lineSpacing).roundToInt()
         scale = getUpdatedScale()
         lineHeight = getUpdatedLineHeight()
-        internalX = getUpdatedX(x)
-        internalY = getUpdatedY(y)
+        internalX = computeAnchorInternalX()
+        internalY = computeAnchorInternalY()
         internalHeight = getUpdatedHeight(height, HeightType.RAW)
         val updatedWidth = getUpdatedWidth(width)
         internalWidth = updatedWidth.newWidth
@@ -231,7 +253,7 @@ class ChatRenderer {
     }
 
     fun render(chatWindow: ChatWindow, guiGraphics: GuiGraphics, guiTicks: Int, mouseX: Int, mouseY: Int) {
-        if (EventBus.post(RenderValidateYEvent(this, internalY)).internalY != getUpdatedY(y)) {
+        if (EventBus.post(RenderValidateYEvent(this, internalY)).internalY != computeAnchorInternalY()) {
             updateCachedDimension()
         }
         handleScreenResize()
@@ -258,7 +280,11 @@ class ChatRenderer {
         val updatedBackgroundColor = chatWindow.generalSettings.getUpdatedBackgroundColor()
         while (displayMessageIndex + chatWindow.tabSettings.selectedTab.chatScrollbarPos < messagesToDisplay && displayMessageIndex < linesPerPage) {
             val messageIndex = messagesToDisplay - displayMessageIndex - chatWindow.tabSettings.selectedTab.chatScrollbarPos
-            val chatPlusGuiMessageLine: ChatTab.ChatPlusGuiMessageLine = chatWindow.tabSettings.selectedTab.displayedMessages[messageIndex - 1]
+            val chatPlusGuiMessageLine = chatWindow.tabSettings.selectedTab.displayedMessages.getOrNull(messageIndex - 1)
+            if (chatPlusGuiMessageLine == null) {
+                ++displayMessageIndex
+                continue
+            }
             val line: GuiMessage.Line = chatPlusGuiMessageLine.line
             val ticksLived: Int = guiTicks - line.addedTime()
             if (ticksLived >= 200 && !chatFocused) {
@@ -354,28 +380,54 @@ class ChatRenderer {
         val widthChanged = screenWidth != previousScreenWidth && previousScreenWidth != -1
         val heightChanged = screenHeight != previousScreenHeight && previousScreenHeight != -1
 
-        if (widthChanged) {
-            internalX = x
-            internalWidth = width
-            getUpdatedX()
-            if (screenWidth < previousScreenWidth) {
-                internalX = (screenWidth * internalX / previousScreenWidth.toDouble()).roundToInt()
-            }
-        }
-        if (heightChanged) {
-            internalY = y
-            internalHeight = height
-            getUpdatedY()
-        }
         previousScreenWidth = screenWidth
         previousScreenHeight = screenHeight
 
-        if (heightChanged || widthChanged) {
-            updateCachedDimension()
-            if (widthChanged) {
-                chatWindow.tabSettings.tabs.forEach { it.rescaleChat() }
-            }
+        if (!widthChanged && !heightChanged) return
+
+        // Reset internal dimensions to player-set values so updateCachedDimension re-clamps them
+        if (widthChanged) internalWidth = width
+        if (heightChanged) internalHeight = height
+
+        // updateCachedDimension now calls computeAnchorInternalX/Y which use the anchor-relative
+        // x/y fields and the current screen size — no separate anchor override needed here.
+        updateCachedDimension()
+
+        if (widthChanged) {
+            chatWindow.tabSettings.tabs.forEach { it.rescaleChat() }
         }
+    }
+
+    /**
+     * Converts the anchor-relative renderer.x to an absolute internalX for the current screen.
+     * Called by updateCachedDimension.
+     */
+    private fun computeAnchorInternalX(): Int {
+        val anchor = runCatching { chatWindow.generalSettings.anchorPoint }.getOrElse { AnchorPoint.BOTTOM_LEFT }
+        val screenW = Minecraft.getInstance().window.guiScaledWidth
+        val raw = anchor.anchorXToAbsolute(x, internalWidth, screenW)
+        if (Config.values.allowWindowsOutsideScreen) {
+            return raw
+        }
+        return raw.coerceIn(0, maxOf(0, screenW - internalWidth))
+    }
+
+    /**
+     * Converts the anchor-relative renderer.y to an absolute internalY for the current screen.
+     * Called by updateCachedDimension and the RenderValidateYEvent check.
+     * Uses the event-driven getMinYScaled/getMaxYScaled so that tab bars (TOP/BOTTOM position)
+     * are properly accounted for in the clamping range.
+     */
+    private fun computeAnchorInternalY(): Int {
+        val anchor = runCatching { chatWindow.generalSettings.anchorPoint }.getOrElse { AnchorPoint.BOTTOM_LEFT }
+        val screenH = Minecraft.getInstance().window.guiScaledHeight
+        val raw = anchor.anchorYToAbsolute(y, internalHeight, screenH)
+        if (Config.values.allowWindowsOutsideScreen) {
+            return raw
+        }
+        val minY = getMinYScaled()
+        val maxY = getMaxYScaled()
+        return raw.coerceIn(minOf(minY, maxY), maxOf(minY, maxY))
     }
 
     fun getTimeFactor(ticksLived: Int): Double {
@@ -406,10 +458,14 @@ class ChatRenderer {
             status = UpdateWidthStatus.LOWER_MIN_WITH_SPACE
         }
         if (w <= 0) {
-            w = MIN_WIDTH.coerceAtMost(guiWidth - x)
+            w = if (Config.values.allowWindowsOutsideScreen && guiWidth - x <= 0) {
+                MIN_WIDTH
+            } else {
+                MIN_WIDTH.coerceAtMost(guiWidth - x)
+            }
             status = UpdateWidthStatus.LESS_THAN_ZERO
         }
-        if (x + w >= guiWidth) {
+        if (!Config.values.allowWindowsOutsideScreen && x + w >= guiWidth) {
             w = guiWidth - x
             status = UpdateWidthStatus.GREATER_THAN_GUI_WIDTH
         }
@@ -432,12 +488,15 @@ class ChatRenderer {
         if (lowerThanMin && hasSpace) {
             h = minHeight
         }
-        val maxHeightScaled = getMaxHeightScaled()
-        if (h > maxHeightScaled) {
-            h = maxHeightScaled
-        }
-        if (h >= internalY) {
-            h = maxHeightScaled
+        // When allowWindowsOutsideScreen is on, do not auto-fit height to screen (so moving chat up keeps height)
+        if (!Config.values.allowWindowsOutsideScreen) {
+            val maxHeightScaled = getMaxHeightScaled()
+            if (h > maxHeightScaled) {
+                h = maxHeightScaled
+            }
+            if (h >= internalY) {
+                h = maxHeightScaled
+            }
         }
         return h
     }
@@ -447,6 +506,9 @@ class ChatRenderer {
     }
 
     fun getUpdatedX(startingX: Int): Int {
+        if (Config.values.allowWindowsOutsideScreen) {
+            return startingX
+        }
         var x = startingX
         if (x + internalWidth >= Minecraft.getInstance().window.guiScaledWidth) {
             x = Minecraft.getInstance().window.guiScaledWidth - internalWidth
@@ -458,17 +520,16 @@ class ChatRenderer {
     }
 
     fun getUpdatedY(): Int {
-        val updatedY = getUpdatedY(internalY)
-        if (updatedY == getDefaultY()) {
-            internalY = getDefaultY()
-        }
-        return updatedY
+        return getUpdatedY(internalY)
     }
 
     fun getUpdatedY(startingY: Int): Int {
         var y = startingY
         if (y == -1) {
             y = Minecraft.getInstance().window.guiScaledHeight
+        }
+        if (Config.values.allowWindowsOutsideScreen) {
+            return y
         }
         if (y < 0) {
             y += Minecraft.getInstance().window.guiScaledHeight
@@ -499,10 +560,6 @@ class ChatRenderer {
         }
         val totalLineHeight = lineCount * lineHeight * scale
         return EventBus.post(GetTotalLineHeightEvent(chatWindow, totalLineHeight)).totalLineHeight
-    }
-
-    fun getDefaultY(): Int {
-        return EventBus.post(GetDefaultYEvent(chatWindow, -1)).y
     }
 
     fun getMaxHeightScaled(heightType: HeightType = HeightType.RAW): Int {

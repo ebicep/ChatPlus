@@ -332,40 +332,62 @@ object MovableChat {
             val renderer = chatWindow.renderer
             val mouseX = it.mouseX.toDouble()
             val mouseY = it.mouseY.toDouble()
+            val allowOutside = Config.values.allowWindowsOutsideScreen
             if (movingChatWidth) {
-                val newWidth: Double = Mth.clamp(
-                    (mouseX + xDisplacement) - renderer.getUpdatedX(),
-                    MIN_WIDTH.toDouble(),
+                val currentInternalX = renderer.internalX
+                val newWidthRaw = (mouseX + xDisplacement) - renderer.getUpdatedX()
+                val maxWidth = if (allowOutside) {
+                    9999.0 // allow large width when outside screen
+                } else {
                     Minecraft.getInstance().window.guiScaledWidth - renderer.getUpdatedX().toDouble()
-                )
+                }
+                val newWidth: Double = Mth.clamp(newWidthRaw, MIN_WIDTH.toDouble(), maxWidth)
                 val width = newWidth.roundToInt()
                 renderer.width = width
+                // After changing width, re-anchor x so the left edge stays fixed.
+                // The width setter updates internalWidth, so this call uses the new width
+                // to compute the correct anchor-relative x that preserves currentInternalX.
+                renderer.x = currentInternalX
             }
             if (movingChatHeight) {
-                val newHeight: Double = Mth.clamp(
-                    renderer.getUpdatedY() - (mouseY + yDisplacement),
-                    renderer.getMinHeight().toDouble(),
+                val currentInternalY = renderer.getUpdatedY()
+                val newHeightRaw = currentInternalY - (mouseY + yDisplacement)
+                val maxHeight = if (allowOutside) {
+                    9999.0 // allow large height when outside screen
+                } else {
                     renderer.getMaxHeightScaled(HeightType.RAW).toDouble()
+                }
+                val newHeight: Double = Mth.clamp(
+                    newHeightRaw,
+                    renderer.getMinHeight().toDouble(),
+                    maxHeight
                 )
                 val height = newHeight.roundToInt()
                 val heightNormalized = renderer.getNormalizedHeight(height)
                 renderer.height = heightNormalized
+                // After changing height, re-anchor y so the bottom edge stays fixed.
+                // The height setter updates internalHeight, so this call uses the new height
+                // to compute the correct anchor-relative y that preserves currentInternalY.
+                renderer.y = currentInternalY
             }
             if (movingChatBox && dragging) {
-                renderer.x = Mth.clamp(
-                    (mouseX - xDisplacement).roundToInt(),
-                    0,
-                    Minecraft.getInstance().window.guiScaledWidth - renderer.getUpdatedWidthValue()
-                )
-                val minYScaled = renderer.getMinYScaled()
-                val maxYScaled = renderer.getMaxYScaled()
-                var newY = Mth.clamp(
-                    (mouseY - yDisplacement).roundToInt(),
-                    minYScaled,
-                    maxYScaled
-                )
-                if (newY == maxYScaled) {
-                    newY = renderer.getDefaultY()
+                val newX = (mouseX - xDisplacement).roundToInt()
+                val newYRaw = (mouseY - yDisplacement).roundToInt()
+                renderer.x = if (allowOutside) {
+                    newX
+                } else {
+                    Mth.clamp(
+                        newX,
+                        0,
+                        Minecraft.getInstance().window.guiScaledWidth - renderer.getUpdatedWidthValue()
+                    )
+                }
+                val newY = if (allowOutside) {
+                    newYRaw
+                } else {
+                    val minYScaled = renderer.getMinYScaled()
+                    val maxYScaled = renderer.getMaxYScaled()
+                    Mth.clamp(newYRaw, minYScaled, maxYScaled)
                 }
                 renderer.y = newY
             }
@@ -483,7 +505,7 @@ object MovableChat {
         mouseX: Double,
         mouseY: Double,
     ) {
-        ChatPlus.LOGGER.info("Removed $selectedTab from $chatWindow to create new window")
+        ChatPlus.debugLog("Removed $selectedTab from $chatWindow to create new window")
         removeTabFromWindow(chatWindow, selectedTab)
         val oldRenderer = chatWindow.renderer
 
@@ -498,13 +520,11 @@ object MovableChat {
             TOP -> (mouseY + innerTabYOffset + oldRenderer.getTotalLineHeight()).roundToInt() + CHAT_TAB_Y_OFFSET
             BOTTOM -> (mouseY - innerTabYOffset - CHAT_TAB_Y_OFFSET).roundToInt()
         }
-        ChatPlus.LOGGER.info("New window at $newX, $newY")
-        newRenderer.x = newRenderer.getUpdatedX(newX)
-        newRenderer.y = newRenderer.getUpdatedY(newY)
-        newRenderer.internalX = newRenderer.x
-        newRenderer.internalY = newRenderer.y
+        ChatPlus.debugLog("New window at $newX, $newY")
         newRenderer.width = oldRenderer.width
         newRenderer.height = oldRenderer.height
+        newRenderer.x = newRenderer.getUpdatedX(newX)
+        newRenderer.y = newRenderer.getUpdatedY(newY)
         newRenderer.updateCachedDimension()
 
         Config.values.chatWindows.add(newWindow)
