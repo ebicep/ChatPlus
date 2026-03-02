@@ -32,7 +32,7 @@ public class MixinCommandSuggestions {
                     target = "Lcom/mojang/brigadier/suggestion/Suggestions;isEmpty()Z"
             )
     )
-    private void showSuggestions(boolean bl, CallbackInfo ci, @Local(name = "suggestions") @NotNull Suggestions suggestions) {
+    private void showSuggestions(boolean bl, CallbackInfo ci, @Local @NotNull Suggestions suggestions) {
         ConfigVariables values = Config.INSTANCE.getValues();
         if (!values.getEnabled()) {
             return;
@@ -44,7 +44,7 @@ public class MixinCommandSuggestions {
     @ModifyVariable(
             method = "showSuggestions",
             at = @At(value = "STORE"),
-            name = "k"
+            ordinal = 2
     )
     private int modifySuggestionY(int i) {
         ConfigVariables values = Config.INSTANCE.getValues();
@@ -60,7 +60,7 @@ public class MixinCommandSuggestions {
     @ModifyVariable(
             method = "renderUsage",
             at = @At(value = "STORE"),
-            name = "j"
+            ordinal = 1
     )
     private int modifyRenderUsageY(int j, @Local(ordinal = 0) int i) {
         ConfigVariables values = Config.INSTANCE.getValues();
