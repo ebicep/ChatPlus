@@ -109,6 +109,7 @@ object Config {
 
     private fun correctValues() {
         values.maxCommandSuggestions = Mth.clamp(values.maxCommandSuggestions, 10, 30)
+        values.messageDisplayTimeSeconds = Mth.clamp(values.messageDisplayTimeSeconds, 1, 300)
         values.inputBoxSettings.maxInputBoxInputLength = max(1, values.inputBoxSettings.maxInputBoxInputLength)
         if (values.chatWindows.isEmpty()) {
             values.chatWindows.add(createDefaultWindow())
@@ -134,6 +135,7 @@ data class ConfigVariables(
     var wrappedMessageLineIndent: Int = 0,
     var maxMessages: Int = -1,
     var maxCommandSuggestions: Int = 15,
+    var messageDisplayTimeSeconds: Int = 10,
     var jumpToMessageMode: JumpToMessageMode = JumpToMessageMode.CURSOR,
     var selectChatLinePriority: Int = 100,
     var selectChatColor: Int = Color(186, 211, 252, 255).rgb,

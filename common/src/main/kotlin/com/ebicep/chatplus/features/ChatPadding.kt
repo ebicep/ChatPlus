@@ -53,13 +53,13 @@ object ChatPadding {
             val chatPlusGuiMessageLine: ChatTab.ChatPlusGuiMessageLine = chatWindow.tabSettings.selectedTab.displayedMessages.lastOrNull() ?: return@register
             val line: GuiMessage.Line = chatPlusGuiMessageLine.line
             val ticksLived: Int = it.guiTicks - line.addedTime()
-            if (ticksLived >= 200 && !chatFocused) {
+            if (ticksLived >= messageDisplayTicks() && !chatFocused) {
                 return@register
             }
             val fadeOpacity = if (chatFocused) {
                 ChatComponent.AlphaCalculator.FULLY_VISIBLE
             } else {
-                ChatComponent.AlphaCalculator.timeBased(ticksLived)
+                timeBasedAlpha(it.guiTicks)
             }
             // bottom padding
             it.guiGraphics.fill0(
