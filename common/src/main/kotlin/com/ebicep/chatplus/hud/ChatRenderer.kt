@@ -25,6 +25,7 @@ import net.minecraft.client.gui.components.ChatComponent
 import net.minecraft.client.gui.components.ChatComponent.ChatGraphicsAccess
 import net.minecraft.client.multiplayer.chat.GuiMessage
 import net.minecraft.util.ARGB
+import net.minecraft.util.Mth
 import kotlin.math.ceil
 import kotlin.math.max
 import kotlin.math.min
@@ -33,6 +34,17 @@ import kotlin.math.roundToInt
 data class ChatRenderContext(
     val renderTextLineEvent: ChatRenderLineTextEvent,
 )
+
+fun messageDisplayTicks(): Int = Config.values.messageDisplayTimeSeconds * 20
+
+// same as vanilla ChatComponent.AlphaCalculator.timeBased but with a configurable display time
+fun timeBasedAlpha(guiTicks: Int): ChatComponent.AlphaCalculator {
+    val displayTicks = messageDisplayTicks().toDouble()
+    return ChatComponent.AlphaCalculator { line ->
+        val timeFactor = Mth.clamp((1.0 - (guiTicks - line.addedTime()) / displayTicks) * 10.0, 0.0, 1.0)
+        (timeFactor * timeFactor).toFloat()
+    }
+}
 
 abstract class ChatRenderLineEvent(
     open val guiGraphics: GuiGraphicsExtractor,
@@ -300,7 +312,7 @@ class ChatRenderer {
         val alphaCalculator = if (displayMode.foreground) {
             ChatComponent.AlphaCalculator.FULLY_VISIBLE
         } else {
-            ChatComponent.AlphaCalculator.timeBased(guiTicks)
+            timeBasedAlpha(guiTicks)
         }
 
         forEachLine(alphaCalculator, linesPerPage, chatWindow, guiTicks, displayMode) { line, displayIndex, fadeOpacity ->
@@ -466,7 +478,7 @@ class ChatRenderer {
             }
             val line = chatPlusGuiMessageLine.line
             val ticksLived: Int = guiTicks - line.addedTime()
-            if (ticksLived >= 200 && !displayMode.foreground) {
+            if (ticksLived >= messageDisplayTicks() && !displayMode.foreground) {
                 ++displayMessageIndex
                 continue
             }

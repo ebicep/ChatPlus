@@ -126,6 +126,12 @@ object ConfigScreenImpl {
                 10,
                 30
             ) { Config.values.maxCommandSuggestions = it },
+            entryBuilder.intSlider(
+                "chatPlus.chatSettings.messageDisplayTime",
+                Config.values.messageDisplayTimeSeconds,
+                1,
+                300
+            ) { Config.values.messageDisplayTimeSeconds = it },
             entryBuilder.enumSelector(
                 "chatPlus.chatSettings.jumpToMessageMode",
                 JumpToMessageMode::class.java,
