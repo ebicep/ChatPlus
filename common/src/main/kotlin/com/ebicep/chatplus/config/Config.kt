@@ -100,11 +100,6 @@ object Config {
         values.speechToTextReplace.forEach {
             it.updateRegex()
         }
-        try {
-            charset(values.speechToTextCharset)
-        } catch (_: Exception) {
-            values.speechToTextCharset = "UTF-8"
-        }
     }
 
     private fun correctValues() {
@@ -273,7 +268,6 @@ data class ConfigVariables(
     // speech to text
     var speechToTextEnabled: Boolean = true,
     var speechToTextToInputBox: Boolean = true,
-    var speechToTextCharset: String = "UTF-8",
     var speechToTextMicrophoneKey: InputConstants.Key = InputConstants.getKey("key.keyboard.b"),
     var speechToTextQuickSendKey: InputConstants.Key = InputConstants.getKey("key.keyboard.enter"),
     var speechToTextTranslateEnabled: Boolean = false,

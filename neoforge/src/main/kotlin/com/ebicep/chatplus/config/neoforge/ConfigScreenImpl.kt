@@ -1415,19 +1415,6 @@ object ConfigScreenImpl {
                     Config.values.speechToTextSelectedAudioModel = str
                 }
             ),
-            entryBuilder.stringField(
-                "chatPlus.speechToText.speechToTextCharset",
-                Config.values.speechToTextCharset,
-                { Config.values.speechToTextCharset = it },
-                error = {
-                    try {
-                        charset(it)
-                        ""
-                    } catch (_: Exception) {
-                        "chatPlus.speechToText.speechToTextCharSet.invalid"
-                    }
-                }
-            ),
             entryBuilder.keyCodeOption(
                 "key.speechToText.ptt",
                 Config.values.speechToTextMicrophoneKey
