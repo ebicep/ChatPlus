@@ -24,11 +24,14 @@ open class Translator(val message: String, val from: Language?, val to: Language
         }
         if (translatedMessage.translatedText.trim().equals(textToTranslate, ignoreCase = true)) {
             ChatPlus.LOGGER.debug("$message is the same after translation")
-            onTranslateSameMessage()
+            Minecraft.getInstance().execute { onTranslateSameMessage() }
             return
         }
         ChatPlus.LOGGER.debug("Translated message: ${translatedMessage.translatedText}")
-        onTranslate(matchedRegex, translatedMessage, translatedMessage.from?.name)
+        val fromLanguage = translatedMessage.from?.name
+        Minecraft.getInstance().execute {
+            onTranslate(matchedRegex, translatedMessage, fromLanguage)
+        }
     }
 
     private fun filterText(text: String): Pair<String?, String> {

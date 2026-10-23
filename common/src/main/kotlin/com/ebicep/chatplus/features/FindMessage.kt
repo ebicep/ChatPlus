@@ -13,6 +13,7 @@ import com.ebicep.chatplus.features.chattabs.ChatTabAddDisplayMessageEvent
 import com.ebicep.chatplus.features.chattabs.ChatTabRefreshDisplayMessages
 import com.ebicep.chatplus.features.chattabs.ChatTabRewrapDisplayMessages
 import com.ebicep.chatplus.features.chatwindows.ChatTabSwitchEvent
+import com.ebicep.chatplus.util.KeyUtil.isLeftMouseButton
 import com.ebicep.chatplus.features.chatwindows.WindowSwitchEvent
 import com.ebicep.chatplus.features.textbarelements.AddTextBarElementEvent
 import com.ebicep.chatplus.features.textbarelements.FindTextBarElement
@@ -142,7 +143,7 @@ object FindMessage {
             }
         }
         EventBus.register<ChatScreenMouseClickedEvent> {
-            if (it.button != 0) {
+            if (!isLeftMouseButton(it.button)) {
                 return@register
             }
             if (findEnabled) {

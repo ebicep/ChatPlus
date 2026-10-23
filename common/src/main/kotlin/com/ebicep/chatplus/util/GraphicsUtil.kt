@@ -1,7 +1,7 @@
 package com.ebicep.chatplus.util
 
 import com.ebicep.chatplus.mixin.IMixinGuiGraphics
-import com.mojang.blaze3d.pipeline.RenderPipeline
+import com.mojang.renderpearl.api.pipeline.RenderPipeline
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.Font
 import net.minecraft.client.gui.GuiGraphicsExtractor

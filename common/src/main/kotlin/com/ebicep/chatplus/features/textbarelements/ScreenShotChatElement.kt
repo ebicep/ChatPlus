@@ -3,6 +3,8 @@ package com.ebicep.chatplus.features.textbarelements
 import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.events.Event
 import com.ebicep.chatplus.events.EventBus
+import com.ebicep.chatplus.util.KeyUtil.isLeftMouseButton
+import com.ebicep.chatplus.util.KeyUtil.isRightMouseButton
 import com.ebicep.chatplus.features.ScreenshotChat
 import com.ebicep.chatplus.features.ScreenshotChat.SCREENSHOT_COLOR
 import com.ebicep.chatplus.features.ScreenshotChat.onCooldown
@@ -24,7 +26,7 @@ class ScreenShotChatElement(private val chatPlusScreen: ChatScreen) : TextBarEle
         if (onCooldown()) {
             return
         }
-        if (button == 0) {
+        if (isLeftMouseButton(button)) {
             EventBus.post(
                 ScreenShotChatEvent(
                     ScreenshotChat.ScreenshotSettings(
@@ -33,7 +35,7 @@ class ScreenShotChatElement(private val chatPlusScreen: ChatScreen) : TextBarEle
                     )
                 )
             )
-        } else if (button == 1) {
+        } else if (isRightMouseButton(button)) {
             EventBus.post(
                 ScreenShotChatEvent(
                     ScreenshotChat.ScreenshotSettings(

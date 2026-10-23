@@ -28,6 +28,7 @@ import com.ebicep.chatplus.hud.ChatPlusScreen.EDIT_BOX_HEIGHT
 import com.ebicep.chatplus.hud.ChatPlusScreen.lastMouseX
 import com.ebicep.chatplus.hud.ChatPlusScreen.lastMouseY
 import com.ebicep.chatplus.mixin.IMixinScreen
+import com.ebicep.chatplus.util.KeyUtil.isLeftMouseButton
 import com.ebicep.chatplus.util.GraphicsUtil.createPose
 import com.ebicep.chatplus.util.GraphicsUtil.drawString0
 import com.ebicep.chatplus.util.GraphicsUtil.fill0
@@ -136,7 +137,7 @@ object MovableChat {
             dragging = false
         }
         EventBus.register<ChatScreenMouseClickedEvent>({ 50 }, { movingChat || movingInputBoxWidth }) {
-            if (it.button != 0 || !Config.values.movableChatEnabled) {
+            if (!isLeftMouseButton(it.button) || !Config.values.movableChatEnabled) {
                 return@register
             }
             val chatWindow = ChatManager.selectedWindow
@@ -219,7 +220,7 @@ object MovableChat {
         }
 
         EventBus.register<ChatScreenMouseDraggedEvent>({ 50 }, { movingChat }) {
-            if (!ChatManager.isChatFocused() || it.button != 0 || !Config.values.movableChatEnabled) {
+            if (!ChatManager.isChatFocused() || !isLeftMouseButton(it.button) || !Config.values.movableChatEnabled) {
                 movingChat = false
                 return@register
             }

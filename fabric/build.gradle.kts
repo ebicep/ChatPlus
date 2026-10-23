@@ -23,6 +23,13 @@ loom {
     if (aw.exists()) {
         accessWidenerPath.set(aw)
     }
+
+    // Loom only generates IDEA run configs on the root project by default; :fabric needs them explicitly.
+    runs {
+        configureEach {
+            generateRunConfig.set(true)
+        }
+    }
 }
 
 configurations {

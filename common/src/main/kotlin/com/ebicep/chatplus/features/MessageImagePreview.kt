@@ -10,6 +10,7 @@ import com.ebicep.chatplus.hud.ChatRenderPreLineAppearanceEvent
 import com.ebicep.chatplus.hud.ChatScreenMouseClickedEvent
 import com.ebicep.chatplus.hud.ChatScreenRenderEvent
 import com.ebicep.chatplus.util.GraphicsUtil.createPose
+import com.ebicep.chatplus.util.KeyUtil.isRightMouseButton
 import com.ebicep.chatplus.util.GraphicsUtil.drawImage
 import com.ebicep.chatplus.util.GraphicsUtil.translate0
 import com.mojang.blaze3d.platform.NativeImage
@@ -69,7 +70,7 @@ object MessageImagePreview {
             if (!Config.values.messageImagePreviewSettings.enabled) {
                 return@register
             }
-            if (it.button != 1 || !Minecraft.getInstance().hasControlDown()) {
+            if (!isRightMouseButton(it.button) || !Minecraft.getInstance().hasControlDown()) {
                 return@register
             }
             ChatManager.globalSelectedTab.getHoveredOverMessageLine(it.mouseX, it.mouseY)?.let { message ->

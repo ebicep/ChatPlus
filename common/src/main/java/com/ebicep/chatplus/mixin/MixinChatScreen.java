@@ -8,6 +8,7 @@ import com.ebicep.chatplus.hud.ChatManager;
 import com.ebicep.chatplus.hud.ChatPlusScreen;
 import com.ebicep.chatplus.hud.ChatPlusScreenAdapter;
 import com.ebicep.chatplus.translator.LanguageManager;
+import com.mojang.blaze3d.platform.InputConstants;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.Share;
@@ -61,7 +62,7 @@ public abstract class MixinChatScreen extends Screen implements IMixinChatScreen
             return super.mouseDragged(mouseButtonEvent, deltaX, deltaY);
         }
         ChatPlusScreenAdapter.INSTANCE.handleMouseDragged(thisScreen(), mouseButtonEvent, deltaX, deltaY);
-        if (!ChatManager.INSTANCE.isChatFocused() || mouseButtonEvent.button() != 0) { // forgot why this is here
+        if (!ChatManager.INSTANCE.isChatFocused() || mouseButtonEvent.button() != InputConstants.MOUSE_BUTTON_LEFT) {
             return super.mouseDragged(mouseButtonEvent, deltaX, deltaY);
         }
         return true;

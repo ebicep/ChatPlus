@@ -4,6 +4,7 @@ import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.features.MovableChat.MOVABLE_CHAT_COLOR
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphicsExtractor
+import com.ebicep.chatplus.util.KeyUtil.isLeftMouseButton
 import net.minecraft.client.gui.screens.ChatScreen
 
 class MovableChatToggleTextBarElement(private val chatPlusScreen: ChatScreen) : TextBarElement {
@@ -17,7 +18,7 @@ class MovableChatToggleTextBarElement(private val chatPlusScreen: ChatScreen) : 
     }
 
     override fun onClick(button: Int) {
-        if (button != 0) {
+        if (!isLeftMouseButton(button)) {
             return
         }
         Config.values.movableChatEnabled = !Config.values.movableChatEnabled

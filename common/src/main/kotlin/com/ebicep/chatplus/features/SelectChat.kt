@@ -5,6 +5,7 @@ import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.features.chattabs.ChatTab
 import com.ebicep.chatplus.features.chatwindows.ChatWindow
 import com.ebicep.chatplus.hud.*
+import com.ebicep.chatplus.util.KeyUtil.isRightMouseButton
 import net.minecraft.client.Minecraft
 import java.util.*
 
@@ -63,7 +64,7 @@ object SelectChat {
             lastSelected = null
         }
         EventBus.register<ChatScreenMouseClickedEvent> {
-            rightClicking = it.button == 1
+            rightClicking = isRightMouseButton(it.button)
             if (!rightClicking) {
                 selectedMessages.clear()
                 return@register

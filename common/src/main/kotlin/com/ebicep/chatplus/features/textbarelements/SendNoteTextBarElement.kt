@@ -5,6 +5,7 @@ import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.features.SendNote
 import com.ebicep.chatplus.features.SendNote.NOTE_COLOR
 import com.ebicep.chatplus.mixin.IMixinChatScreen
+import com.ebicep.chatplus.util.KeyUtil.isLeftMouseButton
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.gui.screens.ChatScreen
@@ -20,7 +21,7 @@ class SendNoteTextBarElement(private val chatPlusScreen: ChatScreen) : TextBarEl
     }
 
     override fun onClick(button: Int) {
-        if (button != 0) {
+        if (!isLeftMouseButton(button)) {
             return
         }
         chatPlusScreen as IMixinChatScreen

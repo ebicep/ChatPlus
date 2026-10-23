@@ -12,6 +12,8 @@ import com.ebicep.chatplus.hud.ChatScreenCloseEvent
 import com.ebicep.chatplus.hud.ChatScreenMouseClickedEvent
 import com.ebicep.chatplus.mixin.IMixinChatScreen
 import com.ebicep.chatplus.mixin.IMixinScreen
+import com.ebicep.chatplus.util.KeyUtil.isLeftMouseButton
+import com.ebicep.chatplus.util.KeyUtil.isRightMouseButton
 import com.ebicep.chatplus.translator.Language
 import com.ebicep.chatplus.translator.LanguageManager
 import com.ebicep.chatplus.translator.LanguageManager.languages
@@ -111,9 +113,9 @@ class TranslateSpeakTextBarElement(private val chatPlusScreen: ChatScreen) : Tex
     }
 
     override fun onClick(button: Int) {
-        if (button == 0) {
+        if (isLeftMouseButton(button)) {
             toggleTranslateSpeak(chatPlusScreen)
-        } else if (button == 1) {
+        } else if (isRightMouseButton(button)) {
             selectorShow = !selectorShow
             chatPlusScreen as IMixinScreen
             chatPlusScreen as IMixinChatScreen

@@ -15,6 +15,7 @@ import com.ebicep.chatplus.mixin.IMixinChatScreen
 import com.ebicep.chatplus.mixin.IMixinScreen
 import com.ebicep.chatplus.translator.*
 import com.ebicep.chatplus.util.ComponentUtil
+import com.ebicep.chatplus.util.KeyUtil.isLeftMouseButton
 import com.ebicep.chatplus.platform.events.EventResult
 import com.ebicep.chatplus.platform.events.client.ClientRawInputEvent
 import net.minecraft.ChatFormatting
@@ -183,7 +184,7 @@ object TranslateMessage {
             if (!values.translatorEnabled || !values.translateClickEnabled) {
                 return@register
             }
-            if (it.button != 0 || !Minecraft.getInstance().hasControlDown()) {
+            if (!isLeftMouseButton(it.button) || !Minecraft.getInstance().hasControlDown()) {
                 return@register
             }
             if (System.currentTimeMillis() - translateClickCooldown < 2_000) {

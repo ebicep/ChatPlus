@@ -117,7 +117,8 @@ class ChatScreenInputEvent(
         return if (KeyUtil.isMouseButton(value)) {
             inputEvent is ChatScreenMouseReleasedEvent && inputEvent.button == value
         } else {
-            inputEvent is ChatScreenKeyReleasedEvent && inputEvent.keyCode == value
+            inputEvent is ChatScreenKeyReleasedEvent
+                    && (inputEvent.keyCode == value || inputEvent.scanCode == value)
         }
     }
 
@@ -185,7 +186,7 @@ data class ChatScreenKeyPressedEvent(
     val keyCode: Int
         get() = keyEvent.key()
     val scanCode: Int
-        get() = keyEvent.scancode()
+        get() = keyEvent.keycode()
     val modifiers: Int
         get() = keyEvent.modifiers();
 }
@@ -198,7 +199,7 @@ data class ChatScreenKeyReleasedEvent(
     val keyCode: Int
         get() = keyEvent.key()
     val scanCode: Int
-        get() = keyEvent.scancode()
+        get() = keyEvent.keycode()
     val modifiers: Int
         get() = keyEvent.modifiers();
 }

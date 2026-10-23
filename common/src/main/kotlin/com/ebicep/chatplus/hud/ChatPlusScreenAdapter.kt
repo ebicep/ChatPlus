@@ -71,15 +71,14 @@ object ChatPlusScreenAdapter {
         // control = no scroll
         // shift = fine scroll
         // alt = triple scroll
-        val window = Minecraft.getInstance().window
-        if (InputConstants.isKeyDown(window, Config.values.keyNoScroll.value)) {
+        if (InputConstants.isKeyDown(values.keyNoScroll.value)) {
             return true
         }
-        val scrollAmount = if (Config.values.invertedScrolling) -amountY else amountY
+        val scrollAmount = if (values.invertedScrolling) -amountY else amountY
         var delta = Mth.clamp(scrollAmount, -1.0, 1.0)
-        if (InputConstants.isKeyDown(window, Config.values.keyLargeScroll.value)) {
+        if (InputConstants.isKeyDown(values.keyLargeScroll.value)) {
             delta *= 21.0
-        } else if (!InputConstants.isKeyDown(window, Config.values.keyFineScroll.value)) {
+        } else if (!InputConstants.isKeyDown(values.keyFineScroll.value)) {
             delta *= 7.0
         }
         ChatManager.globalSelectedTab.scrollChat(delta.toInt())

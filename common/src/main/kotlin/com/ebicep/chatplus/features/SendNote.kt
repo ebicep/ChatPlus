@@ -12,6 +12,7 @@ import com.ebicep.chatplus.features.textbarelements.SendNoteEvent
 import com.ebicep.chatplus.features.textbarelements.SendNoteTextBarElement
 import com.ebicep.chatplus.hud.*
 import com.ebicep.chatplus.mixin.IMixinChatScreen
+import com.ebicep.chatplus.util.KeyUtil.isLeftMouseButton
 import com.ebicep.chatplus.translator.LanguageManager
 import com.ebicep.chatplus.translator.Translator
 import com.ebicep.chatplus.util.KeyUtil.isDown
@@ -66,7 +67,7 @@ object SendNote {
             if (inputEvent !is ChatScreenMouseClickedEvent) {
                 return@register
             }
-            if (inputEvent.button != 0) {
+            if (!isLeftMouseButton(inputEvent.button)) {
                 return@register
             }
             ChatManager.globalSelectedTab.getHoveredOverMessageLine(inputEvent.mouseX, inputEvent.mouseY)?.let { message ->

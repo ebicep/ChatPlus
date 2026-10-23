@@ -6,17 +6,22 @@ import com.ebicep.chatplus.hud.ChatScreenMouseClickedEvent
 import com.mojang.blaze3d.platform.InputConstants
 import net.minecraft.client.Minecraft
 import net.minecraft.network.chat.Component
-import org.lwjgl.glfw.GLFW
 
 object KeyUtil {
 
     fun InputConstants.Key.isDown(): Boolean {
         if (value == -1) return false
-        val window = Minecraft.getInstance().window
+        val minecraft = Minecraft.getInstance()
         return if (isMouseButton(value)) {
-            GLFW.glfwGetMouseButton(window.handle(), value) == GLFW.GLFW_PRESS
+            val mouseHandler = minecraft.mouseHandler
+            when (value) {
+                InputConstants.MOUSE_BUTTON_LEFT -> mouseHandler.isLeftPressed
+                InputConstants.MOUSE_BUTTON_RIGHT -> mouseHandler.isRightPressed
+                InputConstants.MOUSE_BUTTON_MIDDLE -> mouseHandler.isMiddlePressed
+                else -> InputConstants.isKeyDown(value)
+            }
         } else {
-            InputConstants.isKeyDown(window, value)
+            InputConstants.isKeyDown(value)
         }
     }
 
@@ -29,7 +34,7 @@ object KeyUtil {
             }
 
             is ChatScreenKeyPressedEvent -> {
-                return inputEvent.keyCode == value
+                return inputEvent.keyCode == value || inputEvent.scanCode == value
             }
 
             else -> {
@@ -54,7 +59,19 @@ object KeyUtil {
 
     fun InputConstants.Key.isMouseButton(): Boolean = isMouseButton(value)
 
-    fun isMouseButton(value: Int): Boolean = value in 0..7
+    fun isMouseButton(value: Int): Boolean =
+        value == InputConstants.MOUSE_BUTTON_LEFT
+                || value == InputConstants.MOUSE_BUTTON_RIGHT
+                || value == InputConstants.MOUSE_BUTTON_MIDDLE
+                || value == InputConstants.MOUSE_BUTTON_4
+                || value == InputConstants.MOUSE_BUTTON_5
+                || value == InputConstants.MOUSE_BUTTON_6
+                || value == InputConstants.MOUSE_BUTTON_7
+                || value == InputConstants.MOUSE_BUTTON_8
+
+    fun isLeftMouseButton(button: Int): Boolean = button == InputConstants.MOUSE_BUTTON_LEFT
+
+    fun isRightMouseButton(button: Int): Boolean = button == InputConstants.MOUSE_BUTTON_RIGHT
 
     fun InputConstants.Key.isModifier(): Boolean = isAlt() || isControl() || isShift()
 

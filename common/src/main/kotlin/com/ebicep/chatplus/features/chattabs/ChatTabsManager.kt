@@ -14,6 +14,8 @@ import com.ebicep.chatplus.hud.ChatManager.selectedWindow
 import com.ebicep.chatplus.mixin.IMixinChatScreen
 import com.ebicep.chatplus.platform.events.EventResult
 import com.ebicep.chatplus.platform.events.client.ClientRawInputEvent
+import com.ebicep.chatplus.util.KeyUtil.isLeftMouseButton
+import com.ebicep.chatplus.util.KeyUtil.isRightMouseButton
 import net.minecraft.client.Minecraft
 import net.minecraft.util.Mth
 
@@ -88,7 +90,7 @@ object ChatTabs {
             if (amountX == 0.0) {
                 return@register
             }
-            selectedWindow.tabSettings.scrollTab(Mth.clamp(-amountX.toInt(), -1, 1))
+            selectedWindow.tabSettings.scrollTab(Mth.clamp(amountX.toInt(), -1, 1))
         }
         EventBus.register<ChatScreenMouseClickedEvent> {
             if (selectedWindow.tabSettings.hideTabs) {
@@ -96,9 +98,9 @@ object ChatTabs {
             }
             val mouseX = it.mouseX
             val mouseY = it.mouseY
-            if (it.button == 0) {
+            if (isLeftMouseButton(it.button)) {
                 selectedWindow.tabSettings.handleClickedTab(mouseX, mouseY)
-            } else if (it.button == 1 && Config.values.tabEditorScreen) {
+            } else if (isRightMouseButton(it.button) && Config.values.tabEditorScreen) {
                 val clickedTab = selectedWindow.tabSettings.getClickedTab(mouseX, mouseY) ?: return@register
                 if (Config.values.windowEditorScreen && Minecraft.getInstance().hasShiftDown()) {
                     Minecraft.getInstance().setScreenAndShow(Editor.windowEditor(it.screen, selectedWindow))

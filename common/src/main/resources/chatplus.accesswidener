@@ -3,7 +3,7 @@ accessWidener   v2  official
 accessible    field    net/minecraft/client/gui/screens/Screen       minecraft      Lnet/minecraft/client/Minecraft;
 accessible    field    net/minecraft/network/chat/MutableComponent   siblings       Ljava/util/List;
 mutable       field    net/minecraft/network/chat/MutableComponent   siblings       Ljava/util/List;
-accessible method com/mojang/blaze3d/pipeline/RenderPipeline$Builder <init> ()V
+accessible method com/mojang/renderpearl/api/pipeline/RenderPipeline$Builder <init> ()V
 accessible field net/minecraft/client/gui/GuiGraphicsExtractor guiRenderState Lnet/minecraft/client/renderer/state/gui/GuiRenderState;
 accessible field net/minecraft/client/renderer/GameRenderer fogRenderer Lnet/minecraft/client/renderer/fog/FogRenderer;
 accessible class net/minecraft/client/gui/components/ChatComponent$DrawingFocusedGraphicsAccess

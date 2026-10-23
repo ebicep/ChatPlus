@@ -22,13 +22,13 @@ import com.ebicep.chatplus.util.GraphicsUtil.drawString0
 import com.ebicep.chatplus.util.GraphicsUtil.fill0
 import com.ebicep.chatplus.util.GraphicsUtil.translate0
 import com.google.gson.JsonParser
-import com.mojang.blaze3d.GpuFormat
 import com.mojang.blaze3d.pipeline.RenderTarget
 import com.mojang.blaze3d.pipeline.TextureTarget
 import com.mojang.blaze3d.platform.NativeImage
-import com.mojang.blaze3d.systems.CommandEncoder
-import com.mojang.blaze3d.systems.GpuDevice
 import com.mojang.blaze3d.systems.RenderSystem
+import com.mojang.renderpearl.api.GpuFormat
+import com.mojang.renderpearl.api.commands.CommandEncoder
+import com.mojang.renderpearl.api.device.GpuDevice
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -202,7 +202,13 @@ object ScreenshotChat {
         ChatPlus.LOGGER.info("screenshotting = width: $width, height: $height")
         val minecraft = Minecraft.getInstance()
         try {
-            renderTarget = TextureTarget("ChatPlusScreenshot", width.toInt(), height.toInt(), true, GpuFormat.RGBA8_UNORM)
+            renderTarget = TextureTarget(
+                "ChatPlusScreenshot",
+                width.toInt(),
+                height.toInt(),
+                GpuFormat.RGBA8_UNORM,
+                GpuFormat.D24_UNORM_S8_UINT,
+            )
             val device: GpuDevice = RenderSystem.getDevice()
             val commandEncoder: CommandEncoder = device.createCommandEncoder()
             val guiRenderState = GuiRenderState()

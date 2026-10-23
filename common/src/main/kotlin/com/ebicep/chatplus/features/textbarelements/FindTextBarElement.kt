@@ -2,6 +2,8 @@ package com.ebicep.chatplus.features.textbarelements
 
 import com.ebicep.chatplus.events.Event
 import com.ebicep.chatplus.features.FindMessage
+import com.ebicep.chatplus.util.KeyUtil.isLeftMouseButton
+import com.ebicep.chatplus.util.KeyUtil.isRightMouseButton
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.gui.screens.ChatScreen
@@ -17,9 +19,9 @@ class FindTextBarElement(private val chatPlusScreen: ChatScreen) : TextBarElemen
     }
 
     override fun onClick(button: Int) {
-        if (button == 0) {
+        if (isLeftMouseButton(button)) {
             FindMessage.toggle(chatPlusScreen)
-        } else if (button == 1) {
+        } else if (isRightMouseButton(button)) {
             FindMessage.toggle(chatPlusScreen, FindMessage.getOtherMode())
         }
     }

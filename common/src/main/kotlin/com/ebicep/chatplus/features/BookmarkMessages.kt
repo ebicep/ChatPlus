@@ -11,6 +11,7 @@ import com.ebicep.chatplus.features.textbarelements.ShowBookmarksToggleEvent
 import com.ebicep.chatplus.hud.*
 import com.ebicep.chatplus.mixin.IMixinChatScreen
 import com.ebicep.chatplus.mixin.IMixinScreen
+import com.ebicep.chatplus.util.KeyUtil.isLeftMouseButton
 import net.minecraft.client.gui.screens.ChatScreen
 import java.util.*
 
@@ -118,7 +119,7 @@ object BookmarkMessages {
             }
         }
         EventBus.register<ChatScreenMouseClickedEvent> {
-            if (it.button != 0) {
+            if (!isLeftMouseButton(it.button)) {
                 return@register
             }
             if (showingBookmarks) {

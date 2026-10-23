@@ -5,6 +5,7 @@ import com.ebicep.chatplus.events.Event
 import com.ebicep.chatplus.features.BookmarkMessages
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphicsExtractor
+import com.ebicep.chatplus.util.KeyUtil.isLeftMouseButton
 import net.minecraft.client.gui.screens.ChatScreen
 
 class ShowBookmarksBarElement(private val chatPlusScreen: ChatScreen) : TextBarElement {
@@ -18,7 +19,7 @@ class ShowBookmarksBarElement(private val chatPlusScreen: ChatScreen) : TextBarE
     }
 
     override fun onClick(button: Int) {
-        if (button != 0) {
+        if (!isLeftMouseButton(button)) {
             return
         }
         BookmarkMessages.toggle(chatPlusScreen)

@@ -132,13 +132,13 @@ object ChatPlus {
     }
 
     fun sendMessage(component: Component) {
-        // rgb(18, 227, 219)
-        Minecraft.getInstance().player?.sendSystemMessage(
-            Component.empty()
-                .append(Component.literal("ChatPlus").withColor(MOD_COLOR))
-                .append(Component.literal(" > ").withStyle(ChatFormatting.DARK_GRAY))
-                .append(component)
-        )
+        val message = Component.empty()
+            .append(Component.literal("ChatPlus").withColor(MOD_COLOR))
+            .append(Component.literal(" > ").withStyle(ChatFormatting.DARK_GRAY))
+            .append(component)
+        Minecraft.getInstance().execute {
+            Minecraft.getInstance().player?.sendSystemMessage(message)
+        }
     }
 
     fun debugLog(message: String) {
