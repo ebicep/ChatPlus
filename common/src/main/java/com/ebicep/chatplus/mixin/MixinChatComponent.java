@@ -59,10 +59,23 @@ public class MixinChatComponent {
             CallbackInfo ci,
             @Share("chatplus$component") LocalRef<Component> c
     ) {
+        try {
+            chatPlus$handleAddMessage(messageSignature, i, guiMessageTag, c);
+        } catch (Exception e) {
+            ChatPlus.INSTANCE.getLOGGER().error("Failed to handle incoming chat message", e);
+        }
+    }
+
+    private void chatPlus$handleAddMessage(
+            MessageSignature messageSignature,
+            int i,
+            GuiMessageTag guiMessageTag,
+            LocalRef<Component> c
+    ) {
         if (!ChatPlus.INSTANCE.isEnabled() && !Config.INSTANCE.getValues().getAddMessagesIfDisabled()) {
             return;
         }
-        component = c.get();
+        Component component = c.get();
         List<ChatTab> addMessagesTo = new ArrayList<>();
 
         Integer lastPriority = null;

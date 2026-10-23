@@ -2,6 +2,7 @@ package com.ebicep.chatplus.translator
 
 import com.ebicep.chatplus.ChatPlus
 import com.ebicep.chatplus.config.Config
+import com.ebicep.chatplus.util.ClientExecutor
 import com.ebicep.chatplus.util.ComponentUtil
 import kotlinx.serialization.Serializable
 import net.minecraft.ChatFormatting
@@ -49,12 +50,14 @@ open class Translator(val message: String, val from: Language?, val to: Language
     }
 
     open fun onTranslate(matchedRegex: String?, translatedMessage: TranslateResult, fromLanguage: String?) {
-        Minecraft.getInstance().player?.sendSystemMessage(
-            ComponentUtil.literalIgnored(
-                (matchedRegex ?: "") + translatedMessage.translatedText + " (" + (fromLanguage ?: "Unknown") + ")",
-                ComponentUtil.LiteralIgnoredType.TRANSLATE
-            ).withStyle(ChatFormatting.GREEN)
-        )
+        ClientExecutor.runOnClient {
+            Minecraft.getInstance().player?.sendSystemMessage(
+                ComponentUtil.literalIgnored(
+                    (matchedRegex ?: "") + translatedMessage.translatedText + " (" + (fromLanguage ?: "Unknown") + ")",
+                    ComponentUtil.LiteralIgnoredType.TRANSLATE
+                ).withStyle(ChatFormatting.GREEN)
+            )
+        }
     }
 
     fun translate(text: String): TranslateResult? {

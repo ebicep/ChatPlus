@@ -7,6 +7,7 @@ import dev.architectury.event.CompoundEventResult
 import dev.architectury.event.events.client.ClientGuiEvent
 import dev.architectury.event.events.client.ClientLifecycleEvent
 import dev.architectury.event.events.client.ClientTickEvent
+import net.minecraft.client.Minecraft
 
 data class ChatPlusTickEvent(
     val tick: Long
@@ -44,9 +45,8 @@ object Events {
 
             currentTick++
         }
-        // scuffed fix for joining a server with a diff window dimension than before
         ClientLifecycleEvent.CLIENT_LEVEL_LOAD.register {
-            Config.values.chatWindows.forEach { it.renderer.updateCachedDimension() }
+            applyJoinChatWindowSettings()
         }
         ClientLifecycleEvent.CLIENT_STARTED.register {
             Config.values.chatWindows.forEach { it.renderer.updateCachedDimension() }
@@ -56,6 +56,14 @@ object Events {
         }
         ClientGuiEvent.SET_SCREEN.register {
             return@register CompoundEventResult.pass()
+        }
+    }
+
+    private fun applyJoinChatWindowSettings() {
+        val ip = Minecraft.getInstance().player?.connection?.serverData?.ip
+        Config.values.chatWindows.forEach { window ->
+            window.renderer.updateCachedDimension()
+            window.tabSettings.updateTabSettings(ip)
         }
     }
 }

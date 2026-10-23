@@ -14,6 +14,7 @@ import com.ebicep.chatplus.hud.ChatPlusScreen.EDIT_BOX_HEIGHT
 import com.ebicep.chatplus.mixin.IMixinChatScreen
 import com.ebicep.chatplus.mixin.IMixinScreen
 import com.ebicep.chatplus.translator.*
+import com.ebicep.chatplus.util.ClientExecutor
 import com.ebicep.chatplus.util.ComponentUtil
 import dev.architectury.event.EventResult
 import dev.architectury.event.events.client.ClientRawInputEvent
@@ -224,40 +225,44 @@ object TranslateMessage {
         Translator(message, LanguageManager.translateFrom, to, false) {
 
         override fun onTranslateSameMessage() {
-            val component = Component.literal("")
-            line.forEachIndexed { index, it ->
-                component.append(it.guiMessage.content)
-                if (index != line.size - 1) {
-                    component.append(Component.literal("\n"))
+            ClientExecutor.runOnClient {
+                val component = Component.literal("")
+                line.forEachIndexed { index, it ->
+                    component.append(it.guiMessage.content)
+                    if (index != line.size - 1) {
+                        component.append(Component.literal("\n"))
+                    }
                 }
-            }
-            ChatPlus.sendMessage(
-                ComponentUtil.translatable(
-                    "chatPlus.translator.sameMessage",
-                    ChatFormatting.RED,
-                    HoverEvent(HoverEvent.Action.SHOW_TEXT, component)
+                ChatPlus.sendMessage(
+                    ComponentUtil.translatable(
+                        "chatPlus.translator.sameMessage",
+                        ChatFormatting.RED,
+                        HoverEvent(HoverEvent.Action.SHOW_TEXT, component)
+                    )
                 )
-            )
+            }
         }
 
         override fun onTranslate(matchedRegex: String?, translatedMessage: TranslateResult, fromLanguage: String?) {
-            translatedMessage.translatedText.split("§").forEachIndexed { index, it ->
-                val component = ComponentUtil.literal(
-                    (matchedRegex ?: "") + it.trim() + " (" + (fromLanguage ?: "Unknown") + ")",
-                    ChatFormatting.GREEN,
-                    HoverEvent(HoverEvent.Action.SHOW_TEXT, line[index].guiMessage.content.copy())
-                )
-                ChatManager.globalSelectedTab.addNewMessage(
-                    AddNewMessageEvent(
-                        component.copy(),
-                        component,
-                        null,
-                        null,
-                        Minecraft.getInstance().gui.guiTicks,
-                        GuiMessageTag.system(),
-                        false
+            ClientExecutor.runOnClient {
+                translatedMessage.translatedText.split("§").forEachIndexed { index, it ->
+                    val component = ComponentUtil.literal(
+                        (matchedRegex ?: "") + it.trim() + " (" + (fromLanguage ?: "Unknown") + ")",
+                        ChatFormatting.GREEN,
+                        HoverEvent(HoverEvent.Action.SHOW_TEXT, line[index].guiMessage.content.copy())
                     )
-                )
+                    ChatManager.globalSelectedTab.addNewMessage(
+                        AddNewMessageEvent(
+                            component.copy(),
+                            component,
+                            null,
+                            null,
+                            Minecraft.getInstance().gui.guiTicks,
+                            GuiMessageTag.system(),
+                            false
+                        )
+                    )
+                }
             }
         }
 

@@ -5,6 +5,7 @@ import com.ebicep.chatplus.config.serializers.KeyWithModifier
 import com.ebicep.chatplus.events.Event
 import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.features.InputOverFlowAutoFill
+import com.ebicep.chatplus.util.ClientExecutor
 import com.ebicep.chatplus.util.KeyUtil
 import com.ebicep.chatplus.util.KeyUtil.isDown
 import com.mojang.blaze3d.platform.InputConstants
@@ -36,14 +37,16 @@ object ChatPlusScreen {
     }
 
     fun sendChatMessage(chatScreen: ChatScreen? = null, message: String, addToSent: Boolean = true) {
-        val normalizeChatMessage = normalizeChatMessage(message)
-        if (normalizeChatMessage.isEmpty()) {
-            return
+        ClientExecutor.runOnClient {
+            val normalizeChatMessage = normalizeChatMessage(message)
+            if (normalizeChatMessage.isEmpty()) {
+                return@runOnClient
+            }
+            sendChatMessageOnClient(chatScreen, splitChatMessage(normalizeChatMessage), addToSent)
         }
-        sendChatMessage(chatScreen, splitChatMessage(normalizeChatMessage), addToSent)
     }
 
-    private fun sendChatMessage(chatScreen: ChatScreen? = null, messages: List<String>, addToSent: Boolean = true) {
+    private fun sendChatMessageOnClient(chatScreen: ChatScreen? = null, messages: List<String>, addToSent: Boolean = true) {
         if (messages.isEmpty()) {
             return
         }
