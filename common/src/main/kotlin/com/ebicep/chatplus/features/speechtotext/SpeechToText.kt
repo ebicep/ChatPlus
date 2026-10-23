@@ -32,7 +32,6 @@ import org.vosk.Model
 import org.vosk.Recognizer
 import java.awt.Color
 import java.io.File
-import java.nio.charset.StandardCharsets
 import java.util.regex.Pattern
 import kotlin.math.min
 
@@ -315,7 +314,7 @@ class MicrophoneThread : Thread("ChatPlusMicrophoneThread") {
                     lastSpokenMessage = if (asString == null) {
                         null
                     } else {
-                        String(asString.toByteArray(charset(Config.values.speechToTextCharset)), StandardCharsets.UTF_8)
+                        VoskJnaEncoding.decodeVoskUtf8(asString)
                     }
                     quickSendTimer = System.currentTimeMillis() + 3000
                     ChatPlus.debugLog("Final: $lastSpokenMessage")
@@ -381,11 +380,12 @@ class MicrophoneThread : Thread("ChatPlusMicrophoneThread") {
     }
 
     private fun speechToText(data: ShortArray): String? {
-        return if (recognizer!!.acceptWaveForm(data, data.size)) {
+        val raw = if (recognizer!!.acceptWaveForm(data, data.size)) {
             JsonParser.parseString(recognizer!!.result).asJsonObject.get("text")?.asString
         } else {
             JsonParser.parseString(recognizer!!.partialResult).asJsonObject.get("partial")?.asString
         }
+        return raw?.let { VoskJnaEncoding.decodeVoskUtf8(it) }
     }
 
     private fun getMicrophone(): Microphone? {

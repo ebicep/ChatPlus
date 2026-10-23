@@ -2,6 +2,7 @@ package com.ebicep.chatplus.forge
 
 import com.ebicep.chatplus.ChatPlus
 import com.ebicep.chatplus.MOD_ID
+import com.ebicep.chatplus.features.speechtotext.VoskJnaEncoding
 import com.ebicep.chatplus.config.ConfigScreen
 import dev.architectury.platform.forge.EventBuses
 import net.minecraft.client.Minecraft
@@ -14,6 +15,7 @@ object ChatPlusPlatformInitImpl {
 
     @JvmStatic
     fun platformInit() {
+        VoskJnaEncoding.ensure()
         EventBuses.registerModEventBus(MOD_ID, MOD_BUS)
         ChatPlus.init()
         ModLoadingContext.get().registerExtensionPoint(ConfigScreenHandler.ConfigScreenFactory::class.java) {
