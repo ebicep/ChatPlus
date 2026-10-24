@@ -21,6 +21,7 @@ import com.ebicep.chatplus.util.KeyUtil.isDown
 import com.google.gson.JsonParser
 import dev.architectury.event.EventResult
 import dev.architectury.event.events.client.ClientGuiEvent
+import dev.architectury.event.events.client.ClientLifecycleEvent
 import dev.architectury.event.events.client.ClientRawInputEvent
 import kotlinx.serialization.Serializable
 import net.minecraft.ChatFormatting
@@ -162,7 +163,11 @@ class MicrophoneThread : Thread("ChatPlusMicrophoneThread") {
         get() = quickSendTimer > System.currentTimeMillis() && lastSpokenMessage != null
 
     init {
+        isDaemon = true
         ChatPlus.LOGGER.info("SpeechToText initialized")
+        ClientLifecycleEvent.CLIENT_STOPPING.register {
+            shutdown()
+        }
         EventBus.register<ChatScreenInitPreEvent> {
             if (!Config.values.speechToTextEnabled) {
                 return@register
@@ -257,23 +262,76 @@ class MicrophoneThread : Thread("ChatPlusMicrophoneThread") {
         }
     }
 
+    fun shutdown() {
+        if (!running) {
+            return
+        }
+        running = false
+        interrupt()
+        releaseResources()
+    }
+
     fun resetRecognizer() {
         ChatPlus.LOGGER.info("Resetting Recognizer")
         disabled = false
+        try {
+            recognizer?.close()
+        } catch (e: Exception) {
+            ChatPlus.LOGGER.error(e)
+        }
         recognizer = null
     }
 
     fun resetMicrophone() {
         ChatPlus.LOGGER.info("Resetting Microphone")
         disabled = false
+        try {
+            microphone?.close()
+        } catch (e: Exception) {
+            ChatPlus.LOGGER.error(e)
+        }
         microphone = null
+    }
+
+    private fun releaseResources() {
+        listening = false
+        try {
+            microphone?.close()
+        } catch (e: Exception) {
+            ChatPlus.LOGGER.error(e)
+        }
+        microphone = null
+        try {
+            recognizer?.close()
+        } catch (e: Exception) {
+            ChatPlus.LOGGER.error(e)
+        }
+        recognizer = null
+    }
+
+    private fun waitWhileIdle(timeoutMs: Long): Boolean {
+        var remaining = timeoutMs
+        while (remaining > 0 && running) {
+            try {
+                val chunk = min(remaining, 500L)
+                sleep(chunk)
+                remaining -= chunk
+            } catch (_: InterruptedException) {
+                if (!running) {
+                    return false
+                }
+            }
+        }
+        return running
     }
 
     override fun run() {
         ChatPlus.LOGGER.info("SpeechToText Thread started")
         while (running) {
             if (!Config.values.speechToTextEnabled || disabled) {
-                sleep(5_000)
+                if (!waitWhileIdle(5_000)) {
+                    break
+                }
                 continue
             }
             if (recognizer == null) {
@@ -357,13 +415,19 @@ class MicrophoneThread : Thread("ChatPlusMicrophoneThread") {
                 disabled = true
             }
         }
+        ChatPlus.LOGGER.info("SpeechToText Thread stopped")
     }
 
     private fun sleep() {
+        if (!running) {
+            return
+        }
         try {
             sleep(100)
-        } catch (e: InterruptedException) {
-            ChatPlus.LOGGER.error(e)
+        } catch (_: InterruptedException) {
+            if (!running) {
+                return
+            }
         }
     }
 
