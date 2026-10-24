@@ -11,7 +11,7 @@ class SelfTranslator(val toTranslate: String, val prefix: String) : Thread() {
             val pre = if (prefix.isEmpty()) {
                 ""
             } else if (prefix.startsWith("/")) {
-                prefix.trim()
+                prefix
             } else {
                 "$prefix "
             }
