@@ -37,8 +37,8 @@ object Events {
 
             ConfigScreen.handleOpenScreen()
 
-            // save every 30s if there was a change or every 5 minutes
-            if (currentTick % 600 == 0L && queueUpdateConfig || currentTick % 1800 == 0L) {
+            // save every 30s when config was changed since last save
+            if (currentTick % 600 == 0L && queueUpdateConfig) {
                 queueUpdateConfig = false
                 Config.save()
             }

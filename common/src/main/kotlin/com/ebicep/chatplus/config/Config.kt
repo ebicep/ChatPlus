@@ -22,6 +22,7 @@ import com.ebicep.chatplus.features.internal.MessageFilterFormatted
 import com.ebicep.chatplus.features.speechtotext.MicrophoneThread.SpeechToTextReplace
 import com.ebicep.chatplus.features.speechtotext.SpeechToText
 import com.ebicep.chatplus.translator.LanguageManager
+import com.ebicep.chatplus.util.ConfigFileIO
 import com.mojang.blaze3d.platform.InputConstants
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.UseSerializers
@@ -59,7 +60,8 @@ object Config {
             configDirectory.mkdir()
         }
         val configFile = File(configDirectory, CONFIG_NAME)
-        configFile.writeText(json.encodeToString(ConfigVariables.serializer(), values))
+        val encoded = json.encodeToString(ConfigVariables.serializer(), values)
+        ConfigFileIO.writeTextAtomically(configFile, encoded)
     }
 
     fun load() {
@@ -73,19 +75,46 @@ object Config {
             ChatPlus.LOGGER.info("No config file found, checking migration")
             if (!MigrationManager.tryMigration(configDirectory, configFile)) {
                 ChatPlus.LOGGER.info("No migration found, creating new config")
-                configFile.createNewFile()
-                configFile.writeText(json.encodeToString(ConfigVariables.serializer(), values))
+                save()
             } else {
                 ChatPlus.LOGGER.info("Reading migrated config")
-                values = json.decodeFromString(ConfigVariables.serializer(), configFile.readText())
+                values = decodeConfigFile(configFile) ?: ConfigVariables()
             }
         } else {
-            values = json.decodeFromString(ConfigVariables.serializer(), configFile.readText())
+            val decoded = decodeConfigFile(configFile)
+            if (decoded != null) {
+                values = decoded
+            } else {
+                ChatPlus.LOGGER.error(
+                    "Config file {} is missing, empty, or corrupt; using defaults and recreating the file",
+                    configFile.absolutePath,
+                )
+                values = ConfigVariables()
+            }
         }
         correctValues()
         loadValues()
         loaded = true
         ChatPlus.LOGGER.info("Config Loaded")
+    }
+
+    private fun decodeConfigFile(configFile: File): ConfigVariables? {
+        val candidates = listOf(configFile, ConfigFileIO.backupFile(configFile))
+        for (file in candidates) {
+            if (!file.exists() || file.length() == 0L) {
+                continue
+            }
+            val text = runCatching { file.readText() }.getOrNull()?.takeIf { it.isNotBlank() } ?: continue
+            val decoded = runCatching { json.decodeFromString(ConfigVariables.serializer(), text) }
+            if (decoded.isSuccess) {
+                if (file != configFile) {
+                    ChatPlus.LOGGER.warn("Loaded config from backup file {}", file.absolutePath)
+                }
+                return decoded.getOrThrow()
+            }
+            ChatPlus.LOGGER.warn("Failed to decode config from {}", file.absolutePath, decoded.exceptionOrNull())
+        }
+        return null
     }
 
     private fun loadValues() {
