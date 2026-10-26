@@ -74,6 +74,7 @@ object ConfigScreenImpl {
         addHoverHighlightOption(builder, entryBuilder)
         addBookmarkOption(builder, entryBuilder)
         addFindMessageOption(builder, entryBuilder)
+        addChatLinksOption(builder, entryBuilder)
         addCopyMessageOption(builder, entryBuilder)
         addDeleteMessageOption(builder, entryBuilder)
         addChatScreenShotOption(builder, entryBuilder)
@@ -1133,6 +1134,20 @@ object ConfigScreenImpl {
                 "chatPlus.findMessage.textBarElement.toggle",
                 Config.values.findMessageTextBarElementEnabled
             ) { Config.values.findMessageTextBarElementEnabled = it },
+        )
+    }
+
+    private fun addChatLinksOption(builder: ConfigBuilder, entryBuilder: ConfigEntryBuilder) {
+        builder.getOrCreateCategory(Component.translatable("chatPlus.chatLinks.title").withStyle(ChatFormatting.AQUA)).with(
+            entryBuilder.booleanToggle("chatPlus.chatLinks.enabled", Config.values.chatLinksEnabled) {
+                Config.values.chatLinksEnabled = it
+            },
+            entryBuilder.booleanToggle("chatPlus.chatLinks.bareDomains", Config.values.chatLinksBareDomains) {
+                Config.values.chatLinksBareDomains = it
+            },
+            entryBuilder.booleanToggle("chatPlus.chatLinks.overrideOtherClickEvents", Config.values.chatLinksOverrideOtherClickEvents) {
+                Config.values.chatLinksOverrideOtherClickEvents = it
+            },
         )
     }
 

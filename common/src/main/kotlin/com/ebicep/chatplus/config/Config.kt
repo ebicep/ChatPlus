@@ -253,6 +253,10 @@ data class ConfigVariables(
     var findMessageKey: KeyWithModifier = KeyWithModifier(InputConstants.getKey("key.keyboard.f"), 2),
     var findMessageDefaultMode: FindMessage.FindMode = FindMessage.FindMode.CONTAINS,
     var findMessageTextBarElementEnabled: Boolean = true,
+    // chat links
+    var chatLinksEnabled: Boolean = true,
+    var chatLinksBareDomains: Boolean = true,
+    var chatLinksOverrideOtherClickEvents: Boolean = false,
     // copy message
     var copyMessageKey: KeyWithModifier = KeyWithModifier(InputConstants.getKey("key.keyboard.c"), 2),
     var copyMessageLinePriority: Int = 50,

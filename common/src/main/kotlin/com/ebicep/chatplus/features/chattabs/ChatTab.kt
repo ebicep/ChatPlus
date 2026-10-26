@@ -7,6 +7,7 @@ import com.ebicep.chatplus.config.MessageDirection
 import com.ebicep.chatplus.events.Event
 import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.events.Events
+import com.ebicep.chatplus.features.ChatLinks
 import com.ebicep.chatplus.features.chatwindows.ChatWindow
 import com.ebicep.chatplus.hud.ChatManager
 import com.ebicep.chatplus.hud.ChatPlusScreen
@@ -349,8 +350,9 @@ class ChatTab {
         linkedMessage: ChatPlusGuiMessage,
         index: Int,
     ): MutableList<ChatPlusGuiMessageLine> {
+        val toWrap = ChatLinks.linkify(component)
         val list: List<Pair<FormattedCharSequence, String>> = wrapComponents(
-            component,
+            toWrap,
             displayMessageEvent.maxWidth,
             Minecraft.getInstance().font
         )

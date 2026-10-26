@@ -3,6 +3,7 @@ package com.ebicep.chatplus.mixin;
 import com.ebicep.chatplus.ChatPlus;
 import com.ebicep.chatplus.config.Config;
 import com.ebicep.chatplus.events.EventBus;
+import com.ebicep.chatplus.features.ChatLinks;
 import com.ebicep.chatplus.features.chattabs.AddNewMessageEvent;
 import com.ebicep.chatplus.features.chattabs.ChatTab;
 import com.ebicep.chatplus.features.chattabs.SkipNewMessageEvent;
@@ -16,6 +17,7 @@ import net.minecraft.client.gui.components.ChatComponent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.MessageSignature;
+import net.minecraft.network.chat.MutableComponent;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -45,6 +47,11 @@ public class MixinChatComponent {
     private FormattedText components(FormattedText arg3, @Share("chatplus$component") LocalRef<Component> component) {
         if (arg3 instanceof Component c) {
             component.set(c);
+        }
+        if (arg3 instanceof MutableComponent mutableComponent
+                && ChatPlus.INSTANCE.isEnabled()
+                && Config.INSTANCE.getValues().getChatLinksEnabled()) {
+            return ChatLinks.linkify(mutableComponent.copy());
         }
         return arg3;
     }
