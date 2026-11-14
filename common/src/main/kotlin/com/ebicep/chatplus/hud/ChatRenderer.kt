@@ -361,13 +361,19 @@ class ChatRenderer {
                 EventBus.post(renderLineTextEvent)
 
                 if (chatGraphicsAccess is IMixinChatRenderContext) {
-                    chatGraphicsAccess.`chatPlus$setChatRenderContext`(ChatRenderContext(renderLineTextEvent))
+                    val renderContext = ChatRenderContext(renderLineTextEvent)
+                    chatGraphicsAccess.`chatPlus$setChatRenderContext`(renderContext)
+                    ChatRenderContextHolder.set(renderContext)
                 }
-                val hovered = chatGraphicsAccess.handleMessage(
-                    renderLineTextEvent.y,
-                    fadeOpacity * updatedTextOpacity,
-                    line.line.content
-                )
+                try {
+                    chatGraphicsAccess.handleMessage(
+                        renderLineTextEvent.y,
+                        fadeOpacity * updatedTextOpacity,
+                        line.line.content
+                    )
+                } finally {
+                    ChatRenderContextHolder.set(null)
+                }
             }
         }
 

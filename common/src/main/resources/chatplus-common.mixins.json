@@ -16,6 +16,7 @@
     "MixinCommandSuggestions",
     "MixinDrawingBackgroundGraphicsAccess",
     "MixinDrawingFocusedGraphicsAccess",
+    "MixinGuiGraphicsExtractorRenderingTextCollector",
     "MixinGuiGraphics",
     "MixinGuiRenderer",
     "MixinKeyboardHandler",

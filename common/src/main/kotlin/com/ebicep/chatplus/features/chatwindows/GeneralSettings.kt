@@ -49,6 +49,7 @@ class GeneralSettings {
             it.anchorPoint = anchorPoint
             it.scale = scale
             it.textOpacity = textOpacity
+            it.textShadow = textShadow
             it.unfocusedTextOpacityMultiplier = unfocusedTextOpacityMultiplier
             it.reduceUnfocusedTextOpacityWhenClosed = reduceUnfocusedTextOpacityWhenClosed
             it.unfocusedHeight = unfocusedHeight
