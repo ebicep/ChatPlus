@@ -9,9 +9,18 @@ import net.minecraft.ChatFormatting
 import net.minecraft.client.Minecraft
 import java.util.regex.Pattern
 
-open class Translator(val message: String, val from: Language?, val to: Language, val filtered: Boolean = true) : Thread() {
+open class Translator(
+    val message: String,
+    val from: Language?,
+    val to: Language,
+    val filtered: Boolean = true,
+) {
 
-    override fun run() {
+    fun start() {
+        TranslationDispatcher.submit { run() }
+    }
+
+    fun run() {
         ChatPlus.LOGGER.debug("Translating message: {} | {} -> {} | filtered: {}", message, from, to, filtered)
 
         val (matchedRegex, textToTranslate) = if (filtered) filterText(message) else null to message
@@ -54,8 +63,8 @@ open class Translator(val message: String, val from: Language?, val to: Language
             Minecraft.getInstance().player?.sendSystemMessage(
                 ComponentUtil.literalIgnored(
                     (matchedRegex ?: "") + translatedMessage.translatedText + " (" + (fromLanguage ?: "Unknown") + ")",
-                    ComponentUtil.LiteralIgnoredType.TRANSLATE
-                ).withStyle(ChatFormatting.GREEN)
+                    ComponentUtil.LiteralIgnoredType.TRANSLATE,
+                ).withStyle(ChatFormatting.GREEN),
             )
         }
     }
@@ -67,37 +76,32 @@ open class Translator(val message: String, val from: Language?, val to: Language
         if (text.trim().isEmpty()) {
             return null
         }
-        if (GoogleRequester.accessDenied) {
+        val backend = Config.values.translatorBackend
+        val credentials = Config.values.translatorCredentials
+        val provider = TranslationProviders.get(backend)
+        if (provider.rateLimit.blocked) {
             return null
         }
-        //Use free ones later
-        val google = GoogleRequester()
-        val transRequest: RequestResult = if (from == null) google.translateAuto(text, to) else google.performTranslationRequest(text, from, to)
-        if (transRequest.code != 200) {
-            logException(transRequest)
+        if (!provider.hasRequiredCredentials(credentials)) {
+            TranslationErrors.log(backend, ProviderResult.Failure(FailureKind.MISSING_CREDENTIALS))
             return null
         }
-        if (transRequest.from == null) {
-            return null
-        }
-        return TranslateResult(transRequest.message.trim(), transRequest.from)
-    }
-
-    private fun logException(transRequest: RequestResult) {
-        when (transRequest.code) {
-            1 -> ChatPlus.LOGGER.error("Cannot connect to translation server. Is player offline?")
-            2 -> ChatPlus.LOGGER.error(transRequest.message)
-            411 -> ChatPlus.LOGGER.error("Google API >> API call error")
-            429 -> ChatPlus.LOGGER.warn("Google denied access to translation API. Pausing translation for 5 minutes")
-            403 -> ChatPlus.LOGGER.error("Google API >> Exceeded API quota / User rate limit reached")
-            400 -> ChatPlus.LOGGER.error("Google API >> API key invalid")
-            500 -> ChatPlus.LOGGER.error("Google API >> Failed to determine source language: " + transRequest.message)
-            else -> ChatPlus.LOGGER.error("Unknown error/Server side failure: " + transRequest.message)
+        when (val result = provider.translate(text, from, to, credentials)) {
+            is ProviderResult.Success -> {
+                val sourceLang = when {
+                    from != null && !LanguageCodes.isAutoDetect(from) -> from
+                    else -> result.detectedSource
+                }
+                return TranslateResult(result.text.trim(), sourceLang)
+            }
+            is ProviderResult.Failure -> {
+                TranslationErrors.log(backend, result)
+                return null
+            }
         }
     }
 
 }
-
 
 data class TranslateResult(val translatedText: String, val from: Language?)
 

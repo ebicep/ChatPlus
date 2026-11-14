@@ -15,6 +15,7 @@ import com.ebicep.chatplus.translator.Language
 import com.ebicep.chatplus.translator.LanguageManager
 import com.ebicep.chatplus.translator.TranslateResult
 import com.ebicep.chatplus.translator.Translator
+import com.ebicep.chatplus.util.ClientExecutor
 import com.ebicep.chatplus.util.GraphicsUtil.createPose
 import com.ebicep.chatplus.util.GraphicsUtil.translate0
 import com.ebicep.chatplus.util.KeyUtil.isDown
@@ -253,7 +254,9 @@ class MicrophoneThread : Thread("ChatPlusMicrophoneThread") {
             if (Config.values.speechToTextTranslateEnabled && speechToTextLang != null) {
                 object : Translator(it, LanguageManager.autoLang, speechToTextLang, false) {
                     override fun onTranslate(matchedRegex: String?, translatedMessage: TranslateResult, fromLanguage: String?) {
-                        toRun(translatedMessage.translatedText, true)
+                        ClientExecutor.runOnClient {
+                            toRun(translatedMessage.translatedText, true)
+                        }
                     }
                 }.start()
             } else {

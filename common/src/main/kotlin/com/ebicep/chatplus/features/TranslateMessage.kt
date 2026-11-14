@@ -245,11 +245,29 @@ object TranslateMessage {
 
         override fun onTranslate(matchedRegex: String?, translatedMessage: TranslateResult, fromLanguage: String?) {
             ClientExecutor.runOnClient {
-                translatedMessage.translatedText.split("§").forEachIndexed { index, it ->
+                val segments = translatedMessage.translatedText.split("§")
+                val mergedOriginalHover =
+                    if (segments.size == 1 && line.size > 1) {
+                        val combinedOriginal = Component.literal("")
+                        line.forEachIndexed { index, msg ->
+                            combinedOriginal.append(msg.guiMessage.content)
+                            if (index != line.size - 1) {
+                                combinedOriginal.append(Component.literal("\n"))
+                            }
+                        }
+                        combinedOriginal
+                    } else {
+                        null
+                    }
+                segments.forEachIndexed { index, segment ->
+                    if (index >= line.size) {
+                        return@forEachIndexed
+                    }
+                    val hover = mergedOriginalHover ?: line[index].guiMessage.content.copy()
                     val component = ComponentUtil.literal(
-                        (matchedRegex ?: "") + it.trim() + " (" + (fromLanguage ?: "Unknown") + ")",
+                        (matchedRegex ?: "") + segment.trim() + " (" + (fromLanguage ?: "Unknown") + ")",
                         ChatFormatting.GREEN,
-                        HoverEvent(HoverEvent.Action.SHOW_TEXT, line[index].guiMessage.content.copy())
+                        HoverEvent(HoverEvent.Action.SHOW_TEXT, hover),
                     )
                     ChatManager.globalSelectedTab.addNewMessage(
                         AddNewMessageEvent(
@@ -259,8 +277,8 @@ object TranslateMessage {
                             null,
                             Minecraft.getInstance().gui.guiTicks,
                             GuiMessageTag.system(),
-                            false
-                        )
+                            false,
+                        ),
                     )
                 }
             }

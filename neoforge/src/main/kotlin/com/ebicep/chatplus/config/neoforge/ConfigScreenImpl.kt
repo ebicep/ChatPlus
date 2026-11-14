@@ -22,6 +22,7 @@ import com.ebicep.chatplus.features.speechtotext.SpeechToText
 import com.ebicep.chatplus.hud.ChatManager
 import com.ebicep.chatplus.hud.ChatManager.resetGlobalSortedTabs
 import com.ebicep.chatplus.translator.LanguageManager
+import com.ebicep.chatplus.translator.TranslationBackend
 import com.ebicep.chatplus.util.ComponentUtil
 import com.ebicep.chatplus.util.ComponentUtil.withColor
 import com.mojang.blaze3d.platform.InputConstants
@@ -1352,6 +1353,63 @@ object ConfigScreenImpl {
                 "chatPlus.translatorTextBarElement.toggle",
                 Config.values.translatorTextBarElementEnabled
             ) { Config.values.translatorTextBarElementEnabled = it },
+            entryBuilder.enumSelector(
+                "chatPlus.translator.backend",
+                TranslationBackend::class.java,
+                Config.values.translatorBackend
+            ) { Config.values.translatorBackend = it },
+            entryBuilder.startSubCategory(Component.translatable("chatPlus.translator.apiSettings.title")).with(
+                entryBuilder.stringField(
+                    "chatPlus.translator.credentials.googleCloudApiKey",
+                    Config.values.translatorCredentials.googleCloudApiKey,
+                    { Config.values.translatorCredentials.googleCloudApiKey = it },
+                ),
+                entryBuilder.stringField(
+                    "chatPlus.translator.credentials.deeplApiKey",
+                    Config.values.translatorCredentials.deeplApiKey,
+                    { Config.values.translatorCredentials.deeplApiKey = it },
+                ),
+                entryBuilder.stringField(
+                    "chatPlus.translator.credentials.azureTranslatorKey",
+                    Config.values.translatorCredentials.azureTranslatorKey,
+                    { Config.values.translatorCredentials.azureTranslatorKey = it },
+                ),
+                entryBuilder.stringField(
+                    "chatPlus.translator.credentials.azureTranslatorRegion",
+                    Config.values.translatorCredentials.azureTranslatorRegion,
+                    { Config.values.translatorCredentials.azureTranslatorRegion = it },
+                ),
+                entryBuilder.stringField(
+                    "chatPlus.translator.credentials.libreTranslateBaseUrl",
+                    Config.values.translatorCredentials.libreTranslateBaseUrl,
+                    { Config.values.translatorCredentials.libreTranslateBaseUrl = it },
+                ),
+                entryBuilder.stringField(
+                    "chatPlus.translator.credentials.libreTranslateApiKey",
+                    Config.values.translatorCredentials.libreTranslateApiKey,
+                    { Config.values.translatorCredentials.libreTranslateApiKey = it },
+                ),
+                entryBuilder.stringField(
+                    "chatPlus.translator.credentials.lingvaBaseUrl",
+                    Config.values.translatorCredentials.lingvaBaseUrl,
+                    { Config.values.translatorCredentials.lingvaBaseUrl = it },
+                ),
+                entryBuilder.stringField(
+                    "chatPlus.translator.credentials.myMemoryEmail",
+                    Config.values.translatorCredentials.myMemoryEmail,
+                    { Config.values.translatorCredentials.myMemoryEmail = it },
+                ),
+                entryBuilder.stringField(
+                    "chatPlus.translator.credentials.baiduAppId",
+                    Config.values.translatorCredentials.baiduAppId,
+                    { Config.values.translatorCredentials.baiduAppId = it },
+                ),
+                entryBuilder.stringField(
+                    "chatPlus.translator.credentials.baiduSecretKey",
+                    Config.values.translatorCredentials.baiduSecretKey,
+                    { Config.values.translatorCredentials.baiduSecretKey = it },
+                ),
+            ).build(),
             entryBuilder.dropDown(
                 "chatPlus.translator.translateFrom",
                 Config.values.translateFrom,

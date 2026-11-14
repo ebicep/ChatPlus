@@ -22,6 +22,8 @@ import com.ebicep.chatplus.features.internal.MessageFilterFormatted
 import com.ebicep.chatplus.features.speechtotext.MicrophoneThread.SpeechToTextReplace
 import com.ebicep.chatplus.features.speechtotext.SpeechToText
 import com.ebicep.chatplus.translator.LanguageManager
+import com.ebicep.chatplus.translator.TranslationBackend
+import com.ebicep.chatplus.translator.TranslatorCredentials
 import com.ebicep.chatplus.util.ConfigFileIO
 import com.mojang.blaze3d.platform.InputConstants
 import kotlinx.serialization.Serializable
@@ -304,6 +306,8 @@ data class ConfigVariables(
     var translateKey: KeyWithModifier = KeyWithModifier(InputConstants.getKey("key.keyboard.t"), 2),
     var translateToggleKey: KeyWithModifier = KeyWithModifier(InputConstants.getKey("key.keyboard.t"), 2),
     var translateClickEnabled: Boolean = true,
+    var translatorBackend: TranslationBackend = TranslationBackend.GOOGLE_UNOFFICIAL,
+    var translatorCredentials: TranslatorCredentials = TranslatorCredentials(),
     // speech to text
     var speechToTextEnabled: Boolean = true,
     var speechToTextToInputBox: Boolean = true,
