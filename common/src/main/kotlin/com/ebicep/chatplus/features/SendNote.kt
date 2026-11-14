@@ -13,7 +13,9 @@ import com.ebicep.chatplus.features.textbarelements.SendNoteTextBarElement
 import com.ebicep.chatplus.hud.*
 import com.ebicep.chatplus.mixin.IMixinChatScreen
 import com.ebicep.chatplus.translator.LanguageManager
+import com.ebicep.chatplus.translator.TranslationDispatcher
 import com.ebicep.chatplus.translator.Translator
+import com.ebicep.chatplus.util.ClientExecutor
 import com.ebicep.chatplus.util.KeyUtil.isDown
 import kotlinx.serialization.Serializable
 import net.minecraft.client.Minecraft
@@ -127,13 +129,19 @@ object SendNote {
         lastSentNoteTick = Events.currentTick
     }
 
-    class NoteTranslator(val toTranslate: String) : Thread() {
+    class NoteTranslator(val toTranslate: String) {
 
-        override fun run() {
+        fun start() {
+            TranslationDispatcher.submit { run() }
+        }
+
+        fun run() {
             LanguageManager.languageSpeak?.let {
                 val translator = Translator(toTranslate, LanguageManager.languageSelf, it)
                 val translateResult = translator.translate(toTranslate) ?: return
-                addNote(translateResult.translatedText)
+                ClientExecutor.runOnClient {
+                    addNote(translateResult.translatedText)
+                }
             }
         }
 
