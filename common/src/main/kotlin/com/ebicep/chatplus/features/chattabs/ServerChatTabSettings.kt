@@ -35,6 +35,7 @@ open class ServerChatTabSettings : MessageFilterFormatted {
     var commandsOverrideAutoPrefix: Boolean = true
     var suggestionsPatterns: MutableList<ServerChatTabCommandSuggestion> = mutableListOf()
     var notificationSettings: ServerChatTabNotificationSettings = ServerChatTabNotificationSettings()
+    var exclusionPattern: MessageFilterFormatted = MessageFilterFormatted("", false)
 
     @Transient
     lateinit var chatTab: ChatTab
@@ -59,7 +60,35 @@ open class ServerChatTabSettings : MessageFilterFormatted {
             it.commandsOverrideAutoPrefix = this.commandsOverrideAutoPrefix
             it.suggestionsPatterns = this.suggestionsPatterns.map { it.clone() }.toMutableList()
             it.notificationSettings = this.notificationSettings.clone()
+            it.exclusionPattern = MessageFilterFormatted(
+                this.exclusionPattern.pattern,
+                this.exclusionPattern.formatted,
+            )
         }
+    }
+
+    fun matchesForRouting(message: String, coloredMessage: String?): Boolean {
+        if (!matches(message, coloredMessage)) {
+            return false
+        }
+        if (exclusionPattern.pattern.isEmpty()) {
+            return true
+        }
+        return !exclusionPattern.matches(message, coloredMessage)
+    }
+
+    fun matchesForRouting(message: Component): Boolean {
+        if (!matches(message)) {
+            return false
+        }
+        if (exclusionPattern.pattern.isEmpty()) {
+            return true
+        }
+        return !exclusionPattern.matches(message)
+    }
+
+    fun matchesForRouting(message: ChatTab.ChatPlusGuiMessageLine): Boolean {
+        return matchesForRouting(message.content, message.coloredContent())
     }
 
     fun modifyCommandSuggestions(input: String, suggestions: MutableList<Suggestion>) {

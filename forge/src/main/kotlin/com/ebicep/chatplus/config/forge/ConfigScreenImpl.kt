@@ -618,6 +618,15 @@ object ConfigScreenImpl {
                     entryBuilder.stringField("chatPlus.chatWindow.tabSettings.chatTabs.name", value.name, { value.name = it }),
                     entryBuilder.stringField("chatPlus.chatWindow.tabSettings.chatTabs.pattern", value.pattern, { value.pattern = it }),
                     entryBuilder.booleanToggle("chatPlus.chatWindow.tabSettings.chatTabs.formatted.toggle", value.formatted) { value.formatted = it },
+                    entryBuilder.stringField(
+                        "chatPlus.chatWindow.tabSettings.chatTabs.exclusionPattern.pattern",
+                        value.exclusionPattern.pattern,
+                        { value.exclusionPattern.pattern = it }
+                    ),
+                    entryBuilder.booleanToggle(
+                        "chatPlus.chatWindow.tabSettings.chatTabs.exclusionPattern.formatted",
+                        value.exclusionPattern.formatted
+                    ) { value.exclusionPattern.formatted = it },
                     entryBuilder.stringField("chatPlus.chatWindow.tabSettings.chatTabs.autoSend", value.autoSend, { value.autoSend = it }),
                     entryBuilder.stringField("chatPlus.chatWindow.tabSettings.chatTabs.autoPrefix", value.autoPrefix, { value.autoPrefix = it }),
                     entryBuilder.intField(
@@ -712,6 +721,15 @@ object ConfigScreenImpl {
                             value.regexFormatter,
                             { value.regexFormatter = it }
                         ),
+                        entryBuilder.stringField(
+                            "chatPlus.chatWindow.autoTabCreator.autoTabOptions.exclusionPattern.pattern",
+                            value.exclusionPattern.pattern,
+                            { value.exclusionPattern.pattern = it }
+                        ),
+                        entryBuilder.booleanToggle(
+                            "chatPlus.chatWindow.autoTabCreator.autoTabOptions.exclusionPattern.formatted",
+                            value.exclusionPattern.formatted
+                        ) { value.exclusionPattern.formatted = it },
                         entryBuilder.stringField(
                             "chatPlus.chatWindow.autoTabCreator.autoTabOptions.tabNameFormatter",
                             value.tabNameFormatter,

@@ -96,15 +96,15 @@ class ChatTab {
         get() = if (!::currentSettings.isInitialized) ServerChatTabNotificationSettings() else currentSettings.notificationSettings
 
     fun matches(message: String, coloredMessage: String?): Boolean {
-        return currentSettings.matches(message, coloredMessage)
+        return currentSettings.matchesForRouting(message, coloredMessage)
     }
 
     fun matches(message: Component): Boolean {
-        return currentSettings.matches(message)
+        return currentSettings.matchesForRouting(message)
     }
 
     fun matches(message: ChatPlusGuiMessageLine): Boolean {
-        return currentSettings.matches(message)
+        return currentSettings.matchesForRouting(message)
     }
 
     @Transient
@@ -215,6 +215,7 @@ class ChatTab {
             it.serverPattern.updateRegex()
             it.suggestionsPatterns.forEach { it.updateRegex() }
             it.notificationSettings.notificationMatch.updateRegex()
+            it.exclusionPattern.updateRegex()
         }
     }
 
