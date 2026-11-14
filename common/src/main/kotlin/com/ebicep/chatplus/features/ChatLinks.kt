@@ -6,7 +6,7 @@ import net.minecraft.network.chat.ClickEvent
 import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.MutableComponent
 import net.minecraft.network.chat.Style
-import net.minecraft.network.chat.contents.LiteralContents
+import net.minecraft.network.chat.contents.PlainTextContents
 import java.util.regex.Pattern
 import kotlin.jvm.JvmStatic
 
@@ -77,7 +77,11 @@ object ChatLinks {
 
     private fun literalText(component: Component): String? {
         val contents = component.contents
-        return if (contents is LiteralContents) contents.text() else null
+        return if (contents is PlainTextContents && contents !is ComponentUtil.LiteralContentsIgnored) {
+            contents.text()
+        } else {
+            null
+        }
     }
 
     private fun linkifyString(text: String, style: Style): List<Component> {
