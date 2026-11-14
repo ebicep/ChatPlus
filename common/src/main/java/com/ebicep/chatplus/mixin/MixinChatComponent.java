@@ -3,6 +3,7 @@ package com.ebicep.chatplus.mixin;
 import com.ebicep.chatplus.ChatPlus;
 import com.ebicep.chatplus.config.Config;
 import com.ebicep.chatplus.events.EventBus;
+import com.ebicep.chatplus.features.ChatLinks;
 import com.ebicep.chatplus.features.chattabs.AddNewMessageEvent;
 import com.ebicep.chatplus.features.chattabs.ChatTab;
 import com.ebicep.chatplus.features.chattabs.SkipNewMessageEvent;
@@ -16,6 +17,7 @@ import net.minecraft.client.gui.components.ChatComponent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.MessageSignature;
+import net.minecraft.network.chat.MutableComponent;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -46,6 +48,11 @@ public class MixinChatComponent {
         if (arg3 instanceof Component c) {
             component.set(c);
         }
+        if (arg3 instanceof MutableComponent mutableComponent
+                && ChatPlus.INSTANCE.isEnabled()
+                && Config.INSTANCE.getValues().getChatLinksEnabled()) {
+            return ChatLinks.linkify(mutableComponent.copy());
+        }
         return arg3;
     }
 
@@ -59,10 +66,23 @@ public class MixinChatComponent {
             CallbackInfo ci,
             @Share("chatplus$component") LocalRef<Component> c
     ) {
+        try {
+            chatPlus$handleAddMessage(messageSignature, i, guiMessageTag, c);
+        } catch (Exception e) {
+            ChatPlus.INSTANCE.getLOGGER().error("Failed to handle incoming chat message", e);
+        }
+    }
+
+    private void chatPlus$handleAddMessage(
+            MessageSignature messageSignature,
+            int i,
+            GuiMessageTag guiMessageTag,
+            LocalRef<Component> c
+    ) {
         if (!ChatPlus.INSTANCE.isEnabled() && !Config.INSTANCE.getValues().getAddMessagesIfDisabled()) {
             return;
         }
-        component = c.get();
+        Component component = c.get();
         List<ChatTab> addMessagesTo = new ArrayList<>();
 
         Integer lastPriority = null;
