@@ -124,6 +124,9 @@ object Config {
         values.autoBookMarkPatterns.forEach {
             it.updateRegex()
         }
+        values.compactMessagesExcludePatterns.forEach {
+            it.updateRegex()
+        }
         LanguageManager.updateTranslateLanguages()
         SpeechToText.updateTranslateLanguage()
         values.speechToTextReplace.forEach {
@@ -186,6 +189,7 @@ data class ConfigVariables(
     var compactMessagesMode: CompactMessages.CompactMode = CompactMessages.CompactMode.LATEST,
     var compactMessageComparatorMode: CompactMessages.CompactComparatorMode = CompactMessages.CompactComparatorMode.CUSTOM,
     var compactMessageSettings: CompactMessages.CompactMessageCustomSettings = CompactMessages.CompactMessageCustomSettings(),
+    var compactMessagesExcludePatterns: MutableList<MessageFilterFormatted> = mutableListOf(),
     // scrolling
     var keyNoScroll: InputConstants.Key = InputConstants.getKey("key.keyboard.left.control"),
     var keyFineScroll: InputConstants.Key = InputConstants.getKey("key.keyboard.left.shift"),

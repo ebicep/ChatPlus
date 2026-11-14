@@ -288,6 +288,27 @@ object ConfigScreenImpl {
                 "chatPlus.compactMessages.timeSeconds",
                 Config.values.compactMessagesTimeSeconds
             ) { Config.values.compactMessagesTimeSeconds = it },
+            getCustomListOption(
+                "chatPlus.compactMessages.excludePatterns.title",
+                Config.values.compactMessagesExcludePatterns,
+                { Config.values.compactMessagesExcludePatterns = it },
+                true,
+                { MessageFilterFormatted("") },
+                { value ->
+                    listOf(
+                        entryBuilder.stringField(
+                            "chatPlus.compactMessages.excludePatterns.pattern",
+                            value.pattern,
+                            { value.pattern = it }
+                        ),
+                        entryBuilder.booleanToggle(
+                            "chatPlus.messageFilter.formatted.toggle",
+                            value.formatted
+                        ) { value.formatted = it },
+                    )
+                },
+                { Component.literal(it.regex.toString()) }
+            ),
             entryBuilder.enumSelector(
                 "chatPlus.compactMessages.comparatorMode",
                 CompactMessages.CompactComparatorMode::class.java,
