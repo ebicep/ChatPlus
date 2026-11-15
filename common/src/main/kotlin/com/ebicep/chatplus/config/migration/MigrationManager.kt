@@ -5,6 +5,7 @@ import com.ebicep.chatplus.config.CONFIG_NAME
 import com.ebicep.chatplus.config.Config.values
 import com.ebicep.chatplus.config.ConfigVariables
 import com.ebicep.chatplus.config.json
+import com.ebicep.chatplus.util.ConfigFileIO
 import kotlinx.serialization.KSerializer
 import java.io.File
 
@@ -30,7 +31,10 @@ object MigrationManager {
                 val oldConfigValues: Any? = json.decodeFromString(it.getSerializer(), oldConfig.readText())
                 (it as Migrator<Any?>).migrate(oldConfigValues)
                 // write new values
-                currentConfig.writeText(json.encodeToString(ConfigVariables.serializer(), values))
+                ConfigFileIO.writeTextAtomically(
+                    currentConfig,
+                    json.encodeToString(ConfigVariables.serializer(), values),
+                )
                 return true
             }
         }

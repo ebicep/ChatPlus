@@ -22,6 +22,7 @@ import com.ebicep.chatplus.features.speechtotext.SpeechToText
 import com.ebicep.chatplus.hud.ChatManager
 import com.ebicep.chatplus.hud.ChatManager.resetGlobalSortedTabs
 import com.ebicep.chatplus.translator.LanguageManager
+import com.ebicep.chatplus.translator.TranslationBackend
 import com.ebicep.chatplus.util.ComponentUtil
 import com.mojang.blaze3d.platform.InputConstants
 import me.shedaniel.clothconfig2.api.*
@@ -73,6 +74,7 @@ object ConfigScreenImpl {
         addHoverHighlightOption(builder, entryBuilder)
         addBookmarkOption(builder, entryBuilder)
         addFindMessageOption(builder, entryBuilder)
+        addChatLinksOption(builder, entryBuilder)
         addCopyMessageOption(builder, entryBuilder)
         addDeleteMessageOption(builder, entryBuilder)
         addChatScreenShotOption(builder, entryBuilder)
@@ -126,6 +128,10 @@ object ConfigScreenImpl {
                 10,
                 30
             ) { Config.values.maxCommandSuggestions = it },
+            entryBuilder.intField(
+                "chatPlus.chatSettings.messageDisplayTime",
+                Config.values.messageDisplayTimeTicks
+            ) { Config.values.messageDisplayTimeTicks = it },
             entryBuilder.enumSelector(
                 "chatPlus.chatSettings.jumpToMessageMode",
                 JumpToMessageMode::class.java,
@@ -282,6 +288,27 @@ object ConfigScreenImpl {
                 "chatPlus.compactMessages.timeSeconds",
                 Config.values.compactMessagesTimeSeconds
             ) { Config.values.compactMessagesTimeSeconds = it },
+            getCustomListOption(
+                "chatPlus.compactMessages.excludePatterns.title",
+                Config.values.compactMessagesExcludePatterns,
+                { Config.values.compactMessagesExcludePatterns = it },
+                true,
+                { MessageFilterFormatted("") },
+                { value ->
+                    listOf(
+                        entryBuilder.stringField(
+                            "chatPlus.compactMessages.excludePatterns.pattern",
+                            value.pattern,
+                            { value.pattern = it }
+                        ),
+                        entryBuilder.booleanToggle(
+                            "chatPlus.messageFilter.formatted.toggle",
+                            value.formatted
+                        ) { value.formatted = it },
+                    )
+                },
+                { Component.literal(it.regex.toString()) }
+            ),
             entryBuilder.enumSelector(
                 "chatPlus.compactMessages.comparatorMode",
                 CompactMessages.CompactComparatorMode::class.java,
@@ -590,6 +617,15 @@ object ConfigScreenImpl {
                     entryBuilder.stringField("chatPlus.chatWindow.tabSettings.chatTabs.name", value.name, { value.name = it }),
                     entryBuilder.stringField("chatPlus.chatWindow.tabSettings.chatTabs.pattern", value.pattern, { value.pattern = it }),
                     entryBuilder.booleanToggle("chatPlus.chatWindow.tabSettings.chatTabs.formatted.toggle", value.formatted) { value.formatted = it },
+                    entryBuilder.stringField(
+                        "chatPlus.chatWindow.tabSettings.chatTabs.exclusionPattern.pattern",
+                        value.exclusionPattern.pattern,
+                        { value.exclusionPattern.pattern = it }
+                    ),
+                    entryBuilder.booleanToggle(
+                        "chatPlus.chatWindow.tabSettings.chatTabs.exclusionPattern.formatted",
+                        value.exclusionPattern.formatted
+                    ) { value.exclusionPattern.formatted = it },
                     entryBuilder.stringField("chatPlus.chatWindow.tabSettings.chatTabs.autoSend", value.autoSend, { value.autoSend = it }),
                     entryBuilder.stringField("chatPlus.chatWindow.tabSettings.chatTabs.autoPrefix", value.autoPrefix, { value.autoPrefix = it }),
                     entryBuilder.intField(
@@ -683,6 +719,15 @@ object ConfigScreenImpl {
                             value.regexFormatter,
                             { value.regexFormatter = it }
                         ),
+                        entryBuilder.stringField(
+                            "chatPlus.chatWindow.autoTabCreator.autoTabOptions.exclusionPattern.pattern",
+                            value.exclusionPattern.pattern,
+                            { value.exclusionPattern.pattern = it }
+                        ),
+                        entryBuilder.booleanToggle(
+                            "chatPlus.chatWindow.autoTabCreator.autoTabOptions.exclusionPattern.formatted",
+                            value.exclusionPattern.formatted
+                        ) { value.exclusionPattern.formatted = it },
                         entryBuilder.stringField(
                             "chatPlus.chatWindow.autoTabCreator.autoTabOptions.tabNameFormatter",
                             value.tabNameFormatter,
@@ -1132,6 +1177,20 @@ object ConfigScreenImpl {
         )
     }
 
+    private fun addChatLinksOption(builder: ConfigBuilder, entryBuilder: ConfigEntryBuilder) {
+        builder.getOrCreateCategory(Component.translatable("chatPlus.chatLinks.title").withStyle(ChatFormatting.AQUA)).with(
+            entryBuilder.booleanToggle("chatPlus.chatLinks.enabled", Config.values.chatLinksEnabled) {
+                Config.values.chatLinksEnabled = it
+            },
+            entryBuilder.booleanToggle("chatPlus.chatLinks.bareDomains", Config.values.chatLinksBareDomains) {
+                Config.values.chatLinksBareDomains = it
+            },
+            entryBuilder.booleanToggle("chatPlus.chatLinks.overrideOtherClickEvents", Config.values.chatLinksOverrideOtherClickEvents) {
+                Config.values.chatLinksOverrideOtherClickEvents = it
+            },
+        )
+    }
+
     private fun addCopyMessageOption(builder: ConfigBuilder, entryBuilder: ConfigEntryBuilder) {
         builder.getOrCreateCategory(Component.translatable("chatPlus.copyMessage.title").withColor(CopyMessage.DEFAULT_COLOR)).with(
             entryBuilder.booleanToggle(
@@ -1286,6 +1345,63 @@ object ConfigScreenImpl {
                 "chatPlus.translatorTextBarElement.toggle",
                 Config.values.translatorTextBarElementEnabled
             ) { Config.values.translatorTextBarElementEnabled = it },
+            entryBuilder.enumSelector(
+                "chatPlus.translator.backend",
+                TranslationBackend::class.java,
+                Config.values.translatorBackend
+            ) { Config.values.translatorBackend = it },
+            entryBuilder.startSubCategory(Component.translatable("chatPlus.translator.apiSettings.title")).with(
+                entryBuilder.stringField(
+                    "chatPlus.translator.credentials.googleCloudApiKey",
+                    Config.values.translatorCredentials.googleCloudApiKey,
+                    { Config.values.translatorCredentials.googleCloudApiKey = it },
+                ),
+                entryBuilder.stringField(
+                    "chatPlus.translator.credentials.deeplApiKey",
+                    Config.values.translatorCredentials.deeplApiKey,
+                    { Config.values.translatorCredentials.deeplApiKey = it },
+                ),
+                entryBuilder.stringField(
+                    "chatPlus.translator.credentials.azureTranslatorKey",
+                    Config.values.translatorCredentials.azureTranslatorKey,
+                    { Config.values.translatorCredentials.azureTranslatorKey = it },
+                ),
+                entryBuilder.stringField(
+                    "chatPlus.translator.credentials.azureTranslatorRegion",
+                    Config.values.translatorCredentials.azureTranslatorRegion,
+                    { Config.values.translatorCredentials.azureTranslatorRegion = it },
+                ),
+                entryBuilder.stringField(
+                    "chatPlus.translator.credentials.libreTranslateBaseUrl",
+                    Config.values.translatorCredentials.libreTranslateBaseUrl,
+                    { Config.values.translatorCredentials.libreTranslateBaseUrl = it },
+                ),
+                entryBuilder.stringField(
+                    "chatPlus.translator.credentials.libreTranslateApiKey",
+                    Config.values.translatorCredentials.libreTranslateApiKey,
+                    { Config.values.translatorCredentials.libreTranslateApiKey = it },
+                ),
+                entryBuilder.stringField(
+                    "chatPlus.translator.credentials.lingvaBaseUrl",
+                    Config.values.translatorCredentials.lingvaBaseUrl,
+                    { Config.values.translatorCredentials.lingvaBaseUrl = it },
+                ),
+                entryBuilder.stringField(
+                    "chatPlus.translator.credentials.myMemoryEmail",
+                    Config.values.translatorCredentials.myMemoryEmail,
+                    { Config.values.translatorCredentials.myMemoryEmail = it },
+                ),
+                entryBuilder.stringField(
+                    "chatPlus.translator.credentials.baiduAppId",
+                    Config.values.translatorCredentials.baiduAppId,
+                    { Config.values.translatorCredentials.baiduAppId = it },
+                ),
+                entryBuilder.stringField(
+                    "chatPlus.translator.credentials.baiduSecretKey",
+                    Config.values.translatorCredentials.baiduSecretKey,
+                    { Config.values.translatorCredentials.baiduSecretKey = it },
+                ),
+            ).build(),
             entryBuilder.dropDown(
                 "chatPlus.translator.translateFrom",
                 Config.values.translateFrom,
@@ -1405,19 +1521,6 @@ object ConfigScreenImpl {
                 { str: String -> if (models.contains(str)) "" else "chatPlus.speechToText.selectedAudioModel.invalid" },
                 { str: String ->
                     Config.values.speechToTextSelectedAudioModel = str
-                }
-            ),
-            entryBuilder.stringField(
-                "chatPlus.speechToText.speechToTextCharset",
-                Config.values.speechToTextCharset,
-                { Config.values.speechToTextCharset = it },
-                error = {
-                    try {
-                        charset(it)
-                        ""
-                    } catch (_: Exception) {
-                        "chatPlus.speechToText.speechToTextCharSet.invalid"
-                    }
                 }
             ),
             entryBuilder.keyCodeOption(
