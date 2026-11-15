@@ -3,6 +3,7 @@ package com.ebicep.chatplus.mixin;
 import com.ebicep.chatplus.ChatPlus;
 import com.ebicep.chatplus.config.Config;
 import com.ebicep.chatplus.events.EventBus;
+import com.ebicep.chatplus.features.ChatLinks;
 import com.ebicep.chatplus.features.chattabs.AddNewMessageEvent;
 import com.ebicep.chatplus.features.chattabs.ChatTab;
 import com.ebicep.chatplus.features.chattabs.SkipNewMessageEvent;
@@ -16,6 +17,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.ChatComponent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MessageSignature;
+import net.minecraft.network.chat.MutableComponent;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -42,18 +44,45 @@ public class MixinChatComponent {
         ci.cancel();
     }
 
+    @Inject(
+            method = "addMessage(Lnet/minecraft/network/chat/Component;Lnet/minecraft/network/chat/MessageSignature;Lnet/minecraft/client/GuiMessageTag;)V",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/ChatComponent;addMessageToDisplayQueue(Lnet/minecraft/client/GuiMessage;)V")
+    )
+    private void linkifyBeforeDisplay(
+            Component component,
+            MessageSignature messageSignature,
+            GuiMessageTag guiMessageTag,
+            CallbackInfo ci
+    ) {
+        if (!(component instanceof MutableComponent mutableComponent)) {
+            return;
+        }
+        if (!ChatPlus.INSTANCE.isEnabled() || !Config.INSTANCE.getValues().getChatLinksEnabled()) {
+            return;
+        }
+        ChatLinks.linkify(mutableComponent);
+    }
+
     @Inject(method = "addMessage(Lnet/minecraft/network/chat/Component;Lnet/minecraft/network/chat/MessageSignature;Lnet/minecraft/client/GuiMessageTag;)V", at = @At("RETURN"))
     public void addMessage(
             Component component, MessageSignature messageSignature, GuiMessageTag guiMessageTag,
             CallbackInfo ci,
             @Local GuiMessage guiMessage
     ) {
+        try {
+            chatPlus$handleAddMessage(guiMessage);
+        } catch (Exception e) {
+            ChatPlus.INSTANCE.getLOGGER().error("Failed to handle incoming chat message", e);
+        }
+    }
+
+    private void chatPlus$handleAddMessage(GuiMessage guiMessage) {
         if (!ChatPlus.INSTANCE.isEnabled() && !Config.INSTANCE.getValues().getAddMessagesIfDisabled()) {
             return;
         }
-        component = guiMessage.content();
-        messageSignature = guiMessage.signature();
-        guiMessageTag = guiMessage.tag();
+        Component component = guiMessage.content();
+        MessageSignature messageSignature = guiMessage.signature();
+        GuiMessageTag guiMessageTag = guiMessage.tag();
         List<ChatTab> addMessagesTo = new ArrayList<>();
 
         Integer lastPriority = null;

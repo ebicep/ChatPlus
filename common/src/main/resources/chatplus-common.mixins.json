@@ -12,7 +12,6 @@
     "IMixinStringSplitter",
     "MixinChatComponent",
     "MixinChatScreen",
-    "MixinClientHandshakePacketListenerImpl",
     "MixinCommandSuggestions",
     "MixinGuiGraphics",
     "MixinKeyboardHandler",
