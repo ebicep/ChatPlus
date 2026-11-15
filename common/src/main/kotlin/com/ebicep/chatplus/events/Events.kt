@@ -5,6 +5,7 @@ import com.ebicep.chatplus.config.ConfigScreen
 import com.ebicep.chatplus.config.queueUpdateConfig
 import com.ebicep.chatplus.platform.events.client.ClientLifecycleEvent
 import com.ebicep.chatplus.platform.events.client.ClientTickEvent
+import net.minecraft.client.Minecraft
 
 data class ChatPlusTickEvent(
     val tick: Long
@@ -34,23 +35,30 @@ object Events {
 
             ConfigScreen.handleOpenScreen()
 
-            // save every 30s if there was a change or every 5 minutes
-            if (currentTick % 600 == 0L && queueUpdateConfig || currentTick % 1800 == 0L) {
+            // save every 30s when config was changed since last save
+            if (currentTick % 600 == 0L && queueUpdateConfig) {
                 queueUpdateConfig = false
                 Config.save()
             }
 
             currentTick++
         }
-        // scuffed fix for joining a server with a diff window dimension than before
         ClientLifecycleEvent.CLIENT_LEVEL_LOAD.register {
-            Config.values.chatWindows.forEach { it.renderer.updateCachedDimension() }
+            applyJoinChatWindowSettings()
         }
         ClientLifecycleEvent.CLIENT_STARTED.register {
             Config.values.chatWindows.forEach { it.renderer.updateCachedDimension() }
         }
         ClientLifecycleEvent.CLIENT_STOPPING.register {
             Config.save()
+        }
+    }
+
+    private fun applyJoinChatWindowSettings() {
+        val ip = Minecraft.getInstance().player?.connection?.serverData?.ip
+        Config.values.chatWindows.forEach { window ->
+            window.renderer.updateCachedDimension()
+            window.tabSettings.updateTabSettings(ip)
         }
     }
 }

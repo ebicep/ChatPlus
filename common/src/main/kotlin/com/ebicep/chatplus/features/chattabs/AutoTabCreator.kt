@@ -83,6 +83,10 @@ class AutoTabCreator {
                     settings.notificationSettings = it.notificationSettings.clone().also { notificationSettings ->
                         notificationSettings.notificationMatch.pattern = formatRegex(it.notificationSettings.notificationMatch.pattern, matchResult)
                     }
+                    settings.exclusionPattern = MessageFilterFormatted(
+                        formatRegex(it.exclusionPattern.pattern, matchResult),
+                        it.exclusionPattern.formatted,
+                    )
                 }
             ).also {
                 it.isAutoTab = true
@@ -128,6 +132,7 @@ class AutoTabCreator {
         var commandsOverrideAutoPrefix: Boolean = true
         var suggestionsPatterns: MutableList<ServerChatTabCommandSuggestion> = mutableListOf()
         var notificationSettings: ServerChatTabNotificationSettings = ServerChatTabNotificationSettings()
+        var exclusionPattern: MessageFilterFormatted = MessageFilterFormatted("", false)
         var temporary: Boolean = true
 
         constructor(pattern: String) : super(pattern)

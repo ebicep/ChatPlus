@@ -43,10 +43,10 @@ class GeneralSettings {
 
     fun clone(): GeneralSettings {
         return GeneralSettings().also {
+            it.disabled = disabled
             it.backgroundColor = backgroundColor
             it.unfocusedBackgroundColorOpacityMultiplier = unfocusedBackgroundColorOpacityMultiplier
             it.reduceUnfocusedBackgroundOpacityWhenClosed = reduceUnfocusedBackgroundOpacityWhenClosed
-            it.anchorPoint = anchorPoint
             it.scale = scale
             it.textOpacity = textOpacity
             it.textShadow = textShadow
@@ -54,8 +54,11 @@ class GeneralSettings {
             it.reduceUnfocusedTextOpacityWhenClosed = reduceUnfocusedTextOpacityWhenClosed
             it.unfocusedHeight = unfocusedHeight
             it.lineSpacing = lineSpacing
+            it.anchorPoint = anchorPoint
             it.messageAlignment = messageAlignment
             it.messageDirection = messageDirection
+            it.topDownDirectionWrapInOrder = topDownDirectionWrapInOrder
+            it.resetScrollPositionOnClose = resetScrollPositionOnClose
         }
     }
 
