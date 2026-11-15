@@ -30,6 +30,8 @@ import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.roundToInt
 
+fun messageDisplayTicks(): Int = Config.values.messageDisplayTimeTicks
+
 data class ChatRenderContext(
     val renderTextLineEvent: ChatRenderLineTextEvent,
 )
@@ -468,7 +470,7 @@ class ChatRenderer {
             }
             val line = chatPlusGuiMessageLine.line
             val ticksLived: Int = guiTicks - line.addedTime()
-            if (ticksLived >= 200 && !chatFocused) {
+            if (ticksLived >= messageDisplayTicks() && !chatFocused) {
                 ++displayMessageIndex
                 continue
             }
