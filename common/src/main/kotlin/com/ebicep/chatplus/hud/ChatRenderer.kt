@@ -29,6 +29,8 @@ import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.roundToInt
 
+fun messageDisplayTicks(): Int = Config.values.messageDisplayTimeTicks
+
 abstract class ChatRenderLineEvent(
     open val guiGraphics: GuiGraphics,
     open val chatWindow: ChatWindow,
@@ -289,7 +291,7 @@ class ChatRenderer {
             }
             val line: GuiMessage.Line = chatPlusGuiMessageLine.line
             val ticksLived: Int = guiTicks - line.addedTime()
-            if (ticksLived >= 200 && !chatFocused) {
+            if (ticksLived >= messageDisplayTicks() && !chatFocused) {
                 ++displayMessageIndex
                 continue
             }
@@ -431,7 +433,7 @@ class ChatRenderer {
     }
 
     fun getTimeFactor(ticksLived: Int): Double {
-        var d0 = ticksLived.toDouble() / 200.0
+        var d0 = ticksLived.toDouble() / messageDisplayTicks().toDouble()
         d0 = 1.0 - d0
         d0 *= 10.0
         d0 = Mth.clamp(d0, 0.0, 1.0)

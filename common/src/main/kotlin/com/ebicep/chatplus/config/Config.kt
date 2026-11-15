@@ -22,6 +22,9 @@ import com.ebicep.chatplus.features.internal.MessageFilterFormatted
 import com.ebicep.chatplus.features.speechtotext.MicrophoneThread.SpeechToTextReplace
 import com.ebicep.chatplus.features.speechtotext.SpeechToText
 import com.ebicep.chatplus.translator.LanguageManager
+import com.ebicep.chatplus.translator.TranslationBackend
+import com.ebicep.chatplus.translator.TranslatorCredentials
+import com.ebicep.chatplus.util.ConfigFileIO
 import com.mojang.blaze3d.platform.InputConstants
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.UseSerializers
@@ -59,7 +62,8 @@ object Config {
             configDirectory.mkdir()
         }
         val configFile = File(configDirectory, CONFIG_NAME)
-        configFile.writeText(json.encodeToString(ConfigVariables.serializer(), values))
+        val encoded = json.encodeToString(ConfigVariables.serializer(), values)
+        ConfigFileIO.writeTextAtomically(configFile, encoded)
     }
 
     fun load() {
@@ -73,19 +77,46 @@ object Config {
             ChatPlus.LOGGER.info("No config file found, checking migration")
             if (!MigrationManager.tryMigration(configDirectory, configFile)) {
                 ChatPlus.LOGGER.info("No migration found, creating new config")
-                configFile.createNewFile()
-                configFile.writeText(json.encodeToString(ConfigVariables.serializer(), values))
+                save()
             } else {
                 ChatPlus.LOGGER.info("Reading migrated config")
-                values = json.decodeFromString(ConfigVariables.serializer(), configFile.readText())
+                values = decodeConfigFile(configFile) ?: ConfigVariables()
             }
         } else {
-            values = json.decodeFromString(ConfigVariables.serializer(), configFile.readText())
+            val decoded = decodeConfigFile(configFile)
+            if (decoded != null) {
+                values = decoded
+            } else {
+                ChatPlus.LOGGER.error(
+                    "Config file {} is missing, empty, or corrupt; using defaults and recreating the file",
+                    configFile.absolutePath,
+                )
+                values = ConfigVariables()
+            }
         }
         correctValues()
         loadValues()
         loaded = true
         ChatPlus.LOGGER.info("Config Loaded")
+    }
+
+    private fun decodeConfigFile(configFile: File): ConfigVariables? {
+        val candidates = listOf(configFile, ConfigFileIO.backupFile(configFile))
+        for (file in candidates) {
+            if (!file.exists() || file.length() == 0L) {
+                continue
+            }
+            val text = runCatching { file.readText() }.getOrNull()?.takeIf { it.isNotBlank() } ?: continue
+            val decoded = runCatching { json.decodeFromString(ConfigVariables.serializer(), text) }
+            if (decoded.isSuccess) {
+                if (file != configFile) {
+                    ChatPlus.LOGGER.warn("Loaded config from backup file {}", file.absolutePath)
+                }
+                return decoded.getOrThrow()
+            }
+            ChatPlus.LOGGER.warn("Failed to decode config from {}", file.absolutePath, decoded.exceptionOrNull())
+        }
+        return null
     }
 
     private fun loadValues() {
@@ -95,20 +126,19 @@ object Config {
         values.autoBookMarkPatterns.forEach {
             it.updateRegex()
         }
+        values.compactMessagesExcludePatterns.forEach {
+            it.updateRegex()
+        }
         LanguageManager.updateTranslateLanguages()
         SpeechToText.updateTranslateLanguage()
         values.speechToTextReplace.forEach {
             it.updateRegex()
         }
-        try {
-            charset(values.speechToTextCharset)
-        } catch (_: Exception) {
-            values.speechToTextCharset = "UTF-8"
-        }
     }
 
     private fun correctValues() {
         values.maxCommandSuggestions = Mth.clamp(values.maxCommandSuggestions, 10, 30)
+        values.messageDisplayTimeTicks = Mth.clamp(values.messageDisplayTimeTicks, 20, 6000)
         values.inputBoxSettings.maxInputBoxInputLength = max(1, values.inputBoxSettings.maxInputBoxInputLength)
         if (values.chatWindows.isEmpty()) {
             values.chatWindows.add(createDefaultWindow())
@@ -134,6 +164,7 @@ data class ConfigVariables(
     var wrappedMessageLineIndent: Int = 0,
     var maxMessages: Int = -1,
     var maxCommandSuggestions: Int = 15,
+    var messageDisplayTimeTicks: Int = 200,
     var jumpToMessageMode: JumpToMessageMode = JumpToMessageMode.CURSOR,
     var selectChatLinePriority: Int = 100,
     var selectChatColor: Int = Color(186, 211, 252, 255).rgb,
@@ -160,6 +191,7 @@ data class ConfigVariables(
     var compactMessagesMode: CompactMessages.CompactMode = CompactMessages.CompactMode.LATEST,
     var compactMessageComparatorMode: CompactMessages.CompactComparatorMode = CompactMessages.CompactComparatorMode.CUSTOM,
     var compactMessageSettings: CompactMessages.CompactMessageCustomSettings = CompactMessages.CompactMessageCustomSettings(),
+    var compactMessagesExcludePatterns: MutableList<MessageFilterFormatted> = mutableListOf(),
     // scrolling
     var keyNoScroll: InputConstants.Key = InputConstants.getKey("key.keyboard.left.control"),
     var keyFineScroll: InputConstants.Key = InputConstants.getKey("key.keyboard.left.shift"),
@@ -229,6 +261,10 @@ data class ConfigVariables(
     var findMessageKey: KeyWithModifier = KeyWithModifier(InputConstants.getKey("key.keyboard.f"), 2),
     var findMessageDefaultMode: FindMessage.FindMode = FindMessage.FindMode.CONTAINS,
     var findMessageTextBarElementEnabled: Boolean = true,
+    // chat links
+    var chatLinksEnabled: Boolean = true,
+    var chatLinksBareDomains: Boolean = true,
+    var chatLinksOverrideOtherClickEvents: Boolean = false,
     // copy message
     var copyMessageKey: KeyWithModifier = KeyWithModifier(InputConstants.getKey("key.keyboard.c"), 2),
     var copyMessageLinePriority: Int = 50,
@@ -270,10 +306,11 @@ data class ConfigVariables(
     var translateKey: KeyWithModifier = KeyWithModifier(InputConstants.getKey("key.keyboard.t"), 2),
     var translateToggleKey: KeyWithModifier = KeyWithModifier(InputConstants.getKey("key.keyboard.t"), 2),
     var translateClickEnabled: Boolean = true,
+    var translatorBackend: TranslationBackend = TranslationBackend.GOOGLE_UNOFFICIAL,
+    var translatorCredentials: TranslatorCredentials = TranslatorCredentials(),
     // speech to text
     var speechToTextEnabled: Boolean = true,
     var speechToTextToInputBox: Boolean = true,
-    var speechToTextCharset: String = "UTF-8",
     var speechToTextMicrophoneKey: InputConstants.Key = InputConstants.getKey("key.keyboard.b"),
     var speechToTextQuickSendKey: InputConstants.Key = InputConstants.getKey("key.keyboard.enter"),
     var speechToTextTranslateEnabled: Boolean = false,
