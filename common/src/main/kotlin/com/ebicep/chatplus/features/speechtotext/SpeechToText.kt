@@ -15,12 +15,14 @@ import com.ebicep.chatplus.translator.Language
 import com.ebicep.chatplus.translator.LanguageManager
 import com.ebicep.chatplus.translator.TranslateResult
 import com.ebicep.chatplus.translator.Translator
+import com.ebicep.chatplus.util.ClientExecutor
 import com.ebicep.chatplus.util.GraphicsUtil.createPose
 import com.ebicep.chatplus.util.GraphicsUtil.translate0
 import com.ebicep.chatplus.util.KeyUtil.isDown
 import com.google.gson.JsonParser
 import dev.architectury.event.EventResult
 import dev.architectury.event.events.client.ClientGuiEvent
+import dev.architectury.event.events.client.ClientLifecycleEvent
 import dev.architectury.event.events.client.ClientRawInputEvent
 import kotlinx.serialization.Serializable
 import net.minecraft.ChatFormatting
@@ -32,7 +34,6 @@ import org.vosk.Model
 import org.vosk.Recognizer
 import java.awt.Color
 import java.io.File
-import java.nio.charset.StandardCharsets
 import java.util.regex.Pattern
 import kotlin.math.min
 
@@ -163,7 +164,11 @@ class MicrophoneThread : Thread("ChatPlusMicrophoneThread") {
         get() = quickSendTimer > System.currentTimeMillis() && lastSpokenMessage != null
 
     init {
+        isDaemon = true
         ChatPlus.LOGGER.info("SpeechToText initialized")
+        ClientLifecycleEvent.CLIENT_STOPPING.register {
+            shutdown()
+        }
         EventBus.register<ChatScreenInitPreEvent> {
             if (!Config.values.speechToTextEnabled) {
                 return@register
@@ -249,7 +254,9 @@ class MicrophoneThread : Thread("ChatPlusMicrophoneThread") {
             if (Config.values.speechToTextTranslateEnabled && speechToTextLang != null) {
                 object : Translator(it, LanguageManager.autoLang, speechToTextLang, false) {
                     override fun onTranslate(matchedRegex: String?, translatedMessage: TranslateResult, fromLanguage: String?) {
-                        toRun(translatedMessage.translatedText, true)
+                        ClientExecutor.runOnClient {
+                            toRun(translatedMessage.translatedText, true)
+                        }
                     }
                 }.start()
             } else {
@@ -258,23 +265,76 @@ class MicrophoneThread : Thread("ChatPlusMicrophoneThread") {
         }
     }
 
+    fun shutdown() {
+        if (!running) {
+            return
+        }
+        running = false
+        interrupt()
+        releaseResources()
+    }
+
     fun resetRecognizer() {
         ChatPlus.LOGGER.info("Resetting Recognizer")
         disabled = false
+        try {
+            recognizer?.close()
+        } catch (e: Exception) {
+            ChatPlus.LOGGER.error(e)
+        }
         recognizer = null
     }
 
     fun resetMicrophone() {
         ChatPlus.LOGGER.info("Resetting Microphone")
         disabled = false
+        try {
+            microphone?.close()
+        } catch (e: Exception) {
+            ChatPlus.LOGGER.error(e)
+        }
         microphone = null
+    }
+
+    private fun releaseResources() {
+        listening = false
+        try {
+            microphone?.close()
+        } catch (e: Exception) {
+            ChatPlus.LOGGER.error(e)
+        }
+        microphone = null
+        try {
+            recognizer?.close()
+        } catch (e: Exception) {
+            ChatPlus.LOGGER.error(e)
+        }
+        recognizer = null
+    }
+
+    private fun waitWhileIdle(timeoutMs: Long): Boolean {
+        var remaining = timeoutMs
+        while (remaining > 0 && running) {
+            try {
+                val chunk = min(remaining, 500L)
+                sleep(chunk)
+                remaining -= chunk
+            } catch (_: InterruptedException) {
+                if (!running) {
+                    return false
+                }
+            }
+        }
+        return running
     }
 
     override fun run() {
         ChatPlus.LOGGER.info("SpeechToText Thread started")
         while (running) {
             if (!Config.values.speechToTextEnabled || disabled) {
-                sleep(5_000)
+                if (!waitWhileIdle(5_000)) {
+                    break
+                }
                 continue
             }
             if (recognizer == null) {
@@ -315,7 +375,7 @@ class MicrophoneThread : Thread("ChatPlusMicrophoneThread") {
                     lastSpokenMessage = if (asString == null) {
                         null
                     } else {
-                        String(asString.toByteArray(charset(Config.values.speechToTextCharset)), StandardCharsets.UTF_8)
+                        VoskJnaEncoding.decodeVoskUtf8(asString)
                     }
                     quickSendTimer = System.currentTimeMillis() + 3000
                     ChatPlus.debugLog("Final: $lastSpokenMessage")
@@ -358,13 +418,19 @@ class MicrophoneThread : Thread("ChatPlusMicrophoneThread") {
                 disabled = true
             }
         }
+        ChatPlus.LOGGER.info("SpeechToText Thread stopped")
     }
 
     private fun sleep() {
+        if (!running) {
+            return
+        }
         try {
             sleep(100)
-        } catch (e: InterruptedException) {
-            ChatPlus.LOGGER.error(e)
+        } catch (_: InterruptedException) {
+            if (!running) {
+                return
+            }
         }
     }
 
@@ -381,11 +447,12 @@ class MicrophoneThread : Thread("ChatPlusMicrophoneThread") {
     }
 
     private fun speechToText(data: ShortArray): String? {
-        return if (recognizer!!.acceptWaveForm(data, data.size)) {
+        val raw = if (recognizer!!.acceptWaveForm(data, data.size)) {
             JsonParser.parseString(recognizer!!.result).asJsonObject.get("text")?.asString
         } else {
             JsonParser.parseString(recognizer!!.partialResult).asJsonObject.get("partial")?.asString
         }
+        return raw?.let { VoskJnaEncoding.decodeVoskUtf8(it) }
     }
 
     private fun getMicrophone(): Microphone? {
