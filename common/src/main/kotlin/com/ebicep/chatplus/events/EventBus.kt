@@ -1,5 +1,6 @@
 package com.ebicep.chatplus.events
 
+import com.ebicep.chatplus.ChatPlus
 import com.ebicep.chatplus.config.Config
 import com.ebicep.chatplus.hud.ChatScreenInputEvent
 
@@ -26,7 +27,11 @@ object EventBus {
         fun <E> post(data: E): E {
             var skipped = false
             for (it in subscribers) {
-                it.callback.invoke(data as T)
+                try {
+                    it.callback.invoke(data as T)
+                } catch (e: Exception) {
+                    ChatPlus.LOGGER.error("Event listener failed for {}", data!!::class.java.name, e)
+                }
                 if (it.skipOtherCallbacks()) {
                     skipped = true
                     break
