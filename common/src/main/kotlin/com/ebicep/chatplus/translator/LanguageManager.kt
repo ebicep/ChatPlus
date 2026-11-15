@@ -55,4 +55,36 @@ object LanguageManager {
         return null
     }
 
+    private val providerCodeAliases: Map<String, String> = mapOf(
+        "zh" to "zh-CN",
+        "zh-hans" to "zh-CN",
+        "zh-hant" to "zh-TW",
+        "zh_hant" to "zh-TW",
+        "zt" to "zh-TW",
+        "iw" to "he",
+        "jw" to "jv",
+        "nb" to "no",
+        "fil" to "tl",
+    )
+
+    fun findLanguageFromProviderCode(backend: TranslationBackend, code: String): Language? {
+        if (code.equals("auto", ignoreCase = true) || code.equals("autodetect", ignoreCase = true)) {
+            return autoLang
+        }
+        if (backend == TranslationBackend.BAIDU) {
+            return languages.find { it.baiduCode == code }
+        }
+        val normalized = code.lowercase()
+        providerCodeAliases[normalized]?.let { findLanguageFromGoogle(it) }?.let { return it }
+        languages.find { it.googleCode.equals(code, ignoreCase = true) }?.let { return it }
+        findLanguageFromGoogle(normalized)?.let { return it }
+        val prefix = code.substringBefore('-').substringBefore('_')
+        if (prefix.isNotEmpty() && prefix != code) {
+            providerCodeAliases[prefix.lowercase()]?.let { findLanguageFromGoogle(it) }?.let { return it }
+            languages.find { it.googleCode.equals(prefix, ignoreCase = true) }?.let { return it }
+            findLanguageFromGoogle(prefix.lowercase())?.let { return it }
+        }
+        return null
+    }
+
 }

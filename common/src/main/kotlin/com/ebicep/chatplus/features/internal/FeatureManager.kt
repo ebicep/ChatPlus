@@ -10,6 +10,7 @@ object FeatureManager {
 
     init {
         // TODO feature interface with register/unregister methods for small performance? Less event calls
+        ChatLinks
         CopyMessage
         MovableChat
         HoverHighlight
