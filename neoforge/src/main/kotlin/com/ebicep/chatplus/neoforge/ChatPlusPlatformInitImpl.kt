@@ -1,11 +1,11 @@
 package com.ebicep.chatplus.neoforge
 
 import com.ebicep.chatplus.ChatPlus
-import com.ebicep.chatplus.config.ConfigScreen
 import com.ebicep.chatplus.config.neoforge.ConfigDirectoryImpl
 import com.ebicep.chatplus.config.neoforge.ConfigScreenImpl
 import com.ebicep.chatplus.features.chattabs.ChatTab
 import com.ebicep.chatplus.features.chatwindows.ChatWindow
+import com.ebicep.chatplus.features.speechtotext.VoskJnaEncoding
 import com.ebicep.chatplus.platform.PlatformServicesProvider
 import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.gui.screens.Screen
@@ -30,10 +30,11 @@ class ChatPlusPlatformInitImpl : PlatformServicesProvider {
     private var lifecycleHooked = false
 
     override fun platformInit() {
+        VoskJnaEncoding.ensure()
         ChatPlus.init()
         NeoForgePlatformHooks.modContainer.registerExtensionPoint(IConfigScreenFactory::class.java) {
             IConfigScreenFactory { _: ModContainer, screen: Screen ->
-                ConfigScreen.getConfigScreen(screen)
+                ConfigScreenImpl.getConfigScreen(screen)
             }
         }
     }

@@ -30,6 +30,8 @@ import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.roundToInt
 
+fun messageDisplayTicks(): Int = Config.values.messageDisplayTimeTicks
+
 data class ChatRenderContext(
     val renderTextLineEvent: ChatRenderLineTextEvent,
 )
@@ -361,13 +363,19 @@ class ChatRenderer {
                 EventBus.post(renderLineTextEvent)
 
                 if (chatGraphicsAccess is IMixinChatRenderContext) {
-                    chatGraphicsAccess.`chatPlus$setChatRenderContext`(ChatRenderContext(renderLineTextEvent))
+                    val renderContext = ChatRenderContext(renderLineTextEvent)
+                    chatGraphicsAccess.`chatPlus$setChatRenderContext`(renderContext)
+                    ChatRenderContextHolder.set(renderContext)
                 }
-                val hovered = chatGraphicsAccess.handleMessage(
-                    renderLineTextEvent.y,
-                    fadeOpacity * updatedTextOpacity,
-                    line.line.content
-                )
+                try {
+                    chatGraphicsAccess.handleMessage(
+                        renderLineTextEvent.y,
+                        fadeOpacity * updatedTextOpacity,
+                        line.line.content
+                    )
+                } finally {
+                    ChatRenderContextHolder.set(null)
+                }
             }
         }
 
@@ -466,7 +474,7 @@ class ChatRenderer {
             }
             val line = chatPlusGuiMessageLine.line
             val ticksLived: Int = guiTicks - line.addedTime()
-            if (ticksLived >= 200 && !displayMode.foreground) {
+            if (ticksLived >= messageDisplayTicks() && !displayMode.foreground) {
                 ++displayMessageIndex
                 continue
             }

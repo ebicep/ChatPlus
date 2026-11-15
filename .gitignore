@@ -16,6 +16,7 @@ classes/
 .metadata
 .vscode
 .settings
+**/.eclipse/
 *.launch
 .kotlin/
 runs/

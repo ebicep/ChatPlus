@@ -363,7 +363,8 @@ object ScreenshotChat {
                     line.content,
                     renderer.rescaledX,
                     verticalTextOffset,
-                    textColor
+                    textColor,
+                    chatWindow.generalSettings.textShadow
                 )
             }
         }

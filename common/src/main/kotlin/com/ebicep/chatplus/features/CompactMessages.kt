@@ -89,6 +89,9 @@ object CompactMessages {
             if (messages.isEmpty()) {
                 return
             }
+            if (isExcluded(event.rawComponent)) {
+                return
+            }
             val rangeEnd = if (maxAgeTicks != null) {
                 0
             } else {
@@ -102,6 +105,9 @@ object CompactMessages {
                     if (ageTicks > maxAgeTicks) {
                         break
                     }
+                }
+                if (isExcluded(guiMessage.content)) {
+                    continue
                 }
                 if (!componentEquals(guiMessage.content, event.mutableComponent)) {
                     continue
@@ -188,6 +194,10 @@ object CompactMessages {
         override fun getTranslatableName(): Component {
             return translatable
         }
+    }
+
+    private fun isExcluded(component: Component): Boolean {
+        return Config.values.compactMessagesExcludePatterns.any { it.matches(component) }
     }
 
     private fun formatString(value: String): String {
