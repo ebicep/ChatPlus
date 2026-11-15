@@ -6,6 +6,7 @@ import com.ebicep.chatplus.config.fabric.ConfigScreenImpl
 import com.ebicep.chatplus.events.fabric.ClientCommandRegistration
 import com.ebicep.chatplus.features.chattabs.ChatTab
 import com.ebicep.chatplus.features.chatwindows.ChatWindow
+import com.ebicep.chatplus.features.speechtotext.VoskJnaEncoding
 import com.ebicep.chatplus.platform.PlatformServicesProvider
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLevelEvents
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents
@@ -29,6 +30,7 @@ class ChatPlusPlatformInitImpl : PlatformServicesProvider {
     private var lifecycleHooked = false
 
     override fun platformInit() {
+        VoskJnaEncoding.ensure()
         ChatPlus.init()
         ClientCommandRegistration.registerCommands()
     }

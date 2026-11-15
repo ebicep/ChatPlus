@@ -7,6 +7,7 @@ import com.ebicep.chatplus.config.MessageDirection
 import com.ebicep.chatplus.events.Event
 import com.ebicep.chatplus.events.EventBus
 import com.ebicep.chatplus.events.Events
+import com.ebicep.chatplus.features.ChatLinks
 import com.ebicep.chatplus.features.chatwindows.ChatWindow
 import com.ebicep.chatplus.hud.ChatManager
 import com.ebicep.chatplus.hud.ChatPlusScreen
@@ -96,15 +97,15 @@ class ChatTab {
         get() = if (!::currentSettings.isInitialized) ServerChatTabNotificationSettings() else currentSettings.notificationSettings
 
     fun matches(message: String, coloredMessage: String?): Boolean {
-        return currentSettings.matches(message, coloredMessage)
+        return currentSettings.matchesForRouting(message, coloredMessage)
     }
 
     fun matches(message: Component): Boolean {
-        return currentSettings.matches(message)
+        return currentSettings.matchesForRouting(message)
     }
 
     fun matches(message: ChatPlusGuiMessageLine): Boolean {
-        return currentSettings.matches(message)
+        return currentSettings.matchesForRouting(message)
     }
 
     @Transient
@@ -215,6 +216,7 @@ class ChatTab {
             it.serverPattern.updateRegex()
             it.suggestionsPatterns.forEach { it.updateRegex() }
             it.notificationSettings.notificationMatch.updateRegex()
+            it.exclusionPattern.updateRegex()
         }
     }
 
@@ -353,8 +355,9 @@ class ChatTab {
         linkedMessage: ChatPlusGuiMessage,
         index: Int,
     ): MutableList<ChatPlusGuiMessageLine> {
+        val toWrap = ChatLinks.linkify(component)
         val list: List<Pair<FormattedCharSequence, String>> = wrapComponents(
-            component,
+            toWrap,
             displayMessageEvent.maxWidth,
             Minecraft.getInstance().font
         )
